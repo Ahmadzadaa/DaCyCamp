@@ -1,0 +1,39 @@
+name: CI
+on:
+  push:
+    branches: ['**']
+  pull_request:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: dacy
+          POSTGRES_PASSWORD: dacy
+          POSTGRES_DB: dacy
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U dacy" --health-interval 5s --health-timeout 3s --health-retries 20
+    env:
+      DATABASE_URL: postgresql://dacy:dacy@localhost:5432/dacy
+      DATABASE_URL_TEST: postgresql://dacy:dacy@localhost:5432/dacy_test
+      JWT_ACCESS_SECRET: ci-access-secret
+      JWT_REFRESH_SECRET: ci-refresh-secret
+      CTF_PEPPER: ci-ctf-pepper
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: 10 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - run: psql postgresql://dacy:dacy@localhost:5432/dacy -c 'CREATE DATABASE dacy_test OWNER dacy'
+      - run: pnpm --filter @dacy/shared build
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm --filter @dacy/shared test
+      - run: pnpm --filter @dacy/api prisma:generate
+      - run: pnpm --filter @dacy/api test:e2e
+      - run: pnpm --filter @dacy/web build

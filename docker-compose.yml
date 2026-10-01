@@ -1,0 +1,62 @@
+# DaCy Academy
+#   docker compose up -d            → yalnız PostgreSQL (sonra `pnpm dev`)
+#   docker compose --profile full up --build → db + api (4000) + web (3000)
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: dacy-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: dacy
+      POSTGRES_PASSWORD: dacy
+      POSTGRES_DB: dacy
+    ports:
+      - '${DB_PORT:-5432}:5432'
+    volumes:
+      - dacy_pgdata:/var/lib/postgresql/data
+      - ./infra/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U dacy -d dacy']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  api:
+    profiles: ['full']
+    build:
+      context: .
+      dockerfile: infra/docker/api.Dockerfile
+    container_name: dacy-api
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://dacy:dacy@db:5432/dacy
+      API_PORT: 4000
+      WEB_ORIGIN: http://localhost:${WEB_PORT:-3000}
+      STORAGE_DIR: /data/storage
+    volumes:
+      - dacy_storage:/data/storage
+    ports:
+      - '${API_PORT:-4000}:4000'
+
+  web:
+    profiles: ['full']
+    build:
+      context: .
+      dockerfile: infra/docker/web.Dockerfile
+    container_name: dacy-web
+    depends_on:
+      - api
+    env_file: .env
+    environment:
+      API_INTERNAL_URL: http://api:4000
+      NEXT_PUBLIC_APP_URL: http://localhost:${WEB_PORT:-3000}
+      PORT: 3000
+    ports:
+      - '${WEB_PORT:-3000}:3000'
+
+volumes:
+  dacy_pgdata:
+  dacy_storage:

@@ -1,0 +1,31 @@
+{
+  "name": "dacy-academy",
+  "private": true,
+  "version": "0.1.0",
+  "description": "DaCy Academy — onlayn təlim platforması (monorepo)",
+  "packageManager": "pnpm@10.28.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "dev:raw": "turbo run dev",
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "e2e": "pnpm --filter @dacy/web e2e",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "db:migrate": "pnpm --filter @dacy/api prisma:migrate",
+    "db:deploy": "pnpm --filter @dacy/api prisma:deploy",
+    "db:seed": "pnpm --filter @dacy/api prisma:seed",
+    "db:reset": "pnpm --filter @dacy/api prisma:reset",
+    "db:studio": "pnpm --filter @dacy/api prisma:studio",
+    "screenshots": "node scripts/screenshots.mjs",
+    "format": "prettier --write ."
+  },
+  "devDependencies": {
+    "prettier": "^3.6.2",
+    "turbo": "^2.11.6",
+    "typescript": "^5.9.3"
+  }
+}

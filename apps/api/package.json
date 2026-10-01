@@ -1,0 +1,57 @@
+{
+  "name": "@dacy/api",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "prisma generate && nest build",
+    "dev": "nest start --watch",
+    "start": "node dist/main.js",
+    "lint": "tsc --noEmit -p tsconfig.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "node scripts/with-env.mjs jest --config jest.config.cjs",
+    "test:e2e": "node scripts/with-env.mjs jest --config jest-e2e.config.cjs --runInBand",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "node scripts/with-env.mjs prisma migrate dev",
+    "prisma:deploy": "node scripts/with-env.mjs prisma migrate deploy",
+    "prisma:seed": "node scripts/with-env.mjs tsx prisma/seed.ts",
+    "prisma:reset": "node scripts/with-env.mjs prisma migrate reset --force",
+    "prisma:studio": "node scripts/with-env.mjs prisma studio",
+    "recompute-progress": "node scripts/with-env.mjs tsx src/scripts/recompute-progress.ts"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
+  "dependencies": {
+    "@dacy/shared": "workspace:*",
+    "@nestjs/common": "^10.4.22",
+    "@nestjs/core": "^10.4.22",
+    "@nestjs/jwt": "^10.2.0",
+    "@nestjs/platform-express": "^10.4.22",
+    "@nestjs/throttler": "^6.4.0",
+    "@node-rs/argon2": "^2.0.2",
+    "@prisma/client": "^6.19.3",
+    "cookie-parser": "^1.4.7",
+    "helmet": "^8.1.0",
+    "multer": "^2.0.2",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.2",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@nestjs/cli": "^10.4.9",
+    "@nestjs/schematics": "^10.2.3",
+    "@nestjs/testing": "^10.4.22",
+    "@types/cookie-parser": "^1.4.9",
+    "@types/express": "^5.0.3",
+    "@types/jest": "^30.0.0",
+    "@types/multer": "^2.0.0",
+    "@types/node": "^22.19.0",
+    "@types/supertest": "^6.0.3",
+    "jest": "^30.2.0",
+    "prisma": "^6.19.3",
+    "supertest": "^7.1.4",
+    "ts-jest": "^29.4.4",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3"
+  }
+}

@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>DaCy Academy — Dizayn referansı</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#13233F; --navy-2:#0E1B30; --navy-3:#1B2F52; --navy-line:#2A3F66;
+  --paper:#F5F7FB; --card:#FFFFFF; --ink:#13233F; --muted:#5E6A82; --line:#DDE3EE;
+  --brand:#2BD4A4; --brand-ink:#0B3D30;
+  --da:#6C7CF0; --de:#F0A93E; --cy:#F06A8D; --ok:#2BD4A4; --err:#FF6B6B;
+  --on-dark:#E6ECF7; --on-dark-muted:#93A1BC;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){ --paper:#0B1628; --card:#13233F; --ink:#E6ECF7; --muted:#93A1BC; --line:#2A3F66; }
+}
+:root[data-theme="dark"]{ --paper:#0B1628; --card:#13233F; --ink:#E6ECF7; --muted:#93A1BC; --line:#2A3F66; }
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:calc(64px + env(safe-area-inset-top,0px))}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:15px;line-height:1.55}
+h1,h2,h3,h4{margin:0;line-height:1.15}
+p{margin:0}
+code,.mono{font-family:"JetBrains Mono",ui-monospace,Menlo,monospace}
+
+/* doc nav */
+.docnav{position:sticky;top:env(safe-area-inset-top,0px);z-index:10;background:var(--navy);color:var(--on-dark)}
+.docnav .in{max-width:1240px;margin:0 auto;display:flex;align-items:center;gap:20px;padding:12px 20px;overflow-x:auto}
+.logo{display:flex;align-items:center;gap:8px;font-weight:700;font-size:1.1rem;white-space:nowrap}
+.logo i{width:26px;height:26px;border-radius:7px;background:var(--brand);display:grid;place-items:center;color:var(--brand-ink);font-style:normal;font-size:.8rem;font-weight:700}
+.docnav a{color:var(--on-dark-muted);text-decoration:none;font-size:.9rem;white-space:nowrap}
+.docnav a:hover,.docnav a:focus-visible{color:var(--brand)}
+main{max-width:1240px;margin:0 auto;padding:36px 20px 80px}
+.intro h1{font-size:clamp(2rem,4.5vw,3rem);font-weight:700;max-width:22ch}
+.intro p{margin-top:12px;max-width:64ch;color:var(--muted);font-size:1.05rem}
+.sec{margin-top:64px}
+.sec>h2{font-size:1.7rem}
+.sec>.note{color:var(--muted);margin:6px 0 20px;max-width:70ch}
+
+/* tokens */
+.tokens{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.sw{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.sw div{height:64px}
+.sw p{padding:8px 12px;font-size:.85rem}
+.sw p span{display:block;color:var(--muted);font-family:"JetBrains Mono",monospace;font-size:.78rem}
+.comp{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:18px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px}
+.b{display:inline-flex;align-items:center;gap:6px;border:0;border-radius:8px;padding:9px 16px;font:600 .9rem "IBM Plex Sans",sans-serif;cursor:pointer}
+.b-brand{background:var(--brand);color:var(--brand-ink)}
+.b-dark{background:var(--navy);color:var(--on-dark)}
+.b-ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.badge{display:inline-block;padding:3px 10px;border-radius:999px;font-size:.78rem;font-weight:600}
+.bd-da{background:color-mix(in srgb,var(--da) 18%,transparent);color:var(--da)}
+.bd-de{background:color-mix(in srgb,var(--de) 20%,transparent);color:#B87610}
+.bd-cy{background:color-mix(in srgb,var(--cy) 18%,transparent);color:#D2446A}
+.xp{font-weight:700;color:var(--brand-ink);background:var(--brand);padding:3px 10px;border-radius:999px;font-size:.8rem}
+
+/* browser frame */
+.frame{border-radius:14px;overflow:hidden;border:1px solid var(--line);background:var(--card);box-shadow:0 18px 40px -24px rgba(19,35,63,.45)}
+.fbar{display:flex;align-items:center;gap:6px;padding:9px 14px;background:#E9EDF5;border-bottom:1px solid var(--line);font-size:.8rem;color:#5E6A82}
+.fbar i{width:10px;height:10px;border-radius:50%;background:#C9D1E0;display:inline-block}
+.fbar span{margin-left:12px;background:#fff;padding:2px 12px;border-radius:6px}
+
+/* app header (light pages) */
+.apph{display:flex;align-items:center;gap:22px;padding:12px 22px;background:var(--navy);color:var(--on-dark)}
+.apph nav{display:flex;gap:18px;font-size:.9rem;color:var(--on-dark-muted)}
+.apph nav b{color:var(--on-dark)}
+.apph .sp{flex:1}
+.apph .search{background:var(--navy-3);border-radius:8px;padding:6px 12px;font-size:.85rem;color:var(--on-dark-muted);min-width:180px}
+.avatar{width:30px;height:30px;border-radius:50%;background:var(--da);display:grid;place-items:center;font-weight:700;font-size:.8rem;color:#fff}
+
+/* catalog */
+.cat{padding:24px 22px 28px;background:var(--paper)}
+.cat-hero{background:var(--navy);color:var(--on-dark);border-radius:14px;padding:26px 28px;display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;align-items:center}
+.cat-hero h3{font-size:1.6rem}
+.cat-hero p{color:var(--on-dark-muted);margin-top:6px}
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin:20px 0 16px}
+.chip{padding:7px 14px;border-radius:999px;border:1px solid var(--line);background:var(--card);font-size:.88rem}
+.chip.on{background:var(--navy);color:var(--on-dark);border-color:var(--navy)}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px}
+.cc{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column}
+.cc .top{height:92px;background:var(--c);position:relative;overflow:hidden}
+.cc .top svg{position:absolute;right:-10px;bottom:-14px;opacity:.35}
+.cc .bd{padding:14px 16px 16px;display:flex;flex-direction:column;gap:8px;flex:1}
+.cc h4{font-size:1.05rem}
+.cc .meta{font-size:.82rem;color:var(--muted);display:flex;gap:12px;flex-wrap:wrap}
+.cc .foot{margin-top:auto;display:flex;justify-content:space-between;align-items:center;padding-top:8px;border-top:1px solid var(--line);font-size:.82rem;color:var(--muted)}
+
+/* course page */
+.course{display:grid;grid-template-columns:1fr 320px;gap:22px;padding:24px 22px;background:var(--paper)}
+.chead{grid-column:1/-1;background:var(--navy);color:var(--on-dark);border-radius:14px;padding:26px 28px;border-left:6px solid var(--da)}
+.chead h3{font-size:1.7rem;margin:8px 0}
+.chead p{color:var(--on-dark-muted);max-width:60ch}
+.mod{background:var(--card);border:1px solid var(--line);border-radius:14px;margin-bottom:14px;overflow:hidden}
+.mod-h{display:flex;align-items:center;gap:14px;padding:16px 18px}
+.mod-n{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-weight:700;background:var(--paper);border:2px solid var(--line);flex:none}
+.mod.done .mod-n{background:var(--ok);border-color:var(--ok);color:var(--brand-ink)}
+.mod.act .mod-n{border-color:var(--da);color:var(--da)}
+.mod-h h4{font-size:1.05rem}
+.mod-h small{color:var(--muted)}
+.steps{list-style:none;margin:0;padding:0 18px 14px 66px}
+.steps li{display:flex;align-items:center;gap:10px;padding:7px 0;font-size:.9rem;border-top:1px dashed var(--line)}
+.ic{width:22px;height:22px;border-radius:6px;display:grid;place-items:center;font-size:.7rem;font-weight:700;flex:none}
+.ic.t{background:#E8ECF7;color:#5E6A82}.ic.q{background:#FFF1D9;color:#B87610}.ic.c{background:#E3E7FD;color:#4B5BD0}.ic.f{background:#FDE3EA;color:#C83A60}
+.steps li .st{margin-left:auto;font-size:.8rem;color:var(--muted)}
+.steps li.ok .st{color:#159B74;font-weight:600}
+.steps li.lock{opacity:.5}
+.side{display:flex;flex-direction:column;gap:14px}
+.box{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px}
+.ring{display:flex;align-items:center;gap:16px}
+.bigp{font-size:2rem;font-weight:700}
+
+/* WORKSPACE */
+.ws{background:var(--navy-2);color:var(--on-dark);font-size:14px}
+.ws-top{display:flex;align-items:center;gap:16px;padding:10px 16px;background:var(--navy);border-bottom:1px solid var(--navy-line)}
+.ws-top .crumb{font-size:.85rem;color:var(--on-dark-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ws-top .crumb b{color:var(--on-dark)}
+.pbar{flex:1;max-width:340px;height:6px;border-radius:3px;background:var(--navy-3);overflow:hidden;margin-left:auto}
+.pbar i{display:block;height:100%;width:42%;background:var(--brand)}
+.ws-tabs{display:flex;gap:4px;padding:8px 16px 0;background:var(--navy);border-bottom:1px solid var(--navy-line);overflow-x:auto}
+.ws-tabs button{background:transparent;border:0;color:var(--on-dark-muted);font:500 .85rem "IBM Plex Sans",sans-serif;padding:8px 14px;border-radius:8px 8px 0 0;cursor:pointer;white-space:nowrap}
+.ws-tabs button[aria-selected="true"]{background:var(--navy-2);color:var(--on-dark)}
+.ws-tabs button:focus-visible{outline:2px solid var(--brand);outline-offset:-2px}
+.split{display:grid;grid-template-columns:minmax(300px,40%) 6px 1fr;height:560px}
+.left{overflow:auto;padding:22px 24px;background:var(--navy)}
+.left .kicker{display:flex;gap:8px;align-items:center;margin-bottom:12px}
+.left h3{font-size:1.35rem;margin-bottom:12px}
+.left p{color:#C6D0E3;margin-bottom:12px}
+.left h4{font-size:.95rem;margin:18px 0 8px;color:var(--on-dark)}
+.task{background:var(--navy-3);border-radius:10px;padding:14px 16px;border-left:3px solid var(--brand)}
+.task ol{margin:0;padding-left:18px;color:#D6DEEC}
+.task li{margin:4px 0}
+.task li.done{color:var(--on-dark-muted);text-decoration:line-through}
+.left code{background:var(--navy-2);padding:1px 6px;border-radius:4px;font-size:.85em;color:#9EE6CF}
+.hintb{margin-top:14px;width:100%;justify-content:center;background:transparent;border:1px dashed var(--navy-line);color:var(--on-dark-muted)}
+.gutter{background:var(--navy-line);cursor:col-resize;position:relative}
+.gutter::after{content:"";position:absolute;inset:50% auto auto 50%;width:2px;height:28px;transform:translate(-50%,-50%);border-left:2px dotted var(--on-dark-muted)}
+.right{display:grid;grid-template-rows:auto 1fr 190px auto;min-width:0}
+.ftabs{display:flex;background:var(--navy);border-bottom:1px solid var(--navy-line)}
+.ftabs span{padding:9px 16px;font-size:.82rem;color:var(--on-dark-muted);border-right:1px solid var(--navy-line)}
+.ftabs span.on{color:var(--on-dark);background:var(--navy-2);box-shadow:inset 0 2px 0 var(--brand)}
+.editor{margin:0;padding:14px 0;overflow:auto;font-family:"JetBrains Mono",monospace;font-size:13.5px;line-height:1.7;counter-reset:ln}
+.editor div{padding:0 16px 0 0;white-space:pre}
+.editor div::before{counter-increment:ln;content:counter(ln);display:inline-block;width:42px;padding-right:14px;text-align:right;color:#4D5F82}
+.k{color:#8FB4FF}.s{color:#F2C46D}.c{color:#6B7A99;font-style:italic}.n{color:#F79BB5}.f{color:#9EE6CF}
+.console{border-top:1px solid var(--navy-line);background:#0A1424;overflow:auto;font-family:"JetBrains Mono",monospace;font-size:13px}
+.console .ch{display:flex;gap:16px;padding:7px 14px;border-bottom:1px solid var(--navy-line);font-family:"IBM Plex Sans",sans-serif;font-size:.8rem;color:var(--on-dark-muted)}
+.console .ch b{color:var(--on-dark)}
+.console pre{margin:0;padding:10px 14px;white-space:pre-wrap;color:#C6D0E3}
+.tbl{border-collapse:collapse;margin:10px 14px;font-size:12.5px}
+.tbl th,.tbl td{padding:5px 14px;border:1px solid var(--navy-line);text-align:left}
+.tbl th{color:var(--on-dark-muted);font-weight:500}
+.actions{display:flex;align-items:center;gap:10px;padding:10px 16px;background:var(--navy);border-top:1px solid var(--navy-line)}
+.actions .sp{flex:1}
+.actions .res{font-size:.85rem;color:var(--ok);font-weight:600}
+.b-run{background:var(--navy-3);color:var(--on-dark)}
+.prompt{color:var(--brand)}
+.flag{display:flex;flex-direction:column;gap:12px;padding:18px}
+.fq{background:var(--navy);border:1px solid var(--navy-line);border-radius:10px;padding:14px}
+.fq p{margin-bottom:10px;color:#D6DEEC}
+.fq .row{display:flex;gap:8px}
+.fq input{flex:1;background:var(--navy-2);border:1px solid var(--navy-line);border-radius:8px;color:var(--on-dark);padding:8px 10px;font:13px "JetBrains Mono",monospace}
+.fq.ok{border-color:var(--ok)}
+.fq.ok input{border-color:var(--ok)}
+.fq .okm{color:var(--ok);font-size:.82rem;margin-top:6px}
+.panel[hidden]{display:none}
+
+/* dashboard */
+.dash{display:grid;grid-template-columns:1fr 300px;gap:20px;padding:24px 22px;background:var(--paper)}
+.cont{background:var(--navy);color:var(--on-dark);border-radius:14px;padding:22px 24px;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+.cont small{color:var(--on-dark-muted)}
+.cont h3{font-size:1.3rem;margin:4px 0}
+.plist{margin-top:16px;display:flex;flex-direction:column;gap:12px}
+.pi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:grid;grid-template-columns:1fr auto;gap:6px 14px;align-items:center}
+.pi .bar{grid-column:1/-1;height:8px;border-radius:4px;background:var(--line);overflow:hidden}
+.pi .bar i{display:block;height:100%;background:var(--c)}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px}
+.stat b{font-size:1.6rem;display:block;line-height:1.1}
+.stat span{font-size:.82rem;color:var(--muted)}
+.week{display:flex;gap:6px;margin-top:10px}
+.week i{flex:1;height:30px;border-radius:6px;background:var(--line)}
+.week i.on{background:var(--brand)}
+
+/* admin */
+.admin{display:grid;grid-template-columns:260px 1fr;min-height:520px;background:var(--paper)}
+.tree{background:var(--card);border-right:1px solid var(--line);padding:16px;font-size:.88rem}
+.tree h4{font-size:.95rem;margin-bottom:10px}
+.tree ul{list-style:none;margin:0;padding:0}
+.tree li{padding:6px 8px;border-radius:7px;display:flex;align-items:center;gap:8px}
+.tree li.sub{padding-left:24px}
+.tree li.sub2{padding-left:40px}
+.tree li.sel{background:color-mix(in srgb,var(--da) 14%,transparent);font-weight:600}
+.tree .drag{color:var(--muted);cursor:grab}
+.edit{padding:22px 26px}
+.edit .row{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+.form{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.fld{display:flex;flex-direction:column;gap:5px;font-size:.85rem}
+.fld.full{grid-column:1/-1}
+.fld label{font-weight:600}
+.inp{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:9px 12px;min-height:38px;color:var(--ink)}
+.inp.code{font-family:"JetBrains Mono",monospace;font-size:12.5px;white-space:pre;min-height:80px;background:var(--navy-2);color:var(--on-dark);border-color:var(--navy-line)}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.seg span{padding:6px 12px;border-radius:8px;border:1px solid var(--line);font-size:.82rem;background:var(--card)}
+.seg span.on{background:var(--navy);color:var(--on-dark);border-color:var(--navy)}
+.drop{border:2px dashed var(--line);border-radius:12px;padding:18px;text-align:center;color:var(--muted);background:var(--card)}
+
+
+/* learning path */
+.lp{display:grid;grid-template-columns:1fr 300px;gap:22px;padding:24px 22px;background:var(--paper)}
+.lp-head{grid-column:1/-1;background:var(--navy);color:var(--on-dark);border-radius:14px;padding:28px;display:grid;grid-template-columns:1fr auto;gap:20px;align-items:center;border-left:6px solid var(--da)}
+.lp-head h3{font-size:1.9rem;margin:8px 0}
+.lp-head p{color:var(--on-dark-muted);max-width:58ch}
+.lp-facts{display:flex;gap:22px;margin-top:14px;flex-wrap:wrap}
+.lp-facts b{display:block;font-size:1.3rem}
+.lp-facts span{font-size:.8rem;color:var(--on-dark-muted)}
+.road2{position:relative;list-style:none;margin:0;padding:0 0 0 0}
+.road2::before{content:"";position:absolute;left:27px;top:20px;bottom:20px;width:4px;border-radius:2px;background:linear-gradient(var(--ok) 0 38%,var(--da) 38% 52%,var(--line) 52%)}
+.node{position:relative;display:grid;grid-template-columns:58px 1fr;gap:14px;margin-bottom:14px}
+.dot{width:58px;height:58px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:1.05rem;background:var(--card);border:4px solid var(--line);color:var(--muted);z-index:1}
+.node.done .dot{background:var(--ok);border-color:var(--ok);color:var(--brand-ink)}
+.node.cur .dot{border-color:var(--da);color:var(--da);box-shadow:0 0 0 6px color-mix(in srgb,var(--da) 20%,transparent)}
+.node.ms .dot{border-radius:14px;transform:rotate(45deg)}
+.node.ms .dot span{transform:rotate(-45deg)}
+.ncard{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 18px}
+.node.cur .ncard{border:2px solid var(--da)}
+.node.lock .ncard{opacity:.62}
+.ntop{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px}
+.ntype{font-size:.75rem;font-weight:600;padding:2px 9px;border-radius:999px;background:var(--paper);color:var(--muted);border:1px solid var(--line)}
+.ncard h4{font-size:1.08rem}
+.ncard .meta{font-size:.82rem;color:var(--muted);margin-top:4px}
+.nbar{height:6px;border-radius:3px;background:var(--line);margin-top:10px;overflow:hidden}
+.nbar i{display:block;height:100%;background:var(--da)}
+.here{position:absolute;left:-6px;top:-10px;background:var(--da);color:#fff;font-size:.7rem;font-weight:700;padding:2px 8px;border-radius:999px;z-index:2}
+.opt{margin-left:72px;margin-bottom:14px;display:flex;gap:10px;flex-wrap:wrap}
+.opt span{font-size:.82rem;border:1px dashed var(--line);border-radius:10px;padding:8px 12px;background:var(--card);color:var(--muted)}
+.skills{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.skills span{font-size:.8rem;padding:4px 10px;border-radius:999px;background:var(--paper);border:1px solid var(--line)}
+.paths{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.paths div{display:flex;justify-content:space-between;font-size:.88rem;padding:8px 10px;border-radius:8px;border:1px solid var(--line)}
+@media (max-width:900px){.lp,.lp-head{grid-template-columns:1fr}}
+
+/* toast */
+.toast{display:flex;align-items:center;gap:14px;background:var(--navy);color:var(--on-dark);border-radius:12px;padding:14px 18px;max-width:420px;border-left:4px solid var(--ok)}
+.toast .big{font-size:1.6rem}
+
+@media (max-width:900px){
+  .split{grid-template-columns:1fr;height:auto}
+  .gutter{display:none}
+  .left{max-height:none}
+  .right{grid-template-rows:auto 320px 200px auto}
+  .course,.dash,.admin{grid-template-columns:1fr}
+  .tree{border-right:0;border-bottom:1px solid var(--line)}
+  .form{grid-template-columns:1fr}
+  .apph nav,.apph .search{display:none}
+}
+@media (prefers-reduced-motion:no-preference){
+  .toast{animation:pop .5s ease-out both}
+  @keyframes pop{from{transform:translateY(8px);opacity:0}to{transform:none;opacity:1}}
+}
+</style>
+</head>
+<body>
+
+<div class="docnav"><div class="in">
+  <div class="logo"><i>Dc</i>DaCy Academy</div>
+  <a href="#tokens">Rənglər və komponentlər</a>
+  <a href="#catalog">Kataloq</a>
+  <a href="#path">Learning Path</a>
+  <a href="#course">Kurs səhifəsi</a>
+  <a href="#workspace">Dərs ekranı</a>
+  <a href="#dashboard">Şəxsi panel</a>
+  <a href="#admin">Admin redaktoru</a>
+</div></div>
+
+<main>
+  <div class="intro">
+    <h1>Dizayn referansı: DataCamp tipli, müasir və təmiz</h1>
+    <p>Bu fayl Claude Code üçün vizual nümunədir. UX quruluşu DataCamp-dan götürülüb (kataloq, kurs xəritəsi, solda dərs / sağda redaktor). Rənglər, loqo və brend isə DaCy-nin özünəməxsusdur. Dərs ekranında tablara klikləyərək dörd tapşırıq tipini görə bilərsiniz.</p>
+  </div>
+
+  <!-- TOKENS -->
+  <section class="sec" id="tokens">
+    <h2>Rənglər və komponentlər</h2>
+    <p class="note">Tünd göy (navy) əsas fon, mint-yaşıl brend rəngi. Hər istiqamətin öz rəngi var və hər yerdə ardıcıl istifadə olunur.</p>
+    <div class="tokens">
+      <div class="sw"><div style="background:#13233F"></div><p>Navy<span>#13233F</span></p></div>
+      <div class="sw"><div style="background:#0E1B30"></div><p>Workspace<span>#0E1B30</span></p></div>
+      <div class="sw"><div style="background:#2BD4A4"></div><p>Brend / uğur<span>#2BD4A4</span></p></div>
+      <div class="sw"><div style="background:#6C7CF0"></div><p>Data Analytics<span>#6C7CF0</span></p></div>
+      <div class="sw"><div style="background:#F0A93E"></div><p>Data Engineering<span>#F0A93E</span></p></div>
+      <div class="sw"><div style="background:#F06A8D"></div><p>Cyber Security<span>#F06A8D</span></p></div>
+      <div class="sw"><div style="background:#F5F7FB"></div><p>Səhifə fonu<span>#F5F7FB</span></p></div>
+      <div class="sw"><div style="background:#FF6B6B"></div><p>Xəta<span>#FF6B6B</span></p></div>
+    </div>
+    <div class="comp">
+      <button class="b b-brand" type="button">Kursa başla</button>
+      <button class="b b-dark" type="button">Davam et</button>
+      <button class="b b-ghost" type="button">Önizləmə</button>
+      <span class="badge bd-da">Data Analytics</span>
+      <span class="badge bd-de">Data Engineering</span>
+      <span class="badge bd-cy">Cyber Security</span>
+      <span class="xp">+50 XP</span>
+      <div class="toast" role="status"><span class="big">🎉</span><div><b>Düzgündür!</b><br><small style="color:var(--on-dark-muted)">+50 XP qazandınız · Növbəti tapşırığa keçin</small></div></div>
+    </div>
+  </section>
+
+  <!-- CATALOG -->
+  <section class="sec" id="catalog">
+    <h2>Kurs kataloqu</h2>
+    <p class="note">Açıq fonlu, kart əsaslı. Hər kartın üst hissəsi istiqamət rəngindədir.</p>
+    <div class="frame">
+      <div class="fbar"><i></i><i></i><i></i><span>dacy.az/kurslar</span></div>
+      <div class="apph"><div class="logo"><i>Dc</i>DaCy</div><nav><b>Kurslar</b><span>Panelim</span><span>Sertifikatlar</span></nav><div class="sp"></div><div class="search">Kurs axtar…</div><div class="avatar">OR</div></div>
+      <div class="cat">
+        <div class="cat-hero"><div><h3>Nə öyrənmək istəyirsiniz?</h3><p>Praktiki tapşırıqlarla, öz tempinizlə, Azərbaycan dilində.</p></div><button class="b b-brand" type="button">Səviyyəmi müəyyən et</button></div>
+        <div class="filters"><span class="chip on">Hamısı</span><span class="chip">Data Analytics</span><span class="chip">Data Engineering</span><span class="chip">Cyber Security</span><span class="chip">Başlanğıc</span><span class="chip">Orta</span></div>
+        <div class="cards">
+          <article class="cc" style="--c:var(--da)"><div class="top"><svg width="120" height="110" viewBox="0 0 120 110"><rect x="10" y="60" width="18" height="40" fill="#fff"/><rect x="38" y="40" width="18" height="60" fill="#fff"/><rect x="66" y="20" width="18" height="80" fill="#fff"/><rect x="94" y="50" width="18" height="50" fill="#fff"/></svg></div><div class="bd"><span class="badge bd-da" style="align-self:flex-start">Data Analytics</span><h4>SQL ilə data analizi</h4><div class="meta"><span>Başlanğıc</span><span>4 fəsil</span><span>38 tapşırıq</span></div><div class="foot"><span>~6 saat</span><button class="b b-brand" type="button" style="padding:6px 12px">Başla</button></div></div></article>
+          <article class="cc" style="--c:var(--da)"><div class="top"><svg width="120" height="110" viewBox="0 0 120 110"><polyline points="5,90 35,60 60,72 90,30 115,40" fill="none" stroke="#fff" stroke-width="8"/></svg></div><div class="bd"><span class="badge bd-da" style="align-self:flex-start">Data Analytics</span><h4>Python və pandas</h4><div class="meta"><span>Başlanğıc</span><span>5 fəsil</span><span>44 tapşırıq</span></div><div class="foot"><span>~8 saat</span><button class="b b-brand" type="button" style="padding:6px 12px">Başla</button></div></div></article>
+          <article class="cc" style="--c:var(--de)"><div class="top"><svg width="120" height="110" viewBox="0 0 120 110"><circle cx="20" cy="55" r="14" fill="#fff"/><circle cx="60" cy="55" r="14" fill="#fff"/><circle cx="100" cy="55" r="14" fill="#fff"/><path d="M34 55h12M74 55h12" stroke="#fff" stroke-width="6"/></svg></div><div class="bd"><span class="badge bd-de" style="align-self:flex-start">Data Engineering</span><h4>Python ilə ETL pipeline</h4><div class="meta"><span>Orta</span><span>5 fəsil</span><span>12 lab</span></div><div class="foot"><span>~10 saat</span><button class="b b-brand" type="button" style="padding:6px 12px">Başla</button></div></div></article>
+          <article class="cc" style="--c:var(--cy)"><div class="top"><svg width="120" height="110" viewBox="0 0 120 110"><path d="M60 10 L100 26 V58 C100 82 82 98 60 106 C38 98 20 82 20 58 V26 Z" fill="#fff"/></svg></div><div class="bd"><span class="badge bd-cy" style="align-self:flex-start">Cyber Security</span><h4>SOC analitikinə giriş</h4><div class="meta"><span>Başlanğıc</span><span>6 otaq</span><span>24 flag</span></div><div class="foot"><span>~9 saat</span><button class="b b-brand" type="button" style="padding:6px 12px">Başla</button></div></div></article>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- LEARNING PATH -->
+  <section class="sec" id="path">
+    <h2>Learning Path — tələbənin yol xəritəsi</h2>
+    <p class="note">Bir neçə kursu, layihəni və imtahanı müəllimin qoyduğu ardıcıllıqla birləşdirən karyera yolu. Tələbə girən kimi harada olduğunu, nə qədər qaldığını və sonda nə alacağını görür.</p>
+    <div class="frame">
+      <div class="fbar"><i></i><i></i><i></i><span>dacy.az/yol/data-analyst</span></div>
+      <div class="apph"><div class="logo"><i>Dc</i>DaCy</div><nav><span>Kurslar</span><b>Yollar</b><span>Panelim</span></nav><div class="sp"></div><div class="avatar">OR</div></div>
+      <div class="lp">
+        <div class="lp-head">
+          <div>
+            <span class="badge bd-da">Data Analytics · Karyera yolu</span>
+            <h3>Data Analyst ol</h3>
+            <p>Sıfırdan junior data analitik səviyyəsinə: SQL, Python, statistika, Power BI və real layihələr.</p>
+            <div class="lp-facts"><div><b>6</b><span>kurs</span></div><div><b>2</b><span>layihə</span></div><div><b>~72 saat</b><span>ümumi müddət</span></div><div><b>38%</b><span>tamamlanıb</span></div></div>
+          </div>
+          <button class="b b-brand" type="button">Davam et</button>
+        </div>
+
+        <div>
+          <ol class="road2">
+            <li class="node done"><div class="dot">✓</div><div class="ncard"><div class="ntop"><span class="ntype">Kurs</span><span class="ntype">Başlanğıc</span></div><h4>Excel və data savadlılığı</h4><div class="meta">8 saat · tamamlandı</div></div></li>
+            <li class="node done"><div class="dot">✓</div><div class="ncard"><div class="ntop"><span class="ntype">Kurs</span><span class="ntype">Başlanğıc</span></div><h4>SQL ilə data analizi</h4><div class="meta">12 saat · tamamlandı</div></div></li>
+            <li class="node done ms"><div class="dot"><span>★</span></div><div class="ncard"><div class="ntop"><span class="ntype">Mərhələ imtahanı</span></div><h4>SQL bacarıq yoxlaması</h4><div class="meta">Nəticə: 86% · keçdi</div></div></li>
+            <li class="node cur"><span class="here">Siz buradasınız</span><div class="dot">4</div><div class="ncard"><div class="ntop"><span class="ntype">Kurs</span><span class="ntype">Başlanğıc</span></div><h4>Python və pandas</h4><div class="meta">14 saat · 18 / 44 tapşırıq</div><div class="nbar"><i style="width:41%"></i></div></div></li>
+            <li class="node lock"><div class="dot">5</div><div class="ncard"><div class="ntop"><span class="ntype">Layihə</span></div><h4>Bakı e-ticarət datasının analizi</h4><div class="meta">6 saat · əvvəlki addımdan sonra açılır</div></div></li>
+            <li class="node lock"><div class="dot">6</div><div class="ncard"><div class="ntop"><span class="ntype">Kurs</span><span class="ntype">Orta</span></div><h4>Statistika və A/B test</h4><div class="meta">10 saat</div></div></li>
+            <li class="opt" aria-label="Seçmə kurslar"><span>Seçmə: Excel Power Query</span><span>Seçmə: Google Sheets</span></li>
+            <li class="node lock"><div class="dot">7</div><div class="ncard"><div class="ntop"><span class="ntype">Kurs</span><span class="ntype">Orta</span></div><h4>Power BI ilə dashboard</h4><div class="meta">12 saat</div></div></li>
+            <li class="node lock ms"><div class="dot"><span>🏆</span></div><div class="ncard"><div class="ntop"><span class="ntype">Final layihə + sertifikat</span></div><h4>Portfolio layihəsi və "Data Analyst" sertifikatı</h4><div class="meta">10 saat · bütün addımlar bitəndən sonra</div></div></li>
+          </ol>
+        </div>
+
+        <aside class="side">
+          <div class="box"><b>Bu yolda qazanacağınız bacarıqlar</b><div class="skills"><span>SQL</span><span>Python</span><span>pandas</span><span>Statistika</span><span>A/B test</span><span>Power BI</span><span>Data vizualizasiya</span></div></div>
+          <div class="box"><b>Kimlər üçündür</b><p style="color:var(--muted);font-size:.9rem;margin-top:6px">Proqramlaşdırma təcrübəsi olmayan, data analitik kimi işə başlamaq istəyənlər.</p></div>
+          <div class="box"><b>Digər yollar</b><div class="paths"><div><span>Data Engineer ol</span><span class="badge bd-de">DE</span></div><div><span>SOC Analyst ol</span><span class="badge bd-cy">Cyber</span></div></div></div>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <!-- COURSE -->
+  <section class="sec" id="course">
+    <h2>Kurs səhifəsi</h2>
+    <p class="note">Modullar müəllimin qoyduğu sıra ilə. Tamamlanan yaşıl, aktiv vurğulanmış, növbətilər kilidli.</p>
+    <div class="frame">
+      <div class="fbar"><i></i><i></i><i></i><span>dacy.az/kurs/sql-ile-analiz</span></div>
+      <div class="apph"><div class="logo"><i>Dc</i>DaCy</div><nav><b>Kurslar</b><span>Panelim</span><span>Sertifikatlar</span></nav><div class="sp"></div><div class="avatar">OR</div></div>
+      <div class="course">
+        <div class="chead"><span class="badge bd-da">Data Analytics</span><h3>SQL ilə data analizi</h3><p>Real datasetlər üzərində sorğu yazmağı, qruplaşdırmanı və cədvəlləri birləşdirməyi öyrənin.</p></div>
+        <div>
+          <div class="mod done"><div class="mod-h"><span class="mod-n">✓</span><div><h4>SQL-ə giriş</h4><small>8 addım · tamamlandı</small></div></div></div>
+          <div class="mod act"><div class="mod-h"><span class="mod-n">2</span><div><h4>Qruplaşdırma və aqreqasiya</h4><small>12 addım · 5 / 12</small></div></div>
+            <ul class="steps">
+              <li class="ok"><span class="ic t">T</span>GROUP BY nədir?<span class="st">✓ 10 XP</span></li>
+              <li class="ok"><span class="ic c">{}</span>Şəhərlər üzrə satış<span class="st">✓ 50 XP</span></li>
+              <li class="ok"><span class="ic q">?</span>Yoxlama testi<span class="st">✓ 30 XP</span></li>
+              <li><span class="ic c">{}</span>Ən çox satış edən şəhərlər<span class="st">Davam et →</span></li>
+              <li class="lock"><span class="ic t">T</span>HAVING ilə filtr<span class="st">🔒</span></li>
+            </ul>
+          </div>
+          <div class="mod"><div class="mod-h"><span class="mod-n">3</span><div><h4>JOIN-lər</h4><small>10 addım · 🔒</small></div></div></div>
+        </div>
+        <aside class="side">
+          <div class="box"><div class="ring"><svg width="72" height="72" viewBox="0 0 36 36" aria-hidden="true"><circle cx="18" cy="18" r="15.5" fill="none" stroke="var(--line)" stroke-width="4"/><circle cx="18" cy="18" r="15.5" fill="none" stroke="#2BD4A4" stroke-width="4" stroke-dasharray="42 100" transform="rotate(-90 18 18)" stroke-linecap="round"/></svg><div><div class="bigp">42%</div><small class="muted" style="color:var(--muted)">13 / 30 addım</small></div></div><button class="b b-brand" type="button" style="width:100%;justify-content:center;margin-top:14px">Davam et</button></div>
+          <div class="box"><h4 style="margin-bottom:8px">Bu kursda</h4><p style="color:var(--muted);font-size:.9rem">4 fəsil · 38 tapşırıq · 2 dataset · Sertifikat</p></div>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <!-- WORKSPACE -->
+  <section class="sec" id="workspace">
+    <h2>Dərs ekranı — platformanın ürəyi</h2>
+    <p class="note">Solda nəzəri hissə və tapşırıq, sağda redaktor və ya terminal. Ortadakı xətt ilə panellərin eni dəyişdirilə bilir. Aşağıdakı tablarla dörd tipə baxın.</p>
+    <div class="frame">
+      <div class="fbar"><i></i><i></i><i></i><span>dacy.az/kurs/sql-ile-analiz/2/4</span></div>
+      <div class="ws">
+        <div class="ws-top">
+          <div class="logo" style="font-size:.95rem"><i>Dc</i></div>
+          <div class="crumb">Qruplaşdırma › <b>Ən çox satış edən şəhərlər</b></div>
+          <div class="pbar" aria-label="Kurs irəliləyişi 42%"><i></i></div>
+          <span class="xp">2 340 XP</span>
+        </div>
+        <div class="ws-tabs" role="tablist" aria-label="Tapşırıq tipləri">
+          <button role="tab" aria-selected="true" aria-controls="p-sql" id="t-sql">SQL tapşırığı</button>
+          <button role="tab" aria-selected="false" aria-controls="p-py" id="t-py">Python tapşırığı</button>
+          <button role="tab" aria-selected="false" aria-controls="p-term" id="t-term">Terminal lab (DE)</button>
+          <button role="tab" aria-selected="false" aria-controls="p-ctf" id="t-ctf">CTF otağı (Cyber)</button>
+        </div>
+
+        <!-- SQL -->
+        <div class="panel" id="p-sql" role="tabpanel" aria-labelledby="t-sql">
+          <div class="split">
+            <div class="left">
+              <div class="kicker"><span class="badge bd-da">Tapşırıq 4 / 12</span><span class="xp">+50 XP</span></div>
+              <h3>Ən çox satış edən şəhərlər</h3>
+              <p>Əvvəlki dərsdə <code>GROUP BY</code> ilə sətirləri qruplaşdırmağı öyrəndiniz. İndi bunu <code>SUM()</code> və <code>ORDER BY</code> ilə birləşdirək.</p>
+              <p><code>orders</code> cədvəlində hər sifarişin şəhəri (<code>city</code>) və məbləği (<code>amount</code>) var.</p>
+              <h4>Tapşırıq</h4>
+              <div class="task"><ol>
+                <li class="done">Nəticəni <code>city</code> üzrə qruplaşdırın</li>
+                <li class="done">Hər şəhər üçün <code>amount</code> cəmini <code>total</code> adı ilə hesablayın</li>
+                <li>Azalan sıra ilə ilk 5 şəhəri göstərin</li>
+              </ol></div>
+              <button class="b hintb" type="button">💡 İpucu göstər (−10 XP)</button>
+            </div>
+            <div class="gutter" aria-hidden="true"></div>
+            <div class="right">
+              <div class="ftabs"><span class="on">query.sql</span><span>orders (cədvəl)</span></div>
+              <div class="editor">
+<div><span class="c">-- Sorğunuzu bura yazın</span></div>
+<div><span class="k">SELECT</span> city, <span class="k">SUM</span>(amount) <span class="k">AS</span> total</div>
+<div><span class="k">FROM</span> orders</div>
+<div><span class="k">GROUP BY</span> city</div>
+<div><span class="k">ORDER BY</span> total <span class="k">DESC</span></div>
+<div><span class="k">LIMIT</span> <span class="n">5</span>;</div>
+              </div>
+              <div class="console">
+                <div class="ch"><b>Nəticə</b><span>Konsol</span><span style="margin-left:auto">5 sətir · 12 ms</span></div>
+                <table class="tbl"><tr><th>city</th><th>total</th></tr><tr><td>Bakı</td><td>184 520</td></tr><tr><td>Gəncə</td><td>41 300</td></tr><tr><td>Sumqayıt</td><td>36 870</td></tr><tr><td>Mingəçevir</td><td>12 940</td></tr><tr><td>Şəki</td><td>9 615</td></tr></table>
+              </div>
+              <div class="actions"><button class="b b-run" type="button">▶ İşə sal</button><span class="res">✓ Bütün yoxlamalar keçdi</span><span class="sp"></span><button class="b b-brand" type="button">Göndər və davam et</button></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PYTHON -->
+        <div class="panel" id="p-py" role="tabpanel" aria-labelledby="t-py" hidden>
+          <div class="split">
+            <div class="left">
+              <div class="kicker"><span class="badge bd-da">Tapşırıq 7 / 14</span><span class="xp">+50 XP</span></div>
+              <h3>Aylıq satış trendi</h3>
+              <p><code>sales.csv</code> faylını pandas ilə oxuyun və aylar üzrə ümumi satışı hesablayın.</p>
+              <h4>Tapşırıq</h4>
+              <div class="task"><ol>
+                <li class="done">Faylı <code>df</code> dəyişəninə oxuyun</li>
+                <li><code>date</code> sütununu tarixə çevirin</li>
+                <li>Aylar üzrə cəmi <code>monthly</code> dəyişəninə yazın</li>
+              </ol></div>
+              <button class="b hintb" type="button">💡 İpucu göstər (−10 XP)</button>
+            </div>
+            <div class="gutter" aria-hidden="true"></div>
+            <div class="right">
+              <div class="ftabs"><span class="on">script.py</span><span>sales.csv</span></div>
+              <div class="editor">
+<div><span class="k">import</span> pandas <span class="k">as</span> pd</div>
+<div></div>
+<div>df = pd.<span class="f">read_csv</span>(<span class="s">"sales.csv"</span>)</div>
+<div>df[<span class="s">"date"</span>] = pd.<span class="f">to_datetime</span>(df[<span class="s">"date"</span>])</div>
+<div>monthly = df.<span class="f">resample</span>(<span class="s">"M"</span>, on=<span class="s">"date"</span>)[<span class="s">"amount"</span>].<span class="f">sum</span>()</div>
+<div><span class="f">print</span>(monthly.<span class="f">head</span>())</div>
+              </div>
+              <div class="console">
+                <div class="ch"><span>Nəticə</span><b>Konsol</b><span>Qrafik</span></div>
+<pre>date
+2026-01-31    48 210
+2026-02-28    51 940
+2026-03-31    63 105
+2026-04-30    59 880
+2026-05-31    71 320</pre>
+              </div>
+              <div class="actions"><button class="b b-run" type="button">▶ İşə sal</button><span class="sp"></span><button class="b b-brand" type="button">Göndər və davam et</button></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TERMINAL -->
+        <div class="panel" id="p-term" role="tabpanel" aria-labelledby="t-term" hidden>
+          <div class="split">
+            <div class="left">
+              <div class="kicker"><span class="badge bd-de">Lab 3 / 12</span><span class="xp">+100 XP</span><span style="margin-left:auto;font-size:.82rem;color:var(--on-dark-muted)">⏱ 47:12 qalıb</span></div>
+              <h3>İlk ETL pipeline</h3>
+              <p>Konteynerdə <code>raw/orders.csv</code> faylı və boş PostgreSQL bazası var. Datanı təmizləyib bazaya yükləyin.</p>
+              <h4>Tapşırıq</h4>
+              <div class="task"><ol>
+                <li class="done"><code>etl.py</code> skriptini açın</li>
+                <li>Boş sətirləri silin, tarixi formatlayın</li>
+                <li><code>analytics.orders</code> cədvəlinə yükləyin</li>
+                <li><code>check</code> əmri ilə yoxlayın</li>
+              </ol></div>
+              <button class="b hintb" type="button">💡 İpucu göstər</button>
+            </div>
+            <div class="gutter" aria-hidden="true"></div>
+            <div class="right" style="grid-template-rows:auto 1fr auto">
+              <div class="ftabs"><span class="on">Terminal</span><span>etl.py</span><span>Fayllar</span></div>
+              <div class="editor" style="background:#0A1424;counter-reset:none">
+<div style="padding-left:16px"><span class="prompt">student@dacy-lab</span>:~$ ls raw/</div>
+<div style="padding-left:16px">orders.csv  customers.csv</div>
+<div style="padding-left:16px"><span class="prompt">student@dacy-lab</span>:~$ python etl.py</div>
+<div style="padding-left:16px">✓ 12 480 sətir oxundu, 312 boş sətir silindi</div>
+<div style="padding-left:16px">✓ analytics.orders cədvəlinə 12 168 sətir yükləndi</div>
+<div style="padding-left:16px"><span class="prompt">student@dacy-lab</span>:~$ check</div>
+<div style="padding-left:16px;color:var(--ok)">✓ Cədvəl mövcuddur  ✓ Sətir sayı düzgündür  ✓ Tarix formatı düzgündür</div>
+<div style="padding-left:16px"><span class="prompt">student@dacy-lab</span>:~$ █</div>
+              </div>
+              <div class="actions"><button class="b b-run" type="button">↻ Lab-ı sıfırla</button><span class="res">Lab keçildi</span><span class="sp"></span><button class="b b-brand" type="button">Davam et</button></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CTF -->
+        <div class="panel" id="p-ctf" role="tabpanel" aria-labelledby="t-ctf" hidden>
+          <div class="split">
+            <div class="left">
+              <div class="kicker"><span class="badge bd-cy">Otaq 2 / 6</span><span class="xp">+150 XP</span></div>
+              <h3>Şübhəli girişləri tap</h3>
+              <p>Şirkətin serverində gecə saatlarında qəribə fəaliyyət müşahidə olunub. Sizə <code>auth.log</code> faylı verilib. SOC analitiki kimi hadisəni araşdırın.</p>
+              <h4>Fayllar</h4>
+              <div class="task" style="border-left-color:var(--cy)">📄 auth.log · 2.4 MB <button class="b b-run" type="button" style="margin-left:8px;padding:4px 10px;font-size:.8rem">Yüklə</button></div>
+              <p style="margin-top:14px">Terminalda <code>grep</code>, <code>awk</code> istifadə edə və ya faylı yükləyib öz kompüterinizdə analiz edə bilərsiniz.</p>
+            </div>
+            <div class="gutter" aria-hidden="true"></div>
+            <div class="right" style="grid-template-rows:auto 1fr">
+              <div class="ftabs"><span class="on">Suallar</span><span>Terminal</span></div>
+              <div class="flag" style="overflow:auto">
+                <div class="fq ok"><p>1. Neçə uğursuz giriş cəhdi var?</p><div class="row"><input value="147" aria-label="Cavab 1" readonly><button class="b b-brand" type="button">Göndər</button></div><div class="okm">✓ Düzgündür · +30 XP</div></div>
+                <div class="fq"><p>2. Hücum hansı IP ünvanından gəlib?</p><div class="row"><input placeholder="xxx.xxx.xxx.xxx" aria-label="Cavab 2"><button class="b b-brand" type="button">Göndər</button></div></div>
+                <div class="fq"><p>3. Uğurlu girişdən sonra yaradılan istifadəçi adı nədir?</p><div class="row"><input placeholder="Cavab" aria-label="Cavab 3"><button class="b b-brand" type="button">Göndər</button></div></div>
+                <div class="fq"><p>4. Flag-i tapın.</p><div class="row"><input placeholder="DACY{...}" aria-label="Cavab 4"><button class="b b-brand" type="button">Göndər</button></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DASHBOARD -->
+  <section class="sec" id="dashboard">
+    <h2>Şəxsi panel</h2>
+    <p class="note">Tələbə girən kimi "harada qaldım" sualının cavabını görür və bir kliklə davam edir.</p>
+    <div class="frame">
+      <div class="fbar"><i></i><i></i><i></i><span>dacy.az/panel</span></div>
+      <div class="apph"><div class="logo"><i>Dc</i>DaCy</div><nav><span>Kurslar</span><b>Panelim</b><span>Sertifikatlar</span></nav><div class="sp"></div><div class="avatar">OR</div></div>
+      <div class="dash">
+        <div>
+          <div class="cont"><div><small>Qaldığınız yer</small><h3>Ən çox satış edən şəhərlər</h3><small>SQL ilə data analizi · Fəsil 2</small></div><button class="b b-brand" type="button">Davam et</button></div>
+          <div class="plist">
+            <div class="pi" style="--c:var(--da)"><b>SQL ilə data analizi</b><span>42%</span><div class="bar"><i style="width:42%"></i></div></div>
+            <div class="pi" style="--c:var(--de)"><b>Python ilə ETL pipeline</b><span>18%</span><div class="bar"><i style="width:18%"></i></div></div>
+            <div class="pi" style="--c:var(--cy)"><b>SOC analitikinə giriş</b><span>8%</span><div class="bar"><i style="width:8%"></i></div></div>
+          </div>
+        </div>
+        <aside class="side">
+          <div class="stats">
+            <div class="stat"><b>2 340</b><span>XP</span></div>
+            <div class="stat"><b>12 🔥</b><span>günlük seriya</span></div>
+            <div class="stat"><b>47</b><span>tapşırıq</span></div>
+            <div class="stat"><b>1</b><span>sertifikat</span></div>
+          </div>
+          <div class="box"><b>Bu həftə</b><div class="week"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></div></div>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <!-- ADMIN -->
+  <section class="sec" id="admin">
+    <h2>Admin redaktoru — kontenti müəllim yükləyir</h2>
+    <p class="note">Solda kurs ağacı (sürükləyib sıranı dəyişmək olur), sağda seçilmiş addımın redaktoru. Yuxarıda ZIP paket idxalı.</p>
+    <div class="frame">
+      <div class="fbar"><i></i><i></i><i></i><span>dacy.az/admin/kurslar/sql-ile-analiz</span></div>
+      <div class="apph"><div class="logo"><i>Dc</i>DaCy Admin</div><nav><b>Kurslar</b><span>Tələbələr</span><span>Fayllar</span></nav><div class="sp"></div><button class="b b-brand" type="button" style="padding:6px 12px">⇪ ZIP paket yüklə</button></div>
+      <div class="admin">
+        <div class="tree">
+          <h4>SQL ilə data analizi</h4>
+          <ul>
+            <li><span class="drag">⋮⋮</span>1. SQL-ə giriş</li>
+            <li><span class="drag">⋮⋮</span>2. Qruplaşdırma</li>
+            <li class="sub"><span class="drag">⋮⋮</span><span class="ic t">T</span>GROUP BY nədir?</li>
+            <li class="sub"><span class="drag">⋮⋮</span><span class="ic c">{}</span>Şəhərlər üzrə satış</li>
+            <li class="sub"><span class="drag">⋮⋮</span><span class="ic q">?</span>Yoxlama testi</li>
+            <li class="sub sel"><span class="drag">⋮⋮</span><span class="ic c">{}</span>Ən çox satış edən…</li>
+            <li class="sub"><span class="drag">⋮⋮</span><span class="ic t">T</span>HAVING ilə filtr</li>
+            <li><span class="drag">⋮⋮</span>3. JOIN-lər</li>
+            <li style="color:var(--muted)">+ Fəsil əlavə et</li>
+          </ul>
+        </div>
+        <div class="edit">
+          <div class="row"><div><span class="badge bd-da">SQL tapşırığı</span><h3 style="margin-top:6px;font-size:1.3rem">Ən çox satış edən şəhərlər</h3></div><div style="display:flex;gap:8px"><button class="b b-ghost" type="button">👁 Tələbə kimi bax</button><button class="b b-dark" type="button">Qaralama</button><button class="b b-brand" type="button">Dərc et</button></div></div>
+          <div class="form">
+            <div class="fld full"><label>Addım tipi</label><div class="seg"><span>Nəzəri</span><span>Test</span><span class="on">SQL</span><span>Python</span><span>Terminal</span><span>CTF</span></div></div>
+            <div class="fld"><label>Başlıq</label><div class="inp">Ən çox satış edən şəhərlər</div></div>
+            <div class="fld"><label>XP</label><div class="inp">50</div></div>
+            <div class="fld full"><label>Təlimat (Markdown)</label><div class="inp" style="min-height:70px">Əvvəlki dərsdə `GROUP BY` ilə…</div></div>
+            <div class="fld"><label>Başlanğıc kod</label><div class="inp code">SELECT</div></div>
+            <div class="fld"><label>Düzgün həll</label><div class="inp code">SELECT city, SUM(amount) AS total
+FROM orders GROUP BY city
+ORDER BY total DESC LIMIT 5;</div></div>
+            <div class="fld full"><label>Dataset</label><div class="drop">📂 orders.csv yükləndi (12 480 sətir) · Başqa fayl üçün buraya sürükləyin</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+(function(){
+  var tabs=document.querySelectorAll('.ws-tabs [role="tab"]');
+  tabs.forEach(function(t){
+    t.addEventListener('click',function(){
+      tabs.forEach(function(x){
+        var on=x===t; x.setAttribute('aria-selected',on);
+        document.getElementById(x.getAttribute('aria-controls')).hidden=!on;
+      });
+    });
+  });
+})();
+</script>
+</body>
+</html>
