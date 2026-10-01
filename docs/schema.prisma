@@ -1,0 +1,599 @@
+// apps/api/prisma/schema.prisma — DaCy Academy (Prisma 6, PostgreSQL) — QARALAMA, təsdiq gözləyir
+//
+// Content tree: Track > Course > Module > Step. Every level has `order` + `isPublished`.
+// Stable keys: Course.slug (global), Module.key (per course), Step.key (per module). ZIP re-import upserts by
+// these keys so Step.id — and therefore StepProgress — survives re-import. Items missing from a re-import are
+// set isPublished=false (never hard-deleted by import). No soft-delete column: unique (parent, order) stays simple.
+// Secrets: Step.secret (quiz correct/explanation, sql/python solution, sql expected result, terminal check_script,
+// hints) and CtfTask.answerHash / CtfTask.hint are NEVER serialised to students. Step.config is public by construction.
+// Progress: StepProgress is canonical. Enrollment.percent/completedAt, PathEnrollment.percent/completedAt and
+// User.xpTotal are write-through caches recomputed in the same transaction (and by `recompute-progress`).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ───────────────────────── enums ─────────────────────────
+
+enum Role {
+  STUDENT
+  INSTRUCTOR
+  ADMIN
+}
+
+enum Level {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+enum StepType {
+  THEORY
+  QUIZ
+  SQL
+  PYTHON
+  TERMINAL
+  CTF
+}
+
+enum ProgressStatus {
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum AssetKind {
+  IMAGE
+  VIDEO
+  PDF
+  DATASET
+  ATTACHMENT
+  CHECK_SCRIPT // staff-only: never streamed to students
+  OTHER
+}
+
+enum XpReason {
+  STEP_COMPLETED
+  CTF_TASK_SOLVED
+  HINT_USED
+  COURSE_COMPLETED
+  PATH_ITEM_COMPLETED
+  PATH_COMPLETED
+  MANUAL
+}
+
+enum ImportStatus {
+  VALIDATED
+  FAILED
+  APPLIED
+}
+
+enum LabStatus {
+  STARTING
+  RUNNING
+  PASSED
+  EXPIRED
+  STOPPED
+  FAILED
+}
+
+enum PathItemType {
+  COURSE
+  PROJECT
+  ASSESSMENT
+  MILESTONE
+}
+
+enum PathItemStatus {
+  IN_PROGRESS
+  SUBMITTED
+  PASSED
+  FAILED
+}
+
+// ───────────────────────── users & auth ─────────────────────────
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique // stored lower-cased
+  passwordHash String? // null = gələcəkdə Google OAuth ilə qeydiyyatdan keçən istifadəçi
+  name         String
+  role         Role      @default(STUDENT)
+  avatarUrl    String?
+  locale       String    @default("az")
+  xpTotal      Int       @default(0) // cache of SUM(XpEvent.amount)
+  targetPathId String? // Phase 4 onboarding answer ("Hansı peşəyə hazırlaşırsınız?")
+  lastActiveAt DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  targetPath LearningPath? @relation("UserTargetPath", fields: [targetPathId], references: [id], onDelete: SetNull)
+
+  refreshTokens     RefreshToken[]
+  enrollments       Enrollment[]
+  stepProgress      StepProgress[]
+  submissions       Submission[]
+  hintUsages        HintUsage[]
+  ctfSolves         CtfSolve[]
+  xpEvents          XpEvent[]
+  activityDays      ActivityDay[]
+  certificates      Certificate[]
+  labSessions       LabSession[]
+  pathEnrollments   PathEnrollment[]
+  pathItemProgress  PathItemProgress[] @relation("PathItemProgressUser")
+  reviewedPathItems PathItemProgress[] @relation("PathItemReviewer")
+  pathCertificates  PathCertificate[]
+  uploadedAssets    Asset[]            @relation("AssetUploader")
+  courseImports     CourseImport[]
+  createdCourses    Course[]           @relation("CourseCreator")
+}
+
+/// Rotating refresh tokens; only the sha256 hash is stored.
+model RefreshToken {
+  id        String    @id @default(cuid())
+  userId    String
+  tokenHash String    @unique
+  userAgent String?
+  ip        String?
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+// ───────────────────────── content tree ─────────────────────────
+
+model Track {
+  id          String   @id @default(cuid())
+  slug        String   @unique // data-analytics | data-engineering | cyber-security (seeded, editable)
+  title       String
+  description String?
+  color       String // hex, e.g. #6C7CF0 — every badge / card top / progress bar reads this
+  icon        String? // lucide icon name
+  order       Int      @unique
+  isPublished Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  courses Course[]
+  paths   LearningPath[]
+}
+
+model Course {
+  id             String    @id @default(cuid())
+  trackId        String
+  slug           String    @unique // globally unique; ZIP re-import key
+  title          String
+  level          Level     @default(BEGINNER)
+  description    String    @default("")
+  coverAssetId   String?
+  sequential     Boolean   @default(true) // false = free navigation
+  estimatedHours Float?
+  order          Int
+  isPublished    Boolean   @default(false)
+  publishedAt    DateTime?
+  createdById    String?
+  importedAt     DateTime? // last ZIP import
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  track     Track  @relation(fields: [trackId], references: [id], onDelete: Restrict)
+  cover     Asset? @relation("CourseCover", fields: [coverAssetId], references: [id], onDelete: SetNull)
+  createdBy User?  @relation("CourseCreator", fields: [createdById], references: [id], onDelete: SetNull)
+
+  modules      Module[]
+  assets       Asset[]        @relation("CourseAssets")
+  enrollments  Enrollment[]
+  certificates Certificate[]
+  imports      CourseImport[]
+  xpEvents     XpEvent[]
+  pathItems    PathItem[] // the same course may appear in many learning paths
+
+  @@unique([trackId, order])
+  @@index([isPublished, level])
+}
+
+model Module {
+  id          String   @id @default(cuid())
+  courseId    String
+  key         String // stable key: folder name minus numeric prefix ("01-giris" -> "giris")
+  title       String
+  description String?
+  order       Int
+  isPublished Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  steps  Step[]
+
+  @@unique([courseId, key])
+  @@unique([courseId, order])
+}
+
+model Step {
+  id               String   @id @default(cuid())
+  moduleId         String
+  key              String // stable key: file name minus prefix/extension ("03-select.yaml" -> "select")
+  type             StepType
+  title            String
+  /// PUBLIC part, YAML keys verbatim (snake_case). Validated by zod per type on every write. Never contains secrets.
+  config           Json     @default("{}")
+  /// SERVER-ONLY part: quiz {questions[].correct, explanation}, sql {solution, expected, hints}, python {solution, hints},
+  /// terminal {check_script, hints}. Never selected by student endpoints.
+  secret           Json?
+  xp               Int      @default(0)
+  estimatedMinutes Int?
+  order            Int
+  isPublished      Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  module            Module         @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  ctfTasks          CtfTask[]
+  progress          StepProgress[]
+  submissions       Submission[]
+  hintUsages        HintUsage[]
+  xpEvents          XpEvent[]
+  labSessions       LabSession[]
+  lastOfEnrollments Enrollment[]   @relation("EnrollmentLastStep")
+
+  @@unique([moduleId, key])
+  @@unique([moduleId, order])
+  @@index([type])
+}
+
+/// One row per CTF question. answerHash = HMAC-SHA256(CTF_PEPPER, normalise(answer)); plaintext is discarded on write.
+model CtfTask {
+  id            String  @id @default(cuid())
+  stepId        String
+  key           String // stable ("t1".."tn" by default, author-provided allowed)
+  order         Int
+  question      String // Markdown
+  hint          String? // revealed only via the hint endpoint
+  points        Int     @default(0)
+  caseSensitive Boolean @default(false)
+  answerHash    String
+
+  step     Step       @relation(fields: [stepId], references: [id], onDelete: Cascade)
+  solves   CtfSolve[]
+  xpEvents XpEvent[]
+
+  @@unique([stepId, key])
+  @@unique([stepId, order])
+}
+
+/// Uploaded course files. `path` mirrors the ZIP layout (datasets/sales.csv, cover.png, checks/etl_check.sh, logs/auth.log).
+/// Every asset belongs to a course (no global assets), so (courseId, path) is a real uniqueness guarantee.
+model Asset {
+  id           String    @id @default(cuid())
+  courseId     String
+  path         String
+  kind         AssetKind
+  filename     String
+  mime         String
+  sizeBytes    Int
+  sha256       String
+  storageKey   String    @unique // key in the storage adapter (local disk in Phase 1)
+  uploadedById String?
+  createdAt    DateTime  @default(now())
+
+  course     Course   @relation("CourseAssets", fields: [courseId], references: [id], onDelete: Cascade)
+  uploadedBy User?    @relation("AssetUploader", fields: [uploadedById], references: [id], onDelete: SetNull)
+  coverOf    Course[] @relation("CourseCover")
+
+  @@unique([courseId, path])
+  @@index([kind])
+  @@index([sha256])
+}
+
+/// Phase 2 ZIP import audit log.
+model CourseImport {
+  id           String       @id @default(cuid())
+  courseId     String?
+  slug         String
+  filename     String
+  status       ImportStatus
+  /// { errors: [{file, path, message}], summary: {modules, steps, assets, created, updated, unpublished} }
+  report       Json
+  uploadedById String?
+  createdAt    DateTime     @default(now())
+
+  course     Course? @relation(fields: [courseId], references: [id], onDelete: SetNull)
+  uploadedBy User?   @relation(fields: [uploadedById], references: [id], onDelete: SetNull)
+
+  @@index([courseId, createdAt])
+  @@index([slug, createdAt])
+}
+
+// ───────────────────────── learning / progress ─────────────────────────
+
+model Enrollment {
+  id             String    @id @default(cuid())
+  userId         String
+  courseId       String
+  enrolledAt     DateTime  @default(now())
+  lastStepId     String? // "Qaldığınız yer"
+  lastActivityAt DateTime  @default(now())
+  percent        Int       @default(0) // cache; canonical value derived from StepProgress
+  completedAt    DateTime? // cache; set once when derived progress first reaches 100 %
+
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  lastStep Step?  @relation("EnrollmentLastStep", fields: [lastStepId], references: [id], onDelete: SetNull)
+
+  @@unique([userId, courseId])
+  @@index([courseId])
+  @@index([userId, lastActivityAt])
+}
+
+/// Canonical progress. One row per (user, step) once opened. Absence = not started.
+model StepProgress {
+  id            String         @id @default(cuid())
+  userId        String
+  stepId        String
+  status        ProgressStatus @default(IN_PROGRESS)
+  attempts      Int            @default(0)
+  score         Float? // best score (quiz %, ctf points share)
+  startedAt     DateTime       @default(now())
+  lastAttemptAt DateTime?
+  completedAt   DateTime?
+  updatedAt     DateTime       @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  step Step @relation(fields: [stepId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, stepId])
+  @@index([stepId, status])
+  @@index([userId, status])
+  @@index([userId, completedAt])
+}
+
+/// Every graded attempt. CTF answers are never stored (only the task key).
+model Submission {
+  id         String   @id @default(cuid())
+  userId     String
+  stepId     String
+  type       StepType
+  /// quiz: {answers: number[][]} | sql: {query, row_hash, row_count} | python: {code, stdout} | ctf: {taskKey} | terminal: {checkOutput}
+  payload    Json
+  /// what the student saw: quiz {score, passed, per_question[]} | sql/python {passed, message} — never contains secrets
+  result     Json?
+  passed     Boolean  @default(false)
+  score      Float?
+  durationMs Int?
+  createdAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  step Step @relation(fields: [stepId], references: [id], onDelete: Cascade)
+
+  @@index([userId, stepId, createdAt])
+  @@index([stepId, passed])
+}
+
+/// hintKey = "h:<index>" for step hints (sql/python/terminal) or "t:<ctfTaskKey>" for CTF task hints.
+model HintUsage {
+  id        String   @id @default(cuid())
+  userId    String
+  stepId    String
+  hintKey   String
+  xpPenalty Int      @default(0)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  step Step @relation(fields: [stepId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, stepId, hintKey])
+}
+
+model CtfSolve {
+  id        String   @id @default(cuid())
+  userId    String
+  ctfTaskId String
+  attempts  Int      @default(1)
+  solvedAt  DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ctfTask CtfTask @relation(fields: [ctfTaskId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, ctfTaskId])
+}
+
+/// Append-only XP ledger. dedupeKey ("step:<id>", "ctf:<taskId>", "hint:<stepId>:<hintKey>", "course:<id>", "path:<id>")
+/// makes every grant idempotent. Content references are SetNull so XP history survives content deletion.
+model XpEvent {
+  id         String   @id @default(cuid())
+  userId     String
+  amount     Int // negative for hint penalties
+  reason     XpReason
+  stepId     String?
+  ctfTaskId  String?
+  courseId   String?
+  pathItemId String?
+  pathId     String?
+  dedupeKey  String?
+  createdAt  DateTime @default(now())
+
+  user     User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  step     Step?         @relation(fields: [stepId], references: [id], onDelete: SetNull)
+  ctfTask  CtfTask?      @relation(fields: [ctfTaskId], references: [id], onDelete: SetNull)
+  course   Course?       @relation(fields: [courseId], references: [id], onDelete: SetNull)
+  pathItem PathItem?     @relation(fields: [pathItemId], references: [id], onDelete: SetNull)
+  path     LearningPath? @relation(fields: [pathId], references: [id], onDelete: SetNull)
+
+  @@unique([userId, dedupeKey])
+  @@index([userId, createdAt])
+}
+
+/// One row per user per calendar day in APP_TIMEZONE (default Asia/Baku); powers streak + week strip.
+model ActivityDay {
+  id             String   @id @default(cuid())
+  userId         String
+  date           DateTime @db.Date
+  xp             Int      @default(0)
+  stepsCompleted Int      @default(0)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date])
+}
+
+/// Phase 3. id is the public verification id (/sertifikat/[id]); snapshot freezes names so deletion of the course never breaks the page.
+model Certificate {
+  id        String    @id @default(uuid())
+  serial    String    @unique // DACY-C-2026-000001
+  userId    String
+  courseId  String?
+  /// { studentName, courseTitle, trackTitle, trackColor, hours, xp }
+  snapshot  Json
+  issuedAt  DateTime  @default(now())
+  revokedAt DateTime?
+
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course Course? @relation(fields: [courseId], references: [id], onDelete: SetNull)
+
+  @@unique([userId, courseId])
+}
+
+/// Phase 3 terminal labs: one isolated container per student per step.
+model LabSession {
+  id          String    @id @default(cuid())
+  userId      String
+  stepId      String
+  status      LabStatus @default(STARTING)
+  image       String
+  containerId String?
+  startedAt   DateTime  @default(now())
+  expiresAt   DateTime
+  endedAt     DateTime?
+  passedAt    DateTime?
+  checkOutput String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  step Step @relation(fields: [stepId], references: [id], onDelete: Cascade)
+
+  @@index([userId, stepId, status])
+  @@index([status, expiresAt])
+}
+
+// ───────────────────────── learning paths (Phase 4 — schema ready now) ─────────────────────────
+
+model LearningPath {
+  id             String   @id @default(cuid())
+  trackId        String
+  slug           String   @unique // "data-analyst"
+  title          String // "Data Analyst ol"
+  description    String   @default("")
+  level          Level    @default(BEGINNER)
+  targetAudience String?
+  skills         String[] @default([])
+  estimatedHours Float?
+  sequential     Boolean  @default(true)
+  order          Int
+  isPublished    Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  track        Track             @relation(fields: [trackId], references: [id], onDelete: Restrict)
+  items        PathItem[]
+  enrollments  PathEnrollment[]
+  certificates PathCertificate[]
+  xpEvents     XpEvent[]
+  targetedBy   User[]            @relation("UserTargetPath")
+
+  @@unique([trackId, order])
+  @@index([isPublished])
+}
+
+model PathItem {
+  id             String       @id @default(cuid())
+  pathId         String
+  key            String // stable: course slug for COURSE items, author slug for others (from path.yaml)
+  order          Int
+  type           PathItemType
+  courseId       String? // COURSE items only; no path FK on Course, so a course can sit in many paths
+  title          String? // PROJECT/ASSESSMENT/MILESTONE (COURSE items use course.title)
+  /// PROJECT {instructions, deliverables[], review_mode} | ASSESSMENT quiz public config | MILESTONE {certificate_title, description} | COURSE {}
+  config         Json         @default("{}")
+  secret         Json? // ASSESSMENT correct answers / explanations
+  isOptional     Boolean      @default(false)
+  estimatedHours Float?
+  xp             Int          @default(0)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  path              LearningPath       @relation(fields: [pathId], references: [id], onDelete: Cascade)
+  course            Course?            @relation(fields: [courseId], references: [id], onDelete: Restrict)
+  progress          PathItemProgress[]
+  xpEvents          XpEvent[]
+  lastOfEnrollments PathEnrollment[]   @relation("PathEnrollmentLastItem")
+
+  @@unique([pathId, key])
+  @@unique([pathId, order])
+  @@index([courseId])
+}
+
+model PathEnrollment {
+  id          String    @id @default(cuid())
+  userId      String
+  pathId      String
+  isActive    Boolean   @default(true) // the path shown on top of /panel
+  enrolledAt  DateTime  @default(now())
+  lastItemId  String?
+  percent     Int       @default(0) // cache; canonical value derived
+  completedAt DateTime? // cache
+
+  user     User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  path     LearningPath @relation(fields: [pathId], references: [id], onDelete: Cascade)
+  lastItem PathItem?    @relation("PathEnrollmentLastItem", fields: [lastItemId], references: [id], onDelete: SetNull)
+
+  @@unique([userId, pathId])
+  @@index([userId, isActive])
+}
+
+/// State for NON-course items only (project / assessment / milestone). COURSE items derive from StepProgress.
+model PathItemProgress {
+  id           String         @id @default(cuid())
+  userId       String
+  pathItemId   String
+  status       PathItemStatus @default(IN_PROGRESS)
+  score        Float?
+  attempts     Int            @default(0)
+  payload      Json? // project: {files: [{storageKey, filename, size}], link?, note} | assessment: {answers}
+  feedback     String?
+  reviewedById String?
+  submittedAt  DateTime?
+  completedAt  DateTime?
+  updatedAt    DateTime       @updatedAt
+
+  user       User     @relation("PathItemProgressUser", fields: [userId], references: [id], onDelete: Cascade)
+  pathItem   PathItem @relation(fields: [pathItemId], references: [id], onDelete: Cascade)
+  reviewedBy User?    @relation("PathItemReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+
+  @@unique([userId, pathItemId])
+  @@index([pathItemId, status])
+}
+
+model PathCertificate {
+  id        String    @id @default(uuid())
+  serial    String    @unique // DACY-P-2026-000001
+  userId    String
+  pathId    String?
+  /// { studentName, pathTitle, trackTitle, trackColor, hours }
+  snapshot  Json
+  issuedAt  DateTime  @default(now())
+  revokedAt DateTime?
+
+  user User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  path LearningPath? @relation(fields: [pathId], references: [id], onDelete: SetNull)
+
+  @@unique([userId, pathId])
+}
