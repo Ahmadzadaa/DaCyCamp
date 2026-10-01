@@ -218,6 +218,9 @@ if (!auth.ok) {
 }
 log('DB hazırdır ✓');
 
+log('Prisma Client generasiya olunur…');
+if (run('pnpm', ['--filter', '@dacy/api', 'prisma:generate']).status !== 0)
+  fail('prisma generate alınmadı.');
 log('Migrasiyalar tətbiq olunur…');
 if (run('pnpm', ['--filter', '@dacy/api', 'prisma:deploy']).status !== 0)
   fail('prisma migrate deploy alınmadı.');

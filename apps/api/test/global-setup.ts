@@ -13,6 +13,11 @@ export default function globalSetup() {
     }
   }
   const url = process.env.DATABASE_URL_TEST ?? 'postgresql://dacy:dacy@localhost:5432/dacy_test';
+  execSync('npx prisma generate', {
+    cwd: resolve(__dirname, '..'),
+    stdio: 'inherit',
+    env: { ...process.env, DATABASE_URL: url },
+  });
   execSync('npx prisma migrate deploy', {
     cwd: resolve(__dirname, '..'),
     stdio: 'inherit',
