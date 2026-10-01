@@ -7,7 +7,8 @@
  *  4. turbo run dev → shared (watch) + api (:4000) + web (:3000)
  */
 import { spawn, spawnSync } from 'node:child_process';
-import { copyFileSync, existsSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import net from 'node:net';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -74,31 +75,146 @@ async function waitForDb(seconds) {
   return false;
 }
 
-log(`PostgreSQL yoxlanılır: ${host}:${port}`);
-if (!(await probe(host, port))) {
-  const docker = spawnSync('docker', ['info'], {
-    stdio: 'ignore',
+/** prisma CLI-ni birbaşa çağırır (pnpm exec stdin-i etibarlı ötürmür) — SQL müvəqqəti fayldan oxunur */
+function prismaSql(url, sql) {
+  const apiDir = resolve(root, 'apps/api');
+  const bin = resolve(
+    apiDir,
+    'node_modules/.bin',
+    process.platform === 'win32' ? 'prisma.cmd' : 'prisma',
+  );
+  const file = resolve(mkdtempSync(resolve(tmpdir(), 'dacy-')), 'q.sql');
+  writeFileSync(file, sql);
+  const r = spawnSync(bin, ['db', 'execute', '--url', url, '--file', file], {
+    cwd: apiDir,
+    encoding: 'utf8',
     shell: process.platform === 'win32',
   });
-  if (docker.status === 0) {
+  const out = `${r.stdout ?? ''}${r.stderr ?? ''}`;
+  if (process.env.DACY_DEBUG)
+    console.error('[dacy:debug] prisma', {
+      bin,
+      status: r.status,
+      error: r.error?.message,
+      out: out.slice(0, 300),
+    });
+  return {
+    ok: r.status === 0,
+    code: /P1\d{3}/.exec(out)?.[0] ?? (r.status === 0 ? 'OK' : 'UNKNOWN'),
+    out,
+  };
+}
+
+/** Həqiqi giriş yoxlaması (rol/şifrə/baza) */
+const dbAuth = (url) => prismaSql(url, 'SELECT 1;');
+
+/** 5433 başqa layihəyə aiddir — 5434-dən başlayaraq boş port */
+async function freePort() {
+  for (let p = 5434; p < 5460; p++) if (!(await probe('127.0.0.1', p, 500))) return p;
+  return null;
+}
+
+/** .env-də DB portunu dəyişir (localhost ünvanları üçün) */
+function rewriteEnvPort(newPort) {
+  let txt = readFileSync(envPath, 'utf8');
+  const sub = (key) => {
+    const re = new RegExp(
+      `^(${key}=postgresql://[^@\\n]+@(?:localhost|127\\.0\\.0\\.1)):\\d+`,
+      'm',
+    );
+    txt = re.test(txt) ? txt.replace(re, `$1:${newPort}`) : txt;
+  };
+  sub('DATABASE_URL');
+  sub('DATABASE_URL_TEST');
+  txt = /^DB_PORT=/m.test(txt)
+    ? txt.replace(/^DB_PORT=.*$/m, `DB_PORT=${newPort}`)
+    : `${txt}\nDB_PORT=${newPort}\n`;
+  writeFileSync(envPath, txt);
+  for (const k of ['DATABASE_URL', 'DATABASE_URL_TEST']) {
+    if (process.env[k])
+      process.env[k] = process.env[k].replace(/@(localhost|127\.0\.0\.1):\d+/, `@$1:${newPort}`);
+  }
+  process.env.DB_PORT = String(newPort);
+}
+
+/** Rol var, baza yoxdur (P1003) → eyni hesabla "postgres" bazasına qoşulub yaradırıq */
+function createDatabase(url) {
+  let u;
+  try {
+    u = new URL(url);
+  } catch {
+    return false;
+  }
+  const name = u.pathname.replace(/^\//, '').split('?')[0];
+  if (!name) return false;
+  u.pathname = '/postgres';
+  return prismaSql(u.toString(), `CREATE DATABASE "${name.replace(/"/g, '')}";`).ok;
+}
+
+const SQL_HELP = [
+  '  B) Mövcud PostgreSQL-də rol/baza yaradın (psql ilə, superuser kimi):',
+  "       CREATE ROLE dacy LOGIN PASSWORD 'dacy' CREATEDB;",
+  '       CREATE DATABASE dacy OWNER dacy;  CREATE DATABASE dacy_test OWNER dacy;',
+  '     və ya .env-dəki DATABASE_URL-i öz istifadəçi/şifrənizlə yazın.',
+];
+const hasDocker = () =>
+  spawnSync('docker', ['info'], { stdio: 'ignore', shell: process.platform === 'win32' }).status ===
+  0;
+
+log(`PostgreSQL yoxlanılır: ${host}:${port}`);
+const isLocal = host === 'localhost' || host === '127.0.0.1';
+if (!(await probe(host, port))) {
+  if (hasDocker()) {
     log('DB əlçatmazdır → docker compose up -d db');
     const r = run('docker', ['compose', 'up', '-d', 'db']);
     if (r.status !== 0) fail('docker compose up alınmadı.');
     log('DB-nin hazır olması gözlənilir…');
     if (!(await waitForDb(60))) fail('DB 60 saniyə ərzində açılmadı.');
+    await sleep(1500);
   } else {
     fail(
       [
         `PostgreSQL ${host}:${port} ünvanında cavab vermir və Docker daemon işləmir.`,
         'Seçimlər:',
         '  A) Docker Desktop-u açın və yenidən `pnpm dev` yazın (db avtomatik qalxacaq)',
-        '  B) Mövcud PostgreSQL-də rol/baza yaradın və .env-dəki DATABASE_URL-i uyğunlaşdırın:',
-        "       CREATE ROLE dacy LOGIN PASSWORD 'dacy' CREATEDB;",
-        '       CREATE DATABASE dacy OWNER dacy;  CREATE DATABASE dacy_test OWNER dacy;',
+        ...SQL_HELP,
         '     (Linux-da lokal klaster üçün: sudo pg_ctlcluster 16 main start)',
       ].join('\n'),
     );
   }
+}
+// Port açıqdır — amma rol/şifrə düzgündürmü? (kompüterdə başqa PostgreSQL ola bilər)
+let auth = dbAuth(process.env.DATABASE_URL);
+if (!auth.ok && auth.code === 'P1000' && isLocal && hasDocker()) {
+  const np = await freePort();
+  if (!np) fail('Boş port tapılmadı (5434–5459).');
+  log(
+    `${host}:${port} portunda başqa PostgreSQL var ("dacy" rolu yoxdur) → Docker bazası ${np} portunda qaldırılır, .env yenilənir`,
+  );
+  rewriteEnvPort(np);
+  port = np;
+  const r = run('docker', ['compose', 'up', '-d', 'db']);
+  if (r.status !== 0) fail('docker compose up alınmadı.');
+  if (!(await waitForDb(60))) fail(`DB ${np} portunda 60 saniyə ərzində açılmadı.`);
+  await sleep(1500);
+  auth = dbAuth(process.env.DATABASE_URL);
+}
+if (!auth.ok && auth.code === 'P1003') {
+  log('Rol var, baza yoxdur → yaradılır');
+  if (createDatabase(process.env.DATABASE_URL)) {
+    if (process.env.DATABASE_URL_TEST) createDatabase(process.env.DATABASE_URL_TEST);
+    auth = dbAuth(process.env.DATABASE_URL);
+  }
+}
+if (!auth.ok) {
+  fail(
+    [
+      `Bazaya giriş alınmadı (${auth.code}): ${process.env.DATABASE_URL}`,
+      'Seçimlər:',
+      '  A) Docker Desktop-u açın və yenidən `pnpm dev` yazın (baza boş portda avtomatik qalxacaq)',
+      ...SQL_HELP,
+    ].join('\n'),
+  );
 }
 log('DB hazırdır ✓');
 

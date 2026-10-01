@@ -34,6 +34,7 @@ pnpm dev
 ### Verilənlər bazası — iki yol
 
 **A) Docker (tövsiyə olunur).** Heç nə etmək lazım deyil: `pnpm dev` `db` servisini özü qaldırır. Yalnız bazanı qaldırmaq üçün: `docker compose up -d`.
+Kompüterinizdə 5432 portunda artıq başqa PostgreSQL varsa (və orada `dacy` rolu yoxdursa), skript bunu özü tanıyır: Docker bazasını boş portda (5434-dən başlayaraq) qaldırır və `.env`-dəki `DATABASE_URL` / `DB_PORT` dəyərlərini yeniləyir.
 
 **B) Mövcud PostgreSQL.** Rol və bazaları yaradın, `.env`-də `DATABASE_URL`/`DATABASE_URL_TEST` dəyişənlərini uyğunlaşdırın:
 
@@ -42,6 +43,8 @@ CREATE ROLE dacy LOGIN PASSWORD 'dacy' CREATEDB;
 CREATE DATABASE dacy OWNER dacy;
 CREATE DATABASE dacy_test OWNER dacy;   -- API e2e testləri üçün
 ```
+
+Rol varsa, amma baza yoxdursa, `pnpm dev` bazanı özü yaradır. Giriş alınmayanda skript dəqiq səbəbi (`P1000` şifrə, `P1003` baza yoxdur) və həll yollarını yazır.
 
 ### Quraşdırmasız: GitHub Codespaces
 
