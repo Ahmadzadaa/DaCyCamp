@@ -43,6 +43,12 @@ CREATE DATABASE dacy OWNER dacy;
 CREATE DATABASE dacy_test OWNER dacy;   -- API e2e testləri üçün
 ```
 
+### Quraşdırmasız: GitHub Codespaces
+
+1. GitHub-da repo səhifəsində **Code → Codespaces → Create codespace** (branch: `claude/dacy-academy-platform-4f2r5r`).
+2. Hazırlıq bitəndə (asılılıqlar avtomatik qurulur) terminalda `pnpm dev` yazın.
+3. «Ports» panelində 3000 portunun linkini açın (brauzer özü də açır). API 4000 portu daxili işləyir, kənara çıxmır.
+
 ### Tam stack Docker-də
 
 ```bash
