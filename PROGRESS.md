@@ -84,14 +84,9 @@ Hesablar: `admin@dacy.local / Admin123!`, `telebe@dacy.local / Telebe123!` (`.en
 
 ---
 
-## Mərhələ 2 — Brauzer tapşırıqları (kod hazırdır — son yoxlama davam edir)
+## Mərhələ 2 — Brauzer tapşırıqları (tamamlandı)
 
-> **Davam nöqtəsi (2026-10-02):** bütün funksiyalar yazılıb və brauzerdə yoxlanılıb; `pnpm build` ✓, `pnpm test` ✓ (shared 35, api unit 4, web 5), Playwright `student-flow` + `admin` + `phase2` + `screenshots` ✓ (10 + 3 test). Qalan:
-> 1. API e2e (`pnpm --filter @dacy/api test:e2e`) bu sessiyada əvvəl 37/37 keçmişdi; son işə salmada test bazası «P3005: schema boş deyil» verdi (test bazası `migrate diff` üçün shadow kimi istifadə olunduğundan). Həll: test bazasını sıfırla (`DROP DATABASE dacy_test; CREATE DATABASE dacy_test;`) və yenidən işə sal.
-> 2. `apps/web` ESLint `public/duckdb|pyodide|monaco` kopyalarını yoxlamasın — `eslint.config.mjs` ignores əlavə edildi, `pnpm lint` yenidən yoxlanmalıdır.
-> 3. `next.config.ts`-ə `serverExternalPackages: ['@duckdb/duckdb-wasm']` əlavə edildi (webpack xəbərdarlığı üçün) — `pnpm build` bir daha işə salınmalıdır.
-> 4. Prettier bütün dəyişən fayllara tətbiq olundu; `pnpm typecheck` yenidən təsdiqlənməlidir.
-
+**Yekun yoxlama (2026-10-02):** `pnpm build` ✓ (xəbərdarlıqsız), `pnpm typecheck` ✓, `pnpm lint` ✓, `pnpm test` ✓ (shared 35, api unit 4, web 5), API e2e ✓ 37/37 (`test/phase2.e2e-spec.ts` daxil), Playwright ✓ (student-flow, admin, phase2, screenshots). Commit: Mərhələ 2.
 
 ### Nə quruldu
 
