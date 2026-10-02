@@ -127,6 +127,47 @@ Hesablar: `admin@dacy.local / Admin123!`, `telebe@dacy.local / Telebe123!` (`.en
 
 ---
 
-## Mərhələ 3 — Server lab-ları və sertifikat (gözləyir)
+## Mərhələ 3 — Server lab-ları və sertifikat (tamamlandı)
+
+### Nə quruldu
+
+- **Lab sürücüləri** (`apps/api/src/labs/`): `LabDriver` interfeysi; `DockerDriver` (dockerode — konteyner yaradılması: `Memory`/`NanoCpus`/`PidsLimit`, `NetworkMode: none` (addımda `network: true` ilə açılır), `CapDrop ALL` + entrypoint üçün minimum capability, `no-new-privileges`; `exec` ilə TTY qabıq, `/dacy/check.sh` yazılması, yoxlama `exec`-i (stdout/stderr demux, exit kodu, vaxt limiti), `docker pull` (`LAB_PULL`), etiketlə yetim axtarışı) və `MockDriver` (Docker-siz mühit: yaddaşda fayl sistemi, `ls/cd/cat/touch/echo/mkdir/rm/check/help`; yoxlama skriptinin `test -f/-d`, `grep -q`, `exit` sətirlərinin şərhi — heç bir real proses işləmir).
+- **LabsService**: sessiya həyat dövrü (STARTING → RUNNING → PASSED/STOPPED/EXPIRED/FAILED), hər addım üçün bir aktiv sessiya, ümumi limit (`LAB_MAX_SESSIONS`), kilid yoxlaması, yoxlama → `completeStep` (XP) / uğursuz cəhd sayı, 30 saniyəlik **reaper** (vaxtı bitənlər + yetim konteynerlər), admin siyahı/dayandırma. Marşrutlar: `GET/POST /learn/labs/steps/:stepId[/start]`, `POST /learn/labs/:id/stop|check|ticket`, `GET /admin/labs`, `POST /admin/labs/:id/stop`.
+- **WebSocket** (`labs.gateway.ts`, `@nestjs/platform-ws`, yol `/labs/ws`): 60 saniyəlik HMAC **bilet** ilə qoşulma (cookie başqa porta getmədiyi üçün), JSON mesajlar (`in`/`resize` ↔ `ready`/`out`/`exit`/`error`), ölçü dəyişməsi, bağlananda qabıq bağlanır.
+- **Web**: `terminal-workspace.tsx` (Terminal / Lab haqqında tabları, geri sayan taymer, «Lab-ı başlat», «Lab-ı sıfırla», «Yoxla», yoxlama çıxışı paneli, «Davam et»), `lab-terminal.tsx` (xterm.js + fit + web-links, yenidən qoşulma; yalnız brauzerdə yüklənir), `lab-panel.tsx` (başlat / hazırlanır / vaxt bitdi / xəta ekranları), `use-lab.ts`; CTF otağında `docker_image` varsa «Terminal» tabı (`ctf-lab-tab.tsx`). WebSocket ünvanı: `NEXT_PUBLIC_LAB_WS_URL` və ya eyni host + API portu.
+- **Sertifikat** (`apps/api/src/certificates/`): kurs bitəndə `ProgressService.completeStep`/`recomputeCourse` içində idempotent verilmə (`Certificate.seq` autoincrement → `DACY-C-<il>-000001`, snapshot: ad, kurs, istiqamət, saat, XP); `GET /certificates/:id` (ictimai, QR data-URL), `GET /certificates/:id.pdf` (pdfkit + DejaVu Sans, A4 landşaft, QR, ləğv möhürü), `GET /me/certificates`, `POST /admin/certificates/:id/revoke`. Web: `/sertifikat/[id]` (ictimai kart: ad, kurs, istiqamət, tarix, seriya, QR, «Etibarlıdır / Ləğv edilib», PDF, linki kopyala), `/sertifikatlar`, paneldə «Sertifikatlarım», kurs səhifəsində «Sertifikatı aç», kurs bitəndə toast. `CourseMapDto.certificateId`, `CompleteResultDto.certificateId`, `DashboardDto.certificateItems`.
+- **Admin**: `/admin/lablar` (aktiv sessiyalar, qalan vaxt, dayandır), terminal formasında «Konteynerdə internet» seçimi; ZIP formatında `network` sahəsi (`docs/content-package.md`).
+- **İnfrastruktur**: `infra/lab-images/numune/Dockerfile` (Alpine + bash + python3, `student` istifadəçisi, `check` əmri) və `infra/lab-images/README.md`; `pnpm lab:images`; docker-compose `api` servisinə Docker soketi; `.env.example` `LAB_*` dəyişənləri; migration `20261002110000_phase3_certificate_seq`.
+- **Seed**: nümunə terminal addımı real tapşırıqla (`touch ~/done.txt`), yoxlama skripti `test -f "$HOME/done.txt"`; nümunə kursun addım/fayl məzmunu dəyişəndə seed onları yeniləyir (SQL `expected` heşi qorunur).
+- **Testlər**: API unit `mock.driver.spec.ts`, `ticket.spec.ts`; API e2e `test/phase3.e2e-spec.ts` (kilid, başlat/sorğula, yoxlama keçmir/keçir + XP, WebSocket bilet + əmr, səhv bilet, dayandır/sıfırla, başqa tələbə 404, admin siyahı/dayandırma, reap → EXPIRED, CTF konteyneri, sertifikat: seriya/ictimai/QR/PDF/ikinci verilmir/panel/ləğv/403) — 12 test; Playwright `e2e/phase3.spec.ts` (tam kurs: SQL UI → Python → terminal xterm ilə `touch` → Yoxla → CTF → sertifikat səhifəsi, PDF, ictimai giriş, 404, admin lab siyahısı) — 5 test.
+
+### Skrinşot müqayisəsi
+
+`workspace-terminal.app.png` referansla müqayisə olundu: tab zolağı (Terminal / Lab haqqında + sağda taymer), tünd terminal sahəsi, prompt rəngi, «Lab-ı sıfırla» / «Lab keçildi» / «Davam et» düymə sırası referansa uyğundur. Fərq: referansdakı «etl.py» fayl tabı yoxdur (fayllar konteynerin içindədir, redaktor konteynerdəki `nano`-dur).
+
+### Necə işə salmaq
+
+- Real konteyner: serverdə Docker işləməlidir (`docker info`), `.env`-də `LAB_DRIVER=docker` (defolt), nümunə imic `pnpm lab:images`. Sonra `pnpm dev`.
+- Docker-siz (bu konteyner, CI): `LAB_DRIVER=mock` — virtual qabıq, UI və axın eynidir.
+- `docker compose --profile full up` API-yə Docker soketini montaj edir.
+
+### Nəyi yoxlamalı (öz kompüterinizdə, Docker ilə)
+
+1. `pnpm lab:images` → nümunə kursda terminal addımı → «Lab-ı başlat» → bir neçə saniyəyə `student@dacy-lab:~$` promptu (real bash). `docker ps` → `dacy.lab=1` etiketli konteyner, yaddaş limiti 512 MB.
+2. «Yoxla» → «✗ ~/done.txt yoxdur»; `touch ~/done.txt` → «Yoxla» → «✓ done.txt tapıldı», +100 XP, «Davam et». Terminalda `check` əmri də eyni skripti işlədir.
+3. «Lab-ı sıfırla» → köhnə konteyner silinir, yenisi açılır (fayl yoxdur). Vaxt limitini addımda 1 dəq qoyub bitməsini gözləyin → «Vaxt bitdi», konteyner `docker ps`-dən itir.
+4. `/admin/lablar` → aktiv sessiya, «Dayandır».
+5. CTF addımında «Docker imici» verin → otaqda «Terminal» tabı.
+6. Bütün addımları bitirin → «Sertifikat qazandınız» → kurs səhifəsində «Sertifikatı aç» → `/sertifikat/<id>` (girişsiz pəncərədə də açılır), «PDF yüklə», QR-ı telefonla skan edin → eyni səhifə. Admin API ilə ləğv: `POST /api/admin/certificates/<id>/revoke` → səhifədə «Ləğv edilib».
+7. Testlər: `pnpm test`, `pnpm --filter @dacy/api test:e2e`, `pnpm e2e`.
+
+### Məlum məhdudiyyətlər
+
+- Lab WebSocket-i Next proksisindən keçmir: brauzer API portuna birbaşa qoşulur; əks-proksi arxasında `NEXT_PUBLIC_LAB_WS_URL` verilməlidir.
+- Docker sürücüsü bu mühitdə yoxlanıla bilmədi (daemon yoxdur) — mock ilə eyni API/axın test olunub; real konteyner axını sizin kompüterinizdə yoxlanmalıdır (razılaşdırıldığı kimi).
+- Konteynerdə fayl redaktoru yoxdur (imic `nano`/`vim` verməlidir); fayl yükləmə/endirmə tabı yoxdur.
+- Sertifikat PDF-i server tərəfdə sinxron hazırlanır; çox böyük yüklənmə üçün keşləmək olar.
+
+---
 
 ## Mərhələ 4 — Learning Path (gözləyir)

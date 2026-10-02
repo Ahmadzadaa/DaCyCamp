@@ -123,3 +123,7 @@ export type CreateStepInput = z.infer<typeof createStepSchema>;
 export type QuizSubmissionInput = z.infer<typeof quizSubmissionSchema>;
 export type SqlSubmissionInput = z.infer<typeof sqlSubmissionSchema>;
 export type PythonSubmissionInput = z.infer<typeof pythonSubmissionSchema>;
+
+// Mərhələ 3
+export const labStartSchema = z.object({ reset: z.boolean().optional() });
+export type LabStartInput = z.infer<typeof labStartSchema>;

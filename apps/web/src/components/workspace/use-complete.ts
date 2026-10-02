@@ -10,6 +10,14 @@ export function useAfterComplete(courseSlug: string) {
     if (r.xpAwarded > 0 || preview)
       toast(`🎉 ${t('ws.correct')}`, { description: t('ws.earned', { n: r.xpAwarded }) });
     if (r.courseCompleted && !preview) toast(`🏆 ${t('ws.courseDone')}`);
+    if (r.certificateId && !preview)
+      toast(`🏅 ${t('cert.earned')}`, {
+        action: {
+          label: t('cert.open'),
+          onClick: () => router.push(`/sertifikat/${r.certificateId}`),
+        },
+        duration: 8000,
+      });
     const q = preview ? '?onizle=1' : '';
     if (r.next) router.push(`/kurs/${courseSlug}/${r.next.moduleKey}/${r.next.stepKey}${q}`);
     else router.push(`/kurs/${courseSlug}`);

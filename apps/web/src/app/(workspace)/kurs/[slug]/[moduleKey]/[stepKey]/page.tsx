@@ -13,6 +13,7 @@ import { RightPlaceholder } from '@/components/workspace/right-placeholder';
 import { SqlWorkspace } from '@/components/workspace/sql-workspace';
 import { PythonWorkspace } from '@/components/workspace/python-workspace';
 import { CtfWorkspace } from '@/components/workspace/ctf-workspace';
+import { TerminalWorkspace } from '@/components/workspace/terminal-workspace';
 
 type Props = {
   params: Promise<{ slug: string; moduleKey: string; stepKey: string }>;
@@ -82,6 +83,8 @@ export default async function LessonPage({ params, searchParams }: Props) {
               <PythonWorkspace view={view} py={v} />
             ) : v.kind === 'ctf' ? (
               <CtfWorkspace view={view} ctf={v} />
+            ) : v.kind === 'terminal' ? (
+              <TerminalWorkspace view={view} term={v} />
             ) : (
               <RightPlaceholder view={view} />
             )

@@ -109,13 +109,15 @@ const steps: Array<{ key: string; def: StepDefinition }> = [
       type: 'terminal',
       title: 'Nümunə terminal lab',
       xp: 100,
-      instructions: 'Nümunə təlimat — silinə bilər. Mərhələ 3-də real konteyner açılacaq.',
+      instructions:
+        'Nümunə təlimat — silinə bilər.\n\nKonteynerdə `student` istifadəçisi ilə işləyirsiniz. Ev qovluğunda `done.txt` faylı yaradın:\n\n```sh\ntouch ~/done.txt\n```\n\nSonra «Yoxla» düyməsinə basın (və ya terminalda `check` yazın).',
       docker_image: 'dacy/numune-lab:latest',
       time_limit_minutes: 30,
       check_script: 'checks/numune.sh',
-      hints: [],
-      tasks: ['Nümunə maddə'],
+      hints: ['Nümunə ipucu: `touch` əmri boş fayl yaradır.'],
+      tasks: ['~/done.txt faylını yaradın', '«Yoxla» ilə təsdiqləyin'],
       hint_penalty_xp: 0,
+      network: false,
     },
   },
   {
@@ -152,7 +154,8 @@ const assets: Array<{ path: string; filename: string; mime: string; content: str
     path: 'checks/numune.sh',
     filename: 'numune.sh',
     mime: 'text/x-shellscript',
-    content: '#!/bin/sh\n# Nümunə yoxlama skripti — exit 0 = keçdi\nexit 0\n',
+    content:
+      '#!/bin/sh\n# Nümunə yoxlama skripti — exit 0 = keçdi. Konteynerdə /dacy/check.sh kimi işləyir.\nif test -f "$HOME/done.txt"; then\n  echo "✓ done.txt tapıldı"\n  exit 0\nfi\necho "✗ ~/done.txt yoxdur — touch ~/done.txt"\nexit 1\n',
   },
   {
     path: 'files/numune.txt',
@@ -225,7 +228,9 @@ async function main() {
     const existing = await prisma.asset.findUnique({
       where: { courseId_path: { courseId: course.id, path: a.path } },
     });
-    if (existing && (await storageExists(existing.storageKey))) continue;
+    // məzmun dəyişməyibsə və fayl yerindədirsə toxunma; dəyişibsə (nümunə yenilənib) əvəz et
+    if (existing && existing.sha256 === sha256(buf) && (await storageExists(existing.storageKey)))
+      continue;
     if (existing) await removeFromStorage(existing.storageKey);
     const storageKey = await saveToStorage(course.id, a.filename, buf);
     const data = {
@@ -258,6 +263,16 @@ async function main() {
   // addımlar
   for (const [i, s] of steps.entries()) {
     const split = splitStep(s.def);
+    // nümunə kurs platformaya aiddir: məzmun yenilənibsə addımı da yenilə (SQL-in hesablanmış `expected` heşi qorunur)
+    const prev = await prisma.step.findUnique({
+      where: { moduleId_key: { moduleId: mod.id, key: s.key } },
+      select: { secret: true },
+    });
+    const prevExpected = (prev?.secret as { expected?: unknown } | null)?.expected;
+    const secret =
+      split.secret && prevExpected && split.type === 'SQL'
+        ? { ...(split.secret as object), expected: prevExpected }
+        : split.secret;
     const step = await prisma.step.upsert({
       where: { moduleId_key: { moduleId: mod.id, key: s.key } },
       create: {
@@ -269,9 +284,15 @@ async function main() {
         order: i + 1,
         isPublished: true,
         config: split.config as unknown as Prisma.InputJsonValue,
-        secret: split.secret ? (split.secret as unknown as Prisma.InputJsonValue) : Prisma.JsonNull,
+        secret: secret ? (secret as unknown as Prisma.InputJsonValue) : Prisma.JsonNull,
       },
-      update: {},
+      update: {
+        title: split.title,
+        xp: split.xp,
+        isPublished: true,
+        config: split.config as unknown as Prisma.InputJsonValue,
+        secret: secret ? (secret as unknown as Prisma.InputJsonValue) : Prisma.JsonNull,
+      },
     });
     for (const t of split.ctfTasks) {
       await prisma.ctfTask.upsert({

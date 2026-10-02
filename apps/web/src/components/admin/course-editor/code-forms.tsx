@@ -3,6 +3,7 @@ import { Plus, Trash2 } from 'lucide-react';
 import type { AssetDto, StepDefinitionDraft } from '@dacy/shared';
 import { t } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Field } from '@/components/ui/field';
 import { Input, Textarea } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
@@ -215,8 +216,8 @@ export function TerminalForm({
 }) {
   return (
     <>
-      <div className="rounded-lg border border-de/50 bg-de/10 px-4 py-2 text-sm md:col-span-2">
-        {t('admin.formLater', { phase: 3 })} (forma hazırdır, konteyner Mərhələ 3-də)
+      <div className="rounded-lg border border-line bg-muted/30 px-4 py-2 text-sm text-muted md:col-span-2">
+        {t('admin.labReady')}
       </div>
       <Field label={t('admin.instructions')} full>
         <Textarea
@@ -241,6 +242,16 @@ export function TerminalForm({
           value={def.time_limit_minutes ?? 60}
           onChange={(e) => onChange({ time_limit_minutes: Number(e.target.value) })}
         />
+      </Field>
+      <Field label={t('admin.network')} hint={t('admin.networkHelp')}>
+        <label className="flex items-center gap-2 text-sm">
+          <Checkbox
+            checked={!!def.network}
+            onCheckedChange={(v) => onChange({ network: v === true })}
+            aria-label={t('admin.network')}
+          />
+          {def.network ? t('ws.labNetworkOn') : t('ws.labNetworkOff')}
+        </label>
       </Field>
       <Field label={t('admin.checkScript')} hint={t('admin.selectCheckScript')} full>
         <AssetPicker

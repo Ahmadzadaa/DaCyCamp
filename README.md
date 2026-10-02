@@ -80,6 +80,7 @@ Müəllim (INSTRUCTOR) rolunu admin `/admin/telebeler` səhifəsindən verir.
 | `pnpm test`                                   | shared (Vitest) + web (Vitest) unit testləri                                                             |
 | `pnpm --filter @dacy/api test:e2e`            | API e2e testləri (`DATABASE_URL_TEST` bazasında)                                                         |
 | `pnpm e2e`                                    | Playwright: tələbə axını, admin, Mərhələ 2 (SQL/Python/CTF/ZIP) — API + web işləməlidir                  |
+| `pnpm lab:images`                             | nümunə lab imicini qur (`dacy/numune-lab:latest`, Docker lazımdır)                                       |
 | `pnpm --filter @dacy/web runtimes`            | brauzer mühitlərini (DuckDB-WASM, Pyodide nüvəsi, Monaco) `public/`-ə kopyala (dev/build avtomatik edir) |
 | `pnpm screenshots`                            | dizayn referansı vs tətbiq skrinşotları → `docs/screenshots/`                                            |
 | `pnpm db:migrate`                             | yeni migrasiya (`prisma migrate dev`)                                                                    |
@@ -107,6 +108,17 @@ Tələbə kodu **heç vaxt serverdə işləmir** — hər şey brauzerdədir:
 - **CTF**: cavablar bazada yalnız HMAC-SHA256 (`CTF_PEPPER`) heşi kimi saxlanılır, frontend-ə heç vaxt getmir; yoxlama `POST /learn/ctf-tasks/:id/answer` — istifadəçi başına **10 cəhd / dəq**.
 - **İpucu**: hər açılan ipucu `hint_penalty_xp` qədər XP cəriməsi (addımın XP-si bundan azalır; tapşırıq səviyyəsində `0` = pulsuz).
 
+## Terminal lab-ları və sertifikat (Mərhələ 3)
+
+**Terminal lab** (`type: terminal`): hər tələbə üçün `docker_image`-dən ayrıca, məhdudlaşdırılmış konteyner açılır (yaddaş/CPU/pid limiti, defolt şəbəkəsiz, `no-new-privileges`), brauzerdə **xterm.js** terminalı WebSocket ilə konteynerin qabığına bağlanır, vaxt limiti bitəndə konteyner silinir. «Yoxla» düyməsi addımın `check_script`-ini konteynerdə `sh /dacy/check.sh` kimi işlədir — **exit 0 = keçdi**, addım tamamlanır və XP verilir. «Lab-ı sıfırla» konteyneri yenidən yaradır. CTF addımında `docker_image` verilsə, otaqda «Terminal» tabı açılır (yoxlamasız mühit).
+
+- API Docker daemon-a `/var/run/docker.sock` (və ya `DOCKER_HOST`) ilə qoşulur; `docker compose --profile full` soketi montaj edir. Docker olmayan serverdə `LAB_DRIVER=mock` virtual qabıq verir (yalnız test/nümayiş), `LAB_DRIVER=off` lab-ları söndürür.
+- `.env`: `LAB_MAX_SESSIONS`, `LAB_MEMORY_MB`, `LAB_CPUS`, `LAB_PIDS_LIMIT`, `LAB_PULL`, `LAB_CHECK_TIMEOUT_SEC`; brauzer üçün `NEXT_PUBLIC_LAB_WS_URL` (defolt: eyni host, API portu, `/labs/ws` — Next proksisi WebSocket ötürmür, ona görə API portu brauzerdən əlçatan olmalıdır; Codespaces/əks-proksi arxasında bu dəyişəni verin).
+- Lab imicləri və yoxlama skriptləri: `infra/lab-images/README.md`. Nümunə imic: `pnpm lab:images`.
+- Vaxtı bitən sessiyalar və yetim konteynerlər hər 30 saniyədə təmizlənir; `/admin/lablar` aktiv sessiyaları göstərir və dayandırır.
+
+**Sertifikat**: kursun bütün dərc olunmuş addımları tamamlananda avtomatik verilir (tələbə + kurs üçün bir dəfə, seriya `DACY-C-<il>-<nömrə>`). Ad, kurs və istiqamət sertifikatda dondurulur (kurs sonradan dəyişsə də). `/sertifikat/[id]` ictimai yoxlama səhifəsi (QR kod ona işarə edir), `/api/certificates/[id].pdf` A4 PDF (DejaVu Sans — ə, ğ, ş düzgün). Admin `POST /admin/certificates/:id/revoke` ilə ləğv edə bilər; səhifə və PDF «Ləğv edilib» göstərir. `NEXT_PUBLIC_APP_URL` yoxlama linkinin bazasıdır.
+
 ## Kurs paketi (ZIP)
 
 Müəllim kursu `course.yaml` + `modules/NN-fesil/NN-addim.(md|yaml)` + `datasets/ files/ images/ checks/` quruluşunda ZIP kimi hazırlayıb `/admin/idxal`-da yükləyir: **Yoxla** (heç nə yazılmır, səhv/xəbərdarlıq siyahısı) → **Tətbiq et** (bir tranzaksiyada; mövcud kurs `slug` + açarlar üzrə yenilənir, tələbə irəliləyişi qorunur, paketdə olmayan addımlar dərcdən çıxarılır). Kurs redaktorundakı **ZIP ixrac** eyni formatda paket verir (CTF cavabları yalnız heş). Formatın tam təsviri: `docs/content-package.md` (test `correct` sahəsi 1-dən sayılır).
@@ -126,14 +138,17 @@ docs/           spesifikasiya, dizayn referansı, PLAN.md, screenshots/
 
 ## Əsas URL-lər
 
-| URL                                     | Məzmun                                                            |
-| --------------------------------------- | ----------------------------------------------------------------- |
-| `/kurslar`                              | kataloq (istiqamət / səviyyə filtri)                              |
-| `/kurs/[slug]`                          | kurs səhifəsi (fəsillər, addımlar, irəliləyiş)                    |
-| `/kurs/[slug]/[fəsil]/[addım]`          | dərs ekranı (tam ekran, tünd) — `/kurs/x/2/4` forması da işləyir  |
-| `/panel`                                | şəxsi panel                                                       |
-| `/admin/kurslar`                        | admin redaktoru (INSTRUCTOR / ADMIN)                              |
-| `/admin/idxal`                          | ZIP kurs paketi idxalı (yoxla → tətbiq et) və idxal tarixçəsi     |
-| `/admin/fayllar`                        | fayl kitabxanası (datasets/, files/, images/, checks/)            |
-| `GET /api/admin/courses/:id/export.zip` | kursu ZIP kimi ixrac et (kurs redaktorundakı «ZIP ixrac» düyməsi) |
-| `http://localhost:4000/health`          | API sağlamlıq yoxlaması                                           |
+| URL                                     | Məzmun                                                                               |
+| --------------------------------------- | ------------------------------------------------------------------------------------ |
+| `/kurslar`                              | kataloq (istiqamət / səviyyə filtri)                                                 |
+| `/kurs/[slug]`                          | kurs səhifəsi (fəsillər, addımlar, irəliləyiş)                                       |
+| `/kurs/[slug]/[fəsil]/[addım]`          | dərs ekranı (tam ekran, tünd) — `/kurs/x/2/4` forması da işləyir                     |
+| `/panel`                                | şəxsi panel                                                                          |
+| `/admin/kurslar`                        | admin redaktoru (INSTRUCTOR / ADMIN)                                                 |
+| `/sertifikat/[id]`                      | sertifikatın ictimai yoxlama səhifəsi (girişsiz), `/api/certificates/[id].pdf` — PDF |
+| `/sertifikatlar`                        | tələbənin sertifikatları                                                             |
+| `/admin/lablar`                         | aktiv terminal lab sessiyaları (dayandırma)                                          |
+| `/admin/idxal`                          | ZIP kurs paketi idxalı (yoxla → tətbiq et) və idxal tarixçəsi                        |
+| `/admin/fayllar`                        | fayl kitabxanası (datasets/, files/, images/, checks/)                               |
+| `GET /api/admin/courses/:id/export.zip` | kursu ZIP kimi ixrac et (kurs redaktorundakı «ZIP ixrac» düyməsi)                    |
+| `http://localhost:4000/health`          | API sağlamlıq yoxlaması                                                              |

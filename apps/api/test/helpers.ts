@@ -1,5 +1,6 @@
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
+import { WsAdapter } from '@nestjs/platform-ws';
 import cookieParser from 'cookie-parser';
 import request from 'supertest';
 import { hash } from '@node-rs/argon2';
@@ -10,6 +11,7 @@ import { PrismaService } from '../src/prisma/prisma.service';
 export async function createApp(): Promise<{ app: INestApplication; prisma: PrismaService }> {
   const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).compile();
   const app = moduleRef.createNestApplication({ logger: ['error'] });
+  app.useWebSocketAdapter(new WsAdapter(app));
   app.use(cookieParser());
   app.useGlobalFilters(new HttpExceptionFilter());
   await app.init();

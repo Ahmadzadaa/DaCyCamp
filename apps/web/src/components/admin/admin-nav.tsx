@@ -8,6 +8,7 @@ const NAV = [
   { href: '/admin/istiqametler', match: /^\/admin\/istiqametler/, label: () => t('nav.tracks') },
   { href: '/admin/telebeler', match: /^\/admin\/telebeler/, label: () => t('nav.students') },
   { href: '/admin/fayllar', match: /^\/admin\/fayllar/, label: () => t('nav.files') },
+  { href: '/admin/lablar', match: /^\/admin\/lablar/, label: () => t('nav.labs') },
 ];
 
 export function AdminNav() {

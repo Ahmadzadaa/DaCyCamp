@@ -50,6 +50,7 @@ const defs: StepDefinition[] = [
     docker_image: 'img',
     time_limit_minutes: 30,
     check_script: 'checks/c.sh',
+    network: false,
     hints: ['h'],
     tasks: [],
   },

@@ -1,6 +1,7 @@
 import 'reflect-metadata';
 import { env } from './config/env';
 import { NestFactory } from '@nestjs/core';
+import { WsAdapter } from '@nestjs/platform-ws';
 import { Logger } from '@nestjs/common';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
@@ -9,6 +10,7 @@ import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { logger: ['error', 'warn', 'log'] });
+  app.useWebSocketAdapter(new WsAdapter(app)); // terminal lab-ları (/labs/ws)
   app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
   app.use(cookieParser());
   app.enableCors({ origin: [env.WEB_ORIGIN], credentials: true });

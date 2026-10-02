@@ -81,6 +81,28 @@ test('dərs ekranı (müəllim önizləməsi) və admin', async ({ page }) => {
         .waitFor({ timeout: 90_000 })
         .catch(() => {});
     }
+    if (key === 'terminal') {
+      // lab-ı başlat (mock/docker) və terminalın açılmasını gözlə
+      const start = page.getByTestId('lab-start');
+      if (await start.isVisible().catch(() => false)) await start.click();
+      await page
+        .locator('[data-testid="lab-terminal"][data-state="open"]')
+        .waitFor({ timeout: 60_000 })
+        .catch(() => {});
+      await page
+        .locator('.xterm-rows')
+        .getByText('$')
+        .first()
+        .waitFor({ timeout: 15_000 })
+        .catch(() => {});
+      await page
+        .locator('[data-testid="lab-terminal"]')
+        .click()
+        .catch(() => {});
+      await page.keyboard.type('ls');
+      await page.keyboard.press('Enter');
+      await page.waitForTimeout(600);
+    }
     await page.waitForLoadState('networkidle').catch(() => {});
     await page.waitForTimeout(400);
     await page.screenshot({ path: out(`${name}.app.png`), fullPage: false });

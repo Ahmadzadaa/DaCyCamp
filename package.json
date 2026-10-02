@@ -18,6 +18,7 @@
     "db:migrate": "pnpm --filter @dacy/api prisma:migrate",
     "db:deploy": "pnpm --filter @dacy/api prisma:deploy",
     "db:seed": "pnpm --filter @dacy/api prisma:seed",
+    "lab:images": "docker build -t dacy/numune-lab:latest infra/lab-images/numune",
     "db:reset": "pnpm --filter @dacy/api prisma:reset",
     "db:studio": "pnpm --filter @dacy/api prisma:studio",
     "screenshots": "node scripts/screenshots.mjs",

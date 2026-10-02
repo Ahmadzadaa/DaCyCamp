@@ -38,6 +38,8 @@ services:
       STORAGE_DIR: /data/storage
     volumes:
       - dacy_storage:/data/storage
+      # terminal lab-ları: API host Docker daemon-u ilə konteyner açır
+      - /var/run/docker.sock:/var/run/docker.sock
     ports:
       - '${API_PORT:-4000}:4000'
 

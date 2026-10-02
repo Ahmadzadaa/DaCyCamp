@@ -3,6 +3,7 @@ import { Markdown } from '@/components/app/markdown';
 import { t } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import { HintsBox } from './hints-box';
+import { LabCountdown } from './lab-countdown';
 
 export function InstructionsPane({ view }: { view: StepViewDto }) {
   const v = view.view;
@@ -19,9 +20,7 @@ export function InstructionsPane({ view }: { view: StepViewDto }) {
         </span>
         <span className="xp">{t('common.plusXp', { n: view.xp })}</span>
         {v.kind === 'terminal' ? (
-          <span className="ml-auto text-[0.82rem] text-on-dark-muted">
-            ⏱ {t('ws.timeLeft', { t: `${v.time_limit_minutes}:00` })}
-          </span>
+          <LabCountdown stepId={view.id} minutes={v.time_limit_minutes} />
         ) : null}
       </div>
       <h1>{view.title}</h1>

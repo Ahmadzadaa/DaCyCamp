@@ -92,10 +92,17 @@ export class LearnService {
     const outline = await this.catalog.outline(slug, { userId, staff: preview });
     const { flat: _f, ...rest } = map;
     const cont = map.continueStep;
+    const cert = enrollment?.completedAt
+      ? await this.prisma.certificate.findUnique({
+          where: { userId_courseId: { userId, courseId: course.id } },
+          select: { id: true },
+        })
+      : null;
     return {
       course: outline,
       enrolled: !!enrollment,
       map: rest,
+      certificateId: cert?.id ?? null,
       continueUrl: cont
         ? `/kurs/${slug}/${cont.moduleKey}/${cont.stepKey}${preview ? '?onizle=1' : ''}`
         : null,

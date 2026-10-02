@@ -60,6 +60,8 @@ export interface TerminalConfig {
   time_limit_minutes: number;
   tasks: string[];
   hint_count: number;
+  /** konteynerdə internet */
+  network: boolean;
 }
 export interface TerminalSecret {
   check_script: string;
@@ -191,6 +193,7 @@ export function splitStep(def: StepDefinitionDraft | StepDefinition): SplitResul
           tasks: def.tasks ?? [],
           hint_count: hints.length,
           hint_penalty_xp: def.hint_penalty_xp ?? 0,
+          network: def.network ?? false,
         },
         secret: { check_script: def.check_script ?? '', hints },
         ctfTasks: [],
@@ -313,6 +316,7 @@ export function mergeStep(
         hints: (s.hints as string[]) ?? [],
         tasks: (c.tasks as string[]) ?? [],
         hint_penalty_xp: (c.hint_penalty_xp as number) ?? 0,
+        network: (c.network as boolean) ?? false,
       };
     case 'CTF':
       return {
@@ -387,6 +391,7 @@ export type TerminalStudentView = {
   instructions: string;
   docker_image: string;
   time_limit_minutes: number;
+  network: boolean;
   tasks: string[];
   hint_count: number;
   hints_unlocked: string[];
@@ -397,6 +402,8 @@ export type CtfStudentView = {
   instructions: string;
   attachments: AttachmentView[];
   hint_penalty_xp: number;
+  /** istəyə bağlı konteyner terminalı (docker_image verilibsə) */
+  has_terminal: boolean;
   tasks: CtfTaskView[];
 };
 export type StepStudentView =
@@ -483,6 +490,7 @@ export function toStudentView(
         hint_count: (c.hint_count as number) ?? 0,
         hints_unlocked: hints,
         hint_penalty_xp: (c.hint_penalty_xp as number) ?? 0,
+        network: (c.network as boolean) ?? false,
       };
     case 'CTF':
       return {
@@ -490,6 +498,7 @@ export function toStudentView(
         instructions: (c.instructions as string) ?? '',
         attachments: resolve((c.attachments as string[]) ?? []),
         hint_penalty_xp: (c.hint_penalty_xp as number) ?? DEFAULT_HINT_PENALTY_XP,
+        has_terminal: !!(c.docker_image as string | undefined),
         tasks: (meta.ctfTasks ?? [])
           .slice()
           .sort((a, b) => a.order - b.order)
@@ -601,6 +610,7 @@ export function emptyDefinition(type: StepType, title: string): StepDefinitionDr
         hints: [],
         tasks: [],
         hint_penalty_xp: 0,
+        network: false,
       };
     case 'CTF':
       return {

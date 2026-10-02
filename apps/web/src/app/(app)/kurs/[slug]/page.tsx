@@ -46,8 +46,19 @@ export default async function CoursePage({ params, searchParams }: Props) {
         <h1>{outline.title}</h1>
         <p>{outline.description}</p>
         {completed ? (
-          <p className="mt-3 inline-block rounded-lg bg-brand/15 px-3 py-1 text-sm font-semibold text-brand">
-            🎉 {t('course.completedBanner')}
+          <p className="mt-3 flex flex-wrap items-center gap-2">
+            <span className="inline-block rounded-lg bg-brand/15 px-3 py-1 text-sm font-semibold text-brand">
+              🎉 {t('course.completedBanner')}
+            </span>
+            {mapDto?.certificateId ? (
+              <Link
+                href={`/sertifikat/${mapDto.certificateId}`}
+                className="b b-brand b-sm"
+                data-testid="course-cert"
+              >
+                🏅 {t('cert.open')}
+              </Link>
+            ) : null}
           </p>
         ) : null}
       </header>

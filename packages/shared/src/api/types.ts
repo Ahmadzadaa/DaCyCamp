@@ -75,6 +75,8 @@ export interface CourseMapDto {
   map: Omit<CourseMap, 'flat'>;
   continueUrl: string | null;
   completedAt: string | null;
+  /** kurs bitibsə sertifikatın ictimai id-si */
+  certificateId: string | null;
 }
 
 export interface StepViewDto {
@@ -110,6 +112,8 @@ export interface CompleteResultDto {
   coursePercent: number;
   courseCompleted: boolean;
   next: { moduleKey: string; stepKey: string } | null;
+  /** kurs indicə bitibsə — verilən sertifikat (Mərhələ 3) */
+  certificateId?: string | null;
 }
 
 export interface QuizResultDto extends CompleteResultDto {
@@ -166,6 +170,8 @@ export interface DashboardDto {
   streakDays: number;
   stepsCompleted: number;
   certificates: number;
+  /** son sertifikatlar (panel üçün) */
+  certificateItems: CertificateSummaryDto[];
   week: boolean[];
   activePath: null;
 }
@@ -257,4 +263,73 @@ export interface Paged<T> {
   total: number;
   page: number;
   pageSize: number;
+}
+
+// ───────────────────────── Mərhələ 3: terminal lab-ları və sertifikat ─────────────────────────
+
+export const LAB_STATUSES = [
+  'STARTING',
+  'RUNNING',
+  'PASSED',
+  'EXPIRED',
+  'STOPPED',
+  'FAILED',
+] as const;
+export type LabStatus = (typeof LAB_STATUSES)[number];
+
+export interface LabSessionDto {
+  id: string;
+  stepId: string;
+  status: LabStatus;
+  image: string;
+  startedAt: string;
+  expiresAt: string;
+  endedAt: string | null;
+  passedAt: string | null;
+  /** qalan saniyə (RUNNING/STARTING üçün) */
+  remainingSec: number;
+  /** FAILED üçün səbəb, PASSED/FAILED yoxlama çıxışı */
+  message: string | null;
+  driver: 'docker' | 'mock';
+}
+
+export interface LabTicketDto {
+  token: string;
+  /** WebSocket yolu (host brauzerdə müəyyənləşir) */
+  path: string;
+}
+
+export interface LabCheckResultDto {
+  passed: boolean;
+  exitCode: number;
+  output: string;
+  timedOut: boolean;
+  complete: CompleteResultDto | null;
+}
+
+export interface AdminLabSessionDto extends LabSessionDto {
+  user: { id: string; name: string; email: string };
+  step: { id: string; title: string; courseSlug: string; courseTitle: string };
+  containerId: string | null;
+}
+
+export interface CertificateSummaryDto {
+  id: string;
+  serial: string;
+  courseTitle: string;
+  courseSlug: string | null;
+  trackTitle: string;
+  trackColor: string;
+  issuedAt: string;
+  revokedAt: string | null;
+}
+
+export interface CertificateDto extends CertificateSummaryDto {
+  studentName: string;
+  hours: number | null;
+  xp: number;
+  verifyUrl: string;
+  /** QR kod (data:image/png;base64,…) — verifyUrl-ə işarə edir */
+  qrDataUrl: string;
+  pdfUrl: string;
 }

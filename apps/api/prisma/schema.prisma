@@ -449,6 +449,8 @@ model ActivityDay {
 /// Phase 3. id is the public verification id (/sertifikat/[id]); snapshot freezes names so deletion of the course never breaks the page.
 model Certificate {
   id        String    @id @default(uuid())
+  /// ardıcıl nömrə → serial (DACY-C-2026-000001)
+  seq       Int       @unique @default(autoincrement())
   serial    String    @unique // DACY-C-2026-000001
   userId    String
   courseId  String?

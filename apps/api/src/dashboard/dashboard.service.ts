@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import type { DashboardDto } from '@dacy/shared';
 import { PrismaService } from '../prisma/prisma.service';
+import { toCertificateSummary } from '../certificates/certificates.service';
 import { ProgressService } from '../progress/progress.service';
 import { toPublicUser } from '../auth/auth.service';
 import { addDays, dateToDay, dayKey, weekDays } from '../progress/dates';
@@ -64,10 +65,15 @@ export class DashboardService {
       streak++;
       cursor = addDays(cursor, -1);
     }
-    const [stepsCompleted, certificates, pathCerts] = await Promise.all([
+    const [stepsCompleted, certificates, pathCerts, certRows] = await Promise.all([
       this.prisma.stepProgress.count({ where: { userId, status: 'COMPLETED' } }),
       this.prisma.certificate.count({ where: { userId, revokedAt: null } }),
       this.prisma.pathCertificate.count({ where: { userId, revokedAt: null } }),
+      this.prisma.certificate.findMany({
+        where: { userId },
+        orderBy: { issuedAt: 'desc' },
+        take: 6,
+      }),
     ]);
     const allDays = new Set(
       (
@@ -84,6 +90,7 @@ export class DashboardService {
       streakDays: streak,
       stepsCompleted,
       certificates: certificates + pathCerts,
+      certificateItems: certRows.map(toCertificateSummary),
       week: weekDays(today).map((d) => allDays.has(d)),
       activePath: null,
     };

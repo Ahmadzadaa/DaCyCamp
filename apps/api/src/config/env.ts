@@ -36,6 +36,18 @@ const schema = z.object({
   SEED_STUDENT_EMAIL: z.string().default('telebe@dacy.local'),
   SEED_STUDENT_PASSWORD: z.string().default('Telebe123!'),
   APP_TIMEZONE: z.string().default('Asia/Baku'),
+  // Mərhələ 3 — terminal lab-ları
+  LAB_DRIVER: z.enum(['docker', 'mock', 'off']).default('docker'),
+  DOCKER_SOCKET: z.string().optional(),
+  LAB_MAX_SESSIONS: z.coerce.number().int().min(1).default(20),
+  LAB_MEMORY_MB: z.coerce.number().int().min(64).default(512),
+  LAB_CPUS: z.coerce.number().min(0.1).default(0.5),
+  LAB_PIDS_LIMIT: z.coerce.number().int().min(16).default(256),
+  LAB_PULL: z
+    .string()
+    .default('true')
+    .transform((v) => v !== 'false'),
+  LAB_CHECK_TIMEOUT_SEC: z.coerce.number().int().min(5).max(600).default(60),
 });
 
 const parsed = schema.safeParse(process.env);

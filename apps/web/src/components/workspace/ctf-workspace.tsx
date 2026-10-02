@@ -11,6 +11,7 @@ import { t } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { useAfterComplete } from './use-complete';
+import { CtfLabTab } from './ctf-lab-tab';
 
 type TaskState = CtfStudentView['tasks'][number] & {
   answer: string;
@@ -23,7 +24,7 @@ export function CtfWorkspace({ view, ctf }: { view: StepViewDto; ctf: CtfStudent
   const after = useAfterComplete(view.course.slug);
   const router = useRouter();
   const [tasks, setTasks] = useState<TaskState[]>(ctf.tasks.map((x) => ({ ...x, answer: '' })));
-  const [tab, setTab] = useState<'questions' | 'files'>('questions');
+  const [tab, setTab] = useState<'questions' | 'files' | 'terminal'>('questions');
   const [done, setDone] = useState<CtfAnswerResultDto | null>(null);
   const q = view.preview ? '?preview=1' : '';
   const patch = (id: string, p: Partial<TaskState>) =>
@@ -46,6 +47,14 @@ export function CtfWorkspace({ view, ctf }: { view: StepViewDto; ctf: CtfStudent
         if (r.solvedAll) {
           setDone(r);
           toast(`🏁 ${t('ws.ctfAllSolved')}`);
+          if (r.certificateId && !view.preview)
+            toast(`🏅 ${t('cert.earned')}`, {
+              action: {
+                label: t('cert.open'),
+                onClick: () => router.push(`/sertifikat/${r.certificateId}`),
+              },
+              duration: 8000,
+            });
         }
       } else {
         patch(task.id, { wrong: true, busy: false });
@@ -100,8 +109,21 @@ export function CtfWorkspace({ view, ctf }: { view: StepViewDto; ctf: CtfStudent
             {t('ws.files')}
           </button>
         ) : null}
+        {ctf.has_terminal ? (
+          <button
+            type="button"
+            role="tab"
+            aria-selected={tab === 'terminal'}
+            className={cn(tab === 'terminal' && 'on')}
+            onClick={() => setTab('terminal')}
+          >
+            {t('ws.terminal')}
+          </button>
+        ) : null}
       </div>
-      {tab === 'files' ? (
+      {tab === 'terminal' ? (
+        <CtfLabTab stepId={view.id} preview={view.preview} />
+      ) : tab === 'files' ? (
         <div className="flex flex-col gap-2 overflow-auto p-[18px]">
           {ctf.attachments.map((a) => (
             <div key={a.path} className="fq flex items-center gap-3">

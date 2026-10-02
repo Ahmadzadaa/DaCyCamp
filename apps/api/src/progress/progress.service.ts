@@ -9,6 +9,7 @@ import {
 } from '@dacy/shared';
 import { PrismaService } from '../prisma/prisma.service';
 import { PathsService } from '../paths/paths.service';
+import { CertificatesService } from '../certificates/certificates.service';
 import { dayKey, dayToDate } from './dates';
 import { forbidden, notFound } from '../common/errors';
 
@@ -41,6 +42,7 @@ export class ProgressService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly paths: PathsService,
+    private readonly certs: CertificatesService,
   ) {}
 
   async loadCourseShape(
@@ -248,6 +250,10 @@ export class ProgressService {
         });
         await this.paths.onCourseCompleted(tx, userId, courseId);
       }
+      // kurs bitibsə sertifikat (idempotent — artıq varsa eyni id)
+      const certificateId = map.isComplete
+        ? await this.certs.issueForCourse(tx, userId, courseId)
+        : null;
       await tx.user.update({ where: { id: userId }, data: { lastActiveAt: now } });
       return {
         xpAwarded,
@@ -256,6 +262,7 @@ export class ProgressService {
         next: map.continueStep
           ? { moduleKey: map.continueStep.moduleKey, stepKey: map.continueStep.stepKey }
           : null,
+        certificateId,
       };
     });
   }
@@ -287,6 +294,7 @@ export class ProgressService {
           ...(map.isComplete && !e.completedAt ? { completedAt: new Date() } : {}),
         },
       });
+      if (map.isComplete) await this.certs.issueForCourse(this.prisma, e.userId, courseId);
     }
   }
 }

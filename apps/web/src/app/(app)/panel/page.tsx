@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { BookOpen } from 'lucide-react';
+import { Award, BookOpen } from 'lucide-react';
 import type { DashboardDto } from '@dacy/shared';
 import { apiTry } from '@/lib/api/server';
 import { t, tList } from '@/lib/i18n';
@@ -94,6 +94,34 @@ export default async function DashboardPage() {
             ))}
           </div>
         </div>
+        {d.certificateItems.length ? (
+          <div className="box">
+            <b>{t('cert.myTitle')}</b>
+            <ul className="mt-2 flex flex-col gap-2">
+              {d.certificateItems.map((c) => (
+                <li key={c.id}>
+                  <Link
+                    href={`/sertifikat/${c.id}`}
+                    className="flex items-center gap-2 text-sm hover:underline"
+                    data-testid="dash-cert"
+                  >
+                    <Award className="size-4 shrink-0" style={{ color: c.trackColor }} />
+                    <span className="truncate">{c.courseTitle}</span>
+                    <span className="ml-auto shrink-0 font-mono text-xs text-muted">
+                      {c.serial}
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+            <Link
+              href="/sertifikatlar"
+              className="mt-2 inline-block text-xs text-muted hover:underline"
+            >
+              {t('nav.certificates')} →
+            </Link>
+          </div>
+        ) : null}
       </aside>
     </div>
   );

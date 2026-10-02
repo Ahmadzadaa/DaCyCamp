@@ -136,11 +136,20 @@ type: terminal
 title: İlk ETL pipeline
 instructions: |
   ...
-docker_image: dacy/de-lab-postgres:latest
-time_limit_minutes: 60
-check_script: checks/etl_check.sh
+docker_image: dacy/de-lab-postgres:latest # hər tələbəyə ayrıca konteyner
+time_limit_minutes: 60 # vaxt bitəndə konteyner silinir
+check_script: checks/etl_check.sh # konteynerdə /dacy/check.sh kimi işləyir, exit 0 = keçdi
+network: false # konteynerdə internet (defolt: bağlı)
+hints:
+  - İpucu mətni
+tasks:
+  - Tapşırıq maddəsi
+hint_penalty_xp: 0
 xp: 100
 ```
+
+- `check_script` faylı paketdə `checks/` qovluğunda olmalıdır; «Yoxla» düyməsi onu konteynerin içində `sh /dacy/check.sh` ilə işlədir (tələbənin istifadəçisi ilə). stdout/stderr tələbəyə göstərilir.
+- İmic hazırlamaq: `infra/lab-images/README.md`.
 
 ### ctf
 

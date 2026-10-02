@@ -156,6 +156,8 @@ export const terminalStrict = z.object({
   time_limit_minutes: z.number().int().min(1).max(600).default(DEFAULT_LAB_MINUTES),
   check_script: assetPath,
   hints: lines.default([]),
+  /** konteynerdə internet (defolt: bağlı) */
+  network: z.boolean().default(false),
   tasks: lines.default([]),
   hint_penalty_xp: z.number().int().min(0).max(1000).default(0),
 });
@@ -167,6 +169,7 @@ export const terminalDraft = z.object({
   time_limit_minutes: z.number().int().min(1).max(600).default(DEFAULT_LAB_MINUTES),
   check_script: assetPath.optional(),
   hints: lines.default([]),
+  network: z.boolean().default(false),
   tasks: lines.default([]),
   hint_penalty_xp: z.number().int().min(0).max(1000).default(0),
 });
