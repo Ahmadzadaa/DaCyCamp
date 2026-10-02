@@ -5,7 +5,7 @@
 import { env } from '../src/config/env';
 import { Prisma, PrismaClient } from '@prisma/client';
 import { hash } from '@node-rs/argon2';
-import { DEFAULT_TRACKS, splitStep, type StepDefinition } from '@dacy/shared';
+import { DEFAULT_TRACKS, splitAssessment, splitStep, type StepDefinition } from '@dacy/shared';
 import { hashAnswer } from '../src/content/ctf-hash';
 import {
   detectKind,
@@ -311,8 +311,111 @@ async function main() {
       });
     }
   }
+  // nümunə karyera yolu — formatı göstərmək üçün (silinə bilər)
+  const pathTrack = await prisma.track.findUniqueOrThrow({ where: { slug: 'data-analytics' } });
+  const pathMeta = {
+    title: 'NÜMUNƏ YOL — silinə bilər',
+    description:
+      'Bu yol yalnız formatı göstərir: kurs → mərhələ imtahanı → layihə → final. Real yolları admin paneldən və ya path.yaml ilə yükləyin.',
+    level: 'BEGINNER' as const,
+    targetAudience: 'Nümunə: platformanı yoxlayanlar',
+    skills: ['Nümunə bacarıq 1', 'Nümunə bacarıq 2'],
+    estimatedHours: 2,
+    sequential: true,
+    isPublished: true,
+  };
+  const samplePath = await prisma.learningPath.upsert({
+    where: { slug: 'numune-yol' },
+    create: { ...pathMeta, slug: 'numune-yol', trackId: pathTrack.id, order: 1 },
+    update: { ...pathMeta },
+  });
+  const assessment = splitAssessment({
+    pass_score: 50,
+    questions: [
+      {
+        text: 'Nümunə imtahan sualı: hansı variant düzgündür?',
+        type: 'single',
+        options: ['Düzgün variant', 'Səhv variant'],
+        correct: [0],
+        explanation: 'Nümunə izah.',
+      },
+    ],
+  });
+  const pathItems: Array<{
+    key: string;
+    type: 'COURSE' | 'ASSESSMENT' | 'PROJECT' | 'MILESTONE';
+    courseId?: string;
+    title?: string;
+    config?: object;
+    secret?: object;
+    xp: number;
+    hours?: number;
+  }> = [
+    { key: COURSE_SLUG, type: 'COURSE', courseId: course.id, xp: 0 },
+    {
+      key: 'numune-imtahan',
+      type: 'ASSESSMENT',
+      title: 'Nümunə mərhələ imtahanı',
+      config: assessment.config,
+      secret: assessment.secret,
+      xp: 50,
+      hours: 0.5,
+    },
+    {
+      key: 'numune-layihe',
+      type: 'PROJECT',
+      title: 'Nümunə layihə',
+      config: {
+        instructions:
+          'Nümunə layihə təlimatı — silinə bilər.\n\nBir fayl (və ya link) təhvil verin; müəllim admin paneldən yoxlayıb qəbul edir.',
+        deliverables: ['Nümunə fayl (istənilən format)', 'Qısa qeyd'],
+        review_mode: 'manual',
+        allow_link: true,
+        max_files: 3,
+      },
+      xp: 100,
+      hours: 1,
+    },
+    {
+      key: 'final',
+      type: 'MILESTONE',
+      title: 'Final və sertifikat',
+      config: {
+        certificate_title: 'Nümunə yol sertifikatı',
+        description: 'Bütün addımlar bitəndə yol sertifikatı verilir.',
+      },
+      xp: 0,
+    },
+  ];
+  for (const [i, it] of pathItems.entries()) {
+    await prisma.pathItem
+      .update({
+        where: { pathId_key: { pathId: samplePath.id, key: it.key } },
+        data: { order: -(i + 1) },
+      })
+      .catch(() => undefined);
+  }
+  for (const [i, it] of pathItems.entries()) {
+    const data = {
+      type: it.type,
+      courseId: it.courseId ?? null,
+      title: it.title ?? null,
+      config: (it.config ?? {}) as Prisma.InputJsonValue,
+      secret: it.secret ? (it.secret as Prisma.InputJsonValue) : Prisma.JsonNull,
+      xp: it.xp,
+      estimatedHours: it.hours ?? null,
+      order: i + 1,
+    };
+    await prisma.pathItem.upsert({
+      where: { pathId_key: { pathId: samplePath.id, key: it.key } },
+      create: { pathId: samplePath.id, key: it.key, ...data },
+      update: data,
+    });
+  }
+
   const counts = {
     tracks: await prisma.track.count(),
+    paths: await prisma.learningPath.count(),
     courses: await prisma.course.count(),
     modules: await prisma.module.count(),
     steps: await prisma.step.count(),

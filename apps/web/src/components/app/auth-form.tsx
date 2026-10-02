@@ -28,7 +28,7 @@ export function AuthForm({ mode, next }: { mode: 'login' | 'register'; next?: st
     setError(null);
     try {
       await api(isLogin ? '/auth/login' : '/auth/register', { method: 'POST', body: values });
-      const target = next && next.startsWith('/') ? next : isLogin ? '/panel' : '/kurslar';
+      const target = next && next.startsWith('/') ? next : isLogin ? '/panel' : '/baslangic';
       router.push(target);
       router.refresh();
     } catch (e) {

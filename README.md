@@ -119,6 +119,15 @@ Tələbə kodu **heç vaxt serverdə işləmir** — hər şey brauzerdədir:
 
 **Sertifikat**: kursun bütün dərc olunmuş addımları tamamlananda avtomatik verilir (tələbə + kurs üçün bir dəfə, seriya `DACY-C-<il>-<nömrə>`). Ad, kurs və istiqamət sertifikatda dondurulur (kurs sonradan dəyişsə də). `/sertifikat/[id]` ictimai yoxlama səhifəsi (QR kod ona işarə edir), `/api/certificates/[id].pdf` A4 PDF (DejaVu Sans — ə, ğ, ş düzgün). Admin `POST /admin/certificates/:id/revoke` ilə ləğv edə bilər; səhifə və PDF «Ləğv edilib» göstərir. `NEXT_PUBLIC_APP_URL` yoxlama linkinin bazasıdır.
 
+## Karyera yolları — Learning Path (Mərhələ 4)
+
+Yol = istiqamət daxilində **sıralı addımlar**: `course` (mövcud kurs — bir kurs bir neçə yolda ola bilər), `assessment` (mərhələ imtahanı, keçid balı), `project` (təlimat + fayl/link təhvili; müəllim yoxlayır və ya avtomatik qəbul), `milestone` (final: bütün məcburi addımlar bitəndə **yol sertifikatı** `DACY-P-…`). `optional: true` addımlar faizə girmir və kilidləmir; `sequential: true` olanda əvvəlki məcburi addım bitmədən növbəti kilidlidir. Kurs addımının vəziyyəti kursun öz irəliləyişindən avtomatik hesablanır (kurs bitəndə bütün yollar dərhal yenilənir).
+
+- Tələbə: `/yollar` (istiqamət filtri), `/yol/[slug]` (tünd başlıq, faiz, şaquli xəritə: ✓ tamamlanan, «Siz buradasınız», kilidli, romb imtahan/final, seçmə çiplər), `/yol/[slug]/[addım]`, qeydiyyatdan sonra `/baslangic` onboarding, paneldə «Aktiv yol» bloku, kurs səhifəsində «Bu kurs … yolunun N-ci addımıdır».
+- Müəllim: `/admin/yollar` → «Yeni yol» → addımlar (kurs seçimi, imtahan sualları, layihə təlimatı, final), sürüklə-sırala, «Dərc et» (yoxlama: dərc olunmuş kurslar, ən azı bir sual, təlimat), «Tələbə kimi bax», «path.yaml ixrac»; `/admin/layiheler` — təhvil verilən layihələr, rəy, qəbul/qaytar.
+- YAML: `path.yaml` (kursla eyni ZIP-də və ya təkbaşına) — format `docs/content-package.md`.
+- API: `GET /paths`, `GET /paths/:slug`, `POST /paths/:slug/enroll`, `GET /learn/paths/:slug/items/:key`, `POST /learn/path-items/:id/{project|assessment|milestone}`, `PUT /me/target-path`, `GET /me/active-path`; admin `/admin/paths/*`, `/admin/path-reviews/*`.
+
 ## Kurs paketi (ZIP)
 
 Müəllim kursu `course.yaml` + `modules/NN-fesil/NN-addim.(md|yaml)` + `datasets/ files/ images/ checks/` quruluşunda ZIP kimi hazırlayıb `/admin/idxal`-da yükləyir: **Yoxla** (heç nə yazılmır, səhv/xəbərdarlıq siyahısı) → **Tətbiq et** (bir tranzaksiyada; mövcud kurs `slug` + açarlar üzrə yenilənir, tələbə irəliləyişi qorunur, paketdə olmayan addımlar dərcdən çıxarılır). Kurs redaktorundakı **ZIP ixrac** eyni formatda paket verir (CTF cavabları yalnız heş). Formatın tam təsviri: `docs/content-package.md` (test `correct` sahəsi 1-dən sayılır).
@@ -138,17 +147,20 @@ docs/           spesifikasiya, dizayn referansı, PLAN.md, screenshots/
 
 ## Əsas URL-lər
 
-| URL                                     | Məzmun                                                                               |
-| --------------------------------------- | ------------------------------------------------------------------------------------ |
-| `/kurslar`                              | kataloq (istiqamət / səviyyə filtri)                                                 |
-| `/kurs/[slug]`                          | kurs səhifəsi (fəsillər, addımlar, irəliləyiş)                                       |
-| `/kurs/[slug]/[fəsil]/[addım]`          | dərs ekranı (tam ekran, tünd) — `/kurs/x/2/4` forması da işləyir                     |
-| `/panel`                                | şəxsi panel                                                                          |
-| `/admin/kurslar`                        | admin redaktoru (INSTRUCTOR / ADMIN)                                                 |
-| `/sertifikat/[id]`                      | sertifikatın ictimai yoxlama səhifəsi (girişsiz), `/api/certificates/[id].pdf` — PDF |
-| `/sertifikatlar`                        | tələbənin sertifikatları                                                             |
-| `/admin/lablar`                         | aktiv terminal lab sessiyaları (dayandırma)                                          |
-| `/admin/idxal`                          | ZIP kurs paketi idxalı (yoxla → tətbiq et) və idxal tarixçəsi                        |
-| `/admin/fayllar`                        | fayl kitabxanası (datasets/, files/, images/, checks/)                               |
-| `GET /api/admin/courses/:id/export.zip` | kursu ZIP kimi ixrac et (kurs redaktorundakı «ZIP ixrac» düyməsi)                    |
-| `http://localhost:4000/health`          | API sağlamlıq yoxlaması                                                              |
+| URL                                     | Məzmun                                                                                                  |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| `/kurslar`                              | kataloq (istiqamət / səviyyə filtri)                                                                    |
+| `/kurs/[slug]`                          | kurs səhifəsi (fəsillər, addımlar, irəliləyiş)                                                          |
+| `/kurs/[slug]/[fəsil]/[addım]`          | dərs ekranı (tam ekran, tünd) — `/kurs/x/2/4` forması da işləyir                                        |
+| `/panel`                                | şəxsi panel                                                                                             |
+| `/admin/kurslar`                        | admin redaktoru (INSTRUCTOR / ADMIN)                                                                    |
+| `/yollar`, `/yol/[slug]`                | karyera yolları: siyahı və şaquli yol xəritəsi; `/yol/[slug]/[addım]` layihə / imtahan / final səhifəsi |
+| `/baslangic`                            | onboarding: «Hansı peşəyə hazırlaşırsınız?» → uyğun yol                                                 |
+| `/admin/yollar`, `/admin/layiheler`     | yol qurucusu (addımlar, sürüklə-sırala, dərc), layihə yoxlama növbəsi                                   |
+| `/sertifikat/[id]`                      | sertifikatın ictimai yoxlama səhifəsi (girişsiz), `/api/certificates/[id].pdf` — PDF                    |
+| `/sertifikatlar`                        | tələbənin sertifikatları                                                                                |
+| `/admin/lablar`                         | aktiv terminal lab sessiyaları (dayandırma)                                                             |
+| `/admin/idxal`                          | ZIP kurs paketi idxalı (yoxla → tətbiq et) və idxal tarixçəsi                                           |
+| `/admin/fayllar`                        | fayl kitabxanası (datasets/, files/, images/, checks/)                                                  |
+| `GET /api/admin/courses/:id/export.zip` | kursu ZIP kimi ixrac et (kurs redaktorundakı «ZIP ixrac» düyməsi)                                       |
+| `http://localhost:4000/health`          | API sağlamlıq yoxlaması                                                                                 |

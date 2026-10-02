@@ -174,4 +174,46 @@ xp: 150
 
 ## path.yaml (Mərhələ 4)
 
-Learning Path idxalı 4-cü mərhələdə əlavə olunacaq; indi `path.yaml` faylı nəzərə alınmır (xəbərdarlıq verilir).
+Karyera yolu paketin kökündəki `path.yaml` ilə idxal olunur — kursla eyni ZIP-də və ya təkbaşına (`course.yaml`-sız paket). Kurs tipli addımlar bazada mövcud (və ya eyni paketdəki) kursun `slug`-ına istinad edir; yol `slug` üzrə yenilənir, addımlar açar üzrə; paketdə olmayan addımlar silinir.
+
+```yaml
+type: path
+track: data-analytics
+title: Data Analyst ol
+slug: data-analyst
+level: beginner # beginner | intermediate | advanced
+description: Sıfırdan junior data analitik səviyyəsinə.
+skills: [SQL, Python, pandas, Statistika, Power BI]
+target_audience: Proqramlaşdırma təcrübəsi olmayanlar
+estimated_hours: 72
+sequential: true # əvvəlki məcburi addım bitmədən növbəti kilidli
+published: true # yoxdursa dərc vəziyyəti dəyişmir
+items:
+  - course: sql-ile-analiz # mövcud kursun slug-ı
+  - assessment: sql-bacariq-yoxlamasi # mərhələ imtahanı (açar)
+    title: SQL bacarıq yoxlaması
+    pass_score: 70
+    questions: # test ilə eyni format, correct 1-dən sayılır
+      - text: Hansı əmr sətirləri qruplaşdırır?
+        type: single
+        options: [ORDER BY, GROUP BY]
+        correct: [2]
+        explanation: GROUP BY qruplaşdırır.
+  - project: baki-eticaret-analizi # layihə (açar)
+    title: Bakı e-ticarət datasının analizi
+    instructions: |
+      Təmizlənmiş CSV və qısa hesabat təhvil verin.
+    deliverables: [Təmizlənmiş CSV, Hesabat (PDF)]
+    review_mode: manual # manual — müəllim yoxlayır | auto — təhvil verilən kimi qəbul
+    allow_link: true
+    max_files: 5
+    hours: 6
+    xp: 100
+  - course: excel-power-query
+    optional: true # seçmə — yolu bitirmək üçün məcburi deyil
+  - milestone: final-portfolio # final: bütün məcburi addımlar bitəndə sertifikat
+    title: Portfolio layihəsi və sertifikat
+    certificate_title: Data Analyst
+```
+
+Uzun məzmunu ayrıca fayla çıxarmaq olar: `path-items/<açar>.yaml` (eyni sahələr: `title`, `instructions`, `deliverables`, `questions`, `pass_score`, `certificate_title`, `description`). `path.yaml`-dakı inline dəyər faylı üstələyir. İxrac: admin → yol → «path.yaml ixrac».

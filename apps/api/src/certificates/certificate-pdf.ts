@@ -2,6 +2,7 @@ import PDFDocument from 'pdfkit';
 import QRCode from 'qrcode';
 
 export interface CertificatePdfInput {
+  kind: 'course' | 'path';
   studentName: string;
   courseTitle: string;
   trackTitle: string;
@@ -67,7 +68,11 @@ export async function renderCertificatePdf(c: CertificatePdfInput): Promise<Buff
   doc.roundedRect(90, 68, 34, 34, 8).fill(BRAND);
   doc.font('SansB').fontSize(15).fillColor(NAVY).text('Dc', 90, 76, { width: 34, align: 'center' });
   doc.font('SansB').fontSize(18).fillColor(NAVY).text('DaCy Academy', 136, 70);
-  doc.font('Sans').fontSize(11).fillColor(MUTED).text('Tamamlama sertifikatı', 136, 93);
+  doc
+    .font('Sans')
+    .fontSize(11)
+    .fillColor(MUTED)
+    .text(c.kind === 'path' ? 'Karyera yolu sertifikatı' : 'Tamamlama sertifikatı', 136, 93);
 
   // əsas mətn
   doc.font('Sans').fontSize(14).fillColor(MUTED).text('Bu sertifikat təsdiq edir ki,', 90, 160);
@@ -76,7 +81,17 @@ export async function renderCertificatePdf(c: CertificatePdfInput): Promise<Buff
     .fontSize(36)
     .fillColor(NAVY)
     .text(c.studentName, 90, 185, { width: W - 330 });
-  doc.font('Sans').fontSize(14).fillColor(MUTED).text('aşağıdakı kursu uğurla tamamladı:', 90, 245);
+  doc
+    .font('Sans')
+    .fontSize(14)
+    .fillColor(MUTED)
+    .text(
+      c.kind === 'path'
+        ? 'aşağıdakı karyera yolunu uğurla tamamladı:'
+        : 'aşağıdakı kursu uğurla tamamladı:',
+      90,
+      245,
+    );
   doc
     .font('SansB')
     .fontSize(24)

@@ -586,6 +586,8 @@ model PathItemProgress {
 
 model PathCertificate {
   id        String    @id @default(uuid())
+  /// ardıcıl nömrə → serial (DACY-P-2026-000001)
+  seq       Int       @unique @default(autoincrement())
   serial    String    @unique // DACY-P-2026-000001
   userId    String
   pathId    String?

@@ -170,4 +170,38 @@ Hesablar: `admin@dacy.local / Admin123!`, `telebe@dacy.local / Telebe123!` (`.en
 
 ---
 
-## Mərhələ 4 — Learning Path (gözləyir)
+## Mərhələ 4 — Learning Path (tamamlandı)
+
+### Nə quruldu
+
+- **Paylaşılan** (`packages/shared`): `content/path.ts` — `path.yaml` sxemi (kurs / imtahan / layihə / final addımları, `path-items/<açar>.yaml` əlavə faylları, test cavabları 1-dən), admin giriş sxemləri (`pathInputSchema`, `pathItemInputSchema`), imtahanın public/secret bölünməsi və balı, dərc yoxlaması; `progress/path-map.ts` — `computePathMap` (vəziyyətlər: completed / current / available / locked / submitted; faiz = məcburi tamamlanan / məcburi cəmi; seçmə addımlar nömrələnmir və kilidləmir); DTO-lar (`PathCardDto`, `PathDetailDto`, `PathItemDto`, `PathItemViewDto`, `ActivePathDto`, `AdminPathDto`, `AdminProjectReviewDto`); lüğət `paths.*`, `admin.*`.
+- **API** (`apps/api/src/paths/`): `PathsService` (nüvə — xəritə hesablanması, `onCourseCompleted` hook-u (kurs bitəndə bütün yollar yenilənir), `recomputeEnrollment`, yol sertifikatı), `PathsLearnService` (kataloq, yol səhifəsi, yazılma/aktiv yol, addım səhifələri, layihə təhvili (fayllar yaddaşa, link, qeyd; `manual` → SUBMITTED, `auto` → PASSED), imtahan (bal, keçid, ən yaxşı nəticə, cəhd), final (bütün məcburi addımlar bitəndə sertifikat), onboarding hədəfi, panel üçün aktiv yol, «kurs hansı yollardadır»), `PathsAdminService` (CRUD, addım əlavə/dəyiş/sil, iki fazalı sıralama, dərc yoxlaması (422 + səhv siyahısı), layihə rəyləri (qəbul/qaytar + XP), `path.yaml` idxalı (`upsertFromInput`) və ixracı). Marşrutlar `/paths/*`, `/learn/paths/*`, `/learn/path-items/*`, `/me/paths|active-path|target-path`, `/admin/paths/*`, `/admin/path-reviews/*`. ZIP idxalçısı `path.yaml`-ı tanıyır (kursla birlikdə və ya təkbaşına; kurs slug-larının mövcudluğu yoxlanılır). Sertifikat servisi kurs və yol sertifikatlarını birləşdirir (`kind`, `DACY-P-` seriyası, PDF başlığı «Karyera yolu sertifikatı»). Migration `PathCertificate.seq`.
+- **Web**: `/yollar` (istiqamət çipləri, `PathCard`), `/yol/[slug]` (dizayndakı `.lp` / `.road2` quruluşu: tünd başlıq bloku, faktlar, faiz, şaquli xəritə (`path-map.tsx`), sağda bacarıqlar / kimlər üçündür / digər yollar; «Yola başla» → «Davam et» / «Aktiv yol et»), `/yol/[slug]/[key]` (layihə: təlimat + təhvil forması + vəziyyət/rəy; imtahan: sual kartları, nəticə, izah, təkrar; final: çatışmayanlar və ya «Sertifikatı al»), `/baslangic` onboarding (istiqamət → uyğun yollar → «Bu yola başla»; qeydiyyatdan sonra bura yönlənir), paneldə «Aktiv yol» bloku (faiz, növbəti addım) və ya «Yol seç» çağırışı, kurs səhifəsində yol istinadları; admin `/admin/yollar` (siyahı), `/admin/yollar/yeni`, `/admin/yollar/[slug]` (addımlar dnd-kit ilə, addım forması tipə görə — imtahan üçün kurs test qurucusu təkrar istifadə olunur, dərc/qaralama, önizləmə, path.yaml ixrac, yolu sil), `/admin/layiheler` (rəy növbəsi).
+- **Seed**: «NÜMUNƏ YOL — silinə bilər» (nümunə kurs → nümunə imtahan → nümunə layihə (müəllim yoxlayır) → final).
+- **Testlər**: shared `path.test.ts` (yaml parse/round-trip, imtahan bal, `computePathMap`, dərc yoxlaması — 9), API e2e `test/phase4.e2e-spec.ts` (admin CRUD + dərc xətası, sıralama, kataloq/yazılma/kilid, kurs bitəndə yol irəliləyir + panel, imtahan gizli cavablar/keçmədi/keçdi + XP, layihə boş/təhvil/qaytar/qəbul + fayl girişi, final → `DACY-P` sertifikat + PDF + panel, onboarding hədəfi, path.yaml idxal/yenidən idxal/ixrac/kurs+yol paketi, silmə 409/force — 10), Playwright `e2e/phase4.spec.ts` (admin redaktor + addım dialoqu, qeydiyyat → onboarding → yol, imtahan UI, layihə UI + müəllim rəyi UI, final → sertifikat səhifəsi, nümunə yol + kurs səhifəsi bloku, təmizlik — 7). Köhnə spec-lər uyğunlaşdırıldı: `student-flow` qeydiyyatdan sonra onboarding-i «Keç» ilə ötür, `admin` tələbələr siyahısında axtarışla tapır (siyahı səhifələnir).
+- **Yoxlama nəticəsi** (bu mərhələnin sonunda): `pnpm typecheck` ✓, `pnpm lint` ✓, `pnpm build` ✓, `pnpm test` (shared 44, api 11, web 5) ✓, API e2e 59/59 ✓, Playwright 28/28 ✓.
+
+### Skrinşot müqayisəsi
+
+`path.app.png` ↔ `path.ref.png`: tünd başlıq bloku (badge, başlıq, təsvir, faktlar, «Davam et»), şaquli xəritə (yaşıl ✓ dairələr, «Siz buradasınız» etiketi, kilidli solğun kartlar, romb imtahan/final nöqtələri, seçmə çiplər), sağ panel (bacarıqlar, kimlər üçündür, digər yollar) referansa uyğundur; xətt irəliləyişə görə rənglənir. `paths.app.png` — kart siyahısı; `path.mobile.png` — mobil (başlıq bloku, xəritə və sağ panel alt-alta).
+
+### Necə işə salmaq
+
+`pnpm dev` (əvvəlki kimi). Yeni yol: admin → Yollar → «Yeni yol» və ya `path.yaml` ilə ZIP idxalı.
+
+### Nəyi yoxlamalı
+
+1. Yeni hesab açın → avtomatik `/baslangic` → istiqamət seçin → «NÜMUNƏ YOL» → «Bu yola başla» → yol səhifəsində 1-ci addım «Siz buradasınız», qalanları kilidli; paneldə «Aktiv yol» bloku.
+2. Nümunə kursu bitirin → yol səhifəsində kurs ✓, imtahan açılır (faiz 25%); imtahanda səhv → «keçmədi» + izah, düzgün → keçdi (+50 XP).
+3. Layihə: fayl/link təhvil verin → «Müəllim yoxlayır»; admin → Layihələr → rəy yazıb «Qəbul et» → tələbədə «Layihə qəbul edildi» (+100 XP); «Qaytar» → yenidən təhvil.
+4. Final → «Sertifikatı al» → `/sertifikat/<id>` (DACY-P seriyası, «Karyera yolu sertifikatı» PDF); `/sertifikatlar` və paneldə görünür.
+5. Admin: yeni yol yaradın, kurs/imtahan/layihə/final əlavə edin, sürükləyib sıralayın, boş imtahanla «Dərc et» → səhv siyahısı; «path.yaml ixrac» → `/admin/idxal`-da yenidən yükləyin.
+6. Testlər: `pnpm test`, `pnpm --filter @dacy/api test:e2e`, `pnpm e2e`.
+
+### Məlum məhdudiyyətlər
+
+- Layihə yoxlaması: `manual` (müəllim) və `auto` (təhvil verən kimi qəbul); fayl üzərində avtomatik test yoxdur.
+- Yoxlamada olan (SUBMITTED) layihə ardıcıl rejimdə növbəti addımı kilidli saxlayır (spesifikasiyadakı qayda); istənilsə `sequential: false` ilə yumşaldıla bilər.
+- Layihə faylları yaddaş qovluğunda (`STORAGE_DIR/path-<id>/`) saxlanılır, yalnız sahibi və müəllim yükləyə bilər.
+
+---

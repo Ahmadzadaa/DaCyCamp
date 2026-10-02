@@ -15,7 +15,12 @@ import {
   stepYamlSchema,
   validateForPublish,
   yamlStepToDefinition,
+  yamlToPathInput,
+  pathYamlSchema,
+  pathItemFileSchema,
   zodIssues,
+  type PathInput,
+  type PathItemInput,
   type ImportIssue,
   type ImportReport,
   type StepDefinition,
@@ -25,6 +30,7 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { ProgressService } from '../progress/progress.service';
 import { SqlCheckService } from '../sql-check/sql-check.service';
+import { PathsAdminService } from '../paths/paths-admin.service';
 import { hashAnswer } from '../content/ctf-hash';
 import {
   detectKind,
@@ -60,13 +66,21 @@ interface PlannedAsset {
   filename: string;
   buffer: Buffer;
 }
+interface PlannedPath {
+  input: PathInput;
+  items: PathItemInput[];
+  published: boolean | undefined;
+  exists: boolean;
+}
 interface ImportPlan {
-  course: ReturnType<typeof courseYamlSchema.parse>;
+  /** yalnız path.yaml olan paketdə null */
+  course: ReturnType<typeof courseYamlSchema.parse> | null;
   coursePublishedExplicit: boolean;
-  trackId: string;
+  trackId: string | null;
   existingCourseId: string | null;
   modules: PlannedModule[];
   assets: PlannedAsset[];
+  path: PlannedPath | null;
 }
 
 const ASSET_DIRS = new Set([
@@ -116,6 +130,7 @@ export class PackageService {
     private readonly prisma: PrismaService,
     private readonly progress: ProgressService,
     private readonly sqlCheck: SqlCheckService,
+    private readonly pathsAdmin: PathsAdminService,
   ) {}
 
   /* ───────────── validasiya ───────────── */
@@ -143,6 +158,36 @@ export class PackageService {
         ? 'course.yml'
         : null;
     if (!courseFile) {
+      if (files.has('path.yaml')) {
+        // yalnız yol paketi (course.yaml yoxdur)
+        const path = await this.parsePath(files, errors, warnings, new Set());
+        const report: ImportReport = {
+          ...empty(),
+          ok: errors.length === 0,
+          path: path
+            ? {
+                slug: path.input.slug,
+                title: path.input.title,
+                track: path.input.track,
+                exists: path.exists,
+                items: path.items.length,
+              }
+            : null,
+        };
+        const plan: ImportPlan | null =
+          errors.length === 0 && path
+            ? {
+                course: null,
+                coursePublishedExplicit: false,
+                trackId: null,
+                existingCourseId: null,
+                modules: [],
+                assets: [],
+                path,
+              }
+            : null;
+        return { report, plan };
+      }
       errors.push({
         file: 'course.yaml',
         message: 'course.yaml tapılmadı (paketin kökündə olmalıdır)',
@@ -185,7 +230,13 @@ export class PackageService {
     const assets: PlannedAsset[] = [];
     for (const [path, buf] of files) {
       const top = path.split('/')[0]!;
-      if (path.startsWith('modules/') || path === courseFile || path === 'path.yaml') continue;
+      if (
+        path.startsWith('modules/') ||
+        path.startsWith('path-items/') ||
+        path === courseFile ||
+        path === 'path.yaml'
+      )
+        continue;
       if (!path.includes('/')) {
         if (path === course.cover) assets.push({ path, filename: path, buffer: buf });
         else
@@ -200,11 +251,9 @@ export class PackageService {
         warnings.push({ file: path, message: `"${top}/" qovluğu fayl kimi idxal olunur` });
       assets.push({ path, filename: path.split('/').pop()!, buffer: buf });
     }
-    if (files.has('path.yaml'))
-      warnings.push({
-        file: 'path.yaml',
-        message: 'Learning Path idxalı Mərhələ 4-də — fayl nəzərə alınmadı',
-      });
+    const plannedPath = files.has('path.yaml')
+      ? await this.parsePath(files, errors, warnings, new Set([course.slug]))
+      : null;
     if (course.cover && !assets.some((a) => a.path === course.cover))
       errors.push({ file: courseFile, message: `cover faylı tapılmadı: ${course.cover}` });
     const assetPaths = new Set(assets.map((a) => a.path));
@@ -355,6 +404,15 @@ export class PackageService {
         byType,
         willUnpublish,
       },
+      path: plannedPath
+        ? {
+            slug: plannedPath.input.slug,
+            title: plannedPath.input.title,
+            track: plannedPath.input.track,
+            exists: plannedPath.exists,
+            items: plannedPath.items.length,
+          }
+        : null,
     };
     const plan: ImportPlan | null =
       errors.length === 0 && track
@@ -365,9 +423,87 @@ export class PackageService {
             existingCourseId: existing?.id ?? null,
             modules,
             assets,
+            path: plannedPath,
           }
         : null;
     return { report, plan };
+  }
+
+  /** path.yaml (+ path-items/<key>.yaml): sxem, istiqamət, kursların mövcudluğu (paketdəki kurs da sayılır) */
+  private async parsePath(
+    files: Map<string, Buffer>,
+    errors: ImportIssue[],
+    warnings: ImportIssue[],
+    packageCourseSlugs: Set<string>,
+  ): Promise<PlannedPath | null> {
+    let raw: unknown;
+    try {
+      raw = yaml.load(files.get('path.yaml')!.toString('utf8'));
+    } catch (e) {
+      errors.push({
+        file: 'path.yaml',
+        message: `YAML xətası: ${(e as Error).message.split('\n')[0]}`,
+      });
+      return null;
+    }
+    const parsed = pathYamlSchema.safeParse(raw);
+    if (!parsed.success) {
+      for (const i of zodIssues(parsed.error))
+        errors.push({ file: 'path.yaml', message: `${i.path || 'path'}: ${i.message}` });
+      return null;
+    }
+    const extra = (key: string) => {
+      for (const ext of ['yaml', 'yml']) {
+        const f = files.get(`path-items/${key}.${ext}`);
+        if (!f) continue;
+        try {
+          const r = pathItemFileSchema.safeParse(yaml.load(f.toString('utf8')));
+          if (r.success) return r.data;
+          errors.push({
+            file: `path-items/${key}.${ext}`,
+            message: zodIssues(r.error)
+              .map((i) => `${i.path}: ${i.message}`)
+              .join('; '),
+          });
+        } catch (e) {
+          errors.push({
+            file: `path-items/${key}.${ext}`,
+            message: `YAML xətası: ${(e as Error).message.split('\n')[0]}`,
+          });
+        }
+      }
+      return null;
+    };
+    const { path, items } = yamlToPathInput(parsed.data, extra);
+    const track = await this.prisma.track.findUnique({ where: { slug: path.track } });
+    if (!track) errors.push({ file: 'path.yaml', message: `İstiqamət tapılmadı: ${path.track}` });
+    const slugs = items
+      .filter((i) => i.type === 'course')
+      .map((i) => (i as { course_slug: string }).course_slug);
+    const existingCourses = slugs.length
+      ? await this.prisma.course.findMany({
+          where: { slug: { in: slugs } },
+          select: { slug: true, isPublished: true },
+        })
+      : [];
+    for (const slug of slugs) {
+      const c = existingCourses.find((x) => x.slug === slug);
+      if (!c && !packageCourseSlugs.has(slug))
+        errors.push({
+          file: 'path.yaml',
+          message: `Kurs tapılmadı: ${slug} (əvvəlcə kursu idxal edin və ya eyni paketə qoyun)`,
+        });
+      else if (c && !c.isPublished && parsed.data.published)
+        warnings.push({
+          file: 'path.yaml',
+          message: `Kurs dərc olunmayıb: ${slug} — yol dərc edilə bilməyəcək`,
+        });
+    }
+    const keys = items.map((i) => i.key ?? '');
+    if (new Set(keys).size !== keys.length)
+      errors.push({ file: 'path.yaml', message: 'Addım açarları təkrarlanır' });
+    const existing = await this.prisma.learningPath.findUnique({ where: { slug: path.slug } });
+    return { input: path, items, published: parsed.data.published, exists: !!existing };
   }
 
   /* ───────────── tətbiq ───────────── */
@@ -386,7 +522,30 @@ export class PackageService {
       });
       return report;
     }
+    if (!plan.course) {
+      // yalnız yol paketi
+      const r = await this.applyPath(plan.path!, report);
+      const imp = await this.prisma.courseImport.create({
+        data: {
+          slug: plan.path!.input.slug,
+          filename,
+          status: r ? 'APPLIED' : 'FAILED',
+          report: report as unknown as Prisma.InputJsonValue,
+          uploadedById: userId,
+        },
+      });
+      report.applied = {
+        courseId: null,
+        courseSlug: null,
+        importId: imp.id,
+        pathId: r?.id ?? null,
+        pathSlug: r?.slug ?? null,
+      };
+      report.ok = !!r;
+      return report;
+    }
     const c = plan.course;
+    const trackId = plan.trackId!;
     // 1) fayllar əvvəlcə yaddaşa (idempotent: eyni path → əvəz)
     const courseId = await this.prisma.$transaction(
       async (tx) => {
@@ -395,7 +554,7 @@ export class PackageService {
               where: { id: plan.existingCourseId },
               data: {
                 title: c.title,
-                trackId: plan.trackId,
+                trackId,
                 level: levelFromYaml(c.level),
                 description: c.description,
                 sequential: c.sequential,
@@ -413,7 +572,7 @@ export class PackageService {
               data: {
                 slug: c.slug,
                 title: c.title,
-                trackId: plan.trackId,
+                trackId,
                 level: levelFromYaml(c.level),
                 description: c.description,
                 sequential: c.sequential,
@@ -421,7 +580,7 @@ export class PackageService {
                 order:
                   ((
                     await tx.course.aggregate({
-                      where: { trackId: plan.trackId },
+                      where: { trackId: trackId },
                       _max: { order: true },
                     })
                   )._max.order ?? 0) + 1,
@@ -609,6 +768,8 @@ export class PackageService {
       }
     }
     await this.progress.recomputeCourse(courseId);
+    // 3) path.yaml (kurs artıq bazadadır)
+    const pathResult = plan.path ? await this.applyPath(plan.path, report) : null;
     const imp = await this.prisma.courseImport.create({
       data: {
         courseId,
@@ -619,8 +780,39 @@ export class PackageService {
         uploadedById: userId,
       },
     });
-    report.applied = { courseId, courseSlug: c.slug, importId: imp.id };
+    report.applied = {
+      courseId,
+      courseSlug: c.slug,
+      importId: imp.id,
+      pathId: pathResult?.id ?? null,
+      pathSlug: pathResult?.slug ?? null,
+    };
     return report;
+  }
+
+  /** Yolun tətbiqi — uğursuz olsa hesabat xətası (kurs idxalı ləğv olunmur) */
+  private async applyPath(
+    planned: PlannedPath,
+    report: ImportReport,
+  ): Promise<{ id: string; slug: string } | null> {
+    try {
+      return await this.prisma.$transaction((tx) =>
+        this.pathsAdmin.upsertFromInput(tx, planned.input, planned.items, planned.published),
+      );
+    } catch (e) {
+      const err = e as { code?: string; message?: string; details?: unknown };
+      const details = Array.isArray(err.details)
+        ? (err.details as Array<{ path: string; message: string }>)
+            .map((d) => `${d.path}: ${d.message}`)
+            .join('; ')
+        : '';
+      report.errors.push({
+        file: 'path.yaml',
+        message: `Yol tətbiq olunmadı: ${err.message ?? String(e)}${details ? ` (${details})` : ''}`,
+      });
+      report.ok = false;
+      return null;
+    }
   }
 
   async list(courseId?: string) {

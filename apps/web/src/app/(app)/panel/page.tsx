@@ -16,6 +16,51 @@ export default async function DashboardPage() {
   return (
     <div className="grid gap-5 md:grid-cols-[1fr_300px]">
       <div>
+        {d.activePath ? (
+          <section
+            className="box mb-4 flex flex-col gap-2"
+            style={{ ['--c' as string]: d.activePath.trackColor }}
+            data-testid="dash-active-path"
+          >
+            <div className="flex flex-wrap items-center gap-2">
+              <small className="text-muted">{t('dash.activePath')}</small>
+              <span
+                className="inline-block size-2.5 rounded-full"
+                style={{ background: d.activePath.trackColor }}
+              />
+              <small className="text-muted">{d.activePath.trackTitle}</small>
+              <span className="ml-auto text-sm font-semibold">{d.activePath.percent}%</span>
+            </div>
+            <Link href={`/yol/${d.activePath.slug}`} className="text-lg font-bold hover:underline">
+              {d.activePath.title}
+            </Link>
+            <div className="nbar !mt-0">
+              <i style={{ width: `${d.activePath.percent}%` }} />
+            </div>
+            <div className="flex flex-wrap items-center gap-3 text-sm">
+              {d.activePath.next ? (
+                <>
+                  <span className="text-muted">{t('paths.nextStep')}:</span>
+                  <b className="truncate">{d.activePath.next.title}</b>
+                  <Link href={d.activePath.next.url} className="b b-brand b-sm ml-auto">
+                    {t('paths.continue')}
+                  </Link>
+                </>
+              ) : (
+                <span className="text-ok">✓ {t('paths.finishedBanner')}</span>
+              )}
+            </div>
+          </section>
+        ) : (
+          <Link
+            href="/baslangic"
+            className="mb-4 flex items-center gap-3 rounded-xl border border-dashed border-line px-4 py-3 text-sm hover:border-brand"
+            data-testid="dash-pick-path"
+          >
+            <span className="text-muted">{t('paths.dashNoPath')}</span>
+            <span className="ml-auto font-semibold text-brand">{t('paths.dashPick')} →</span>
+          </Link>
+        )}
         {d.continue ? (
           <section className="cont">
             <div className="min-w-0">

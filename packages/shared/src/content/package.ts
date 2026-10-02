@@ -150,5 +150,13 @@ export interface ImportReport {
     byType: Partial<Record<StepType, number>>;
     willUnpublish: string[];
   };
-  applied?: { courseId: string; courseSlug: string; importId: string };
+  /** path.yaml varsa (Mərhələ 4) */
+  path?: { slug: string; title: string; track: string; exists: boolean; items: number } | null;
+  applied?: {
+    courseId: string | null;
+    courseSlug: string | null;
+    importId: string;
+    pathId?: string | null;
+    pathSlug?: string | null;
+  };
 }

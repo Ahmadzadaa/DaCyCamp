@@ -1,4 +1,5 @@
-import type { AssetKind, Level, Role, StepState, StepType } from '../enums';
+import type { PathItemInput } from '../content/path';
+import type { AssetKind, Level, PathItemType, Role, StepState, StepType } from '../enums';
 import type { CourseMap } from '../progress/unlock';
 import type { StepStudentView } from '../content/step-config';
 import type { StepDefinitionDraft } from '../content/step-definition';
@@ -173,7 +174,7 @@ export interface DashboardDto {
   /** son sertifikatlar (panel üçün) */
   certificateItems: CertificateSummaryDto[];
   week: boolean[];
-  activePath: null;
+  activePath: ActivePathDto | null;
 }
 
 export interface AdminStepNode {
@@ -315,8 +316,12 @@ export interface AdminLabSessionDto extends LabSessionDto {
 
 export interface CertificateSummaryDto {
   id: string;
+  /** kurs sertifikatı və ya karyera yolu sertifikatı */
+  kind: 'course' | 'path';
   serial: string;
+  /** kursun və ya yolun (sertifikat başlığının) adı */
   courseTitle: string;
+  /** kurs slug-ı və ya yol slug-ı */
   courseSlug: string | null;
   trackTitle: string;
   trackColor: string;
@@ -332,4 +337,179 @@ export interface CertificateDto extends CertificateSummaryDto {
   /** QR kod (data:image/png;base64,…) — verifyUrl-ə işarə edir */
   qrDataUrl: string;
   pdfUrl: string;
+}
+
+// ───────────────────────── Mərhələ 4: Learning Path ─────────────────────────
+
+export interface PathCardDto {
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+  level: Level;
+  track: { slug: string; title: string; color: string };
+  skills: string[];
+  targetAudience: string | null;
+  estimatedHours: number | null;
+  sequential: boolean;
+  isPublished: boolean;
+  courseCount: number;
+  projectCount: number;
+  assessmentCount: number;
+  itemCount: number;
+  /** giriş edilibsə */
+  enrolled?: boolean;
+  isActive?: boolean;
+  percent?: number;
+  completedAt?: string | null;
+}
+
+export type PathItemStateDto = 'completed' | 'current' | 'available' | 'locked' | 'submitted';
+
+export interface PathItemDto {
+  id: string;
+  key: string;
+  order: number;
+  type: PathItemType;
+  title: string;
+  isOptional: boolean;
+  estimatedHours: number | null;
+  xp: number;
+  state: PathItemStateDto;
+  /** məcburi addımların sıra nömrəsi (seçmə addımda null) */
+  number: number | null;
+  url: string;
+  course?: {
+    slug: string;
+    title: string;
+    level: Level;
+    enrolled: boolean;
+    percent: number;
+    done: number;
+    total: number;
+    completedAt: string | null;
+  };
+  progress?: {
+    status: 'IN_PROGRESS' | 'SUBMITTED' | 'PASSED' | 'FAILED';
+    score: number | null;
+    attempts: number;
+    submittedAt: string | null;
+    completedAt: string | null;
+  } | null;
+}
+
+export interface PathDetailDto {
+  path: PathCardDto;
+  enrolled: boolean;
+  isActive: boolean;
+  map: { done: number; total: number; percent: number; isComplete: boolean };
+  items: PathItemDto[];
+  continueUrl: string | null;
+  completedAt: string | null;
+  certificateId: string | null;
+  otherPaths: PathCardDto[];
+}
+
+export interface PathRefDto {
+  slug: string;
+  title: string;
+  /** kursun yoldakı sıra nömrəsi */
+  number: number;
+  trackColor: string;
+  trackTitle: string;
+}
+
+export interface PathItemViewDto {
+  item: PathItemDto;
+  path: { slug: string; title: string; track: { slug: string; title: string; color: string } };
+  enrolled: boolean;
+  project?: {
+    instructions: string;
+    deliverables: string[];
+    reviewMode: 'manual' | 'auto';
+    allowLink: boolean;
+    maxFiles: number;
+    submission: {
+      files: Array<{ filename: string; size: number; url: string }>;
+      link: string | null;
+      note: string | null;
+      status: 'IN_PROGRESS' | 'SUBMITTED' | 'PASSED' | 'FAILED';
+      feedback: string | null;
+      submittedAt: string | null;
+    } | null;
+  };
+  assessment?: {
+    passScore: number;
+    questions: Array<{ text: string; type: 'single' | 'multiple'; options: string[] }>;
+    attempts: number;
+    bestScore: number | null;
+    status: 'IN_PROGRESS' | 'PASSED' | 'FAILED' | null;
+  };
+  milestone?: {
+    description: string;
+    certificateTitle: string;
+    missing: Array<{ key: string; title: string; url: string }>;
+    claimable: boolean;
+    certificateId: string | null;
+  };
+}
+
+export interface PathProgressResultDto {
+  pathPercent: number;
+  pathCompleted: boolean;
+  certificateId: string | null;
+  xpAwarded: number;
+}
+export interface AssessmentResultDto extends PathProgressResultDto {
+  score: number;
+  passed: boolean;
+  perQuestion: Array<{ correct: boolean; correctIndices: number[]; explanation?: string }>;
+}
+export interface ProjectSubmitResultDto extends PathProgressResultDto {
+  status: 'SUBMITTED' | 'PASSED';
+}
+
+export interface ActivePathDto {
+  slug: string;
+  title: string;
+  trackTitle: string;
+  trackColor: string;
+  percent: number;
+  done: number;
+  total: number;
+  completedAt: string | null;
+  next: { title: string; type: PathItemType; url: string } | null;
+}
+
+export interface AdminPathItemDto {
+  id: string;
+  key: string;
+  order: number;
+  type: PathItemType;
+  title: string;
+  isOptional: boolean;
+  estimatedHours: number | null;
+  xp: number;
+  course: { id: string; slug: string; title: string; isPublished: boolean; level: Level } | null;
+  /** redaktə üçün tam məlumat (imtahanda cavablar daxil — yalnız admin) */
+  input: PathItemInput;
+}
+export interface AdminPathDto extends PathCardDto {
+  order: number;
+  enrollmentCount: number;
+  items: AdminPathItemDto[];
+  issues: Issue[];
+  updatedAt: string;
+}
+export interface AdminProjectReviewDto {
+  id: string;
+  user: { id: string; name: string; email: string };
+  path: { slug: string; title: string };
+  item: { id: string; key: string; title: string };
+  status: 'IN_PROGRESS' | 'SUBMITTED' | 'PASSED' | 'FAILED';
+  submittedAt: string | null;
+  feedback: string | null;
+  files: Array<{ filename: string; size: number; url: string }>;
+  link: string | null;
+  note: string | null;
 }

@@ -127,3 +127,18 @@ export type PythonSubmissionInput = z.infer<typeof pythonSubmissionSchema>;
 // Mərhələ 3
 export const labStartSchema = z.object({ reset: z.boolean().optional() });
 export type LabStartInput = z.infer<typeof labStartSchema>;
+
+// Mərhələ 4 — Learning Path
+export const projectSubmitSchema = z.object({
+  link: z.string().trim().url('Düzgün link daxil edin').max(500).optional().or(z.literal('')),
+  note: z.string().max(5000).optional(),
+});
+export type ProjectSubmitInput = z.infer<typeof projectSubmitSchema>;
+export const assessmentSubmitSchema = z.object({
+  answers: z.array(z.array(z.number().int().min(0).max(50)).max(50)).max(100),
+});
+export const projectReviewSchema = z.object({
+  passed: z.boolean(),
+  feedback: z.string().max(5000).optional(),
+});
+export const targetPathSchema = z.object({ pathSlug: z.string().max(80).nullable() });

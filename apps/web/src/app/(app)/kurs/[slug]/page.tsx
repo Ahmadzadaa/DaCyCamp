@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import type { CourseMapDto, CourseOutlineDto } from '@dacy/shared';
+import type { CourseMapDto, CourseOutlineDto, PathRefDto } from '@dacy/shared';
 import { apiTry, getCurrentUser } from '@/lib/api/server';
 import { t } from '@/lib/i18n';
 import { TrackBadge } from '@/components/app/track-badge';
@@ -37,6 +37,7 @@ export default async function CoursePage({ params, searchParams }: Props) {
     : null;
   const continueUrl = mapDto?.continueUrl ?? firstStep;
   const completed = !!mapDto?.completedAt;
+  const pathRefs = (await apiTry<PathRefDto[]>(`/paths/by-course/${slug}`)) ?? [];
 
   return (
     <div className="grid gap-[22px] md:grid-cols-[1fr_320px]">
@@ -101,6 +102,24 @@ export default async function CoursePage({ params, searchParams }: Props) {
             ) : null}
           </div>
         </div>
+        {pathRefs.length ? (
+          <div className="box" data-testid="course-paths">
+            <h2 className="mb-2 text-base">{t('paths.careerPath')}</h2>
+            <ul className="flex flex-col gap-2 text-sm">
+              {pathRefs.map((p) => (
+                <li key={p.slug}>
+                  <Link href={`/yol/${p.slug}`} className="flex items-center gap-2 hover:underline">
+                    <span
+                      className="inline-block size-2.5 rounded-full"
+                      style={{ background: p.trackColor }}
+                    />
+                    {t('course.partOfPath', { path: p.title, n: p.number })}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
         <div className="box">
           <h2 className="mb-2 text-base">{t('course.inThisCourse')}</h2>
           <p className="text-sm text-muted">

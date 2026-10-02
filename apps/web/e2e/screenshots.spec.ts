@@ -45,6 +45,7 @@ async function shot(page: Page, url: string, name: string, opts: { full?: boolea
 }
 
 test('tələbə ekranları', async ({ page }) => {
+  test.setTimeout(180_000);
   await page.setViewportSize({ width: 1240, height: 900 });
   await login(page, STUDENT);
   // yazıl + nəzəri addımı tamamla ki, paneldə "Qaldığınız yer" olsun
@@ -56,15 +57,28 @@ test('tələbə ekranları', async ({ page }) => {
   await shot(page, '/kurs/numune', 'course.app.png');
   await shot(page, '/panel', 'dashboard.app.png');
   await shot(page, '/kurs/numune/numune-fesil/nezeri', 'workspace-theory.app.png');
+  // Mərhələ 4: yollar və yol xəritəsi
+  await page.request.post('/api/paths/numune-yol/enroll');
+  await shot(page, '/yollar', 'paths.app.png');
+  await shot(page, '/yol/numune-yol', 'path.app.png');
   await page.setViewportSize({ width: 390, height: 844 });
   await shot(page, '/kurslar', 'catalog.mobile.png');
   await shot(page, '/kurs/numune', 'course.mobile.png');
   await shot(page, '/panel', 'dashboard.mobile.png');
+  await shot(page, '/yol/numune-yol', 'path.mobile.png');
 });
 
 test('dərs ekranı (müəllim önizləməsi) və admin', async ({ page }) => {
+  test.setTimeout(240_000);
   await page.setViewportSize({ width: 1240, height: 760 });
   await login(page, ADMIN);
+  // terminal: köhnə sessiya qalmasın — təzə lab (mock/docker) başlat
+  const treeForLab = await (await page.request.get('/api/admin/courses/numune')).json();
+  const termStep = treeForLab.modules[0].steps.find((s: { key: string }) => s.key === 'terminal');
+  if (termStep)
+    await page.request.post(`/api/learn/labs/steps/${termStep.id}/start?preview=1`, {
+      data: { reset: true },
+    });
   for (const [key, name] of [
     ['sql', 'workspace-sql'],
     ['python', 'workspace-python'],

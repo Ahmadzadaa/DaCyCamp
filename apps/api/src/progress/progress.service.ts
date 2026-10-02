@@ -139,7 +139,13 @@ export class ProgressService {
     amount: number,
     reason: XpReason,
     dedupeKey: string,
-    refs: { stepId?: string; courseId?: string; ctfTaskId?: string } = {},
+    refs: {
+      stepId?: string;
+      courseId?: string;
+      ctfTaskId?: string;
+      pathItemId?: string;
+      pathId?: string;
+    } = {},
   ): Promise<number> {
     if (amount === 0) return 0;
     const exists = await tx.xpEvent.findUnique({

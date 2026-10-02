@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { Injectable } from '@nestjs/common';
-import type { Certificate, Prisma } from '@prisma/client';
+import type { Certificate, PathCertificate, Prisma } from '@prisma/client';
 import QRCode from 'qrcode';
 import type { CertificateDto, CertificateSummaryDto } from '@dacy/shared';
 import { env } from '../config/env';
@@ -12,6 +12,7 @@ type Tx = Prisma.TransactionClient | PrismaService;
 
 export interface CertificateSnapshot {
   studentName: string;
+  /** kurs və ya yolun adı */
   courseTitle: string;
   courseSlug: string | null;
   trackTitle: string;
@@ -20,24 +21,53 @@ export interface CertificateSnapshot {
   xp: number;
 }
 
+/** Hər iki cədvəlin (kurs / yol sertifikatı) ümumi görünüşü */
+interface AnyCert {
+  kind: 'course' | 'path';
+  id: string;
+  serial: string;
+  snapshot: CertificateSnapshot;
+  issuedAt: Date;
+  revokedAt: Date | null;
+}
+
 export const verifyUrlOf = (id: string) =>
   `${env.NEXT_PUBLIC_APP_URL.replace(/\/$/, '')}/sertifikat/${id}`;
 
-export function toCertificateSummary(c: Certificate): CertificateSummaryDto {
-  const s = c.snapshot as unknown as CertificateSnapshot;
+const fromCourse = (c: Certificate): AnyCert => ({
+  kind: 'course',
+  id: c.id,
+  serial: c.serial,
+  snapshot: c.snapshot as unknown as CertificateSnapshot,
+  issuedAt: c.issuedAt,
+  revokedAt: c.revokedAt,
+});
+const fromPath = (c: PathCertificate): AnyCert => ({
+  kind: 'path',
+  id: c.id,
+  serial: c.serial,
+  snapshot: c.snapshot as unknown as CertificateSnapshot,
+  issuedAt: c.issuedAt,
+  revokedAt: c.revokedAt,
+});
+
+function summary(c: AnyCert): CertificateSummaryDto {
   return {
     id: c.id,
+    kind: c.kind,
     serial: c.serial,
-    courseTitle: s.courseTitle,
-    courseSlug: s.courseSlug ?? null,
-    trackTitle: s.trackTitle,
-    trackColor: s.trackColor,
+    courseTitle: c.snapshot.courseTitle,
+    courseSlug: c.snapshot.courseSlug ?? null,
+    trackTitle: c.snapshot.trackTitle,
+    trackColor: c.snapshot.trackColor,
     issuedAt: c.issuedAt.toISOString(),
     revokedAt: c.revokedAt?.toISOString() ?? null,
   };
 }
+export const toCertificateSummary = (c: Certificate) => summary(fromCourse(c));
+export const toPathCertificateSummary = (c: PathCertificate) => summary(fromPath(c));
 
-/** Kurs sertifikatları: avtomatik verilmə (kurs bitəndə), ictimai yoxlama, PDF, ləğv */
+/** Kurs və yol sertifikatları: avtomatik verilmə, ictimai yoxlama, PDF, ləğv */
 @Injectable()
 export class CertificatesService {
   constructor(private readonly prisma: PrismaService) {}
@@ -82,18 +112,71 @@ export class CertificatesService {
     return created.id;
   }
 
-  async mine(userId: string): Promise<CertificateSummaryDto[]> {
-    const rows = await this.prisma.certificate.findMany({
-      where: { userId },
-      orderBy: { issuedAt: 'desc' },
+  /** Yol sertifikatı (Mərhələ 4) — eyni qayda, seriya DACY-P-… */
+  async issueForPath(tx: Tx, userId: string, pathId: string): Promise<string> {
+    const existing = await tx.pathCertificate.findUnique({
+      where: { userId_pathId: { userId, pathId } },
     });
-    return rows.map(toCertificateSummary);
+    if (existing) return existing.id;
+    const user = await tx.user.findUniqueOrThrow({ where: { id: userId }, select: { name: true } });
+    const path = await tx.learningPath.findUniqueOrThrow({
+      where: { id: pathId },
+      include: {
+        track: { select: { title: true, color: true } },
+        items: {
+          select: {
+            xp: true,
+            type: true,
+            config: true,
+            course: { select: { estimatedHours: true } },
+            estimatedHours: true,
+          },
+        },
+      },
+    });
+    const milestone = path.items.find((i) => i.type === 'MILESTONE');
+    const certTitle = (
+      (milestone?.config as { certificate_title?: string } | null)?.certificate_title ?? ''
+    ).trim();
+    const hours =
+      path.estimatedHours ??
+      path.items.reduce((a, i) => a + (i.estimatedHours ?? i.course?.estimatedHours ?? 0), 0) ??
+      null;
+    const snapshot: CertificateSnapshot = {
+      studentName: user.name,
+      courseTitle: certTitle || path.title,
+      courseSlug: path.slug,
+      trackTitle: path.track.title,
+      trackColor: path.track.color,
+      hours: hours ? Math.round(hours) : null,
+      xp: path.items.reduce((a, i) => a + i.xp, 0),
+    };
+    const created = await tx.pathCertificate.create({
+      data: {
+        userId,
+        pathId,
+        serial: `tmp-${randomUUID()}`,
+        snapshot: snapshot as unknown as Prisma.InputJsonObject,
+      },
+    });
+    const serial = `DACY-P-${created.issuedAt.getFullYear()}-${String(created.seq).padStart(6, '0')}`;
+    await tx.pathCertificate.update({ where: { id: created.id }, data: { serial } });
+    return created.id;
+  }
+
+  async mine(userId: string): Promise<CertificateSummaryDto[]> {
+    const [a, b] = await Promise.all([
+      this.prisma.certificate.findMany({ where: { userId } }),
+      this.prisma.pathCertificate.findMany({ where: { userId } }),
+    ]);
+    return [...a.map(fromCourse), ...b.map(fromPath)]
+      .sort((x, y) => y.issuedAt.getTime() - x.issuedAt.getTime())
+      .map(summary);
   }
 
   /** İctimai: giriş tələb etmir, yalnız snapshot məlumatı */
   async getPublic(id: string): Promise<CertificateDto> {
     const c = await this.find(id);
-    const s = c.snapshot as unknown as CertificateSnapshot;
     const verifyUrl = verifyUrlOf(c.id);
     const qrDataUrl = await QRCode.toDataURL(verifyUrl, {
       margin: 1,
@@ -101,10 +184,10 @@ export class CertificatesService {
       color: { dark: '#13233f', light: '#ffffff' },
     });
     return {
-      ...toCertificateSummary(c),
-      studentName: s.studentName,
-      hours: s.hours,
-      xp: s.xp,
+      ...summary(c),
+      studentName: c.snapshot.studentName,
+      hours: c.snapshot.hours,
+      xp: c.snapshot.xp,
       verifyUrl,
       qrDataUrl,
       pdfUrl: `/api/certificates/${c.id}.pdf`,
@@ -113,9 +196,9 @@ export class CertificatesService {
 
   async pdf(id: string): Promise<{ buffer: Buffer; filename: string }> {
     const c = await this.find(id);
-    const s = c.snapshot as unknown as CertificateSnapshot;
     const buffer = await renderCertificatePdf({
-      ...s,
+      ...c.snapshot,
+      kind: c.kind,
       serial: c.serial,
       issuedAt: c.issuedAt,
       revoked: !!c.revokedAt,
@@ -126,16 +209,26 @@ export class CertificatesService {
 
   async revoke(id: string): Promise<CertificateSummaryDto> {
     const c = await this.find(id);
-    const updated = await this.prisma.certificate.update({
-      where: { id: c.id },
-      data: { revokedAt: c.revokedAt ?? new Date() },
-    });
-    return toCertificateSummary(updated);
+    const now = c.revokedAt ?? new Date();
+    const updated =
+      c.kind === 'course'
+        ? fromCourse(
+            await this.prisma.certificate.update({ where: { id: c.id }, data: { revokedAt: now } }),
+          )
+        : fromPath(
+            await this.prisma.pathCertificate.update({
+              where: { id: c.id },
+              data: { revokedAt: now },
+            }),
+          );
+    return summary(updated);
   }
 
-  private async find(id: string) {
+  private async find(id: string): Promise<AnyCert> {
     const c = await this.prisma.certificate.findUnique({ where: { id } });
-    if (!c) throw notFound('CERT_NOT_FOUND', 'Sertifikat tapılmadı');
-    return c;
+    if (c) return fromCourse(c);
+    const p = await this.prisma.pathCertificate.findUnique({ where: { id } });
+    if (p) return fromPath(p);
+    throw notFound('CERT_NOT_FOUND', 'Sertifikat tapılmadı');
   }
 }

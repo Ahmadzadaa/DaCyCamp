@@ -3,6 +3,7 @@ import type { DashboardDto } from '@dacy/shared';
 import { PrismaService } from '../prisma/prisma.service';
 import { toCertificateSummary } from '../certificates/certificates.service';
 import { ProgressService } from '../progress/progress.service';
+import { PathsLearnService } from '../paths/paths-learn.service';
 import { toPublicUser } from '../auth/auth.service';
 import { addDays, dateToDay, dayKey, weekDays } from '../progress/dates';
 import { notFound } from '../common/errors';
@@ -12,6 +13,7 @@ export class DashboardService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly progress: ProgressService,
+    private readonly pathsLearn: PathsLearnService,
   ) {}
 
   async get(userId: string): Promise<DashboardDto> {
@@ -92,7 +94,7 @@ export class DashboardService {
       certificates: certificates + pathCerts,
       certificateItems: certRows.map(toCertificateSummary),
       week: weekDays(today).map((d) => allDays.has(d)),
-      activePath: null,
+      activePath: await this.pathsLearn.active(userId),
     };
   }
 }

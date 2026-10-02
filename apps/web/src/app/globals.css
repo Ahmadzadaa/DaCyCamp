@@ -1108,6 +1108,254 @@
   .drop.over {
     border-color: var(--brand);
   }
+  /* ── Learning Path (yol səhifəsi) — dizayn referansından ── */
+  .lp {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 22px;
+  }
+  .lp-head {
+    grid-column: 1 / -1;
+    background: var(--navy);
+    color: var(--on-dark);
+    border-radius: 14px;
+    padding: 28px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 20px;
+    align-items: center;
+    border-left: 6px solid var(--c, var(--da));
+  }
+  .lp-head h1 {
+    font-size: 1.9rem;
+    margin: 8px 0;
+    color: var(--on-dark);
+  }
+  .lp-head p {
+    color: var(--on-dark-muted);
+    max-width: 58ch;
+  }
+  .lp-facts {
+    display: flex;
+    gap: 22px;
+    margin-top: 14px;
+    flex-wrap: wrap;
+  }
+  .lp-facts b {
+    display: block;
+    font-size: 1.3rem;
+  }
+  .lp-facts span {
+    font-size: 0.8rem;
+    color: var(--on-dark-muted);
+  }
+  .road2 {
+    position: relative;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .road2::before {
+    content: '';
+    position: absolute;
+    left: 27px;
+    top: 20px;
+    bottom: 20px;
+    width: 4px;
+    border-radius: 2px;
+    background: linear-gradient(
+      var(--ok) 0 var(--done-pct, 0%),
+      var(--c, var(--da)) var(--done-pct, 0%) var(--cur-pct, 0%),
+      var(--line) var(--cur-pct, 0%)
+    );
+  }
+  .node {
+    position: relative;
+    display: grid;
+    grid-template-columns: 58px 1fr;
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+  .dot {
+    width: 58px;
+    height: 58px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-weight: 700;
+    font-size: 1.05rem;
+    background: var(--card);
+    border: 4px solid var(--line);
+    color: var(--muted);
+    z-index: 1;
+  }
+  .node.done .dot {
+    background: var(--ok);
+    border-color: var(--ok);
+    color: var(--brand-ink);
+  }
+  .node.cur .dot {
+    border-color: var(--c, var(--da));
+    color: var(--c, var(--da));
+    box-shadow: 0 0 0 6px color-mix(in srgb, var(--c, var(--da)) 20%, transparent);
+  }
+  .node.sub .dot {
+    border-color: var(--de);
+    color: var(--de);
+  }
+  .node.ms .dot {
+    border-radius: 14px;
+    transform: rotate(45deg);
+  }
+  .node.ms .dot span {
+    transform: rotate(-45deg);
+  }
+  .ncard {
+    display: block;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 14px 18px;
+    color: inherit;
+  }
+  a.ncard:hover {
+    border-color: color-mix(in srgb, var(--c, var(--da)) 60%, var(--line));
+  }
+  .node.cur .ncard {
+    border: 2px solid var(--c, var(--da));
+  }
+  .node.lock .ncard {
+    opacity: 0.62;
+  }
+  .ntop {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 4px;
+  }
+  .ntype {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 2px 9px;
+    border-radius: 999px;
+    background: var(--paper);
+    color: var(--muted);
+    border: 1px solid var(--line);
+  }
+  .ncard h4 {
+    font-size: 1.08rem;
+    font-weight: 700;
+  }
+  .ncard .meta {
+    font-size: 0.82rem;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+  .nbar {
+    height: 6px;
+    border-radius: 3px;
+    background: var(--line);
+    margin-top: 10px;
+    overflow: hidden;
+  }
+  .nbar i {
+    display: block;
+    height: 100%;
+    background: var(--c, var(--da));
+  }
+  .here {
+    position: absolute;
+    left: -6px;
+    top: -10px;
+    background: var(--c, var(--da));
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 999px;
+    z-index: 2;
+  }
+  .opt {
+    margin-left: 72px;
+    margin-bottom: 14px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .opt a,
+  .opt span {
+    font-size: 0.82rem;
+    border: 1px dashed var(--line);
+    border-radius: 10px;
+    padding: 8px 12px;
+    background: var(--card);
+    color: var(--muted);
+  }
+  .opt a:hover {
+    border-color: var(--c, var(--da));
+    color: var(--ink);
+  }
+  .opt .done {
+    border-style: solid;
+    border-color: var(--ok);
+    color: var(--ok);
+  }
+  .skills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+  }
+  .skills span {
+    font-size: 0.8rem;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+  }
+  .paths {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .paths a {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.88rem;
+    padding: 8px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+  }
+  .paths a:hover {
+    border-color: var(--brand);
+  }
+  @media (max-width: 900px) {
+    .lp {
+      grid-template-columns: 1fr;
+    }
+    .lp-head {
+      grid-template-columns: 1fr;
+    }
+    .node {
+      grid-template-columns: 44px 1fr;
+      gap: 10px;
+    }
+    .dot {
+      width: 44px;
+      height: 44px;
+      font-size: 0.95rem;
+    }
+    .road2::before {
+      left: 20px;
+    }
+    .opt {
+      margin-left: 54px;
+    }
+  }
+
   /* sorğu nəticəsi cədvəli (tünd iş sahəsi) */
   .tbl {
     border-collapse: collapse;

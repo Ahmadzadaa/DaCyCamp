@@ -234,6 +234,24 @@ export class LabsService implements OnModuleInit, OnModuleDestroy {
     }
     try {
       const managed = await this.driver.listManaged();
+      // konteyneri sürücüdə olmayan (API yenidən başlayıb / konteyner kənardan silinib) canlı sessiyalar → STOPPED
+      const known = new Set(managed.map((m) => m.id));
+      const live = await this.prisma.labSession.findMany({
+        where: { status: { in: ['RUNNING', 'PASSED'] }, endedAt: null, containerId: { not: null } },
+      });
+      for (const s of live) {
+        if (!known.has(s.containerId!)) {
+          this.log.log(`Konteyneri olmayan sessiya bağlanır: ${s.id}`);
+          await this.prisma.labSession.update({
+            where: { id: s.id },
+            data: {
+              status: s.status === 'PASSED' ? 'PASSED' : 'STOPPED',
+              endedAt: now,
+              containerId: null,
+            },
+          });
+        }
+      }
       if (!managed.length) return;
       const alive = new Set(
         (

@@ -10,7 +10,10 @@ test('qeydiyyat → kataloq → kurs → yazılma → nəzəri → quiz → irə
   await page.getByLabel('E-poçt').fill(email);
   await page.getByLabel('Şifrə').fill('Sifre1234');
   await page.getByRole('button', { name: 'Qeydiyyatdan keç' }).click();
-  await expect(page).toHaveURL(/\/kurslar/);
+  // Mərhələ 4: qeydiyyatdan sonra onboarding; «Keç» → kataloq
+  await expect(page).toHaveURL(/\/baslangic$/, { timeout: 30_000 });
+  await page.getByRole('button', { name: 'Keç, sonra seçərəm' }).click();
+  await expect(page).toHaveURL(/\/kurslar/, { timeout: 30_000 });
   await expect(page.getByRole('heading', { name: 'Nə öyrənmək istəyirsiniz?' })).toBeVisible();
 
   await page.getByRole('link', { name: 'NÜMUNƏ — silinə bilər' }).first().click();

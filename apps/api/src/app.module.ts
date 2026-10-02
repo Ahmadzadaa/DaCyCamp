@@ -6,6 +6,7 @@ import { SqlCheckModule } from './sql-check/sql-check.module';
 import { ImportExportModule } from './import-export/import-export.module';
 import { LabsModule } from './labs/labs.module';
 import { CertificatesModule } from './certificates/certificates.module';
+import { PathsLearnModule } from './paths/paths-learn.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
 import { AuthGuard } from './common/guards/auth.guard';
@@ -39,6 +40,7 @@ import { ProgressModule } from './progress/progress.module';
     ImportExportModule,
     LabsModule,
     CertificatesModule,
+    PathsLearnModule,
   ],
   controllers: [HealthController],
   providers: [
