@@ -60,14 +60,21 @@ docker compose --profile full up --build
 
 `db` + `api` (4000) + `web` (3000) konteynerləri qalxır; `.env` faylı oxunur.
 
-## Seed hesabları
+## Test hesabları (seed)
 
-`.env`-dəki `SEED_*` dəyişənlərindən (defolt):
+Hesablar koda yazılmır — `.env`-dəki dəyişənlərdən yaradılır (`.env.example`-da adları boşdur):
 
-| Rol     | E-poçt              | Şifrə        |
-| ------- | ------------------- | ------------ |
-| ADMIN   | `admin@dacy.local`  | `Admin123!`  |
-| STUDENT | `telebe@dacy.local` | `Telebe123!` |
+```
+SEED_ADMIN_EMAIL=...        # ADMIN — admin panelə tam giriş
+SEED_ADMIN_PASSWORD=...
+SEED_STUDENT_EMAIL=...      # STUDENT — avtomatik "NÜMUNƏ" kursuna yazılır
+SEED_STUDENT_PASSWORD=...
+```
+
+1. `.env`-də dörd dəyəri doldurun.
+2. `pnpm db:seed` (və ya `pnpm dev` — seed hər başlanğıcda işləyir).
+
+Seed idempotentdir: hesab artıq varsa təkrar yaradılmır və şifrəsi dəyişmir (upsert); dəyişənlər boşdursa hesab yaradılmır və xəbərdarlıq çıxır. Şifrələr bazada yalnız heş (argon2id) kimi saxlanılır. Yoxlama: `pnpm --filter @dacy/web e2e -- e2e/accounts.spec.ts` (admin `/admin`-ə girir, tələbə girə bilmir).
 
 Müəllim (INSTRUCTOR) rolunu admin `/admin/telebeler` səhifəsindən verir.
 

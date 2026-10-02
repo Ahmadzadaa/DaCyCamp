@@ -165,6 +165,26 @@ const assets: Array<{ path: string; filename: string; mime: string; content: str
   },
 ];
 
+/** E-poçt + şifrə verilibsə hesabı upsert edir (şifrə argon2id ilə heşlənir); yoxdursa xəbərdarlıq verib keçir */
+async function seedUser(
+  email: string | undefined,
+  password: string | undefined,
+  name: string,
+  role: 'ADMIN' | 'STUDENT',
+) {
+  if (!email || !password) {
+    console.warn(
+      `⚠ SEED_${role}_EMAIL / SEED_${role}_PASSWORD boşdur — ${role} hesabı yaradılmadı`,
+    );
+    return null;
+  }
+  return prisma.user.upsert({
+    where: { email: email.toLowerCase() },
+    create: { email: email.toLowerCase(), name, role, passwordHash: await hash(password) },
+    update: role === 'ADMIN' ? { role: 'ADMIN' } : {},
+  });
+}
+
 async function main() {
   // istiqamətlər
   for (const [i, t] of DEFAULT_TRACKS.entries()) {
@@ -181,27 +201,15 @@ async function main() {
       update: {},
     });
   }
-  // hesablar
-  const admin = await prisma.user.upsert({
-    where: { email: env.SEED_ADMIN_EMAIL.toLowerCase() },
-    create: {
-      email: env.SEED_ADMIN_EMAIL.toLowerCase(),
-      name: 'Admin',
-      role: 'ADMIN',
-      passwordHash: await hash(env.SEED_ADMIN_PASSWORD),
-    },
-    update: { role: 'ADMIN' },
-  });
-  await prisma.user.upsert({
-    where: { email: env.SEED_STUDENT_EMAIL.toLowerCase() },
-    create: {
-      email: env.SEED_STUDENT_EMAIL.toLowerCase(),
-      name: 'Nümunə Tələbə',
-      role: 'STUDENT',
-      passwordHash: await hash(env.SEED_STUDENT_PASSWORD),
-    },
-    update: {},
-  });
+  // hesablar — e-poçt/şifrə yalnız .env-dən (SEED_ADMIN_*, SEED_STUDENT_*); boşdursa yaradılmır.
+  // Upsert: hesab artıq varsa təkrar yaranmır, şifrəsi dəyişmir (yalnız admin rolu təmin edilir).
+  const admin = await seedUser(env.SEED_ADMIN_EMAIL, env.SEED_ADMIN_PASSWORD, 'Admin', 'ADMIN');
+  const student = await seedUser(
+    env.SEED_STUDENT_EMAIL,
+    env.SEED_STUDENT_PASSWORD,
+    'Nümunə Tələbə',
+    'STUDENT',
+  );
   // nümunə kurs
   const track = await prisma.track.findUniqueOrThrow({ where: { slug: 'data-analytics' } });
   const course = await prisma.course.upsert({
@@ -218,10 +226,17 @@ async function main() {
       order: 1,
       isPublished: true,
       publishedAt: new Date(),
-      createdById: admin.id,
+      createdById: admin?.id ?? null,
     },
     update: {},
   });
+  // test tələbəsi nümunə kursa yazılır (tələbə tərəfini dərhal yoxlamaq üçün)
+  if (student)
+    await prisma.enrollment.upsert({
+      where: { userId_courseId: { userId: student.id, courseId: course.id } },
+      create: { userId: student.id, courseId: course.id },
+      update: {},
+    });
   // fayllar
   for (const a of assets) {
     const buf = Buffer.from(a.content, 'utf8');
@@ -242,7 +257,7 @@ async function main() {
       sizeBytes: buf.length,
       sha256: sha256(buf),
       storageKey,
-      uploadedById: admin.id,
+      uploadedById: admin?.id ?? null,
     };
     if (existing) await prisma.asset.update({ where: { id: existing.id }, data });
     else await prisma.asset.create({ data });

@@ -3,44 +3,57 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>DaCy Academy — Dizayn referansı</title>
+<title>DaCy Academy — Dizayn referansı v2</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
+/* ───────── Rəng tokenləri — DƏYİŞMƏYİB (DaCy rəngləri) ───────── */
 :root{
   --navy:#13233F; --navy-2:#0E1B30; --navy-3:#1B2F52; --navy-line:#2A3F66;
-  --paper:#F5F7FB; --card:#FFFFFF; --ink:#13233F; --muted:#5E6A82; --line:#DDE3EE;
+  --paper:#F5F7FB; --card:#FFFFFF; --ink:#13233F; --muted:#5E6A82; --line:#DDE3EE; --soft:#E9EDF5;
   --brand:#2BD4A4; --brand-ink:#0B3D30;
   --da:#6C7CF0; --de:#F0A93E; --cy:#F06A8D; --ok:#2BD4A4; --err:#FF6B6B;
   --on-dark:#E6ECF7; --on-dark-muted:#93A1BC;
+  /* boşluq şkalası */
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:48px;
+  /* radiuslar */
+  --r-hero:24px; --r-card:16px; --r-chip:10px; --r-btn:10px; --r-input:12px;
+  --shadow-hover:0 16px 36px -18px rgba(19,35,63,.38);
   box-sizing:border-box;
   padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
 }
 @media (prefers-color-scheme: dark){
-  :root:not([data-theme="light"]){ --paper:#0B1628; --card:#13233F; --ink:#E6ECF7; --muted:#93A1BC; --line:#2A3F66; }
+  :root:not([data-theme="light"]){ --paper:#0B1628; --card:#13233F; --ink:#E6ECF7; --muted:#93A1BC; --line:#2A3F66; --soft:#1B2F52; }
 }
-:root[data-theme="dark"]{ --paper:#0B1628; --card:#13233F; --ink:#E6ECF7; --muted:#93A1BC; --line:#2A3F66; }
+:root[data-theme="dark"]{ --paper:#0B1628; --card:#13233F; --ink:#E6ECF7; --muted:#93A1BC; --line:#2A3F66; --soft:#1B2F52; }
 *,*::before,*::after{box-sizing:inherit}
 html{scroll-padding-top:calc(64px + env(safe-area-inset-top,0px))}
-body{margin:0;background:var(--paper);color:var(--ink);font-family:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:15px;line-height:1.55}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:16px;line-height:1.55}
 h1,h2,h3,h4{margin:0;line-height:1.15}
 p{margin:0}
+a{color:inherit}
 code,.mono{font-family:"JetBrains Mono",ui-monospace,Menlo,monospace}
+svg.i{width:20px;height:20px;flex:none}
+svg.i.sm{width:16px;height:16px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 
-/* doc nav */
+/* ───────── sənəd naviqasiyası ───────── */
 .docnav{position:sticky;top:env(safe-area-inset-top,0px);z-index:10;background:var(--navy);color:var(--on-dark)}
-.docnav .in{max-width:1240px;margin:0 auto;display:flex;align-items:center;gap:20px;padding:12px 20px;overflow-x:auto}
+.docnav .in{max-width:1280px;margin:0 auto;display:flex;align-items:center;gap:20px;padding:12px 20px;overflow-x:auto}
 .logo{display:flex;align-items:center;gap:8px;font-weight:700;font-size:1.1rem;white-space:nowrap}
-.logo i{width:26px;height:26px;border-radius:7px;background:var(--brand);display:grid;place-items:center;color:var(--brand-ink);font-style:normal;font-size:.8rem;font-weight:700}
+.logo i{width:28px;height:28px;border-radius:8px;background:var(--brand);display:grid;place-items:center;color:var(--brand-ink);font-style:normal;font-size:.8rem;font-weight:700}
 .docnav a{color:var(--on-dark-muted);text-decoration:none;font-size:.9rem;white-space:nowrap}
 .docnav a:hover,.docnav a:focus-visible{color:var(--brand)}
-main{max-width:1240px;margin:0 auto;padding:36px 20px 80px}
-.intro h1{font-size:clamp(2rem,4.5vw,3rem);font-weight:700;max-width:22ch}
-.intro p{margin-top:12px;max-width:64ch;color:var(--muted);font-size:1.05rem}
-.sec{margin-top:64px}
-.sec>h2{font-size:1.7rem}
-.sec>.note{color:var(--muted);margin:6px 0 20px;max-width:70ch}
+main.doc{max-width:1280px;margin:0 auto;padding:40px 20px 96px}
+.intro h1{font-size:clamp(2rem,4.5vw,3rem);font-weight:700;max-width:24ch;letter-spacing:-.01em}
+.intro p{margin-top:12px;max-width:66ch;color:var(--muted);font-size:1.05rem}
+.sec{margin-top:var(--s7)}
+.sec>h2{font-size:1.9rem;letter-spacing:-.01em}
+.sec>.note{color:var(--muted);margin:8px 0 24px;max-width:76ch}
+.spec{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin:0 0 24px;padding:0;list-style:none}
+.spec li{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:.92rem;color:var(--muted)}
+.spec li b{color:var(--ink)}
 
 /* tokens */
 .tokens{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
@@ -49,72 +62,169 @@ main{max-width:1240px;margin:0 auto;padding:36px 20px 80px}
 .sw p{padding:8px 12px;font-size:.85rem}
 .sw p span{display:block;color:var(--muted);font-family:"JetBrains Mono",monospace;font-size:.78rem}
 .comp{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:18px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px}
-.b{display:inline-flex;align-items:center;gap:6px;border:0;border-radius:8px;padding:9px 16px;font:600 .9rem "IBM Plex Sans",sans-serif;cursor:pointer}
+.scale{display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-top:18px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px}
+.scale div{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:.78rem;color:var(--muted);font-family:"JetBrains Mono",monospace}
+.scale i{display:block;background:var(--da);border-radius:3px;width:var(--w);height:var(--w)}
+.type{display:flex;flex-direction:column;gap:10px;margin-top:18px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px}
+.type span{font-family:"JetBrains Mono",monospace;font-size:.75rem;color:var(--muted);margin-left:10px}
+
+/* ───────── düymələr, badge-lər ───────── */
+.b{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:var(--r-btn);padding:10px 18px;font:600 .95rem "IBM Plex Sans",sans-serif;cursor:pointer;line-height:1.2;transition:background .15s,color .15s,box-shadow .15s,transform .15s;text-decoration:none}
+.b:focus-visible{outline:3px solid color-mix(in srgb,var(--brand) 55%,transparent);outline-offset:2px}
+.b:active{transform:translateY(1px)}
+.b-sm{padding:8px 14px;font-size:.88rem}
 .b-brand{background:var(--brand);color:var(--brand-ink)}
+.b-brand:hover{background:#25C093}
 .b-dark{background:var(--navy);color:var(--on-dark)}
+.b-dark:hover{background:var(--navy-3)}
 .b-ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
-.badge{display:inline-block;padding:3px 10px;border-radius:999px;font-size:.78rem;font-weight:600}
-.bd-da{background:color-mix(in srgb,var(--da) 18%,transparent);color:var(--da)}
-.bd-de{background:color-mix(in srgb,var(--de) 20%,transparent);color:#B87610}
+.b-ghost:hover{background:var(--soft);border-color:var(--muted)}
+.b-outline{background:transparent;color:var(--navy);border:1.5px solid var(--navy)}
+.b-outline:hover{background:var(--navy);color:var(--on-dark)}
+.b-danger{background:transparent;color:#D23F3F;border:1px solid color-mix(in srgb,#FF6B6B 60%,transparent)}
+.b-danger:hover{background:color-mix(in srgb,#FF6B6B 12%,transparent)}
+.ib{display:inline-grid;place-items:center;width:38px;height:38px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--muted);cursor:pointer}
+.ib:hover{color:var(--ink);background:var(--soft)}
+.ib.danger:hover{color:#D23F3F;background:color-mix(in srgb,#FF6B6B 12%,transparent);border-color:color-mix(in srgb,#FF6B6B 40%,transparent)}
+.badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:.78rem;font-weight:600;line-height:1.2}
+.bd-da{background:color-mix(in srgb,var(--da) 18%,transparent);color:#4B5BD0}
+.bd-de{background:color-mix(in srgb,var(--de) 22%,transparent);color:#B87610}
 .bd-cy{background:color-mix(in srgb,var(--cy) 18%,transparent);color:#D2446A}
+.bd-mint{background:var(--brand);color:var(--brand-ink)}
+.bd-ok{background:color-mix(in srgb,var(--ok) 20%,transparent);color:#159B74}
+.bd-muted{background:var(--soft);color:var(--muted)}
+.bd-warn{background:color-mix(in srgb,var(--de) 22%,transparent);color:#B87610}
 .xp{font-weight:700;color:var(--brand-ink);background:var(--brand);padding:3px 10px;border-radius:999px;font-size:.8rem}
 
-/* browser frame */
-.frame{border-radius:14px;overflow:hidden;border:1px solid var(--line);background:var(--card);box-shadow:0 18px 40px -24px rgba(19,35,63,.45)}
+/* ───────── brauzer çərçivəsi ───────── */
+.frame{border-radius:16px;overflow:hidden;border:1px solid var(--line);background:var(--paper);box-shadow:0 18px 40px -24px rgba(19,35,63,.45);position:relative}
 .fbar{display:flex;align-items:center;gap:6px;padding:9px 14px;background:#E9EDF5;border-bottom:1px solid var(--line);font-size:.8rem;color:#5E6A82}
 .fbar i{width:10px;height:10px;border-radius:50%;background:#C9D1E0;display:inline-block}
 .fbar span{margin-left:12px;background:#fff;padding:2px 12px;border-radius:6px}
 
-/* app header (light pages) */
-.apph{display:flex;align-items:center;gap:22px;padding:12px 22px;background:var(--navy);color:var(--on-dark)}
-.apph nav{display:flex;gap:18px;font-size:.9rem;color:var(--on-dark-muted)}
-.apph nav b{color:var(--on-dark)}
-.apph .sp{flex:1}
-.apph .search{background:var(--navy-3);border-radius:8px;padding:6px 12px;font-size:.85rem;color:var(--on-dark-muted);min-width:180px}
-.avatar{width:30px;height:30px;border-radius:50%;background:var(--da);display:grid;place-items:center;font-weight:700;font-size:.8rem;color:#fff}
+/* ───────── APP SHELL: ağ header + sol navy sidebar ───────── */
+.top{display:flex;align-items:center;gap:var(--s4);padding:12px var(--s5);background:var(--card);border-bottom:1px solid var(--line);min-height:64px}
+.top .logo{color:var(--ink);margin-right:var(--s2)}
+.pill{display:flex;background:var(--soft);border-radius:999px;padding:4px}
+.pill a{padding:8px 18px;border-radius:999px;color:var(--muted);font-weight:600;font-size:.92rem;text-decoration:none;display:inline-flex;align-items:center;gap:8px}
+.pill a:hover{color:var(--ink)}
+.pill a.on{background:var(--navy);color:var(--on-dark)}
+.srch{flex:1;max-width:520px;display:flex;align-items:center;gap:10px;background:var(--paper);border:1px solid var(--line);border-radius:var(--r-input);padding:10px 14px;color:var(--muted);font-size:.95rem;margin-left:auto}
+.srch:focus-within{border-color:var(--navy);box-shadow:0 0 0 3px color-mix(in srgb,var(--da) 20%,transparent)}
+.srch kbd{margin-left:auto;font:500 .72rem "JetBrains Mono",monospace;border:1px solid var(--line);border-radius:6px;padding:2px 6px;color:var(--muted)}
+.top .msrch{display:none}
+.bell{position:relative}
+.bell::after{content:"";position:absolute;top:8px;right:9px;width:8px;height:8px;border-radius:50%;background:var(--err);border:2px solid var(--card)}
+.avatar{width:36px;height:36px;border-radius:50%;background:var(--da);display:grid;place-items:center;font-weight:700;font-size:.82rem;color:#fff}
+.shell{display:grid;grid-template-columns:260px 1fr;min-height:700px;background:var(--paper)}
+.sb{background:var(--navy);color:var(--on-dark-muted);padding:var(--s4) var(--s3);display:flex;flex-direction:column;gap:2px}
+.sb .sh{font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--on-dark-muted);padding:var(--s4) var(--s3) var(--s2);font-weight:600;opacity:.85}
+.sb a{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;color:var(--on-dark-muted);text-decoration:none;font-weight:500;font-size:.95rem;transition:background .15s,color .15s}
+.sb a:hover{background:var(--navy-3);color:#fff}
+.sb a:focus-visible{outline:2px solid var(--brand);outline-offset:-2px}
+.sb a.on{background:var(--navy-3);color:#fff;font-weight:700}
+.sb a.on svg{color:var(--brand)}
+.new{margin-left:auto;font-size:.6rem;font-weight:700;letter-spacing:.1em;background:var(--brand);color:var(--brand-ink);padding:2px 7px;border-radius:999px}
+.sb .foot{margin-top:auto;padding:var(--s3);border-top:1px solid var(--navy-line);font-size:.82rem;display:flex;align-items:center;gap:10px}
+.sb .foot .avatar{width:30px;height:30px;font-size:.72rem}
+.content{padding:var(--s6) var(--s6) var(--s7);min-width:0;position:relative}
+.help{position:absolute;right:var(--s5);bottom:var(--s5);width:52px;height:52px;border-radius:50%;background:var(--navy);color:var(--on-dark);display:grid;place-items:center;box-shadow:0 12px 24px -10px rgba(19,35,63,.6);border:0;cursor:pointer}
+.help:hover{background:var(--navy-3)}
+.help svg{width:24px;height:24px}
 
-/* catalog */
-.cat{padding:24px 22px 28px;background:var(--paper)}
-.cat-hero{background:var(--navy);color:var(--on-dark);border-radius:14px;padding:26px 28px;display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;align-items:center}
-.cat-hero h3{font-size:1.6rem}
-.cat-hero p{color:var(--on-dark-muted);margin-top:6px}
-.filters{display:flex;gap:8px;flex-wrap:wrap;margin:20px 0 16px}
-.chip{padding:7px 14px;border-radius:999px;border:1px solid var(--line);background:var(--card);font-size:.88rem}
-.chip.on{background:var(--navy);color:var(--on-dark);border-color:var(--navy)}
-.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px}
-.cc{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column}
-.cc .top{height:92px;background:var(--c);position:relative;overflow:hidden}
-.cc .top svg{position:absolute;right:-10px;bottom:-14px;opacity:.35}
-.cc .bd{padding:14px 16px 16px;display:flex;flex-direction:column;gap:8px;flex:1}
-.cc h4{font-size:1.05rem}
-.cc .meta{font-size:.82rem;color:var(--muted);display:flex;gap:12px;flex-wrap:wrap}
-.cc .foot{margin-top:auto;display:flex;justify-content:space-between;align-items:center;padding-top:8px;border-top:1px solid var(--line);font-size:.82rem;color:var(--muted)}
+/* ───────── HERO ───────── */
+.hero{background:var(--navy);color:var(--on-dark);border-radius:var(--r-hero);padding:40px 44px;display:grid;grid-template-columns:1fr 300px;gap:var(--s6);align-items:center;position:relative;overflow:hidden}
+.hero .k{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.hero h1{font-size:40px;font-weight:700;letter-spacing:-.015em;color:#fff}
+.hero p{color:var(--on-dark-muted);font-size:16px;max-width:54ch;margin-top:12px;line-height:1.55}
+.hero .act{display:flex;gap:12px;margin-top:var(--s5);flex-wrap:wrap}
+.hero .art{justify-self:end}
+.hero .art svg{display:block;width:280px;height:170px}
+.hero.sm{padding:32px 36px;grid-template-columns:1fr 240px}
+.hero.sm h1{font-size:34px}
+.hero.sm .art svg{width:220px;height:140px}
 
-/* course page */
-.course{display:grid;grid-template-columns:1fr 320px;gap:22px;padding:24px 22px;background:var(--paper)}
-.chead{grid-column:1/-1;background:var(--navy);color:var(--on-dark);border-radius:14px;padding:26px 28px;border-left:6px solid var(--da)}
-.chead h3{font-size:1.7rem;margin:8px 0}
-.chead p{color:var(--on-dark-muted);max-width:60ch}
-.mod{background:var(--card);border:1px solid var(--line);border-radius:14px;margin-bottom:14px;overflow:hidden}
-.mod-h{display:flex;align-items:center;gap:14px;padding:16px 18px}
-.mod-n{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-weight:700;background:var(--paper);border:2px solid var(--line);flex:none}
+/* ───────── FİLTRLƏR ───────── */
+.chips{display:flex;gap:var(--s2);flex-wrap:wrap;margin-top:var(--s6)}
+.chip{padding:9px 14px;border-radius:var(--r-chip);background:var(--soft);border:0;font:600 .9rem "IBM Plex Sans",sans-serif;color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:background .15s,color .15s}
+.chip:hover{background:#DFE5F0}
+.chip:focus-visible{outline:3px solid color-mix(in srgb,var(--da) 40%,transparent)}
+.chip.on{background:var(--navy);color:var(--on-dark)}
+.chip.more{color:var(--muted)}
+.tb{display:flex;align-items:center;gap:var(--s3);margin:var(--s4) 0 var(--s5);flex-wrap:wrap}
+.tb .cnt{font-weight:600;color:var(--muted)}
+.tb .srch{margin-left:auto;max-width:300px;flex:1 1 220px;padding:9px 12px}
+.sel{display:inline-flex;align-items:center;gap:8px;padding:9px 14px;border-radius:var(--r-input);border:1px solid var(--line);background:var(--card);font-weight:600;font-size:.92rem;cursor:pointer}
+.sel:hover{border-color:var(--muted)}
+
+/* ───────── KURS KARTI ───────── */
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:var(--s5)}
+.kc{background:var(--card);border:1px solid var(--line);border-radius:var(--r-card);padding:var(--s5);display:flex;flex-direction:column;gap:var(--s3);transition:transform .18s ease,box-shadow .18s ease,border-color .18s;position:relative}
+.kc:hover{transform:translateY(-3px);box-shadow:var(--shadow-hover);border-color:#CBD3E3}
+.kc:focus-within{box-shadow:0 0 0 3px color-mix(in srgb,var(--da) 30%,transparent)}
+.kc .kind{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.kc h3{font-size:24px;line-height:1.2;letter-spacing:-.01em}
+.lvl{display:flex;align-items:center;gap:8px;font-size:.9rem;color:var(--muted);font-weight:500}
+.lvl i{display:inline-flex;gap:3px;align-items:flex-end;height:16px}
+.lvl i b{width:4px;border-radius:2px;background:var(--line);display:block}
+.lvl i b:nth-child(1){height:7px}.lvl i b:nth-child(2){height:11px}.lvl i b:nth-child(3){height:16px}
+.lvl.l1 i b:nth-child(1){background:var(--c)}
+.lvl.l2 i b:nth-child(-n+2){background:var(--c)}
+.lvl.l3 i b{background:var(--c)}
+.kc p{color:var(--muted);font-size:16px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+.inst{display:flex;align-items:center;gap:10px;margin-top:var(--s1)}
+.ph{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:.78rem;color:#fff;background:linear-gradient(135deg,var(--navy-3),var(--navy));border:2px solid var(--card);box-shadow:0 0 0 1px var(--line);flex:none}
+.inst b{display:block;font-size:.92rem;line-height:1.2}
+.inst span{font-size:.8rem;color:var(--muted)}
+.kc .ft{margin-top:auto;display:flex;justify-content:space-between;align-items:center;padding-top:var(--s4);border-top:1px solid var(--line)}
+.kc .ft .dur{display:flex;align-items:center;gap:10px;font-size:.92rem;color:var(--muted);font-weight:500}
+.tic{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;background:color-mix(in srgb,var(--c) 16%,transparent);color:var(--c)}
+.tic svg{width:16px;height:16px}
+.kc .prog{height:6px;border-radius:3px;background:var(--line);overflow:hidden}
+.kc .prog i{display:block;height:100%;background:var(--c)}
+/* skeleton */
+.sk{background:linear-gradient(90deg,var(--soft) 25%,#F2F5FA 37%,var(--soft) 63%);background-size:400% 100%;border-radius:8px;animation:sh 1.4s ease infinite}
+@keyframes sh{0%{background-position:100% 0}100%{background-position:0 0}}
+.kc.skel{gap:14px}
+.kc.skel .sk{height:14px}
+.kc.skel .sk.t{height:28px;width:80%}
+.kc.skel .sk.c{width:38px;height:38px;border-radius:50%}
+/* anatomiya */
+.anat{display:grid;grid-template-columns:360px 1fr;gap:var(--s6);align-items:start;padding-left:36px}
+.anat .kc{overflow:visible}
+.anat ol{margin:0;padding-left:20px;color:var(--muted);display:flex;flex-direction:column;gap:10px}
+.anat ol b{color:var(--ink)}
+.callout{position:absolute;left:-58px;width:26px;height:26px;border-radius:50%;background:var(--da);color:#fff;font-size:.75rem;font-weight:700;display:grid;place-items:center;box-shadow:0 0 0 3px var(--card)}
+
+/* ───────── səhifə başlığı ───────── */
+.ph1{display:flex;align-items:flex-end;justify-content:space-between;gap:var(--s4);flex-wrap:wrap;margin-bottom:var(--s5)}
+.ph1 h1{font-size:40px;letter-spacing:-.015em}
+.ph1 p{color:var(--muted);margin-top:6px;font-size:16px}
+.h2{font-size:28px;letter-spacing:-.01em;margin:var(--s6) 0 var(--s4)}
+
+/* ───────── kurs səhifəsi ───────── */
+.course{display:grid;grid-template-columns:1fr 340px;gap:var(--s5);margin-top:var(--s5)}
+.mod{background:var(--card);border:1px solid var(--line);border-radius:var(--r-card);margin-bottom:var(--s4);overflow:hidden}
+.mod-h{display:flex;align-items:center;gap:14px;padding:18px 20px}
+.mod-n{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-weight:700;background:var(--paper);border:2px solid var(--line);flex:none}
 .mod.done .mod-n{background:var(--ok);border-color:var(--ok);color:var(--brand-ink)}
 .mod.act .mod-n{border-color:var(--da);color:var(--da)}
-.mod-h h4{font-size:1.05rem}
+.mod-h h4{font-size:1.1rem}
 .mod-h small{color:var(--muted)}
-.steps{list-style:none;margin:0;padding:0 18px 14px 66px}
-.steps li{display:flex;align-items:center;gap:10px;padding:7px 0;font-size:.9rem;border-top:1px dashed var(--line)}
-.ic{width:22px;height:22px;border-radius:6px;display:grid;place-items:center;font-size:.7rem;font-weight:700;flex:none}
+.steps{list-style:none;margin:0;padding:0 20px 16px 70px}
+.steps li{display:flex;align-items:center;gap:10px;padding:9px 0;font-size:.95rem;border-top:1px dashed var(--line)}
+.ic{width:24px;height:24px;border-radius:7px;display:grid;place-items:center;font-size:.7rem;font-weight:700;flex:none}
 .ic.t{background:#E8ECF7;color:#5E6A82}.ic.q{background:#FFF1D9;color:#B87610}.ic.c{background:#E3E7FD;color:#4B5BD0}.ic.f{background:#FDE3EA;color:#C83A60}
-.steps li .st{margin-left:auto;font-size:.8rem;color:var(--muted)}
+.steps li .st{margin-left:auto;font-size:.82rem;color:var(--muted)}
 .steps li.ok .st{color:#159B74;font-weight:600}
 .steps li.lock{opacity:.5}
-.side{display:flex;flex-direction:column;gap:14px}
-.box{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px}
+.side{display:flex;flex-direction:column;gap:var(--s4)}
+.box{background:var(--card);border:1px solid var(--line);border-radius:var(--r-card);padding:var(--s5)}
+.box h4{font-size:1rem;margin-bottom:10px}
 .ring{display:flex;align-items:center;gap:16px}
-.bigp{font-size:2rem;font-weight:700}
+.bigp{font-size:2.2rem;font-weight:700;line-height:1}
 
-/* WORKSPACE */
+/* ───────── WORKSPACE (dəyişməyib) ───────── */
 .ws{background:var(--navy-2);color:var(--on-dark);font-size:14px}
 .ws-top{display:flex;align-items:center;gap:16px;padding:10px 16px;background:var(--navy);border-bottom:1px solid var(--navy-line)}
 .ws-top .crumb{font-size:.85rem;color:var(--on-dark-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -169,204 +279,479 @@ main{max-width:1240px;margin:0 auto;padding:36px 20px 80px}
 .fq .okm{color:var(--ok);font-size:.82rem;margin-top:6px}
 .panel[hidden]{display:none}
 
-/* dashboard */
-.dash{display:grid;grid-template-columns:1fr 300px;gap:20px;padding:24px 22px;background:var(--paper)}
-.cont{background:var(--navy);color:var(--on-dark);border-radius:14px;padding:22px 24px;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
-.cont small{color:var(--on-dark-muted)}
+/* ───────── panel (dashboard) ───────── */
+.dash{display:grid;grid-template-columns:1fr 320px;gap:var(--s5);margin-top:var(--s5)}
+.cont{background:var(--card);border:1px solid var(--line);border-radius:var(--r-card);padding:var(--s5);display:grid;grid-template-columns:auto 1fr auto;gap:var(--s4);align-items:center}
+.cont .tic{width:48px;height:48px;border-radius:14px}
+.cont .tic svg{width:22px;height:22px}
+.cont small{color:var(--muted);font-weight:600;font-size:.78rem;letter-spacing:.1em;text-transform:uppercase}
 .cont h3{font-size:1.3rem;margin:4px 0}
-.plist{margin-top:16px;display:flex;flex-direction:column;gap:12px}
-.pi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:grid;grid-template-columns:1fr auto;gap:6px 14px;align-items:center}
-.pi .bar{grid-column:1/-1;height:8px;border-radius:4px;background:var(--line);overflow:hidden}
+.plist{margin-top:var(--s4);display:flex;flex-direction:column;gap:var(--s3)}
+.pi{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;display:grid;grid-template-columns:auto 1fr auto;gap:6px 14px;align-items:center}
+.pi .bar{grid-column:2/-1;height:8px;border-radius:4px;background:var(--line);overflow:hidden}
 .pi .bar i{display:block;height:100%;background:var(--c)}
-.stats{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px}
-.stat b{font-size:1.6rem;display:block;line-height:1.1}
-.stat span{font-size:.82rem;color:var(--muted)}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:var(--s3)}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:4px}
+.stat b{font-size:1.7rem;line-height:1.1}
+.stat span{font-size:.82rem;color:var(--muted);display:flex;align-items:center;gap:6px}
 .week{display:flex;gap:6px;margin-top:10px}
-.week i{flex:1;height:30px;border-radius:6px;background:var(--line)}
+.week i{flex:1;height:32px;border-radius:8px;background:var(--line)}
 .week i.on{background:var(--brand)}
 
-/* admin */
-.admin{display:grid;grid-template-columns:260px 1fr;min-height:520px;background:var(--paper)}
-.tree{background:var(--card);border-right:1px solid var(--line);padding:16px;font-size:.88rem}
-.tree h4{font-size:.95rem;margin-bottom:10px}
-.tree ul{list-style:none;margin:0;padding:0}
-.tree li{padding:6px 8px;border-radius:7px;display:flex;align-items:center;gap:8px}
-.tree li.sub{padding-left:24px}
-.tree li.sub2{padding-left:40px}
-.tree li.sel{background:color-mix(in srgb,var(--da) 14%,transparent);font-weight:600}
-.tree .drag{color:var(--muted);cursor:grab}
-.edit{padding:22px 26px}
-.edit .row{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px}
-.form{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.fld{display:flex;flex-direction:column;gap:5px;font-size:.85rem}
-.fld.full{grid-column:1/-1}
-.fld label{font-weight:600}
-.inp{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:9px 12px;min-height:38px;color:var(--ink)}
-.inp.code{font-family:"JetBrains Mono",monospace;font-size:12.5px;white-space:pre;min-height:80px;background:var(--navy-2);color:var(--on-dark);border-color:var(--navy-line)}
-.seg{display:flex;gap:6px;flex-wrap:wrap}
-.seg span{padding:6px 12px;border-radius:8px;border:1px solid var(--line);font-size:.82rem;background:var(--card)}
-.seg span.on{background:var(--navy);color:var(--on-dark);border-color:var(--navy)}
-.drop{border:2px dashed var(--line);border-radius:12px;padding:18px;text-align:center;color:var(--muted);background:var(--card)}
-
-
-/* learning path */
-.lp{display:grid;grid-template-columns:1fr 300px;gap:22px;padding:24px 22px;background:var(--paper)}
-.lp-head{grid-column:1/-1;background:var(--navy);color:var(--on-dark);border-radius:14px;padding:28px;display:grid;grid-template-columns:1fr auto;gap:20px;align-items:center;border-left:6px solid var(--da)}
-.lp-head h3{font-size:1.9rem;margin:8px 0}
-.lp-head p{color:var(--on-dark-muted);max-width:58ch}
-.lp-facts{display:flex;gap:22px;margin-top:14px;flex-wrap:wrap}
-.lp-facts b{display:block;font-size:1.3rem}
-.lp-facts span{font-size:.8rem;color:var(--on-dark-muted)}
-.road2{position:relative;list-style:none;margin:0;padding:0 0 0 0}
+/* ───────── learning path ───────── */
+.lp{display:grid;grid-template-columns:1fr 320px;gap:var(--s5);margin-top:var(--s5)}
+.lp-facts{display:flex;gap:28px;margin-top:var(--s4);flex-wrap:wrap}
+.lp-facts b{display:block;font-size:1.5rem;color:#fff}
+.lp-facts span{font-size:.82rem;color:var(--on-dark-muted)}
+.road2{position:relative;list-style:none;margin:0;padding:0}
 .road2::before{content:"";position:absolute;left:27px;top:20px;bottom:20px;width:4px;border-radius:2px;background:linear-gradient(var(--ok) 0 38%,var(--da) 38% 52%,var(--line) 52%)}
-.node{position:relative;display:grid;grid-template-columns:58px 1fr;gap:14px;margin-bottom:14px}
+.node{position:relative;display:grid;grid-template-columns:58px 1fr;gap:16px;margin-bottom:var(--s4)}
 .dot{width:58px;height:58px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:1.05rem;background:var(--card);border:4px solid var(--line);color:var(--muted);z-index:1}
 .node.done .dot{background:var(--ok);border-color:var(--ok);color:var(--brand-ink)}
 .node.cur .dot{border-color:var(--da);color:var(--da);box-shadow:0 0 0 6px color-mix(in srgb,var(--da) 20%,transparent)}
 .node.ms .dot{border-radius:14px;transform:rotate(45deg)}
 .node.ms .dot span{transform:rotate(-45deg)}
-.ncard{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 18px}
+.ncard{background:var(--card);border:1px solid var(--line);border-radius:var(--r-card);padding:16px 20px;transition:transform .18s,box-shadow .18s}
+.ncard:hover{transform:translateY(-2px);box-shadow:var(--shadow-hover)}
 .node.cur .ncard{border:2px solid var(--da)}
 .node.lock .ncard{opacity:.62}
-.ntop{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px}
-.ntype{font-size:.75rem;font-weight:600;padding:2px 9px;border-radius:999px;background:var(--paper);color:var(--muted);border:1px solid var(--line)}
-.ncard h4{font-size:1.08rem}
-.ncard .meta{font-size:.82rem;color:var(--muted);margin-top:4px}
-.nbar{height:6px;border-radius:3px;background:var(--line);margin-top:10px;overflow:hidden}
+.ntop{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+.ntype{font-size:.72rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.ncard h4{font-size:1.15rem}
+.ncard .meta{font-size:.86rem;color:var(--muted);margin-top:4px}
+.nbar{height:6px;border-radius:3px;background:var(--line);margin-top:12px;overflow:hidden}
 .nbar i{display:block;height:100%;background:var(--da)}
 .here{position:absolute;left:-6px;top:-10px;background:var(--da);color:#fff;font-size:.7rem;font-weight:700;padding:2px 8px;border-radius:999px;z-index:2}
-.opt{margin-left:72px;margin-bottom:14px;display:flex;gap:10px;flex-wrap:wrap}
-.opt span{font-size:.82rem;border:1px dashed var(--line);border-radius:10px;padding:8px 12px;background:var(--card);color:var(--muted)}
+.opt{margin-left:74px;margin-bottom:var(--s4);display:flex;gap:10px;flex-wrap:wrap}
+.opt span{font-size:.84rem;border:1px dashed var(--line);border-radius:10px;padding:8px 12px;background:var(--card);color:var(--muted)}
 .skills{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-.skills span{font-size:.8rem;padding:4px 10px;border-radius:999px;background:var(--paper);border:1px solid var(--line)}
+.skills span{font-size:.82rem;padding:5px 11px;border-radius:999px;background:var(--soft)}
 .paths{display:flex;flex-direction:column;gap:8px;margin-top:8px}
-.paths div{display:flex;justify-content:space-between;font-size:.88rem;padding:8px 10px;border-radius:8px;border:1px solid var(--line)}
-@media (max-width:900px){.lp,.lp-head{grid-template-columns:1fr}}
+.paths div{display:flex;justify-content:space-between;align-items:center;font-size:.9rem;padding:10px 12px;border-radius:10px;border:1px solid var(--line)}
+.paths div:hover{border-color:var(--muted)}
 
-/* toast */
-.toast{display:flex;align-items:center;gap:14px;background:var(--navy);color:var(--on-dark);border-radius:12px;padding:14px 18px;max-width:420px;border-left:4px solid var(--ok)}
-.toast .big{font-size:1.6rem}
+/* ───────── ADMIN ───────── */
+.tbl-admin{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--line);border-radius:var(--r-card);overflow:hidden;font-size:.95rem}
+.tbl-admin th{font-size:.74rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600;text-align:left;padding:14px 16px;border-bottom:1px solid var(--line);background:var(--paper)}
+.tbl-admin td{padding:14px 16px;border-bottom:1px solid var(--line);vertical-align:middle}
+.tbl-admin td:first-child{min-width:230px}
+.tbl-admin td.dt{white-space:nowrap}
+
+.tbl-admin tr:last-child td{border-bottom:0}
+.tbl-admin tbody tr{transition:background .12s}
+.tbl-admin tbody tr:hover{background:color-mix(in srgb,var(--da) 6%,var(--card))}
+.tbl-admin .ttl{font-weight:700}
+.tbl-admin .slug{font-family:"JetBrains Mono",monospace;font-size:.78rem;color:var(--muted)}
+.tbl-admin .acts{display:flex;gap:6px;justify-content:flex-end;opacity:.55;transition:opacity .12s}
+.tbl-admin tbody tr:hover .acts{opacity:1}
+.tbl-admin .ib{width:34px;height:34px}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:var(--s4)}
+.tabs span{padding:10px 14px;font-weight:600;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px}
+.tabs span.on{color:var(--ink);border-color:var(--navy)}
+.tabs span i{font-style:normal;margin-left:6px;background:var(--soft);border-radius:999px;padding:1px 7px;font-size:.75rem;color:var(--muted)}
+.admin-ed{display:grid;grid-template-columns:280px 1fr;background:var(--card);border:1px solid var(--line);border-radius:var(--r-card);overflow:hidden;min-height:520px}
+.tree{background:var(--paper);border-right:1px solid var(--line);padding:16px;font-size:.9rem}
+.tree h4{font-size:.95rem;margin-bottom:10px}
+.tree ul{list-style:none;margin:0;padding:0}
+.tree li{padding:7px 8px;border-radius:8px;display:flex;align-items:center;gap:8px}
+.tree li:hover{background:var(--soft)}
+.tree li.sub{padding-left:24px}
+.tree li.sel{background:color-mix(in srgb,var(--da) 14%,transparent);font-weight:600}
+.tree .drag{color:var(--muted);cursor:grab}
+.edit{padding:24px 28px}
+.edit .row{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:20px}
+.form{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.fld{display:flex;flex-direction:column;gap:6px;font-size:.88rem}
+.fld.full{grid-column:1/-1}
+.fld label{font-weight:600}
+.inp{background:var(--card);border:1px solid var(--line);border-radius:var(--r-input);padding:10px 12px;min-height:40px;color:var(--ink)}
+.inp.code{font-family:"JetBrains Mono",monospace;font-size:12.5px;white-space:pre;min-height:80px;background:var(--navy-2);color:var(--on-dark);border-color:var(--navy-line)}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.seg span{padding:7px 12px;border-radius:var(--r-chip);background:var(--soft);font-size:.84rem;font-weight:600}
+.seg span.on{background:var(--navy);color:var(--on-dark)}
+.drop{border:2px dashed var(--line);border-radius:12px;padding:18px;text-align:center;color:var(--muted);background:var(--card)}
+
+/* ───────── detallar ───────── */
+.states{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.states div{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:10px;align-items:flex-start}
+.states small{color:var(--muted);font-family:"JetBrains Mono",monospace;font-size:.75rem}
+.b.hov{background:#25C093}
+.b.foc{outline:3px solid color-mix(in srgb,var(--brand) 55%,transparent);outline-offset:2px}
+.b.act{transform:translateY(1px);background:#1FAA82}
+.toast{display:flex;align-items:center;gap:14px;background:var(--navy);color:var(--on-dark);border-radius:12px;padding:14px 18px;max-width:460px;border-left:4px solid var(--ok)}
+.toast .big{font-size:1.4rem}
+.toast .b{margin-left:auto}
+.mobile{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-top:18px}
+.phone{border:1px solid var(--line);border-radius:22px;overflow:hidden;background:var(--paper);font-size:12px}
+.phone .top{min-height:48px;padding:8px 12px;gap:8px}
+.phone .top .logo{font-size:.9rem}
+.phone .top .logo i{width:22px;height:22px}
+.phone .hero{grid-template-columns:1fr;padding:20px;border-radius:16px;margin:12px}
+.phone .hero h1{font-size:22px}
+.phone .hero p{font-size:12px}
+.phone .hero .art{display:none}
+.phone .kc{margin:12px;padding:14px;gap:8px}
+.phone .kc h3{font-size:17px}
+.phone .kc p{font-size:12px;-webkit-line-clamp:3}
+.bnav{display:flex;justify-content:space-around;background:var(--navy);color:var(--on-dark-muted);padding:8px 4px 10px}
+.bnav span{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10px}
+.bnav span.on{color:#fff;font-weight:700}
+.bnav span.on svg{color:var(--brand)}
 
 @media (max-width:900px){
   .split{grid-template-columns:1fr;height:auto}
   .gutter{display:none}
-  .left{max-height:none}
   .right{grid-template-rows:auto 320px 200px auto}
-  .course,.dash,.admin{grid-template-columns:1fr}
+  .shell{grid-template-columns:1fr}
+  .sb{display:none}
+  .hero{grid-template-columns:1fr;padding:28px 24px}
+  .hero .art{display:none}
+  .hero h1{font-size:30px}
+  .course,.dash,.lp,.admin-ed,.anat{grid-template-columns:1fr}
   .tree{border-right:0;border-bottom:1px solid var(--line)}
   .form{grid-template-columns:1fr}
-  .apph nav,.apph .search{display:none}
+  .pill,.srch kbd,.top .srch{display:none}
+  .top .msrch{display:inline-grid}
+  .top .logo{margin-right:auto}
+  .content{padding:var(--s4) var(--s4) var(--s7)}
+  .ph1 h1{font-size:30px}
 }
 @media (prefers-reduced-motion:no-preference){
   .toast{animation:pop .5s ease-out both}
   @keyframes pop{from{transform:translateY(8px);opacity:0}to{transform:none;opacity:1}}
 }
+@media (prefers-reduced-motion:reduce){.sk,.kc,.ncard,.b{animation:none;transition:none}}
 </style>
 </head>
 <body>
 
+<!-- lucide ikon spriti (stroke 2, yumru uclar) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-dash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></symbol>
+    <symbol id="i-activity" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></symbol>
+    <symbol id="i-trophy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></symbol>
+    <symbol id="i-route" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="19" r="3"/><path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15"/><circle cx="18" cy="5" r="3"/></symbol>
+    <symbol id="i-book" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></symbol>
+    <symbol id="i-flask" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2v7.527a2 2 0 0 1-.211.896L4.72 20.55a1 1 0 0 0 .9 1.45h12.76a1 1 0 0 0 .9-1.45l-5.069-10.127A2 2 0 0 1 14 9.527V2"/><path d="M8.5 2h7"/><path d="M7 16h10"/></symbol>
+    <symbol id="i-clip" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/></symbol>
+    <symbol id="i-kanban" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/><path d="M8 10v4"/><path d="M12 10v2"/><path d="M16 10v6"/></symbol>
+    <symbol id="i-swords" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="14.5 17.5 3 6 3 3 6 3 17.5 14.5"/><line x1="13" x2="19" y1="19" y2="13"/><line x1="16" x2="20" y1="16" y2="20"/><line x1="19" x2="21" y1="21" y2="19"/><polyline points="14.5 6.5 18 3 21 3 21 6 17.5 9.5"/><line x1="5" x2="9" y1="14" y2="18"/><line x1="7" x2="4" y1="17" y2="20"/><line x1="3" x2="5" y1="19" y2="21"/></symbol>
+    <symbol id="i-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></symbol>
+    <symbol id="i-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></symbol>
+    <symbol id="i-sliders" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="21" x2="14" y1="4" y2="4"/><line x1="10" x2="3" y1="4" y2="4"/><line x1="21" x2="12" y1="12" y2="12"/><line x1="8" x2="3" y1="12" y2="12"/><line x1="21" x2="16" y1="20" y2="20"/><line x1="12" x2="3" y1="20" y2="20"/><line x1="14" x2="14" y1="2" y2="6"/><line x1="8" x2="8" y1="10" y2="14"/><line x1="16" x2="16" y1="18" y2="22"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></symbol>
+    <symbol id="i-chart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></symbol>
+    <symbol id="i-db" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5V19A9 3 0 0 0 21 19V5"/><path d="M3 12A9 3 0 0 0 21 12"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 3 20 12 6 21 6 3"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></symbol>
+    <symbol id="i-pencil" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></symbol>
+    <symbol id="i-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></symbol>
+    <symbol id="i-more" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></symbol>
+    <symbol id="i-help" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></symbol>
+    <symbol id="i-award" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></symbol>
+    <symbol id="i-users" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+    <symbol id="i-folder" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></symbol>
+    <symbol id="i-term" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" x2="20" y1="19" y2="19"/></symbol>
+    <symbol id="i-history" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></symbol>
+    <symbol id="i-upload" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></symbol>
+    <symbol id="i-archive" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="5" x="2" y="3" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/><path d="M10 12h4"/></symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></symbol>
+    <symbol id="i-flame" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></symbol>
+    <symbol id="i-zap" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></symbol>
+    <symbol id="i-rotate" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></symbol>
+    <symbol id="i-settings" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></symbol>
+  </defs>
+</svg>
+
 <div class="docnav"><div class="in">
-  <div class="logo"><i>Dc</i>DaCy Academy</div>
-  <a href="#tokens">Rənglər və komponentlər</a>
+  <div class="logo"><i>Dc</i>DaCy Academy · dizayn v2</div>
+  <a href="#tokens">Rənglər, şkala, tipoqrafiya</a>
+  <a href="#shell">Layout</a>
   <a href="#catalog">Kataloq</a>
-  <a href="#path">Learning Path</a>
+  <a href="#card">Kurs kartı</a>
+  <a href="#path">Yollar</a>
   <a href="#course">Kurs səhifəsi</a>
   <a href="#workspace">Dərs ekranı</a>
-  <a href="#dashboard">Şəxsi panel</a>
-  <a href="#admin">Admin redaktoru</a>
+  <a href="#dashboard">Panel</a>
+  <a href="#admin">Admin</a>
+  <a href="#details">Detallar</a>
 </div></div>
 
-<main>
+<main class="doc">
   <div class="intro">
-    <h1>Dizayn referansı: DataCamp tipli, müasir və təmiz</h1>
-    <p>Bu fayl Claude Code üçün vizual nümunədir. UX quruluşu DataCamp-dan götürülüb (kataloq, kurs xəritəsi, solda dərs / sağda redaktor). Rənglər, loqo və brend isə DaCy-nin özünəməxsusdur. Dərs ekranında tablara klikləyərək dörd tapşırıq tipini görə bilərsiniz.</p>
+    <h1>Dizayn referansı v2: peşəkar təlim platforması səviyyəsi</h1>
+    <p>Rənglər və brend DaCy-nin özüdür və <b>dəyişməyib</b>. Yenilənən: sol sabit sidebar + ağ header layout-u, böyük hero bloklar, yeni kurs kartı anatomiyası (etiket, səviyyə zolaqları, müəllim, müddət), kvadratvari filtr çipləri, böyük başlıqlar və sıx-ardıcıl boşluq şkalası, hər elementdə lucide ikonu, hover/focus/skeleton vəziyyətləri, kömək düyməsi. Admin panel eyni dilə keçir.</p>
   </div>
 
   <!-- TOKENS -->
   <section class="sec" id="tokens">
-    <h2>Rənglər və komponentlər</h2>
-    <p class="note">Tünd göy (navy) əsas fon, mint-yaşıl brend rəngi. Hər istiqamətin öz rəngi var və hər yerdə ardıcıl istifadə olunur.</p>
+    <h2>Rənglər, boşluq şkalası və tipoqrafiya</h2>
+    <p class="note">Rəng tokenləri əvvəlki kimidir. Yeni: boşluq şkalası 4 / 8 / 12 / 16 / 24 / 32 / 48, radiuslar (hero 24, kart 16, çip 10, düymə 10), tip şkalası (səhifə başlığı 40, bölmə 28, kart başlığı 24, mətn 16).</p>
     <div class="tokens">
       <div class="sw"><div style="background:#13233F"></div><p>Navy<span>#13233F</span></p></div>
       <div class="sw"><div style="background:#0E1B30"></div><p>Workspace<span>#0E1B30</span></p></div>
-      <div class="sw"><div style="background:#2BD4A4"></div><p>Brend / uğur<span>#2BD4A4</span></p></div>
+      <div class="sw"><div style="background:#2BD4A4"></div><p>Brend / mint<span>#2BD4A4</span></p></div>
       <div class="sw"><div style="background:#6C7CF0"></div><p>Data Analytics<span>#6C7CF0</span></p></div>
       <div class="sw"><div style="background:#F0A93E"></div><p>Data Engineering<span>#F0A93E</span></p></div>
       <div class="sw"><div style="background:#F06A8D"></div><p>Cyber Security<span>#F06A8D</span></p></div>
-      <div class="sw"><div style="background:#F5F7FB"></div><p>Səhifə fonu<span>#F5F7FB</span></p></div>
-      <div class="sw"><div style="background:#FF6B6B"></div><p>Xəta<span>#FF6B6B</span></p></div>
+      <div class="sw"><div style="background:#F5F7FB;border-bottom:1px solid #DDE3EE"></div><p>Səhifə fonu<span>#F5F7FB</span></p></div>
+      <div class="sw"><div style="background:#E9EDF5"></div><p>Çip / yumşaq fon<span>#E9EDF5</span></p></div>
+    </div>
+    <div class="scale">
+      <div><i style="--w:4px"></i>4</div><div><i style="--w:8px"></i>8</div><div><i style="--w:12px"></i>12</div><div><i style="--w:16px"></i>16</div><div><i style="--w:24px"></i>24</div><div><i style="--w:32px"></i>32</div><div><i style="--w:48px"></i>48</div>
+      <div style="margin-left:auto;align-items:flex-start"><b style="color:var(--ink);font-family:'IBM Plex Sans'">Radius</b>hero 24 · kart 16 · çip 10 · düymə 10 · input 12</div>
+    </div>
+    <div class="type">
+      <div style="font-size:40px;font-weight:700;letter-spacing:-.015em;line-height:1.1">Səhifə başlığı<span>40 / 700</span></div>
+      <div style="font-size:28px;font-weight:700;letter-spacing:-.01em">Bölmə başlığı<span>28 / 700</span></div>
+      <div style="font-size:24px;font-weight:700">Kart başlığı<span>24 / 700</span></div>
+      <div style="font-size:16px">Mətn — Praktiki tapşırıqlarla, öz tempinizlə, Azərbaycan dilində.<span>16 / 400</span></div>
+      <div style="font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600">Etiket · bölmə başlığı<span>11.5 / 600 / +0.14em</span></div>
     </div>
     <div class="comp">
-      <button class="b b-brand" type="button">Kursa başla</button>
-      <button class="b b-dark" type="button">Davam et</button>
-      <button class="b b-ghost" type="button">Önizləmə</button>
+      <button class="b b-brand" type="button"><svg class="i sm"><use href="#i-play"/></svg>Kursa başla</button>
+      <button class="b b-dark" type="button">Davam et<svg class="i sm"><use href="#i-arrow"/></svg></button>
+      <button class="b b-outline" type="button">Başla</button>
+      <button class="b b-ghost" type="button"><svg class="i sm"><use href="#i-eye"/></svg>Önizləmə</button>
       <span class="badge bd-da">Data Analytics</span>
       <span class="badge bd-de">Data Engineering</span>
       <span class="badge bd-cy">Cyber Security</span>
+      <span class="badge bd-mint">Praktiki öyrənmə</span>
+      <span class="badge bd-ok">Dərc olunub</span>
+      <span class="badge bd-muted">Qaralama</span>
+      <span class="badge bd-warn">Arxiv</span>
       <span class="xp">+50 XP</span>
-      <div class="toast" role="status"><span class="big">🎉</span><div><b>Düzgündür!</b><br><small style="color:var(--on-dark-muted)">+50 XP qazandınız · Növbəti tapşırığa keçin</small></div></div>
     </div>
+  </section>
+
+  <!-- SHELL -->
+  <section class="sec" id="shell">
+    <h2>Layout: ağ header + sol navy sidebar</h2>
+    <p class="note">Bütün tələbə səhifələri eyni qabığın içindədir. Yuxarıda ağ header (loqo, pill menyu, geniş axtarış, zəng, avatar). Solda 260px tünd navy sidebar: ikonlu menyu, kiçik böyük hərfli bölmə başlıqları, aktiv element ağ və qalın, yeni bölmələrdə mint «YENİ». Məzmun sağda, sağ aşağıda dairəvi kömək düyməsi. Mobil: sidebar gizlənir, alt naviqasiya çıxır.</p>
+    <ul class="spec">
+      <li><b>Header</b> — 64px, ağ, alt xətt; loqo · pill menyu (Öyrən / Tətbiq et / İcma) · axtarış (maks 520px, ⌘K) · zəng (qırmızı nöqtə) · avatar</li>
+      <li><b>Sidebar</b> — 260px, navy; elementlər 10px radius, hover navy-3; aktiv: navy-3 fon, ağ qalın yazı, ikon mint</li>
+      <li><b>Bölmə başlığı</b> — 11px, böyük hərf, letter-spacing .14em, soluq</li>
+      <li><b>Məzmun</b> — 32px padding; səhifə başlığı 40px; bloklar arası 32–48px</li>
+    </ul>
   </section>
 
   <!-- CATALOG -->
   <section class="sec" id="catalog">
     <h2>Kurs kataloqu</h2>
-    <p class="note">Açıq fonlu, kart əsaslı. Hər kartın üst hissəsi istiqamət rəngindədir.</p>
+    <p class="note">Hero (navy, 24px radius, mint badge, 2 sətir təsvir, sağda xətti SVG illüstrasiya) → kvadratvari filtr çipləri + «+N» → sayğac / axtarış / «Mövzu» / «Daha çox filtr» → kartlar.</p>
     <div class="frame">
       <div class="fbar"><i></i><i></i><i></i><span>dacy.az/kurslar</span></div>
-      <div class="apph"><div class="logo"><i>Dc</i>DaCy</div><nav><b>Kurslar</b><span>Panelim</span><span>Sertifikatlar</span></nav><div class="sp"></div><div class="search">Kurs axtar…</div><div class="avatar">OR</div></div>
-      <div class="cat">
-        <div class="cat-hero"><div><h3>Nə öyrənmək istəyirsiniz?</h3><p>Praktiki tapşırıqlarla, öz tempinizlə, Azərbaycan dilində.</p></div><button class="b b-brand" type="button">Səviyyəmi müəyyən et</button></div>
-        <div class="filters"><span class="chip on">Hamısı</span><span class="chip">Data Analytics</span><span class="chip">Data Engineering</span><span class="chip">Cyber Security</span><span class="chip">Başlanğıc</span><span class="chip">Orta</span></div>
-        <div class="cards">
-          <article class="cc" style="--c:var(--da)"><div class="top"><svg width="120" height="110" viewBox="0 0 120 110"><rect x="10" y="60" width="18" height="40" fill="#fff"/><rect x="38" y="40" width="18" height="60" fill="#fff"/><rect x="66" y="20" width="18" height="80" fill="#fff"/><rect x="94" y="50" width="18" height="50" fill="#fff"/></svg></div><div class="bd"><span class="badge bd-da" style="align-self:flex-start">Data Analytics</span><h4>SQL ilə data analizi</h4><div class="meta"><span>Başlanğıc</span><span>4 fəsil</span><span>38 tapşırıq</span></div><div class="foot"><span>~6 saat</span><button class="b b-brand" type="button" style="padding:6px 12px">Başla</button></div></div></article>
-          <article class="cc" style="--c:var(--da)"><div class="top"><svg width="120" height="110" viewBox="0 0 120 110"><polyline points="5,90 35,60 60,72 90,30 115,40" fill="none" stroke="#fff" stroke-width="8"/></svg></div><div class="bd"><span class="badge bd-da" style="align-self:flex-start">Data Analytics</span><h4>Python və pandas</h4><div class="meta"><span>Başlanğıc</span><span>5 fəsil</span><span>44 tapşırıq</span></div><div class="foot"><span>~8 saat</span><button class="b b-brand" type="button" style="padding:6px 12px">Başla</button></div></div></article>
-          <article class="cc" style="--c:var(--de)"><div class="top"><svg width="120" height="110" viewBox="0 0 120 110"><circle cx="20" cy="55" r="14" fill="#fff"/><circle cx="60" cy="55" r="14" fill="#fff"/><circle cx="100" cy="55" r="14" fill="#fff"/><path d="M34 55h12M74 55h12" stroke="#fff" stroke-width="6"/></svg></div><div class="bd"><span class="badge bd-de" style="align-self:flex-start">Data Engineering</span><h4>Python ilə ETL pipeline</h4><div class="meta"><span>Orta</span><span>5 fəsil</span><span>12 lab</span></div><div class="foot"><span>~10 saat</span><button class="b b-brand" type="button" style="padding:6px 12px">Başla</button></div></div></article>
-          <article class="cc" style="--c:var(--cy)"><div class="top"><svg width="120" height="110" viewBox="0 0 120 110"><path d="M60 10 L100 26 V58 C100 82 82 98 60 106 C38 98 20 82 20 58 V26 Z" fill="#fff"/></svg></div><div class="bd"><span class="badge bd-cy" style="align-self:flex-start">Cyber Security</span><h4>SOC analitikinə giriş</h4><div class="meta"><span>Başlanğıc</span><span>6 otaq</span><span>24 flag</span></div><div class="foot"><span>~9 saat</span><button class="b b-brand" type="button" style="padding:6px 12px">Başla</button></div></div></article>
+      <header class="top">
+        <div class="logo"><i>Dc</i>DaCy</div>
+        <nav class="pill" aria-label="Əsas"><a class="on" href="#">Öyrən</a><a href="#">Tətbiq et</a><a href="#">İcma</a></nav>
+        <div class="srch"><svg class="i"><use href="#i-search"/></svg>Kurs, yol və ya mövzu axtar…<kbd>⌘K</kbd></div>
+        <button class="ib msrch" type="button" aria-label="Axtar"><svg class="i"><use href="#i-search"/></svg></button>
+        <button class="ib bell" type="button" aria-label="Bildirişlər"><svg class="i"><use href="#i-bell"/></svg></button>
+        <div class="avatar">OR</div>
+      </header>
+      <div class="shell">
+        <aside class="sb" aria-label="Yan menyu">
+          <a href="#"><svg class="i"><use href="#i-dash"/></svg>Panel</a>
+          <a href="#"><svg class="i"><use href="#i-activity"/></svg>Fəaliyyətim</a>
+          <a href="#"><svg class="i"><use href="#i-trophy"/></svg>Liderlər cədvəli<span class="new">YENİ</span></a>
+          <div class="sh">Öyrən</div>
+          <a href="#"><svg class="i"><use href="#i-route"/></svg>Yollar</a>
+          <a class="on" href="#" aria-current="page"><svg class="i"><use href="#i-book"/></svg>Kurslar</a>
+          <a href="#"><svg class="i"><use href="#i-flask"/></svg>Təcrübə<span class="new">YENİ</span></a>
+          <a href="#"><svg class="i"><use href="#i-clip"/></svg>İmtahanlar</a>
+          <div class="sh">Tətbiq et</div>
+          <a href="#"><svg class="i"><use href="#i-kanban"/></svg>Layihələr</a>
+          <a href="#"><svg class="i"><use href="#i-swords"/></svg>Yarışlar<span class="new">YENİ</span></a>
+          <div class="foot"><div class="avatar">OR</div><div><b style="color:#fff;display:block">Orxan R.</b>2 340 XP</div></div>
+        </aside>
+        <div class="content">
+          <section class="hero">
+            <div>
+              <div class="k"><span class="badge bd-mint"><svg class="i sm"><use href="#i-zap"/></svg>Praktiki öyrənmə</span></div>
+              <h1 style="margin-top:14px">Nə öyrənmək istəyirsiniz?</h1>
+              <p>SQL, Python, data mühəndisliyi və kibertəhlükəsizlik — hər dərs brauzerdə həll olunan real tapşırıqla. Öz tempinizlə, Azərbaycan dilində.</p>
+              <div class="act"><button class="b b-brand" type="button"><svg class="i sm"><use href="#i-play"/></svg>Səviyyəmi müəyyən et</button><button class="b b-dark" type="button" style="background:var(--navy-3)">Yolları gör<svg class="i sm"><use href="#i-arrow"/></svg></button></div>
+            </div>
+            <div class="art" aria-hidden="true">
+              <svg viewBox="0 0 280 170" fill="none" stroke="#93A1BC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M24 130 C 70 130, 70 60, 120 60 S 170 130, 220 130 S 260 60, 262 40" stroke-dasharray="6 7"/>
+                <circle cx="24" cy="130" r="12" fill="#2BD4A4" stroke="#2BD4A4"/><path d="m19 130 3 3 6-6" stroke="#0B3D30"/>
+                <circle cx="120" cy="60" r="12" fill="#2BD4A4" stroke="#2BD4A4"/><path d="m115 60 3 3 6-6" stroke="#0B3D30"/>
+                <circle cx="220" cy="130" r="12" fill="#13233F" stroke="#6C7CF0" stroke-width="3"/><text x="220" y="135" fill="#E6ECF7" font-size="12" text-anchor="middle" font-family="IBM Plex Sans" font-weight="700" stroke="none">3</text>
+                <circle cx="262" cy="40" r="12" fill="#13233F" stroke="#93A1BC"/>
+                <path d="M262 24 v-14 l14 5 -14 5" fill="#2BD4A4" stroke="#2BD4A4"/>
+                <rect x="60" y="100" width="40" height="30" rx="6"/><path d="M68 122 v-8 M80 122 v-14 M92 122 v-5"/>
+                <rect x="150" y="18" width="46" height="30" rx="6"/><path d="M158 33 h30 M158 40 h18"/>
+                <path d="M176 110 l10 -10 M186 100 h-8 v8" />
+              </svg>
+            </div>
+          </section>
+
+          <div class="chips" role="group" aria-label="İstiqamət">
+            <button class="chip on" type="button">Hamısı</button>
+            <button class="chip" type="button"><svg class="i sm"><use href="#i-chart"/></svg>Data Analytics</button>
+            <button class="chip" type="button"><svg class="i sm"><use href="#i-db"/></svg>Data Engineering</button>
+            <button class="chip" type="button"><svg class="i sm"><use href="#i-shield"/></svg>Cyber Security</button>
+            <button class="chip" type="button">Başlanğıc</button>
+            <button class="chip" type="button">Orta</button>
+            <button class="chip more" type="button">+3</button>
+          </div>
+          <div class="tb">
+            <span class="cnt">12 kurs</span>
+            <div class="srch"><svg class="i"><use href="#i-search"/></svg>Kurs axtar…</div>
+            <button class="sel" type="button">Mövzu<svg class="i sm"><use href="#i-chev"/></svg></button>
+            <button class="b b-ghost" type="button"><svg class="i sm"><use href="#i-sliders"/></svg>Daha çox filtr</button>
+          </div>
+
+          <div class="cards">
+            <article class="kc" style="--c:var(--da)">
+              <span class="kind">Kurs</span>
+              <h3>SQL ilə data analizi</h3>
+              <div class="lvl l1"><i><b></b><b></b><b></b></i>Başlanğıc</div>
+              <p>Real datasetlər üzərində sorğu yazmağı, qruplaşdırmanı və cədvəlləri birləşdirməyi öyrənin. Hər dərs brauzerdə işləyən SQL redaktoru ilə yoxlanılır; sonda sertifikat verilir.</p>
+              <div class="inst"><span class="ph">AM</span><div><b>Aysel Məmmədova</b><span>Senior Data Analyst, Kapital Bank</span></div></div>
+              <div class="ft"><span class="dur"><span class="tic"><svg><use href="#i-chart"/></svg></span>6 saat</span><button class="b b-outline b-sm" type="button">Başla</button></div>
+            </article>
+            <article class="kc" style="--c:var(--da)">
+              <span class="kind">Kurs</span>
+              <h3>Python və pandas</h3>
+              <div class="lvl l2"><i><b></b><b></b><b></b></i>Orta</div>
+              <p>DataFrame-lərlə işləmək, təmizləmə, qruplaşdırma və vizuallaşdırma. Kod birbaşa brauzerdə (Pyodide) icra olunur, testlər avtomatik yoxlayır.</p>
+              <div class="inst"><span class="ph" style="background:linear-gradient(135deg,#4B5BD0,#6C7CF0)">RH</span><div><b>Rəşad Hüseynov</b><span>Data Scientist, PASHA Holding</span></div></div>
+              <div class="ft"><span class="dur"><span class="tic"><svg><use href="#i-chart"/></svg></span>8 saat</span><button class="b b-outline b-sm" type="button">Başla</button></div>
+            </article>
+            <article class="kc" style="--c:var(--de)">
+              <span class="kind">Layihə</span>
+              <h3>Python ilə ETL pipeline</h3>
+              <div class="lvl l2"><i><b></b><b></b><b></b></i>Orta</div>
+              <p>İzolə konteynerdə terminal lab-ları: xam CSV-ni təmizləyin, PostgreSQL-ə yükləyin, <code>check</code> ilə yoxlayın. Vaxt limiti və avtomatik qiymətləndirmə.</p>
+              <div class="inst"><span class="ph" style="background:linear-gradient(135deg,#B87610,#F0A93E)">EQ</span><div><b>Elvin Qasımov</b><span>Data Engineer, Azercell</span></div></div>
+              <div class="ft"><span class="dur"><span class="tic"><svg><use href="#i-db"/></svg></span>10 saat</span><button class="b b-outline b-sm" type="button">Başla</button></div>
+            </article>
+            <article class="kc" style="--c:var(--cy)">
+              <span class="kind">Otaq</span>
+              <h3>SOC analitikinə giriş</h3>
+              <div class="lvl l1"><i><b></b><b></b><b></b></i>Başlanğıc</div>
+              <p>Log fayllarını araşdırın, şübhəli girişləri tapın və flag-ləri göndərin. CTF formatı: hər sual ayrıca xal, ipucu XP cəriməsi ilə.</p>
+              <div class="inst"><span class="ph" style="background:linear-gradient(135deg,#C83A60,#F06A8D)">NƏ</span><div><b>Nigar Əliyeva</b><span>SOC Lead, CERT.AZ</span></div></div>
+              <div class="ft"><span class="dur"><span class="tic"><svg><use href="#i-shield"/></svg></span>9 saat</span><button class="b b-outline b-sm" type="button">Başla</button></div>
+            </article>
+            <article class="kc" style="--c:var(--da)">
+              <span class="kind">Kurs · davam edir</span>
+              <h3>Statistika və A/B test</h3>
+              <div class="lvl l3"><i><b></b><b></b><b></b></i>İrəli</div>
+              <p>Paylanmalar, hipotez yoxlaması və A/B testlərin düzgün qurulması. Python ilə praktiki hesablamalar və nəticələrin şərhi.</p>
+              <div class="inst"><span class="ph" style="background:linear-gradient(135deg,#4B5BD0,#6C7CF0)">RH</span><div><b>Rəşad Hüseynov</b><span>Data Scientist, PASHA Holding</span></div></div>
+              <div class="prog" aria-label="42%"><i style="width:42%"></i></div>
+              <div class="ft"><span class="dur"><span class="tic"><svg><use href="#i-chart"/></svg></span>10 saat · 42%</span><button class="b b-brand b-sm" type="button">Davam et<svg class="i sm"><use href="#i-arrow"/></svg></button></div>
+            </article>
+            <article class="kc skel" aria-hidden="true">
+              <span class="sk" style="width:40px"></span>
+              <span class="sk t"></span>
+              <span class="sk" style="width:90px"></span>
+              <span class="sk"></span><span class="sk"></span><span class="sk" style="width:70%"></span>
+              <div style="display:flex;gap:10px;align-items:center"><span class="sk c"></span><span class="sk" style="width:120px"></span></div>
+              <div class="ft"><span class="sk" style="width:80px"></span><span class="sk" style="width:70px;height:34px;border-radius:10px"></span></div>
+            </article>
+          </div>
+          <button class="help" type="button" aria-label="Kömək"><svg><use href="#i-help"/></svg></button>
         </div>
       </div>
     </div>
   </section>
 
+  <!-- CARD ANATOMY -->
+  <section class="sec" id="card">
+    <h2>Kurs kartının anatomiyası</h2>
+    <p class="note">Ağ, 16px radius, nazik boz çərçivə; hover-də kölgə və 3px yuxarı qalxma. Müəllim adı, vəzifəsi, şəkli və müddət bazada kurs sahələridir (admin paneldən doldurulur).</p>
+    <div class="anat">
+      <article class="kc" style="--c:var(--da);transform:translateY(-3px);box-shadow:var(--shadow-hover)">
+        <span class="kind" style="position:relative"><span class="callout" style="top:-4px">1</span>Kurs</span>
+        <h3 style="position:relative"><span class="callout" style="top:0">2</span>SQL ilə data analizi</h3>
+        <div class="lvl l1" style="position:relative"><span class="callout" style="top:-4px">3</span><i><b></b><b></b><b></b></i>Başlanğıc</div>
+        <p style="position:relative"><span class="callout" style="top:0">4</span>Real datasetlər üzərində sorğu yazmağı, qruplaşdırmanı və cədvəlləri birləşdirməyi öyrənin. Hər dərs brauzerdə işləyən SQL redaktoru ilə yoxlanılır.</p>
+        <div class="inst" style="position:relative"><span class="callout" style="top:6px">5</span><span class="ph">AM</span><div><b>Aysel Məmmədova</b><span>Senior Data Analyst, Kapital Bank</span></div></div>
+        <div class="ft" style="position:relative"><span class="callout" style="top:14px">6</span><span class="dur"><span class="tic"><svg><use href="#i-chart"/></svg></span>6 saat</span><button class="b b-outline b-sm" type="button">Başla</button></div>
+      </article>
+      <ol>
+        <li><b>Etiket</b> — 11.5px, böyük hərf, +0.14em aralıq, boz: KURS / LAYİHƏ / OTAQ (kursun ilk addım tipinə görə; CTF kursları «Otaq»)</li>
+        <li><b>Başlıq</b> — 24px / 700, 2 sətirə qədər</li>
+        <li><b>Səviyyə</b> — 3 şaquli zolaq (7 / 11 / 16px), doluluq səviyyəyə görə, istiqamət rəngində + «Başlanğıc / Orta / İrəli»</li>
+        <li><b>Təsvir</b> — 16px boz, 3–4 sətir (line-clamp 4)</li>
+        <li><b>Müəllim</b> — 38px dairəvi şəkil (yoxdursa baş hərflər), ad qalın, vəzifə kiçik boz</li>
+        <li><b>Alt bölmə</b> — üstündə xətt; solda istiqamət ikonu (rəngli yumşaq fon) + müddət; sağda çərçivəli «Başla» (yazılıbsa mint «Davam et» və nazik irəliləyiş zolağı)</li>
+      </ol>
+    </div>
+  </section>
 
   <!-- LEARNING PATH -->
   <section class="sec" id="path">
-    <h2>Learning Path — tələbənin yol xəritəsi</h2>
-    <p class="note">Bir neçə kursu, layihəni və imtahanı müəllimin qoyduğu ardıcıllıqla birləşdirən karyera yolu. Tələbə girən kimi harada olduğunu, nə qədər qaldığını və sonda nə alacağını görür.</p>
+    <h2>Yollar — karyera yolu xəritəsi</h2>
+    <p class="note">Yollar siyahısı eyni hero + kart düzümü ilə («YOL» etiketi, kurs/layihə sayı). Yolun öz səhifəsi: hero (24px radius) + şaquli xəritə + sağ panel.</p>
     <div class="frame">
       <div class="fbar"><i></i><i></i><i></i><span>dacy.az/yol/data-analyst</span></div>
-      <div class="apph"><div class="logo"><i>Dc</i>DaCy</div><nav><span>Kurslar</span><b>Yollar</b><span>Panelim</span></nav><div class="sp"></div><div class="avatar">OR</div></div>
-      <div class="lp">
-        <div class="lp-head">
-          <div>
-            <span class="badge bd-da">Data Analytics · Karyera yolu</span>
-            <h3>Data Analyst ol</h3>
-            <p>Sıfırdan junior data analitik səviyyəsinə: SQL, Python, statistika, Power BI və real layihələr.</p>
-            <div class="lp-facts"><div><b>6</b><span>kurs</span></div><div><b>2</b><span>layihə</span></div><div><b>~72 saat</b><span>ümumi müddət</span></div><div><b>38%</b><span>tamamlanıb</span></div></div>
-          </div>
-          <button class="b b-brand" type="button">Davam et</button>
-        </div>
-
-        <div>
-          <ol class="road2">
-            <li class="node done"><div class="dot">✓</div><div class="ncard"><div class="ntop"><span class="ntype">Kurs</span><span class="ntype">Başlanğıc</span></div><h4>Excel və data savadlılığı</h4><div class="meta">8 saat · tamamlandı</div></div></li>
-            <li class="node done"><div class="dot">✓</div><div class="ncard"><div class="ntop"><span class="ntype">Kurs</span><span class="ntype">Başlanğıc</span></div><h4>SQL ilə data analizi</h4><div class="meta">12 saat · tamamlandı</div></div></li>
-            <li class="node done ms"><div class="dot"><span>★</span></div><div class="ncard"><div class="ntop"><span class="ntype">Mərhələ imtahanı</span></div><h4>SQL bacarıq yoxlaması</h4><div class="meta">Nəticə: 86% · keçdi</div></div></li>
-            <li class="node cur"><span class="here">Siz buradasınız</span><div class="dot">4</div><div class="ncard"><div class="ntop"><span class="ntype">Kurs</span><span class="ntype">Başlanğıc</span></div><h4>Python və pandas</h4><div class="meta">14 saat · 18 / 44 tapşırıq</div><div class="nbar"><i style="width:41%"></i></div></div></li>
-            <li class="node lock"><div class="dot">5</div><div class="ncard"><div class="ntop"><span class="ntype">Layihə</span></div><h4>Bakı e-ticarət datasının analizi</h4><div class="meta">6 saat · əvvəlki addımdan sonra açılır</div></div></li>
-            <li class="node lock"><div class="dot">6</div><div class="ncard"><div class="ntop"><span class="ntype">Kurs</span><span class="ntype">Orta</span></div><h4>Statistika və A/B test</h4><div class="meta">10 saat</div></div></li>
-            <li class="opt" aria-label="Seçmə kurslar"><span>Seçmə: Excel Power Query</span><span>Seçmə: Google Sheets</span></li>
-            <li class="node lock"><div class="dot">7</div><div class="ncard"><div class="ntop"><span class="ntype">Kurs</span><span class="ntype">Orta</span></div><h4>Power BI ilə dashboard</h4><div class="meta">12 saat</div></div></li>
-            <li class="node lock ms"><div class="dot"><span>🏆</span></div><div class="ncard"><div class="ntop"><span class="ntype">Final layihə + sertifikat</span></div><h4>Portfolio layihəsi və "Data Analyst" sertifikatı</h4><div class="meta">10 saat · bütün addımlar bitəndən sonra</div></div></li>
-          </ol>
-        </div>
-
-        <aside class="side">
-          <div class="box"><b>Bu yolda qazanacağınız bacarıqlar</b><div class="skills"><span>SQL</span><span>Python</span><span>pandas</span><span>Statistika</span><span>A/B test</span><span>Power BI</span><span>Data vizualizasiya</span></div></div>
-          <div class="box"><b>Kimlər üçündür</b><p style="color:var(--muted);font-size:.9rem;margin-top:6px">Proqramlaşdırma təcrübəsi olmayan, data analitik kimi işə başlamaq istəyənlər.</p></div>
-          <div class="box"><b>Digər yollar</b><div class="paths"><div><span>Data Engineer ol</span><span class="badge bd-de">DE</span></div><div><span>SOC Analyst ol</span><span class="badge bd-cy">Cyber</span></div></div></div>
+      <header class="top">
+        <div class="logo"><i>Dc</i>DaCy</div>
+        <nav class="pill" aria-label="Əsas"><a class="on" href="#">Öyrən</a><a href="#">Tətbiq et</a><a href="#">İcma</a></nav>
+        <div class="srch"><svg class="i"><use href="#i-search"/></svg>Kurs, yol və ya mövzu axtar…<kbd>⌘K</kbd></div>
+        <button class="ib msrch" type="button" aria-label="Axtar"><svg class="i"><use href="#i-search"/></svg></button>
+        <button class="ib bell" type="button" aria-label="Bildirişlər"><svg class="i"><use href="#i-bell"/></svg></button>
+        <div class="avatar">OR</div>
+      </header>
+      <div class="shell">
+        <aside class="sb" aria-label="Yan menyu">
+          <a href="#"><svg class="i"><use href="#i-dash"/></svg>Panel</a>
+          <a href="#"><svg class="i"><use href="#i-activity"/></svg>Fəaliyyətim</a>
+          <a href="#"><svg class="i"><use href="#i-trophy"/></svg>Liderlər cədvəli<span class="new">YENİ</span></a>
+          <div class="sh">Öyrən</div>
+          <a class="on" href="#" aria-current="page"><svg class="i"><use href="#i-route"/></svg>Yollar</a>
+          <a href="#"><svg class="i"><use href="#i-book"/></svg>Kurslar</a>
+          <a href="#"><svg class="i"><use href="#i-flask"/></svg>Təcrübə<span class="new">YENİ</span></a>
+          <a href="#"><svg class="i"><use href="#i-clip"/></svg>İmtahanlar</a>
+          <div class="sh">Tətbiq et</div>
+          <a href="#"><svg class="i"><use href="#i-kanban"/></svg>Layihələr</a>
+          <a href="#"><svg class="i"><use href="#i-swords"/></svg>Yarışlar<span class="new">YENİ</span></a>
+          <div class="foot"><div class="avatar">OR</div><div><b style="color:#fff;display:block">Orxan R.</b>2 340 XP</div></div>
         </aside>
+        <div class="content">
+          <section class="hero sm" style="border-left:6px solid var(--da)">
+            <div>
+              <div class="k"><span class="badge bd-da">Data Analytics</span><span class="badge bd-mint">Karyera yolu</span></div>
+              <h1 style="margin-top:12px">Data Analyst ol</h1>
+              <p>Sıfırdan junior data analitik səviyyəsinə: SQL, Python, statistika, Power BI və real layihələr.</p>
+              <div class="lp-facts"><div><b>6</b><span>kurs</span></div><div><b>2</b><span>layihə</span></div><div><b>~72 saat</b><span>ümumi müddət</span></div><div><b>38%</b><span>tamamlanıb</span></div></div>
+              <div class="act"><button class="b b-brand" type="button">Davam et<svg class="i sm"><use href="#i-arrow"/></svg></button></div>
+            </div>
+            <div class="art" aria-hidden="true"><svg viewBox="0 0 220 140" fill="none" stroke="#93A1BC" stroke-width="2" stroke-linecap="round"><path d="M20 110 C 60 110, 60 40, 110 40 S 160 110, 200 110" stroke-dasharray="6 7"/><circle cx="20" cy="110" r="10" fill="#2BD4A4" stroke="#2BD4A4"/><circle cx="110" cy="40" r="10" fill="#2BD4A4" stroke="#2BD4A4"/><circle cx="200" cy="110" r="10" fill="#13233F" stroke="#6C7CF0" stroke-width="3"/><path d="M200 96 v-16 l12 4 -12 4" fill="#2BD4A4" stroke="#2BD4A4"/></svg></div>
+          </section>
+          <div class="lp">
+            <div>
+              <ol class="road2">
+                <li class="node done"><div class="dot"><svg class="i"><use href="#i-check"/></svg></div><div class="ncard"><div class="ntop"><span class="ntype">Kurs · Başlanğıc</span></div><h4>Excel və data savadlılığı</h4><div class="meta">8 saat · tamamlandı</div></div></li>
+                <li class="node done"><div class="dot"><svg class="i"><use href="#i-check"/></svg></div><div class="ncard"><div class="ntop"><span class="ntype">Kurs · Başlanğıc</span></div><h4>SQL ilə data analizi</h4><div class="meta">12 saat · tamamlandı</div></div></li>
+                <li class="node done ms"><div class="dot"><span>★</span></div><div class="ncard"><div class="ntop"><span class="ntype">Mərhələ imtahanı</span></div><h4>SQL bacarıq yoxlaması</h4><div class="meta">Nəticə: 86% · keçdi</div></div></li>
+                <li class="node cur"><span class="here">Siz buradasınız</span><div class="dot">4</div><div class="ncard"><div class="ntop"><span class="ntype">Kurs · Orta</span></div><h4>Python və pandas</h4><div class="meta">14 saat · 18 / 44 tapşırıq</div><div class="nbar"><i style="width:41%"></i></div></div></li>
+                <li class="node lock"><div class="dot"><svg class="i"><use href="#i-lock"/></svg></div><div class="ncard"><div class="ntop"><span class="ntype">Layihə</span></div><h4>Bakı e-ticarət datasının analizi</h4><div class="meta">6 saat · əvvəlki addımdan sonra açılır</div></div></li>
+                <li class="opt" aria-label="Seçmə kurslar"><span>Seçmə: Excel Power Query</span><span>Seçmə: Google Sheets</span></li>
+                <li class="node lock ms"><div class="dot"><span>🏆</span></div><div class="ncard"><div class="ntop"><span class="ntype">Final + sertifikat</span></div><h4>Portfolio layihəsi və «Data Analyst» sertifikatı</h4><div class="meta">10 saat · bütün addımlar bitəndən sonra</div></div></li>
+              </ol>
+            </div>
+            <aside class="side">
+              <div class="box"><h4>Bu yolda qazanacağınız bacarıqlar</h4><div class="skills"><span>SQL</span><span>Python</span><span>pandas</span><span>Statistika</span><span>A/B test</span><span>Power BI</span></div></div>
+              <div class="box"><h4>Kimlər üçündür</h4><p style="color:var(--muted);font-size:.92rem">Proqramlaşdırma təcrübəsi olmayan, data analitik kimi işə başlamaq istəyənlər.</p></div>
+              <div class="box"><h4>Digər yollar</h4><div class="paths"><div><span>Data Engineer ol</span><span class="badge bd-de">DE</span></div><div><span>SOC Analyst ol</span><span class="badge bd-cy">Cyber</span></div></div></div>
+            </aside>
+          </div>
+          <button class="help" type="button" aria-label="Kömək"><svg><use href="#i-help"/></svg></button>
+        </div>
       </div>
     </div>
   </section>
@@ -374,37 +759,72 @@ main{max-width:1240px;margin:0 auto;padding:36px 20px 80px}
   <!-- COURSE -->
   <section class="sec" id="course">
     <h2>Kurs səhifəsi</h2>
-    <p class="note">Modullar müəllimin qoyduğu sıra ilə. Tamamlanan yaşıl, aktiv vurğulanmış, növbətilər kilidli.</p>
+    <p class="note">Hero kursun istiqamət rəngi ilə sol haşiyəli; müəllim və müddət hero-da; modullar kartlarda, tamamlanan yaşıl, aktiv vurğulanmış, növbətilər kilidli.</p>
     <div class="frame">
       <div class="fbar"><i></i><i></i><i></i><span>dacy.az/kurs/sql-ile-analiz</span></div>
-      <div class="apph"><div class="logo"><i>Dc</i>DaCy</div><nav><b>Kurslar</b><span>Panelim</span><span>Sertifikatlar</span></nav><div class="sp"></div><div class="avatar">OR</div></div>
-      <div class="course">
-        <div class="chead"><span class="badge bd-da">Data Analytics</span><h3>SQL ilə data analizi</h3><p>Real datasetlər üzərində sorğu yazmağı, qruplaşdırmanı və cədvəlləri birləşdirməyi öyrənin.</p></div>
-        <div>
-          <div class="mod done"><div class="mod-h"><span class="mod-n">✓</span><div><h4>SQL-ə giriş</h4><small>8 addım · tamamlandı</small></div></div></div>
-          <div class="mod act"><div class="mod-h"><span class="mod-n">2</span><div><h4>Qruplaşdırma və aqreqasiya</h4><small>12 addım · 5 / 12</small></div></div>
-            <ul class="steps">
-              <li class="ok"><span class="ic t">T</span>GROUP BY nədir?<span class="st">✓ 10 XP</span></li>
-              <li class="ok"><span class="ic c">{}</span>Şəhərlər üzrə satış<span class="st">✓ 50 XP</span></li>
-              <li class="ok"><span class="ic q">?</span>Yoxlama testi<span class="st">✓ 30 XP</span></li>
-              <li><span class="ic c">{}</span>Ən çox satış edən şəhərlər<span class="st">Davam et →</span></li>
-              <li class="lock"><span class="ic t">T</span>HAVING ilə filtr<span class="st">🔒</span></li>
-            </ul>
-          </div>
-          <div class="mod"><div class="mod-h"><span class="mod-n">3</span><div><h4>JOIN-lər</h4><small>10 addım · 🔒</small></div></div></div>
-        </div>
-        <aside class="side">
-          <div class="box"><div class="ring"><svg width="72" height="72" viewBox="0 0 36 36" aria-hidden="true"><circle cx="18" cy="18" r="15.5" fill="none" stroke="var(--line)" stroke-width="4"/><circle cx="18" cy="18" r="15.5" fill="none" stroke="#2BD4A4" stroke-width="4" stroke-dasharray="42 100" transform="rotate(-90 18 18)" stroke-linecap="round"/></svg><div><div class="bigp">42%</div><small class="muted" style="color:var(--muted)">13 / 30 addım</small></div></div><button class="b b-brand" type="button" style="width:100%;justify-content:center;margin-top:14px">Davam et</button></div>
-          <div class="box"><h4 style="margin-bottom:8px">Bu kursda</h4><p style="color:var(--muted);font-size:.9rem">4 fəsil · 38 tapşırıq · 2 dataset · Sertifikat</p></div>
+      <header class="top">
+        <div class="logo"><i>Dc</i>DaCy</div>
+        <nav class="pill" aria-label="Əsas"><a class="on" href="#">Öyrən</a><a href="#">Tətbiq et</a><a href="#">İcma</a></nav>
+        <div class="srch"><svg class="i"><use href="#i-search"/></svg>Kurs, yol və ya mövzu axtar…<kbd>⌘K</kbd></div>
+        <button class="ib msrch" type="button" aria-label="Axtar"><svg class="i"><use href="#i-search"/></svg></button>
+        <button class="ib bell" type="button" aria-label="Bildirişlər"><svg class="i"><use href="#i-bell"/></svg></button>
+        <div class="avatar">OR</div>
+      </header>
+      <div class="shell">
+        <aside class="sb" aria-label="Yan menyu">
+          <a href="#"><svg class="i"><use href="#i-dash"/></svg>Panel</a>
+          <a href="#"><svg class="i"><use href="#i-activity"/></svg>Fəaliyyətim</a>
+          <a href="#"><svg class="i"><use href="#i-trophy"/></svg>Liderlər cədvəli<span class="new">YENİ</span></a>
+          <div class="sh">Öyrən</div>
+          <a href="#"><svg class="i"><use href="#i-route"/></svg>Yollar</a>
+          <a class="on" href="#" aria-current="page"><svg class="i"><use href="#i-book"/></svg>Kurslar</a>
+          <a href="#"><svg class="i"><use href="#i-flask"/></svg>Təcrübə<span class="new">YENİ</span></a>
+          <a href="#"><svg class="i"><use href="#i-clip"/></svg>İmtahanlar</a>
+          <div class="sh">Tətbiq et</div>
+          <a href="#"><svg class="i"><use href="#i-kanban"/></svg>Layihələr</a>
+          <a href="#"><svg class="i"><use href="#i-swords"/></svg>Yarışlar<span class="new">YENİ</span></a>
+          <div class="foot"><div class="avatar">OR</div><div><b style="color:#fff;display:block">Orxan R.</b>2 340 XP</div></div>
         </aside>
+        <div class="content">
+          <section class="hero sm" style="border-left:6px solid var(--da)">
+            <div>
+              <div class="k"><span class="badge bd-da">Data Analytics</span><span class="badge bd-mint">Kurs</span></div>
+              <h1 style="margin-top:12px">SQL ilə data analizi</h1>
+              <p>Real datasetlər üzərində sorğu yazmağı, qruplaşdırmanı və cədvəlləri birləşdirməyi öyrənin.</p>
+              <div class="inst" style="margin-top:16px"><span class="ph" style="border-color:var(--navy)">AM</span><div><b style="color:#fff">Aysel Məmmədova</b><span>Senior Data Analyst, Kapital Bank</span></div><span style="margin-left:24px;display:inline-flex;align-items:center;gap:6px;color:var(--on-dark-muted)"><svg class="i sm"><use href="#i-clock"/></svg>6 saat · 4 fəsil · 38 tapşırıq</span></div>
+            </div>
+            <div class="art" aria-hidden="true"><svg viewBox="0 0 220 140" fill="none" stroke="#93A1BC" stroke-width="2" stroke-linecap="round"><rect x="30" y="30" width="160" height="90" rx="10"/><path d="M30 55h160"/><path d="M70 30v90"/><path d="M85 75h40M85 95h60M85 115h25" stroke="#2BD4A4"/><path d="M40 75h20M40 95h20" /></svg></div>
+          </section>
+          <div class="course">
+            <div>
+              <div class="mod done"><div class="mod-h"><span class="mod-n"><svg class="i sm"><use href="#i-check"/></svg></span><div><h4>SQL-ə giriş</h4><small>8 addım · tamamlandı</small></div></div></div>
+              <div class="mod act"><div class="mod-h"><span class="mod-n">2</span><div><h4>Qruplaşdırma və aqreqasiya</h4><small>12 addım · 5 / 12</small></div></div>
+                <ul class="steps">
+                  <li class="ok"><span class="ic t">T</span>GROUP BY nədir?<span class="st">✓ 10 XP</span></li>
+                  <li class="ok"><span class="ic c">{}</span>Şəhərlər üzrə satış<span class="st">✓ 50 XP</span></li>
+                  <li class="ok"><span class="ic q">?</span>Yoxlama testi<span class="st">✓ 30 XP</span></li>
+                  <li><span class="ic c">{}</span>Ən çox satış edən şəhərlər<span class="st" style="color:var(--da);font-weight:600">Davam et →</span></li>
+                  <li class="lock"><span class="ic t">T</span>HAVING ilə filtr<span class="st"><svg class="i sm"><use href="#i-lock"/></svg></span></li>
+                </ul>
+              </div>
+              <div class="mod"><div class="mod-h"><span class="mod-n">3</span><div><h4>JOIN-lər</h4><small>10 addım · kilidli</small></div></div></div>
+            </div>
+            <aside class="side">
+              <div class="box"><div class="ring"><svg width="80" height="80" viewBox="0 0 36 36" aria-hidden="true"><circle cx="18" cy="18" r="15.5" fill="none" stroke="var(--line)" stroke-width="4"/><circle cx="18" cy="18" r="15.5" fill="none" stroke="#2BD4A4" stroke-width="4" stroke-dasharray="42 100" transform="rotate(-90 18 18)" stroke-linecap="round"/></svg><div><div class="bigp">42%</div><small style="color:var(--muted)">13 / 30 addım</small></div></div><button class="b b-brand" type="button" style="width:100%;margin-top:16px">Davam et<svg class="i sm"><use href="#i-arrow"/></svg></button></div>
+              <div class="box"><h4>Bu kursda</h4><p style="color:var(--muted);font-size:.92rem">4 fəsil · 38 tapşırıq · 2 dataset · Sertifikat</p></div>
+              <div class="box"><h4>Bu kurs hansı yollardadır</h4><div class="paths"><div><span>Data Analyst ol</span><span class="badge bd-da">DA</span></div></div></div>
+            </aside>
+          </div>
+          <button class="help" type="button" aria-label="Kömək"><svg><use href="#i-help"/></svg></button>
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- WORKSPACE -->
+  <!-- WORKSPACE (dəyişməyib) -->
   <section class="sec" id="workspace">
-    <h2>Dərs ekranı — platformanın ürəyi</h2>
-    <p class="note">Solda nəzəri hissə və tapşırıq, sağda redaktor və ya terminal. Ortadakı xətt ilə panellərin eni dəyişdirilə bilir. Aşağıdakı tablarla dörd tipə baxın.</p>
+    <h2>Dərs ekranı — platformanın ürəyi (dəyişməyib)</h2>
+    <p class="note">Tam ekran, sidebar yoxdur: solda nəzəri hissə və tapşırıq, sağda redaktor və ya terminal; ortadakı xətt ilə eni dəyişir. Tablarla dörd tipə baxın.</p>
     <div class="frame">
       <div class="fbar"><i></i><i></i><i></i><span>dacy.az/kurs/sql-ile-analiz/2/4</span></div>
       <div class="ws">
@@ -420,8 +840,6 @@ main{max-width:1240px;margin:0 auto;padding:36px 20px 80px}
           <button role="tab" aria-selected="false" aria-controls="p-term" id="t-term">Terminal lab (DE)</button>
           <button role="tab" aria-selected="false" aria-controls="p-ctf" id="t-ctf">CTF otağı (Cyber)</button>
         </div>
-
-        <!-- SQL -->
         <div class="panel" id="p-sql" role="tabpanel" aria-labelledby="t-sql">
           <div class="split">
             <div class="left">
@@ -456,8 +874,6 @@ main{max-width:1240px;margin:0 auto;padding:36px 20px 80px}
             </div>
           </div>
         </div>
-
-        <!-- PYTHON -->
         <div class="panel" id="p-py" role="tabpanel" aria-labelledby="t-py" hidden>
           <div class="split">
             <div class="left">
@@ -496,8 +912,6 @@ main{max-width:1240px;margin:0 auto;padding:36px 20px 80px}
             </div>
           </div>
         </div>
-
-        <!-- TERMINAL -->
         <div class="panel" id="p-term" role="tabpanel" aria-labelledby="t-term" hidden>
           <div class="split">
             <div class="left">
@@ -530,8 +944,6 @@ main{max-width:1240px;margin:0 auto;padding:36px 20px 80px}
             </div>
           </div>
         </div>
-
-        <!-- CTF -->
         <div class="panel" id="p-ctf" role="tabpanel" aria-labelledby="t-ctf" hidden>
           <div class="split">
             <div class="left">
@@ -561,68 +973,213 @@ main{max-width:1240px;margin:0 auto;padding:36px 20px 80px}
   <!-- DASHBOARD -->
   <section class="sec" id="dashboard">
     <h2>Şəxsi panel</h2>
-    <p class="note">Tələbə girən kimi "harada qaldım" sualının cavabını görür və bir kliklə davam edir.</p>
+    <p class="note">Hero salamlama + «Qaldığınız yer» kartı, aktiv yol, kurs irəliləyişləri; sağda XP / seriya / tapşırıq / sertifikat statistikası və həftəlik fəaliyyət.</p>
     <div class="frame">
       <div class="fbar"><i></i><i></i><i></i><span>dacy.az/panel</span></div>
-      <div class="apph"><div class="logo"><i>Dc</i>DaCy</div><nav><span>Kurslar</span><b>Panelim</b><span>Sertifikatlar</span></nav><div class="sp"></div><div class="avatar">OR</div></div>
-      <div class="dash">
-        <div>
-          <div class="cont"><div><small>Qaldığınız yer</small><h3>Ən çox satış edən şəhərlər</h3><small>SQL ilə data analizi · Fəsil 2</small></div><button class="b b-brand" type="button">Davam et</button></div>
-          <div class="plist">
-            <div class="pi" style="--c:var(--da)"><b>SQL ilə data analizi</b><span>42%</span><div class="bar"><i style="width:42%"></i></div></div>
-            <div class="pi" style="--c:var(--de)"><b>Python ilə ETL pipeline</b><span>18%</span><div class="bar"><i style="width:18%"></i></div></div>
-            <div class="pi" style="--c:var(--cy)"><b>SOC analitikinə giriş</b><span>8%</span><div class="bar"><i style="width:8%"></i></div></div>
-          </div>
-        </div>
-        <aside class="side">
-          <div class="stats">
-            <div class="stat"><b>2 340</b><span>XP</span></div>
-            <div class="stat"><b>12 🔥</b><span>günlük seriya</span></div>
-            <div class="stat"><b>47</b><span>tapşırıq</span></div>
-            <div class="stat"><b>1</b><span>sertifikat</span></div>
-          </div>
-          <div class="box"><b>Bu həftə</b><div class="week"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></div></div>
+      <header class="top">
+        <div class="logo"><i>Dc</i>DaCy</div>
+        <nav class="pill" aria-label="Əsas"><a class="on" href="#">Öyrən</a><a href="#">Tətbiq et</a><a href="#">İcma</a></nav>
+        <div class="srch"><svg class="i"><use href="#i-search"/></svg>Kurs, yol və ya mövzu axtar…<kbd>⌘K</kbd></div>
+        <button class="ib msrch" type="button" aria-label="Axtar"><svg class="i"><use href="#i-search"/></svg></button>
+        <button class="ib bell" type="button" aria-label="Bildirişlər"><svg class="i"><use href="#i-bell"/></svg></button>
+        <div class="avatar">OR</div>
+      </header>
+      <div class="shell">
+        <aside class="sb" aria-label="Yan menyu">
+          <a class="on" href="#" aria-current="page"><svg class="i"><use href="#i-dash"/></svg>Panel</a>
+          <a href="#"><svg class="i"><use href="#i-activity"/></svg>Fəaliyyətim</a>
+          <a href="#"><svg class="i"><use href="#i-trophy"/></svg>Liderlər cədvəli<span class="new">YENİ</span></a>
+          <div class="sh">Öyrən</div>
+          <a href="#"><svg class="i"><use href="#i-route"/></svg>Yollar</a>
+          <a href="#"><svg class="i"><use href="#i-book"/></svg>Kurslar</a>
+          <a href="#"><svg class="i"><use href="#i-flask"/></svg>Təcrübə<span class="new">YENİ</span></a>
+          <a href="#"><svg class="i"><use href="#i-clip"/></svg>İmtahanlar</a>
+          <div class="sh">Tətbiq et</div>
+          <a href="#"><svg class="i"><use href="#i-kanban"/></svg>Layihələr</a>
+          <a href="#"><svg class="i"><use href="#i-swords"/></svg>Yarışlar<span class="new">YENİ</span></a>
+          <div class="foot"><div class="avatar">OR</div><div><b style="color:#fff;display:block">Orxan R.</b>2 340 XP</div></div>
         </aside>
+        <div class="content">
+          <section class="hero sm">
+            <div>
+              <div class="k"><span class="badge bd-mint"><svg class="i sm"><use href="#i-flame"/></svg>12 günlük seriya</span></div>
+              <h1 style="margin-top:12px">Xoş gəldin, Orxan</h1>
+              <p>Bu həftə 5 gün aktiv olmusan. Data Analyst yolunda 38% — növbəti addım Python və pandas.</p>
+              <div class="act"><button class="b b-brand" type="button">Davam et<svg class="i sm"><use href="#i-arrow"/></svg></button><button class="b b-dark" type="button" style="background:var(--navy-3)">Yolu aç</button></div>
+            </div>
+            <div class="art" aria-hidden="true"><svg viewBox="0 0 220 140" fill="none" stroke="#93A1BC" stroke-width="2" stroke-linecap="round"><path d="M20 120 L60 80 L100 95 L140 45 L200 60" stroke="#2BD4A4" stroke-width="3"/><circle cx="60" cy="80" r="5" fill="#2BD4A4" stroke="none"/><circle cx="140" cy="45" r="5" fill="#2BD4A4" stroke="none"/><path d="M20 125h180" stroke-dasharray="4 6"/><path d="M20 125V25" stroke-dasharray="4 6"/></svg></div>
+          </section>
+          <div class="dash">
+            <div>
+              <div class="cont" style="--c:var(--da);margin-top:var(--s5)"><span class="tic"><svg><use href="#i-play"/></svg></span><div><small>Qaldığınız yer</small><h3>Ən çox satış edən şəhərlər</h3><span style="color:var(--muted)">SQL ilə data analizi · Fəsil 2</span></div><button class="b b-brand" type="button">Davam et<svg class="i sm"><use href="#i-arrow"/></svg></button></div>
+              <h2 class="h2">Kurslarım</h2>
+              <div class="plist" style="margin-top:0">
+                <div class="pi" style="--c:var(--da)"><span class="tic"><svg><use href="#i-chart"/></svg></span><b>SQL ilə data analizi</b><span>42%</span><div class="bar"><i style="width:42%"></i></div></div>
+                <div class="pi" style="--c:var(--de)"><span class="tic"><svg><use href="#i-db"/></svg></span><b>Python ilə ETL pipeline</b><span>18%</span><div class="bar"><i style="width:18%"></i></div></div>
+                <div class="pi" style="--c:var(--cy)"><span class="tic"><svg><use href="#i-shield"/></svg></span><b>SOC analitikinə giriş</b><span>8%</span><div class="bar"><i style="width:8%"></i></div></div>
+              </div>
+            </div>
+            <aside class="side" style="margin-top:var(--s5)">
+              <div class="stats">
+                <div class="stat"><b>2 340</b><span><svg class="i sm"><use href="#i-zap"/></svg>XP</span></div>
+                <div class="stat"><b>12</b><span><svg class="i sm"><use href="#i-flame"/></svg>günlük seriya</span></div>
+                <div class="stat"><b>47</b><span><svg class="i sm"><use href="#i-check"/></svg>tapşırıq</span></div>
+                <div class="stat"><b>1</b><span><svg class="i sm"><use href="#i-award"/></svg>sertifikat</span></div>
+              </div>
+              <div class="box"><h4>Bu həftə</h4><div class="week"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></div></div>
+              <div class="box"><h4>Aktiv yol</h4><b>Data Analyst ol</b><div class="nbar"><i style="width:38%"></i></div><p style="color:var(--muted);font-size:.86rem;margin-top:8px">38% · növbəti: Python və pandas</p></div>
+            </aside>
+          </div>
+          <button class="help" type="button" aria-label="Kömək"><svg><use href="#i-help"/></svg></button>
+        </div>
       </div>
     </div>
   </section>
 
   <!-- ADMIN -->
   <section class="sec" id="admin">
-    <h2>Admin redaktoru — kontenti müəllim yükləyir</h2>
-    <p class="note">Solda kurs ağacı (sürükləyib sıranı dəyişmək olur), sağda seçilmiş addımın redaktoru. Yuxarıda ZIP paket idxalı.</p>
+    <h2>Admin panel — eyni dizayn dili</h2>
+    <p class="note">Solda admin sidebar, 40px başlıq + əsas düymə, status tabları, cədvəl sətirlərində hover, istiqamət və status badge-ləri, sətirdə əməliyyat düymələri (redaktə, önizləmə, sil, «…» menyu).</p>
+    <div class="frame">
+      <div class="fbar"><i></i><i></i><i></i><span>dacy.az/admin/kurslar</span></div>
+      <header class="top">
+        <div class="logo"><i>Dc</i>DaCy <span style="font-weight:500;color:var(--muted)">· Admin</span></div>
+        <nav class="pill" aria-label="Əsas"><a class="on" href="#">Məzmun</a><a href="#">Tələbələr</a><a href="#">Hesabatlar</a></nav>
+        <div class="srch"><svg class="i"><use href="#i-search"/></svg>Kurs, tələbə, fayl axtar…<kbd>⌘K</kbd></div>
+        <button class="b b-brand b-sm" type="button"><svg class="i sm"><use href="#i-upload"/></svg>ZIP idxal</button>
+        <button class="ib msrch" type="button" aria-label="Axtar"><svg class="i"><use href="#i-search"/></svg></button>
+        <button class="ib bell" type="button" aria-label="Bildirişlər"><svg class="i"><use href="#i-bell"/></svg></button>
+        <div class="avatar" style="background:var(--navy)">A</div>
+      </header>
+      <div class="shell" style="min-height:640px">
+        <aside class="sb" aria-label="Admin menyu">
+          <div class="sh">Məzmun</div>
+          <a class="on" href="#" aria-current="page"><svg class="i"><use href="#i-book"/></svg>Kurslar</a>
+          <a href="#"><svg class="i"><use href="#i-route"/></svg>Yollar</a>
+          <a href="#"><svg class="i"><use href="#i-folder"/></svg>Fayllar</a>
+          <a href="#"><svg class="i"><use href="#i-upload"/></svg>İdxal</a>
+          <div class="sh">Tələbələr</div>
+          <a href="#"><svg class="i"><use href="#i-users"/></svg>Tələbələr</a>
+          <a href="#"><svg class="i"><use href="#i-clip"/></svg>Layihə yoxlaması<span class="new">3</span></a>
+          <a href="#"><svg class="i"><use href="#i-term"/></svg>Lab sessiyaları</a>
+          <div class="sh">Sistem</div>
+          <a href="#"><svg class="i"><use href="#i-trash"/></svg>Silinənlər</a>
+          <a href="#"><svg class="i"><use href="#i-history"/></svg>Fəaliyyət tarixçəsi</a>
+          <a href="#"><svg class="i"><use href="#i-settings"/></svg>İstiqamətlər</a>
+          <div class="foot"><div class="avatar" style="background:var(--navy-3)">A</div><div><b style="color:#fff;display:block">Admin</b>ziyadadmin@…</div></div>
+        </aside>
+        <div class="content">
+          <div class="ph1"><div><h1>Kurslar</h1><p>12 kurs · 9 dərc olunub · 2 qaralama · 1 arxiv</p></div><button class="b b-brand" type="button"><svg class="i sm"><use href="#i-plus"/></svg>Yeni kurs</button></div>
+          <div class="tabs"><span class="on">Hamısı<i>12</i></span><span>Dərc<i>9</i></span><span>Qaralama<i>2</i></span><span>Arxiv<i>1</i></span><span>Silinənlər<i>1</i></span></div>
+          <div class="tb" style="margin-top:0"><div class="chips" style="margin:0"><button class="chip on" type="button">Hamısı</button><button class="chip" type="button">Data Analytics</button><button class="chip" type="button">Data Engineering</button><button class="chip" type="button">Cyber Security</button></div><div class="srch"><svg class="i"><use href="#i-search"/></svg>Kurs axtar…</div></div>
+          <table class="tbl-admin">
+            <thead><tr><th>Kurs</th><th>İstiqamət</th><th>Status</th><th>Tələbə</th><th>Yenilənib</th><th></th></tr></thead>
+            <tbody>
+              <tr><td><div class="ttl">SQL ilə data analizi</div><div class="slug">sql-ile-analiz</div><div class="lvl l1" style="font-size:.8rem;margin-top:4px;--c:var(--da)"><i><b></b><b></b><b></b></i>Başlanğıc · Aysel Məmmədova</div></td><td><span class="badge bd-da">Data Analytics</span></td><td><span class="badge bd-ok">Dərc olunub</span></td><td>184</td><td class="dt" style="color:var(--muted)">2 okt 2026</td><td><div class="acts"><button class="ib" type="button" aria-label="Redaktə"><svg class="i sm"><use href="#i-pencil"/></svg></button><button class="ib" type="button" aria-label="Önizlə"><svg class="i sm"><use href="#i-eye"/></svg></button><button class="ib danger" type="button" aria-label="Sil"><svg class="i sm"><use href="#i-trash"/></svg></button><button class="ib" type="button" aria-label="Daha çox"><svg class="i sm"><use href="#i-more"/></svg></button></div></td></tr>
+              <tr style="background:color-mix(in srgb,var(--da) 6%,var(--card))"><td><div class="ttl">Python və pandas</div><div class="slug">python-pandas</div><div class="lvl l2" style="font-size:.8rem;margin-top:4px;--c:var(--da)"><i><b></b><b></b><b></b></i>Orta · Rəşad Hüseynov</div></td><td><span class="badge bd-da">Data Analytics</span></td><td><span class="badge bd-ok">Dərc olunub</span></td><td>97</td><td class="dt" style="color:var(--muted)">1 okt 2026</td><td><div class="acts" style="opacity:1"><button class="ib" type="button" aria-label="Redaktə"><svg class="i sm"><use href="#i-pencil"/></svg></button><button class="ib" type="button" aria-label="Önizlə"><svg class="i sm"><use href="#i-eye"/></svg></button><button class="ib danger" type="button" aria-label="Sil"><svg class="i sm"><use href="#i-trash"/></svg></button><button class="ib" type="button" aria-label="Daha çox"><svg class="i sm"><use href="#i-more"/></svg></button></div></td></tr>
+              <tr><td><div class="ttl">Python ilə ETL pipeline</div><div class="slug">etl-pipeline</div><div class="lvl l2" style="font-size:.8rem;margin-top:4px;--c:var(--de)"><i><b></b><b></b><b></b></i>Orta · Elvin Qasımov</div></td><td><span class="badge bd-de">Data Engineering</span></td><td><span class="badge bd-muted">Qaralama</span></td><td>0</td><td class="dt" style="color:var(--muted)">28 sen 2026</td><td><div class="acts"><button class="ib" type="button" aria-label="Redaktə"><svg class="i sm"><use href="#i-pencil"/></svg></button><button class="ib" type="button" aria-label="Önizlə"><svg class="i sm"><use href="#i-eye"/></svg></button><button class="ib danger" type="button" aria-label="Sil"><svg class="i sm"><use href="#i-trash"/></svg></button><button class="ib" type="button" aria-label="Daha çox"><svg class="i sm"><use href="#i-more"/></svg></button></div></td></tr>
+              <tr><td><div class="ttl">SOC analitikinə giriş</div><div class="slug">soc-giris</div><div class="lvl l1" style="font-size:.8rem;margin-top:4px;--c:var(--cy)"><i><b></b><b></b><b></b></i>Başlanğıc · Nigar Əliyeva</div></td><td><span class="badge bd-cy">Cyber Security</span></td><td><span class="badge bd-ok">Dərc olunub</span></td><td>61</td><td class="dt" style="color:var(--muted)">25 sen 2026</td><td><div class="acts"><button class="ib" type="button" aria-label="Redaktə"><svg class="i sm"><use href="#i-pencil"/></svg></button><button class="ib" type="button" aria-label="Önizlə"><svg class="i sm"><use href="#i-eye"/></svg></button><button class="ib danger" type="button" aria-label="Sil"><svg class="i sm"><use href="#i-trash"/></svg></button><button class="ib" type="button" aria-label="Daha çox"><svg class="i sm"><use href="#i-more"/></svg></button></div></td></tr>
+              <tr style="opacity:.7"><td><div class="ttl">Excel əsasları (köhnə)</div><div class="slug">excel-esaslari</div><div class="lvl l1" style="font-size:.8rem;margin-top:4px;--c:var(--da)"><i><b></b><b></b><b></b></i>Başlanğıc · —</div></td><td><span class="badge bd-da">Data Analytics</span></td><td><span class="badge bd-warn">Arxiv</span></td><td>312</td><td class="dt" style="color:var(--muted)">3 avq 2026</td><td><div class="acts"><button class="ib" type="button" aria-label="Redaktə"><svg class="i sm"><use href="#i-pencil"/></svg></button><button class="ib" type="button" aria-label="Önizlə"><svg class="i sm"><use href="#i-eye"/></svg></button><button class="ib danger" type="button" aria-label="Sil"><svg class="i sm"><use href="#i-trash"/></svg></button><button class="ib" type="button" aria-label="Daha çox"><svg class="i sm"><use href="#i-more"/></svg></button></div></td></tr>
+            </tbody>
+          </table>
+          <div style="display:flex;gap:16px;margin-top:var(--s5);flex-wrap:wrap;align-items:flex-start">
+            <div class="box" style="min-width:260px"><h4>«…» menyusu</h4><div style="display:flex;flex-direction:column;gap:2px;font-size:.92rem"><span style="display:flex;gap:10px;align-items:center;padding:8px 10px;border-radius:8px"><svg class="i sm"><use href="#i-pencil"/></svg>Redaktə et</span><span style="display:flex;gap:10px;align-items:center;padding:8px 10px;border-radius:8px"><svg class="i sm"><use href="#i-eye"/></svg>Önizlə (tələbə kimi)</span><span style="display:flex;gap:10px;align-items:center;padding:8px 10px;border-radius:8px;background:var(--soft)"><svg class="i sm"><use href="#i-check"/></svg>Dərcdən çıxar</span><span style="display:flex;gap:10px;align-items:center;padding:8px 10px;border-radius:8px"><svg class="i sm"><use href="#i-archive"/></svg>Arxivlə</span><span style="display:flex;gap:10px;align-items:center;padding:8px 10px;border-radius:8px"><svg class="i sm"><use href="#i-copy"/></svg>Kopyala</span><span style="display:flex;gap:10px;align-items:center;padding:8px 10px;border-radius:8px;color:#D23F3F;border-top:1px solid var(--line);margin-top:4px"><svg class="i sm"><use href="#i-trash"/></svg>Sil</span></div></div>
+            <div class="box" style="flex:1;min-width:300px;max-width:460px"><h4 style="display:flex;align-items:center;gap:8px"><svg class="i" style="color:#D23F3F"><use href="#i-trash"/></svg>Kursu sil</h4><p style="color:var(--muted);font-size:.92rem">«SQL ilə data analizi» 30 gün «Silinənlər»də qalacaq, sonra həmişəlik silinəcək. Verilmiş sertifikatlar etibarlı qalır.</p><div style="display:flex;gap:16px;margin:12px 0;font-size:.9rem"><span><b>184</b> tələbə</span><span><b>4</b> fəsil</span><span><b>38</b> addım</span></div><div class="fld"><label>Təsdiq üçün kursun adını yazın</label><div class="inp" style="font-family:'JetBrains Mono',monospace;color:var(--muted)">SQL ilə data analizi</div></div><div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px"><button class="b b-ghost" type="button">Ləğv et</button><button class="b" type="button" style="background:#D23F3F;color:#fff;opacity:.5">Sil</button></div></div>
+            <div class="toast" role="status" style="align-self:flex-end"><svg class="i" style="color:var(--ok)"><use href="#i-check"/></svg><div><b>Kurs silindi</b><br><small style="color:var(--on-dark-muted)">30 gün «Silinənlər»də</small></div><button class="b b-sm" type="button" style="background:var(--navy-3);color:#fff"><svg class="i sm"><use href="#i-rotate"/></svg>Geri qaytar</button></div>
+          </div>
+          <button class="help" type="button" aria-label="Kömək"><svg><use href="#i-help"/></svg></button>
+        </div>
+      </div>
+    </div>
+
+    <h3 class="h2">Kurs redaktoru</h3>
     <div class="frame">
       <div class="fbar"><i></i><i></i><i></i><span>dacy.az/admin/kurslar/sql-ile-analiz</span></div>
-      <div class="apph"><div class="logo"><i>Dc</i>DaCy Admin</div><nav><b>Kurslar</b><span>Tələbələr</span><span>Fayllar</span></nav><div class="sp"></div><button class="b b-brand" type="button" style="padding:6px 12px">⇪ ZIP paket yüklə</button></div>
-      <div class="admin">
-        <div class="tree">
-          <h4>SQL ilə data analizi</h4>
-          <ul>
-            <li><span class="drag">⋮⋮</span>1. SQL-ə giriş</li>
-            <li><span class="drag">⋮⋮</span>2. Qruplaşdırma</li>
-            <li class="sub"><span class="drag">⋮⋮</span><span class="ic t">T</span>GROUP BY nədir?</li>
-            <li class="sub"><span class="drag">⋮⋮</span><span class="ic c">{}</span>Şəhərlər üzrə satış</li>
-            <li class="sub"><span class="drag">⋮⋮</span><span class="ic q">?</span>Yoxlama testi</li>
-            <li class="sub sel"><span class="drag">⋮⋮</span><span class="ic c">{}</span>Ən çox satış edən…</li>
-            <li class="sub"><span class="drag">⋮⋮</span><span class="ic t">T</span>HAVING ilə filtr</li>
-            <li><span class="drag">⋮⋮</span>3. JOIN-lər</li>
-            <li style="color:var(--muted)">+ Fəsil əlavə et</li>
-          </ul>
-        </div>
-        <div class="edit">
-          <div class="row"><div><span class="badge bd-da">SQL tapşırığı</span><h3 style="margin-top:6px;font-size:1.3rem">Ən çox satış edən şəhərlər</h3></div><div style="display:flex;gap:8px"><button class="b b-ghost" type="button">👁 Tələbə kimi bax</button><button class="b b-dark" type="button">Qaralama</button><button class="b b-brand" type="button">Dərc et</button></div></div>
-          <div class="form">
-            <div class="fld full"><label>Addım tipi</label><div class="seg"><span>Nəzəri</span><span>Test</span><span class="on">SQL</span><span>Python</span><span>Terminal</span><span>CTF</span></div></div>
-            <div class="fld"><label>Başlıq</label><div class="inp">Ən çox satış edən şəhərlər</div></div>
-            <div class="fld"><label>XP</label><div class="inp">50</div></div>
-            <div class="fld full"><label>Təlimat (Markdown)</label><div class="inp" style="min-height:70px">Əvvəlki dərsdə `GROUP BY` ilə…</div></div>
-            <div class="fld"><label>Başlanğıc kod</label><div class="inp code">SELECT</div></div>
-            <div class="fld"><label>Düzgün həll</label><div class="inp code">SELECT city, SUM(amount) AS total
+      <div class="shell" style="min-height:560px">
+        <aside class="sb" aria-label="Admin menyu">
+          <div class="sh">Məzmun</div>
+          <a class="on" href="#" aria-current="page"><svg class="i"><use href="#i-book"/></svg>Kurslar</a>
+          <a href="#"><svg class="i"><use href="#i-route"/></svg>Yollar</a>
+          <a href="#"><svg class="i"><use href="#i-folder"/></svg>Fayllar</a>
+          <a href="#"><svg class="i"><use href="#i-upload"/></svg>İdxal</a>
+          <div class="sh">Tələbələr</div>
+          <a href="#"><svg class="i"><use href="#i-users"/></svg>Tələbələr</a>
+          <a href="#"><svg class="i"><use href="#i-clip"/></svg>Layihə yoxlaması</a>
+          <a href="#"><svg class="i"><use href="#i-term"/></svg>Lab sessiyaları</a>
+          <div class="sh">Sistem</div>
+          <a href="#"><svg class="i"><use href="#i-trash"/></svg>Silinənlər</a>
+          <a href="#"><svg class="i"><use href="#i-history"/></svg>Fəaliyyət tarixçəsi</a>
+        </aside>
+        <div class="content">
+          <div class="ph1"><div><div class="k" style="display:flex;gap:8px;margin-bottom:8px"><span class="badge bd-da">Data Analytics</span><span class="badge bd-ok">Dərc olunub</span></div><h1 style="font-size:32px">SQL ilə data analizi</h1><p>184 tələbə · 4 fəsil · 38 addım · Aysel Məmmədova · 6 saat</p></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="b b-ghost" type="button"><svg class="i sm"><use href="#i-eye"/></svg>Önizlə</button><button class="b b-ghost" type="button"><svg class="i sm"><use href="#i-users"/></svg>Tələbələr</button><button class="b b-ghost" type="button"><svg class="i sm"><use href="#i-copy"/></svg>Kopyala</button><button class="b b-ghost" type="button"><svg class="i sm"><use href="#i-archive"/></svg>Arxivlə</button><button class="b b-dark" type="button">Dərcdən çıxar</button><button class="ib" type="button" aria-label="Daha çox"><svg class="i sm"><use href="#i-more"/></svg></button></div></div>
+          <div class="tabs"><span class="on">Məzmun</span><span>Ayarlar</span><span>Tələbələr<i>184</i></span><span>Fayllar<i>6</i></span><span>Tarixçə</span></div>
+          <div class="admin-ed">
+            <div class="tree">
+              <h4>Kurs ağacı</h4>
+              <ul>
+                <li><span class="drag">⋮⋮</span>1. SQL-ə giriş<span class="badge bd-ok" style="margin-left:auto;padding:2px 8px">Dərc</span></li>
+                <li><span class="drag">⋮⋮</span>2. Qruplaşdırma<span class="badge bd-ok" style="margin-left:auto;padding:2px 8px">Dərc</span></li>
+                <li class="sub"><span class="drag">⋮⋮</span><span class="ic t">T</span>GROUP BY nədir?</li>
+                <li class="sub"><span class="drag">⋮⋮</span><span class="ic c">{}</span>Şəhərlər üzrə satış</li>
+                <li class="sub"><span class="drag">⋮⋮</span><span class="ic q">?</span>Yoxlama testi</li>
+                <li class="sub sel"><span class="drag">⋮⋮</span><span class="ic c">{}</span>Ən çox satış edən…</li>
+                <li class="sub" style="opacity:.6"><span class="drag">⋮⋮</span><span class="ic t">T</span>HAVING ilə filtr<span class="badge bd-muted" style="margin-left:auto;padding:2px 8px">Gizli</span></li>
+                <li><span class="drag">⋮⋮</span>3. JOIN-lər<span class="badge bd-muted" style="margin-left:auto;padding:2px 8px">Qaralama</span></li>
+                <li style="color:var(--muted)"><svg class="i sm"><use href="#i-plus"/></svg>Fəsil əlavə et</li>
+              </ul>
+            </div>
+            <div class="edit">
+              <div class="row"><div><span class="badge bd-da">SQL tapşırığı</span><h3 style="margin-top:8px;font-size:1.4rem">Ən çox satış edən şəhərlər</h3></div><div style="display:flex;gap:8px"><button class="b b-ghost b-sm" type="button"><svg class="i sm"><use href="#i-eye"/></svg>Tələbə kimi bax</button><button class="b b-ghost b-sm" type="button"><svg class="i sm"><use href="#i-arrow"/></svg>Başqa fəslə köçür</button><button class="b b-dark b-sm" type="button">Gizlət</button><button class="b b-brand b-sm" type="button">Yadda saxla</button></div></div>
+              <div class="form">
+                <div class="fld full"><label>Addım tipi</label><div class="seg"><span>Nəzəri</span><span>Test</span><span class="on">SQL</span><span>Python</span><span>Terminal</span><span>CTF</span></div></div>
+                <div class="fld"><label>Başlıq</label><div class="inp">Ən çox satış edən şəhərlər</div></div>
+                <div class="fld"><label>XP</label><div class="inp">50</div></div>
+                <div class="fld full"><label>Təlimat (Markdown)</label><div class="inp" style="min-height:70px">Əvvəlki dərsdə `GROUP BY` ilə…</div></div>
+                <div class="fld"><label>Başlanğıc kod</label><div class="inp code">SELECT</div></div>
+                <div class="fld"><label>Düzgün həll</label><div class="inp code">SELECT city, SUM(amount) AS total
 FROM orders GROUP BY city
 ORDER BY total DESC LIMIT 5;</div></div>
-            <div class="fld full"><label>Dataset</label><div class="drop">📂 orders.csv yükləndi (12 480 sətir) · Başqa fayl üçün buraya sürükləyin</div></div>
+                <div class="fld full"><label>Dataset</label><div class="drop">📂 orders.csv (12 480 sətir) · <b>Dəyişdir</b> · <span style="color:#D23F3F">Sil</span> · başqa fayl üçün buraya sürükləyin</div></div>
+              </div>
+            </div>
           </div>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DETAILS -->
+  <section class="sec" id="details">
+    <h2>Detallar: vəziyyətlər, skeleton, kömək, mobil</h2>
+    <p class="note">Hər menyu elementində və düymədə lucide ikonu. Hover (ton dəyişir), focus (3px mint halqa), aktiv (1px aşağı). Səhifə yüklənəndə skeleton. Sağ aşağıda dairəvi kömək düyməsi. Mobil: sidebar gizlənir, alt naviqasiya; hero bir sütun; kartlar bir sütun.</p>
+    <div class="states">
+      <div><small>default</small><button class="b b-brand" type="button"><svg class="i sm"><use href="#i-play"/></svg>Kursa başla</button></div>
+      <div><small>hover</small><button class="b b-brand hov" type="button"><svg class="i sm"><use href="#i-play"/></svg>Kursa başla</button></div>
+      <div><small>focus-visible</small><button class="b b-brand foc" type="button"><svg class="i sm"><use href="#i-play"/></svg>Kursa başla</button></div>
+      <div><small>active</small><button class="b b-brand act" type="button"><svg class="i sm"><use href="#i-play"/></svg>Kursa başla</button></div>
+      <div><small>outline → hover</small><button class="b b-outline" type="button">Başla</button><button class="b b-outline" type="button" style="background:var(--navy);color:var(--on-dark)">Başla</button></div>
+      <div><small>sidebar: default / hover / aktiv</small><div class="sb" style="padding:6px;border-radius:12px;width:100%;gap:4px"><a href="#"><svg class="i"><use href="#i-route"/></svg>Yollar</a><a href="#" style="background:var(--navy-3);color:#fff"><svg class="i"><use href="#i-route"/></svg>Yollar</a><a class="on" href="#"><svg class="i"><use href="#i-route"/></svg>Yollar</a></div></div>
+      <div><small>çip: default / hover / aktiv</small><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="chip" type="button">Orta</button><button class="chip" type="button" style="background:#DFE5F0">Orta</button><button class="chip on" type="button">Orta</button></div></div>
+      <div><small>kömək düyməsi</small><button class="help" type="button" style="position:static" aria-label="Kömək"><svg><use href="#i-help"/></svg></button></div>
+    </div>
+    <div class="mobile">
+      <div class="phone" aria-label="Mobil kataloq">
+        <header class="top"><div class="logo"><i>Dc</i>DaCy</div><span style="flex:1"></span><button class="ib bell" type="button" style="width:32px;height:32px" aria-label="Bildirişlər"><svg class="i sm"><use href="#i-bell"/></svg></button><div class="avatar" style="width:28px;height:28px;font-size:.7rem">OR</div></header>
+        <section class="hero"><div><span class="badge bd-mint" style="font-size:.68rem">Praktiki öyrənmə</span><h1 style="margin-top:8px">Nə öyrənmək istəyirsiniz?</h1><p>SQL, Python, data mühəndisliyi və kibertəhlükəsizlik — real tapşırıqlarla.</p></div></section>
+        <div class="chips" style="margin:0 12px;gap:6px"><button class="chip on" type="button" style="padding:6px 10px;font-size:.75rem">Hamısı</button><button class="chip" type="button" style="padding:6px 10px;font-size:.75rem">Data Analytics</button><button class="chip more" type="button" style="padding:6px 10px;font-size:.75rem">+4</button></div>
+        <article class="kc" style="--c:var(--da)"><span class="kind">Kurs</span><h3>SQL ilə data analizi</h3><div class="lvl l1" style="font-size:.75rem"><i><b></b><b></b><b></b></i>Başlanğıc</div><p>Real datasetlər üzərində sorğu yazmağı və cədvəlləri birləşdirməyi öyrənin.</p><div class="inst"><span class="ph" style="width:28px;height:28px;font-size:.6rem">AM</span><div><b style="font-size:.78rem">Aysel Məmmədova</b><span style="font-size:.68rem">Senior Data Analyst</span></div></div><div class="ft" style="padding-top:10px"><span class="dur" style="font-size:.78rem"><span class="tic" style="width:24px;height:24px"><svg style="width:12px;height:12px"><use href="#i-chart"/></svg></span>6 saat</span><button class="b b-outline b-sm" type="button" style="padding:6px 10px;font-size:.75rem">Başla</button></div></article>
+        <nav class="bnav" aria-label="Alt naviqasiya"><span><svg class="i sm"><use href="#i-dash"/></svg>Panel</span><span><svg class="i sm"><use href="#i-route"/></svg>Yollar</span><span class="on"><svg class="i sm"><use href="#i-book"/></svg>Kurslar</span><span><svg class="i sm"><use href="#i-kanban"/></svg>Layihələr</span><span><svg class="i sm"><use href="#i-more"/></svg>Daha çox</span></nav>
+      </div>
+      <div class="box" style="align-self:start">
+        <h4>Qaydalar (tətbiq zamanı)</h4>
+        <ul style="margin:0;padding-left:18px;color:var(--muted);font-size:.92rem;display:flex;flex-direction:column;gap:6px">
+          <li>Boşluqlar yalnız şkaladan: 4 / 8 / 12 / 16 / 24 / 32 / 48</li>
+          <li>Bütün ikonlar lucide-react, 20px (menyu) / 16px (düymə)</li>
+          <li>Hər interaktiv element: hover + focus-visible + active</li>
+          <li>Server məlumatı gələnə qədər skeleton (kart, cədvəl sətri, hero)</li>
+          <li>Rənglər yalnız :root tokenləri; istiqamət rəngi <code>--c</code> ilə</li>
+          <li>Dark mode: eyni tokenlər, kontrast qorunur</li>
+        </ul>
       </div>
     </div>
   </section>

@@ -13,6 +13,12 @@ for (const p of [resolve(process.cwd(), '../../.env'), resolve(process.cwd(), '.
   }
 }
 
+/** Boş sətir → undefined (`.env.example`-dakı boş dəyərlər) */
+const optionalStr = z
+  .string()
+  .optional()
+  .transform((v) => (v && v.trim() ? v.trim() : undefined));
+
 const schema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   DATABASE_URL: z.string().min(1),
@@ -31,10 +37,11 @@ const schema = z.object({
   CTF_PEPPER: z.string().min(8),
   STORAGE_DIR: z.string().default('./storage'),
   MAX_UPLOAD_MB: z.coerce.number().default(50),
-  SEED_ADMIN_EMAIL: z.string().default('admin@dacy.local'),
-  SEED_ADMIN_PASSWORD: z.string().default('Admin123!'),
-  SEED_STUDENT_EMAIL: z.string().default('telebe@dacy.local'),
-  SEED_STUDENT_PASSWORD: z.string().default('Telebe123!'),
+  // Test/ilkin hesablar — boş buraxılsa seed hesab yaratmır (dəyərlər yalnız .env-də saxlanılır)
+  SEED_ADMIN_EMAIL: optionalStr,
+  SEED_ADMIN_PASSWORD: optionalStr,
+  SEED_STUDENT_EMAIL: optionalStr,
+  SEED_STUDENT_PASSWORD: optionalStr,
   APP_TIMEZONE: z.string().default('Asia/Baku'),
   // Mərhələ 3 — terminal lab-ları
   LAB_DRIVER: z.enum(['docker', 'mock', 'off']).default('docker'),

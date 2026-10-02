@@ -205,3 +205,24 @@ Hesablar: `admin@dacy.local / Admin123!`, `telebe@dacy.local / Telebe123!` (`.en
 - Layihə faylları yaddaş qovluğunda (`STORAGE_DIR/path-<id>/`) saxlanılır, yalnız sahibi və müəllim yükləyə bilər.
 
 ---
+
+## Qeydlər — 2 oktyabr 2026 (Mərhələ 4 təsdiqindən sonra)
+
+### Qeyd 1 — «Tezliklə» yer tutucuları
+
+Repoda yer tutucu səhifə qalmayıb (`/yollar`, `/sertifikatlar` Mərhələ 3–4-də real səhifələrlə əvəz olunub; `grep "Tezliklə"` yalnız lüğətdəki ümumi sözü tapır). Skrinşotdakı səhifələr Mərhələ 1 nüsxəsidir — lokal nüsxə `origin/claude/dacy-academy-platform-4f2r5r` budağından geridədir. Həll: `git pull origin claude/dacy-academy-platform-4f2r5r && pnpm install && rm -rf apps/web/.next && pnpm dev`.
+
+### Qeyd 3 — Test hesabları (tamamlandı)
+
+- Hesablar koda yazılmır: seed `.env`-dəki `SEED_ADMIN_EMAIL/PASSWORD`, `SEED_STUDENT_EMAIL/PASSWORD`-dan oxuyur; boşdursa hesab yaradılmır (xəbərdarlıq). `.env.example`-da adlar boş dəyərlə.
+- Upsert: mövcud hesab təkrar yaranmır, şifrəsi dəyişmir; admin rolu təmin olunur. Tələbə avtomatik «NÜMUNƏ» kursuna yazılır.
+- Şifrələr bazada **argon2id** heşi ilə (bcrypt əvəzinə — platformanın mövcud, daha güclü sxemi; dəyişdirilməsi bütün hesabların heşlərini pozardı). İstənilsə bcrypt-ə keçid ayrıca iş kimi edilə bilər.
+- Yoxlama: `apps/web/e2e/accounts.spec.ts` — admin giriş → `/admin` açılır; tələbə giriş → `/admin`-dən `/kurslar`-a yönlənir, `GET /api/admin/courses` 403, nümunə kursa yazılıb (2/2 ✓). README-də «Test hesabları (seed)» bölməsi.
+
+### Qeyd 2 — Dizayn referansı v2 (təsdiq gözləyir)
+
+`docs/DACY_DESIGN_REFERENCE.html` yenidən yazıldı (rəng tokenləri dəyişməyib): ağ header + 260px navy sidebar (ikonlu menyu, ÖYRƏN / TƏTBİQ ET bölmələri, «YENİ» badge), 24px radiuslu hero (mint badge, 2 sətir təsvir, xətti SVG), kurs kartı anatomiyası (etiket, 24px başlıq, 3 zolaqlı səviyyə, 4 sətir təsvir, müəllim, müddət + «Başla»), kvadratvari çiplər + «+N» + sayğac/axtarış/Mövzu/Daha çox filtr, tip şkalası 40/28/24/16, boşluq şkalası 4–48, hover/focus/active, skeleton, kömək düyməsi, mobil alt naviqasiya, admin siyahı/redaktor/«…» menyu/təhlükəsiz silmə dialoqu/toast. Skrinşotlar: `docs/screenshots/v2/*.png`. Platformaya köçürmə təsdiqdən sonra.
+
+### Qeyd 4 — Admin kurs nəzarəti (gözləyir)
+
+Növbəti iş: müəllim sahələri, arxiv, kopya, soft delete + «Silinənlər» (30 gün), tələbə müdaxiləsi, audit log, ADMIN-only backend yoxlaması, testlər.
