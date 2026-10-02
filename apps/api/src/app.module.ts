@@ -21,11 +21,13 @@ import { LearnModule } from './learn/learn.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { PathsModule } from './paths/paths.module';
 import { ProgressModule } from './progress/progress.module';
+import { AuditModule } from './audit/audit.module';
 
 @Module({
   imports: [
     ThrottlerModule.forRoot([{ ttl: 60_000, limit: 300 }]),
     PrismaModule,
+    AuditModule,
     AuthModule,
     UsersModule,
     TracksModule,

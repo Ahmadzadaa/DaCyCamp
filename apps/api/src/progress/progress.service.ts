@@ -19,6 +19,8 @@ export interface CourseShape {
   id: string;
   slug: string;
   sequential: boolean;
+  deletedAt: Date | null;
+  archivedAt: Date | null;
   modules: Array<{
     id: string;
     key: string;
@@ -76,6 +78,8 @@ export class ProgressService {
       id: c.id,
       slug: c.slug,
       sequential: c.sequential,
+      deletedAt: c.deletedAt,
+      archivedAt: c.archivedAt,
       modules: c.modules.map((m) => ({
         ...m,
         steps: m.steps.map((s) => ({ ...s, type: s.type as StepType })),
@@ -97,12 +101,19 @@ export class ProgressService {
     includeUnpublished = false,
     tx: Tx | PrismaService = this.prisma,
   ) {
-    const progress = await this.progressRows(userId, course.id, tx);
+    const [progress, unlocks] = await Promise.all([
+      this.progressRows(userId, course.id, tx),
+      tx.stepUnlock.findMany({
+        where: { userId, step: { module: { courseId: course.id } } },
+        select: { stepId: true },
+      }),
+    ]);
     return computeCourseMap({
       sequential: course.sequential,
       modules: course.modules,
       progress,
       includeUnpublished,
+      unlocked: unlocks.map((u) => u.stepId),
     });
   }
 
@@ -110,9 +121,9 @@ export class ProgressService {
   async start(userId: string, stepId: string) {
     const step = await this.prisma.step.findUnique({
       where: { id: stepId },
-      include: { module: { select: { courseId: true } } },
+      include: { module: { select: { courseId: true, course: { select: { deletedAt: true } } } } },
     });
-    if (!step) throw notFound();
+    if (!step || step.module.course.deletedAt) throw notFound();
     const enrollment = await this.prisma.enrollment.findUnique({
       where: { userId_courseId: { userId, courseId: step.module.courseId } },
     });

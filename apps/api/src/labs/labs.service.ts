@@ -294,6 +294,7 @@ export class LabsService implements OnModuleInit, OnModuleDestroy {
     });
     if (!enrolled) throw forbidden('NOT_ENROLLED', 'Əvvəlcə kursa yazılın');
     const course = await this.progress.loadCourseShape(courseId);
+    if (course.deletedAt) throw notFound();
     const map = await this.progress.mapFor(userId, course);
     const s = map.flat.find((x) => x.id === stepId);
     if (!s) throw notFound();

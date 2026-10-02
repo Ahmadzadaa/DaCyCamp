@@ -27,7 +27,7 @@ export class DashboardService {
     const courses: DashboardDto['courses'] = [];
     let cont: DashboardDto['continue'] = null;
     for (const e of enrollments) {
-      if (!e.course.isPublished) continue;
+      if (!e.course.isPublished || e.course.deletedAt) continue;
       const shape = await this.progress.loadCourseShape(e.courseId);
       const map = await this.progress.mapFor(userId, shape);
       courses.push({

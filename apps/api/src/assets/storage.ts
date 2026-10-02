@@ -1,5 +1,5 @@
 import { createHash, randomUUID } from 'node:crypto';
-import { mkdir, readFile, writeFile, rm, stat } from 'node:fs/promises';
+import { copyFile, mkdir, readFile, writeFile, rm, stat } from 'node:fs/promises';
 import { dirname, extname, join } from 'node:path';
 import type { AssetKind } from '@dacy/shared';
 import { storageDir } from '../config/env';
@@ -67,6 +67,19 @@ export async function saveToStorage(
 
 export const storagePath = (key: string) => join(storageDir, key);
 export const readFromStorage = (key: string) => readFile(storagePath(key));
+
+/** Mövcud faylı başqa kursun qovluğuna kopyalayır (kurs surəti); yeni açarı qaytarır */
+export async function copyInStorage(
+  srcKey: string,
+  courseId: string,
+  filename: string,
+): Promise<string> {
+  const key = `${courseId}/${randomUUID()}-${safeFilename(filename)}`;
+  const full = join(storageDir, key);
+  await mkdir(dirname(full), { recursive: true });
+  await copyFile(storagePath(srcKey), full);
+  return key;
+}
 
 export async function removeFromStorage(key: string) {
   await rm(storagePath(key), { force: true });

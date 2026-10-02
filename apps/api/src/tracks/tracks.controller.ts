@@ -1,3 +1,4 @@
+import { Audit } from '../audit/audit.interceptor';
 import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
 import {
   createTrackSchema,
@@ -36,7 +37,11 @@ export class TracksController {
     const rows = await this.prisma.track.findMany({
       where: { isPublished: true },
       orderBy: { order: 'asc' },
-      include: { _count: { select: { courses: { where: { isPublished: true } } } } },
+      include: {
+        _count: {
+          select: { courses: { where: { isPublished: true, deletedAt: null, archivedAt: null } } },
+        },
+      },
     });
     return rows.map(toTrackDto);
   }
@@ -52,6 +57,7 @@ export class TracksController {
   }
 
   @Staff()
+  @Audit({ action: 'track.create', entity: 'TRACK', target: 'result' })
   @Post('admin/tracks')
   async create(@Body(new ZodPipe(createTrackSchema)) dto: CreateTrackInput): Promise<TrackDto> {
     const exists = await this.prisma.track.findUnique({ where: { slug: dto.slug } });
@@ -64,6 +70,7 @@ export class TracksController {
   }
 
   @Staff()
+  @Audit({ action: 'track.reorder', entity: 'TRACK', target: { param: '_' } })
   @Patch('admin/tracks/reorder')
   async reorder(@Body(new ZodPipe(reorderSchema)) dto: { ids: string[] }) {
     await this.prisma.$transaction((tx) => reorderInTx(tx, 'track', {}, dto.ids));
@@ -71,6 +78,7 @@ export class TracksController {
   }
 
   @Staff()
+  @Audit({ action: 'track.update', entity: 'TRACK', body: ['isPublished', 'title', 'color'] })
   @Patch('admin/tracks/:id')
   async update(
     @Param('id') id: string,
@@ -86,6 +94,7 @@ export class TracksController {
   }
 
   @AdminOnly()
+  @Audit({ action: 'track.delete', entity: 'TRACK' })
   @Delete('admin/tracks/:id')
   async remove(@Param('id') id: string) {
     const count = await this.prisma.course.count({ where: { trackId: id } });

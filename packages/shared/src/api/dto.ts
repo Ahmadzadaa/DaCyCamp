@@ -61,11 +61,16 @@ export const createCourseSchema = z.object({
   description: z.string().trim().max(5000).default(''),
   sequential: z.boolean().default(true),
   estimatedHours: z.number().min(0).max(10000).nullable().optional(),
+  instructorName: z.string().trim().max(120).nullable().optional(),
+  instructorTitle: z.string().trim().max(120).nullable().optional(),
 });
-export const updateCourseSchema = createCourseSchema
-  .partial()
-  .extend({ coverAssetId: idSchema.nullable().optional() });
+export const updateCourseSchema = createCourseSchema.partial().extend({
+  coverAssetId: idSchema.nullable().optional(),
+  instructorAvatarId: idSchema.nullable().optional(),
+});
 export const publishSchema = z.object({ isPublished: z.boolean() });
+export const archiveSchema = z.object({ archived: z.boolean() });
+export const unlockStepSchema = z.object({ stepId: idSchema });
 
 export const createModuleSchema = z.object({
   title: titleSchema,

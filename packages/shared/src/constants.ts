@@ -13,6 +13,8 @@ export const DEFAULT_PASS_SCORE = 70;
 export const DEFAULT_HINT_PENALTY_XP = 10;
 export const DEFAULT_LAB_MINUTES = 60;
 export const CTF_MAX_ATTEMPTS_PER_MINUTE = 10;
+/** Soft delete olunmuş kurs bu qədər gün "Silinənlər"-də qalır, sonra həmişəlik silinir */
+export const COURSE_TRASH_DAYS = 30;
 
 export const COOKIE_ACCESS = 'dacy_at';
 export const COOKIE_REFRESH = 'dacy_rt';

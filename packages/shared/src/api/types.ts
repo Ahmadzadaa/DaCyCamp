@@ -51,6 +51,14 @@ export interface CourseCardDto {
   enrolled?: boolean;
   percent?: number;
   completed?: boolean;
+  instructor: CourseInstructorDto | null;
+  /** arxivdədir (yalnız yazılmış tələbə görür) */
+  archived?: boolean;
+}
+export interface CourseInstructorDto {
+  name: string;
+  title: string | null;
+  avatarUrl: string | null;
 }
 
 export interface CourseOutlineDto extends CourseCardDto {
@@ -210,9 +218,60 @@ export interface AdminCourseDto {
   track: { id: string; slug: string; title: string; color: string };
   coverAssetId: string | null;
   coverUrl: string | null;
+  instructorName: string | null;
+  instructorTitle: string | null;
+  instructorAvatarId: string | null;
+  instructorAvatarUrl: string | null;
+  status: CourseStatus;
+  archivedAt: string | null;
+  deletedAt: string | null;
+  /** soft delete-dən sonra həmişəlik silinmə tarixi */
+  purgeAt: string | null;
   enrollmentCount: number;
+  moduleCount: number;
+  stepCount: number;
   createdAt: string;
   updatedAt: string;
+}
+export type CourseStatus = 'published' | 'draft' | 'archived' | 'deleted';
+export type CourseStatusCounts = Record<CourseStatus | 'all', number>;
+export interface AdminCourseListDto {
+  courses: AdminCourseDto[];
+  counts: CourseStatusCounts;
+}
+export interface AdminCourseStatsDto {
+  enrollments: number;
+  completed: number;
+  progressRows: number;
+  assets: number;
+  pathItems: number;
+  modules: number;
+  steps: number;
+}
+export interface AdminCourseStudentDto {
+  userId: string;
+  name: string;
+  email: string;
+  percent: number;
+  enrolledAt: string;
+  lastActivityAt: string;
+  completedAt: string | null;
+  unlockedStepIds: string[];
+}
+export interface AuditLogDto {
+  id: string;
+  actor: { id: string | null; email: string; name: string | null };
+  action: string;
+  entityType: string;
+  entityId: string | null;
+  entityTitle: string | null;
+  courseId: string | null;
+  details: Record<string, unknown> | null;
+  createdAt: string;
+}
+export interface AuditPageDto {
+  items: AuditLogDto[];
+  nextCursor: string | null;
 }
 export interface AdminCourseTreeDto extends AdminCourseDto {
   modules: AdminModuleNode[];

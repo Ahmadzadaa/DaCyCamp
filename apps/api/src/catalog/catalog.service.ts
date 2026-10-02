@@ -14,6 +14,7 @@ import { notFound } from '../common/errors';
 type CourseWithRel = Course & {
   track: Track;
   cover: { id: string; filename: string } | null;
+  instructorAvatar?: { id: string; filename: string } | null;
   modules: Array<{
     id: string;
     key: string;
@@ -36,6 +37,7 @@ type CourseWithRel = Course & {
 export const courseInclude = {
   track: true,
   cover: { select: { id: true, filename: true } },
+  instructorAvatar: { select: { id: true, filename: true } },
   modules: {
     orderBy: { order: 'asc' as const },
     include: {
@@ -78,6 +80,14 @@ export class CatalogService {
       stepCount: steps.length,
       stepTypeCounts: counts,
       datasetCount,
+      instructor: c.instructorName
+        ? {
+            name: c.instructorName,
+            title: c.instructorTitle,
+            avatarUrl: c.instructorAvatar ? assetUrl(c.instructorAvatar) : null,
+          }
+        : null,
+      ...(c.archivedAt ? { archived: true } : {}),
     };
   }
 
@@ -90,6 +100,8 @@ export class CatalogService {
     const courses = await this.prisma.course.findMany({
       where: {
         isPublished: true,
+        deletedAt: null,
+        archivedAt: null,
         track: { isPublished: true },
         ...(opts.track ? { track: { slug: opts.track, isPublished: true } } : {}),
         ...(opts.level ? { level: opts.level } : {}),
@@ -132,6 +144,17 @@ export class CatalogService {
       include: { ...courseInclude, _count: { select: { assets: { where: { kind: 'DATASET' } } } } },
     });
     if (!c || (!c.isPublished && !opts.staff)) throw notFound();
+    if (c.deletedAt && !opts.staff) throw notFound();
+    // arxiv: yalnız yazılmış tələbə (və heyət) görür
+    if (c.archivedAt && !opts.staff) {
+      const enrolled = opts.userId
+        ? await this.prisma.enrollment.findUnique({
+            where: { userId_courseId: { userId: opts.userId, courseId: c.id } },
+            select: { id: true },
+          })
+        : null;
+      if (!enrolled) throw notFound();
+    }
     const card = this.toCard(c as CourseWithRel, c._count.assets, !!opts.staff && !c.isPublished);
     const out: CourseOutlineDto = {
       ...card,

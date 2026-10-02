@@ -22,7 +22,7 @@ import { CatalogService } from '../catalog/catalog.service';
 import { AssetsService } from '../assets/assets.service';
 import { SqlCheckService } from '../sql-check/sql-check.service';
 import { hashAnswer } from '../content/ctf-hash';
-import { badRequest, forbidden, notFound, unprocessable } from '../common/errors';
+import { badRequest, conflict, forbidden, notFound, unprocessable } from '../common/errors';
 
 const TYPE_INDEX_GROUP: Record<StepType, StepType[]> = {
   THEORY: ['THEORY'],
@@ -49,7 +49,15 @@ export class LearnService {
 
   async enroll(userId: string, slug: string) {
     const c = await this.prisma.course.findUnique({ where: { slug } });
-    if (!c || !c.isPublished) throw notFound('COURSE_UNPUBLISHED', 'Bu kurs dərc olunmayıb');
+    if (!c || !c.isPublished || c.deletedAt)
+      throw notFound('COURSE_UNPUBLISHED', 'Bu kurs dərc olunmayıb');
+    if (c.archivedAt) {
+      const existing = await this.prisma.enrollment.findUnique({
+        where: { userId_courseId: { userId, courseId: c.id } },
+        select: { id: true },
+      });
+      if (!existing) throw conflict('COURSE_ARCHIVED', 'Bu kurs arxivdədir, yeni yazılma yoxdur');
+    }
     const e = await this.prisma.enrollment.upsert({
       where: { userId_courseId: { userId, courseId: c.id } },
       create: { userId, courseId: c.id },
@@ -60,7 +68,7 @@ export class LearnService {
 
   async myEnrollments(userId: string) {
     const rows = await this.prisma.enrollment.findMany({
-      where: { userId },
+      where: { userId, course: { deletedAt: null } },
       include: { course: { select: { slug: true, title: true } } },
       orderBy: { lastActivityAt: 'desc' },
     });
@@ -76,9 +84,9 @@ export class LearnService {
   private async loadCourseBySlug(slug: string, preview: boolean) {
     const c = await this.prisma.course.findUnique({
       where: { slug },
-      select: { id: true, isPublished: true },
+      select: { id: true, isPublished: true, deletedAt: true },
     });
-    if (!c || (!c.isPublished && !preview))
+    if (!c || ((!c.isPublished || c.deletedAt) && !preview))
       throw notFound('COURSE_UNPUBLISHED', 'Bu kurs dərc olunmayıb');
     return this.progress.loadCourseShape(c.id);
   }
@@ -242,6 +250,7 @@ export class LearnService {
     });
     if (!enrolled) throw forbidden('NOT_ENROLLED', 'Əvvəlcə kursa yazılın');
     const course = await this.progress.loadCourseShape(step.module.courseId);
+    if (course.deletedAt) throw notFound();
     const map = await this.progress.mapFor(userId, course);
     const s = map.flat.find((x) => x.id === stepId);
     if (!s) throw notFound();

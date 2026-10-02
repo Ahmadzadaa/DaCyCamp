@@ -35,6 +35,7 @@ export const pathInclude = {
           title: true,
           level: true,
           isPublished: true,
+          deletedAt: true,
           estimatedHours: true,
         },
       },
@@ -49,6 +50,7 @@ export type PathItemWithCourse = PathItem & {
     title: string;
     level: string;
     isPublished: boolean;
+    deletedAt?: Date | null;
     estimatedHours: number | null;
   } | null;
 };

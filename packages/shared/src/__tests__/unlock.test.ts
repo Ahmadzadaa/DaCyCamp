@@ -90,4 +90,15 @@ describe('computeCourseMap', () => {
     expect(m.isComplete).toBe(true);
     expect(m.continueStep).toBeNull();
   });
+  it('admin əl ilə açdığı addım "available" olur, sonrakılar kilidli qalır', () => {
+    const m = computeCourseMap({ sequential: true, modules, progress: [], unlocked: ['s2'] });
+    expect(m.flat.map((s) => s.state)).toEqual(['available', 'available', 'locked']);
+    const started = computeCourseMap({
+      sequential: true,
+      modules,
+      progress: [{ stepId: 's2', status: 'IN_PROGRESS' }],
+      unlocked: ['s2'],
+    });
+    expect(started.flat[1]!.state).toBe('in_progress');
+  });
 });

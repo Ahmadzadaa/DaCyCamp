@@ -130,6 +130,10 @@ model User {
   uploadedAssets    Asset[]            @relation("AssetUploader")
   courseImports     CourseImport[]
   createdCourses    Course[]           @relation("CourseCreator")
+  deletedCourses    Course[]           @relation("CourseDeleter")
+  stepUnlocks       StepUnlock[]       @relation("StepUnlockUser")
+  grantedUnlocks    StepUnlock[]       @relation("StepUnlockGrantor")
+  auditLogs         AuditLog[]
 }
 
 /// Rotating refresh tokens; only the sha256 hash is stored.
@@ -168,26 +172,37 @@ model Track {
 }
 
 model Course {
-  id             String    @id @default(cuid())
-  trackId        String
-  slug           String    @unique // globally unique; ZIP re-import key
-  title          String
-  level          Level     @default(BEGINNER)
-  description    String    @default("")
-  coverAssetId   String?
-  sequential     Boolean   @default(true) // false = free navigation
-  estimatedHours Float?
-  order          Int
-  isPublished    Boolean   @default(false)
-  publishedAt    DateTime?
-  createdById    String?
-  importedAt     DateTime? // last ZIP import
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  id                 String    @id @default(cuid())
+  trackId            String
+  slug               String    @unique // globally unique; ZIP re-import key
+  title              String
+  level              Level     @default(BEGINNER)
+  description        String    @default("")
+  coverAssetId       String?
+  sequential         Boolean   @default(true) // false = free navigation
+  estimatedHours     Float?
+  order              Int
+  isPublished        Boolean   @default(false)
+  publishedAt        DateTime?
+  createdById        String?
+  importedAt         DateTime? // last ZIP import
+  /// Kartda və kurs səhifəsində göstərilən müəllim (admin paneldən doldurulur)
+  instructorName     String?
+  instructorTitle    String?
+  instructorAvatarId String?
+  /// Arxiv: kataloqdan gizlənir, yazılmış tələbələr davam edir
+  archivedAt         DateTime?
+  /// Soft delete: "Silinənlər" (30 gün), sonra həmişəlik silinir
+  deletedAt          DateTime?
+  deletedById        String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
 
-  track     Track  @relation(fields: [trackId], references: [id], onDelete: Restrict)
-  cover     Asset? @relation("CourseCover", fields: [coverAssetId], references: [id], onDelete: SetNull)
-  createdBy User?  @relation("CourseCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  track            Track  @relation(fields: [trackId], references: [id], onDelete: Restrict)
+  cover            Asset? @relation("CourseCover", fields: [coverAssetId], references: [id], onDelete: SetNull)
+  instructorAvatar Asset? @relation("CourseInstructorAvatar", fields: [instructorAvatarId], references: [id], onDelete: SetNull)
+  createdBy        User?  @relation("CourseCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  deletedBy        User?  @relation("CourseDeleter", fields: [deletedById], references: [id], onDelete: SetNull)
 
   modules      Module[]
   assets       Asset[]        @relation("CourseAssets")
@@ -199,6 +214,7 @@ model Course {
 
   @@unique([trackId, order])
   @@index([isPublished, level])
+  @@index([deletedAt])
 }
 
 model Module {
@@ -244,6 +260,7 @@ model Step {
   hintUsages        HintUsage[]
   xpEvents          XpEvent[]
   labSessions       LabSession[]
+  unlocks           StepUnlock[]
   lastOfEnrollments Enrollment[]   @relation("EnrollmentLastStep")
 
   @@unique([moduleId, key])
@@ -289,6 +306,7 @@ model Asset {
   course     Course   @relation("CourseAssets", fields: [courseId], references: [id], onDelete: Cascade)
   uploadedBy User?    @relation("AssetUploader", fields: [uploadedById], references: [id], onDelete: SetNull)
   coverOf    Course[] @relation("CourseCover")
+  avatarOf   Course[] @relation("CourseInstructorAvatar")
 
   @@unique([courseId, path])
   @@index([kind])
@@ -377,6 +395,41 @@ model Submission {
 
   @@index([userId, stepId, createdAt])
   @@index([stepId, passed])
+}
+
+/// Admin tələbəyə ardıcıl kursda kilidli addımı əl ilə açır (kilid hesablamasında "available" sayılır).
+model StepUnlock {
+  id           String   @id @default(cuid())
+  userId       String
+  stepId       String
+  unlockedById String?
+  createdAt    DateTime @default(now())
+
+  user       User  @relation("StepUnlockUser", fields: [userId], references: [id], onDelete: Cascade)
+  step       Step  @relation(fields: [stepId], references: [id], onDelete: Cascade)
+  unlockedBy User? @relation("StepUnlockGrantor", fields: [unlockedById], references: [id], onDelete: SetNull)
+
+  @@unique([userId, stepId])
+}
+
+/// Admin əməliyyatlarının jurnalı: kim, nəyi, nə vaxt. Obyekt silinsə də sətir qalır (başlıq snapshot-dur).
+model AuditLog {
+  id          String   @id @default(cuid())
+  actorId     String?
+  actorEmail  String // snapshot
+  action      String // course.archive, step.update, enrollment.reset, ...
+  entityType  String // COURSE | MODULE | STEP | ASSET | TRACK | USER | ENROLLMENT
+  entityId    String?
+  entityTitle String?
+  courseId    String? // kurs daxilində filtr üçün (FK deyil — kurs silinəndə tarixçə qalır)
+  details     Json?
+  createdAt   DateTime @default(now())
+
+  actor User? @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([courseId, createdAt])
+  @@index([actorId, createdAt])
 }
 
 /// hintKey = "h:<index>" for step hints (sql/python/terminal) or "t:<ctfTaskKey>" for CTF task hints.

@@ -88,7 +88,10 @@ export class PathsAdminService {
         isOptional: it.isOptional,
         config: it.config,
         secret: it.secret,
-        course: it.course ? { slug: it.course.slug, isPublished: it.course.isPublished } : null,
+        // silinənlərdəki kurs dərc olunmamış sayılır (yol dərc edilə bilməz)
+        course: it.course
+          ? { slug: it.course.slug, isPublished: it.course.isPublished && !it.course.deletedAt }
+          : null,
       })),
     });
   }
@@ -109,7 +112,7 @@ export class PathsAdminService {
             id: it.course.id,
             slug: it.course.slug,
             title: it.course.title,
-            isPublished: it.course.isPublished,
+            isPublished: it.course.isPublished && !it.course.deletedAt,
             level: it.course.level as Level,
           }
         : null,

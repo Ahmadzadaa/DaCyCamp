@@ -1,3 +1,4 @@
+import { Audit } from '../audit/audit.interceptor';
 import {
   Body,
   Controller,
@@ -44,6 +45,7 @@ export class AssetsController {
   }
 
   @Staff()
+  @Audit({ action: 'asset.upload', entity: 'ASSET', target: 'result', result: ['path', 'kind'] })
   @Post('admin/courses/:id/assets')
   @UseInterceptors(
     FileInterceptor('file', { limits: { fileSize: env.MAX_UPLOAD_MB * 1024 * 1024 } }),
@@ -69,6 +71,7 @@ export class AssetsController {
   }
 
   @Staff()
+  @Audit({ action: 'asset.delete', entity: 'ASSET' })
   @Delete('admin/assets/:id')
   remove(@Param('id') id: string) {
     return this.assets.remove(id);
@@ -84,9 +87,11 @@ export class AssetsController {
   ) {
     const a = await this.prisma.asset.findUnique({
       where: { id },
-      include: { course: { select: { coverAssetId: true, id: true } } },
+      include: { course: { select: { coverAssetId: true, id: true, deletedAt: true } } },
     });
     if (!a) throw notFound();
+    const staffUser = req.user && (req.user.role === 'ADMIN' || req.user.role === 'INSTRUCTOR');
+    if (a.course.deletedAt && !staffUser) throw notFound();
     const isCover = a.course.coverAssetId === a.id;
     const user = req.user;
     const staff = user && (user.role === 'ADMIN' || user.role === 'INSTRUCTOR');

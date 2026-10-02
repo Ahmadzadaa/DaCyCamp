@@ -62,9 +62,12 @@ export function computeCourseMap(opts: {
   modules: MapModuleInput[];
   progress: ProgressRow[];
   includeUnpublished?: boolean;
+  /** admin tərəfindən əl ilə açılmış addımlar (ardıcıl kilidi keçir) */
+  unlocked?: string[];
 }): CourseMap {
   const inc = opts.includeUnpublished === true;
   const prog = new Map(opts.progress.map((p) => [p.stepId, p]));
+  const manual = new Set(opts.unlocked ?? []);
   const modules = [...opts.modules]
     .filter((m) => inc || m.isPublished !== false)
     .sort((a, b) => a.order - b.order);
@@ -83,10 +86,16 @@ export function computeCourseMap(opts: {
       let state: StepState;
       if (p?.status === 'COMPLETED') state = 'completed';
       else if (p) state = 'in_progress';
-      else if (!opts.sequential || index === 0 || prevCompleted) state = 'available';
+      else if (!opts.sequential || index === 0 || prevCompleted || manual.has(s.id))
+        state = 'available';
       else state = 'locked';
       // ardıcıl rejimdə: in_progress olan addım tamamlanmayıbsa, sonrakılar kilidlənir
-      if (opts.sequential && p && p.status !== 'COMPLETED' && !(index === 0 || prevCompleted))
+      if (
+        opts.sequential &&
+        p &&
+        p.status !== 'COMPLETED' &&
+        !(index === 0 || prevCompleted || manual.has(s.id))
+      )
         state = 'locked';
       const ms: MapStep = {
         ...s,

@@ -225,6 +225,11 @@ export class PackageService {
       where: { slug: course.slug },
       include: { modules: { include: { steps: true } } },
     });
+    if (existing?.deletedAt)
+      errors.push({
+        file: courseFile,
+        message: `«${course.slug}» kursu «Silinənlər» bölməsindədir — əvvəlcə bərpa edin və ya həmişəlik silin`,
+      });
 
     // fayllar (assets)
     const assets: PlannedAsset[] = [];

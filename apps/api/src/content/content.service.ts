@@ -1,6 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger, type OnModuleDestroy, type OnModuleInit } from '@nestjs/common';
 import { Prisma, type Step } from '@prisma/client';
 import {
+  COURSE_TRASH_DAYS,
   emptyDefinition,
   mergeStep,
   parseDraft,
@@ -8,7 +9,10 @@ import {
   splitStep,
   validateForPublish,
   type AdminCourseDto,
+  type AdminCourseListDto,
+  type AdminCourseStatsDto,
   type AdminCourseTreeDto,
+  type CourseStatus,
   type AdminStepDto,
   type CreateCourseInput,
   type CreateModuleInput,
@@ -20,6 +24,9 @@ import {
 } from '@dacy/shared';
 import { PrismaService } from '../prisma/prisma.service';
 import { AssetsService, assetUrl } from '../assets/assets.service';
+import { copyInStorage, removeFromStorage } from '../assets/storage';
+import { AuditService } from '../audit/audit.service';
+import type { AuthUser } from '../common/decorators';
 import { badRequest, conflict, notFound, unprocessable } from '../common/errors';
 import { nextOrder, reorderInTx } from '../common/utils/reorder';
 import { hashAnswer } from './ctf-hash';
@@ -28,18 +35,53 @@ import { SqlCheckService } from '../sql-check/sql-check.service';
 const courseSelect = {
   track: { select: { id: true, slug: true, title: true, color: true } },
   cover: { select: { id: true, filename: true } },
-  _count: { select: { enrollments: true } },
+  instructorAvatar: { select: { id: true, filename: true } },
+  modules: { select: { _count: { select: { steps: true } } } },
+  _count: { select: { enrollments: true, modules: true } },
 } satisfies Prisma.CourseInclude;
 
 type CourseRow = Prisma.CourseGetPayload<{ include: typeof courseSelect }>;
 
+const DAY = 86_400_000;
+export const courseStatus = (c: {
+  deletedAt: Date | null;
+  archivedAt: Date | null;
+  isPublished: boolean;
+}): CourseStatus =>
+  c.deletedAt ? 'deleted' : c.archivedAt ? 'archived' : c.isPublished ? 'published' : 'draft';
+
+const STATUS_WHERE: Record<CourseStatus | 'all', Prisma.CourseWhereInput> = {
+  all: { deletedAt: null },
+  published: { deletedAt: null, archivedAt: null, isPublished: true },
+  draft: { deletedAt: null, archivedAt: null, isPublished: false },
+  archived: { deletedAt: null, archivedAt: { not: null } },
+  deleted: { deletedAt: { not: null } },
+};
+
 @Injectable()
-export class ContentService {
+export class ContentService implements OnModuleInit, OnModuleDestroy {
+  private readonly log = new Logger('Content');
+  private purgeTimer?: NodeJS.Timeout;
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly assets: AssetsService,
     private readonly sqlCheck: SqlCheckService,
+    private readonly audit: AuditService,
   ) {}
+
+  /** "Silinənlər"-də 30 gündən çox qalan kursları vaxtaşırı həmişəlik sil */
+  onModuleInit() {
+    if (process.env.NODE_ENV === 'test') return;
+    const run = () =>
+      this.purgeExpired().catch((e) => this.log.warn(`purge: ${(e as Error).message}`));
+    setTimeout(run, 10_000).unref();
+    this.purgeTimer = setInterval(run, 6 * 3600_000);
+    this.purgeTimer.unref();
+  }
+  onModuleDestroy() {
+    if (this.purgeTimer) clearInterval(this.purgeTimer);
+  }
 
   /* ───────── kurslar ───────── */
 
@@ -58,7 +100,19 @@ export class ContentService {
       track: c.track,
       coverAssetId: c.coverAssetId,
       coverUrl: c.cover ? assetUrl(c.cover) : null,
+      instructorName: c.instructorName,
+      instructorTitle: c.instructorTitle,
+      instructorAvatarId: c.instructorAvatarId,
+      instructorAvatarUrl: c.instructorAvatar ? assetUrl(c.instructorAvatar) : null,
+      status: courseStatus(c),
+      archivedAt: c.archivedAt?.toISOString() ?? null,
+      deletedAt: c.deletedAt?.toISOString() ?? null,
+      purgeAt: c.deletedAt
+        ? new Date(c.deletedAt.getTime() + COURSE_TRASH_DAYS * DAY).toISOString()
+        : null,
       enrollmentCount: c._count.enrollments,
+      moduleCount: c._count.modules,
+      stepCount: c.modules.reduce((n, m) => n + m._count.steps, 0),
       createdAt: c.createdAt.toISOString(),
       updatedAt: c.updatedAt.toISOString(),
     };
@@ -68,17 +122,35 @@ export class ContentService {
     track?: string;
     q?: string;
     published?: boolean;
-  }): Promise<AdminCourseDto[]> {
-    const rows = await this.prisma.course.findMany({
-      where: {
-        ...(opts.track ? { track: { slug: opts.track } } : {}),
-        ...(opts.published !== undefined ? { isPublished: opts.published } : {}),
-        ...(opts.q ? { title: { contains: opts.q, mode: 'insensitive' } } : {}),
-      },
-      orderBy: [{ track: { order: 'asc' } }, { order: 'asc' }],
-      include: courseSelect,
-    });
-    return rows.map((r) => this.toCourseDto(r));
+    status?: CourseStatus;
+  }): Promise<AdminCourseListDto> {
+    const base: Prisma.CourseWhereInput = {
+      ...(opts.track ? { track: { slug: opts.track } } : {}),
+      ...(opts.q ? { title: { contains: opts.q, mode: 'insensitive' } } : {}),
+    };
+    const statusWhere = opts.status
+      ? STATUS_WHERE[opts.status]
+      : opts.published !== undefined
+        ? { ...STATUS_WHERE.all, isPublished: opts.published }
+        : STATUS_WHERE.all;
+    const [rows, ...counts] = await Promise.all([
+      this.prisma.course.findMany({
+        where: { ...base, ...statusWhere },
+        orderBy:
+          opts.status === 'deleted'
+            ? [{ deletedAt: 'desc' }]
+            : [{ track: { order: 'asc' } }, { order: 'asc' }],
+        include: courseSelect,
+      }),
+      ...(['all', 'published', 'draft', 'archived', 'deleted'] as const).map((k) =>
+        this.prisma.course.count({ where: { ...base, ...STATUS_WHERE[k] } }),
+      ),
+    ]);
+    const [all, published, draft, archived, deleted] = counts as number[];
+    return {
+      courses: rows.map((r) => this.toCourseDto(r)),
+      counts: { all: all!, published: published!, draft: draft!, archived: archived!, deleted: deleted! },
+    };
   }
 
   async createCourse(dto: CreateCourseInput, createdById: string): Promise<AdminCourseDto> {
@@ -102,6 +174,7 @@ export class ContentService {
         modules: {
           orderBy: { order: 'asc' },
           include: {
+            _count: { select: { steps: true } },
             steps: {
               orderBy: { order: 'asc' },
               include: { _count: { select: { progress: true } } },
@@ -149,6 +222,12 @@ export class ContentService {
       });
       if (!a) throw badRequest('VALIDATION_FAILED', 'Üz şəkli bu kursa aid deyil');
     }
+    if (dto.instructorAvatarId) {
+      const a = await this.prisma.asset.findFirst({
+        where: { id: dto.instructorAvatarId, courseId: id },
+      });
+      if (!a) throw badRequest('VALIDATION_FAILED', 'Müəllim şəkli bu kursa aid deyil');
+    }
     let trackChanged: { trackId: string; order: number } | null = null;
     if (dto.trackId && dto.trackId !== c.trackId) {
       trackChanged = {
@@ -193,28 +272,95 @@ export class ContentService {
     return this.toCourseDto(c);
   }
 
-  async courseStats(id: string) {
+  async courseStats(id: string): Promise<AdminCourseStatsDto> {
     const c = await this.prisma.course.findUnique({ where: { id } });
     if (!c) throw notFound();
-    const [enrollments, completed, progressRows, assets, pathItems] = await Promise.all([
-      this.prisma.enrollment.count({ where: { courseId: id } }),
-      this.prisma.enrollment.count({ where: { courseId: id, completedAt: { not: null } } }),
-      this.prisma.stepProgress.count({ where: { step: { module: { courseId: id } } } }),
-      this.prisma.asset.count({ where: { courseId: id } }),
-      this.prisma.pathItem.count({ where: { courseId: id } }),
-    ]);
-    return { enrollments, completed, progressRows, assets, pathItems };
+    const [enrollments, completed, progressRows, assets, pathItems, modules, steps] =
+      await Promise.all([
+        this.prisma.enrollment.count({ where: { courseId: id } }),
+        this.prisma.enrollment.count({ where: { courseId: id, completedAt: { not: null } } }),
+        this.prisma.stepProgress.count({ where: { step: { module: { courseId: id } } } }),
+        this.prisma.asset.count({ where: { courseId: id } }),
+        this.prisma.pathItem.count({ where: { courseId: id } }),
+        this.prisma.module.count({ where: { courseId: id } }),
+        this.prisma.step.count({ where: { module: { courseId: id } } }),
+      ]);
+    return { enrollments, completed, progressRows, assets, pathItems, modules, steps };
   }
 
-  async deleteCourse(id: string, confirm: string | undefined) {
-    const c = await this.prisma.course.findUnique({ where: { id } });
+  private async courseOr404(id: string) {
+    const c = await this.prisma.course.findUnique({
+      where: { id },
+      include: { _count: { select: { enrollments: true } } },
+    });
     if (!c) throw notFound();
-    if (confirm !== c.slug)
-      throw badRequest('VALIDATION_FAILED', 'Təsdiq üçün kursun slug-ını göndərin');
+    return c;
+  }
+
+  /** Tələbə yazılıbsa, təsdiq üçün kursun adı dəqiq yazılmalıdır (UI ilə eyni qayda, serverdə də) */
+  private assertConfirmed(c: { title: string; _count: { enrollments: number } }, confirm?: string) {
+    if (c._count.enrollments > 0 && confirm?.trim() !== c.title.trim())
+      throw badRequest('CONFIRM_REQUIRED', 'Təsdiq üçün kursun adını dəqiq yazın');
+  }
+
+  async courseDto(id: string): Promise<AdminCourseDto> {
+    const c = await this.prisma.course.findUnique({ where: { id }, include: courseSelect });
+    if (!c) throw notFound();
+    return this.toCourseDto(c);
+  }
+
+  /** Arxiv: kataloqdan gizlənir, yazılmış tələbələr davam edir */
+  async archiveCourse(id: string, archived: boolean): Promise<AdminCourseDto> {
+    const c = await this.courseOr404(id);
+    if (c.deletedAt) throw conflict('COURSE_DELETED', 'Silinmiş kursu əvvəlcə bərpa edin');
+    await this.prisma.course.update({
+      where: { id },
+      data: { archivedAt: archived ? (c.archivedAt ?? new Date()) : null },
+    });
+    return this.courseDto(id);
+  }
+
+  /** Soft delete → "Silinənlər" (COURSE_TRASH_DAYS gün ərzində bərpa) */
+  async softDeleteCourse(id: string, confirm: string | undefined, actorId: string) {
+    const c = await this.courseOr404(id);
+    if (c.deletedAt) throw conflict('COURSE_DELETED', 'Kurs artıq silinənlərdədir');
+    this.assertConfirmed(c, confirm);
+    await this.prisma.course.update({
+      where: { id },
+      data: { deletedAt: new Date(), deletedById: actorId },
+    });
+    return this.courseDto(id);
+  }
+
+  async restoreCourse(id: string): Promise<AdminCourseDto> {
+    const c = await this.courseOr404(id);
+    if (!c.deletedAt) throw conflict('COURSE_NOT_DELETED', 'Kurs silinənlərdə deyil');
+    await this.prisma.course.update({
+      where: { id },
+      data: { deletedAt: null, deletedById: null },
+    });
+    return this.courseDto(id);
+  }
+
+  /**
+   * Həmişəlik silmə (yalnız "Silinənlər"-dən). Kontent, yazılmalar, irəliləyiş, göndərişlər, ipucları,
+   * CTF həlləri, lab sessiyaları və əl ilə açılmış kilidlər FK cascade ilə silinir; fayllar diskdən silinir.
+   * Sertifikatlar (courseId → NULL, snapshot qalır) və XP jurnalı qalır.
+   */
+  async purgeCourse(id: string, confirm: string | undefined, opts: { skipConfirm?: boolean } = {}) {
+    const c = await this.courseOr404(id);
+    if (!c.deletedAt)
+      throw conflict('COURSE_NOT_DELETED', 'Əvvəlcə kursu silin (Silinənlər bölməsinə keçir)');
+    if (!opts.skipConfirm) this.assertConfirmed(c, confirm);
     if (await this.prisma.pathItem.count({ where: { courseId: id } }))
       throw conflict('COURSE_IN_PATH');
     const assets = await this.prisma.asset.findMany({ where: { courseId: id } });
     await this.prisma.$transaction(async (tx) => {
+      // Enrollment.lastStepId SetNull-dır, amma yazılmalar onsuz da kursla birgə silinir
+      await tx.course.update({
+        where: { id },
+        data: { coverAssetId: null, instructorAvatarId: null },
+      });
       await tx.course.delete({ where: { id } });
       const rest = await tx.course.findMany({
         where: { trackId: c.trackId },
@@ -229,9 +375,159 @@ export class ContentService {
           rest.map((r) => r.id),
         );
     });
-    const { removeFromStorage } = await import('../assets/storage');
     await Promise.all(assets.map((a) => removeFromStorage(a.storageKey)));
-    return { ok: true };
+    return { ok: true, id, title: c.title };
+  }
+
+  /** Müddəti bitmiş silinənlər (timer və "Silinənlər" siyahısı açılanda) */
+  async purgeExpired(): Promise<number> {
+    const cutoff = new Date(Date.now() - COURSE_TRASH_DAYS * DAY);
+    const rows = await this.prisma.course.findMany({
+      where: { deletedAt: { lt: cutoff } },
+      select: { id: true, title: true },
+    });
+    let n = 0;
+    for (const r of rows) {
+      try {
+        await this.purgeCourse(r.id, undefined, { skipConfirm: true });
+        await this.audit.record(null, {
+          action: 'course.purge.auto',
+          entityType: 'COURSE',
+          entityId: r.id,
+          entityTitle: r.title,
+          courseId: r.id,
+        });
+        n++;
+      } catch (e) {
+        this.log.warn(`purge ${r.id}: ${(e as Error).message}`);
+      }
+    }
+    return n;
+  }
+
+  private async uniqueSlug(base: string): Promise<string> {
+    const root = base.slice(0, 70);
+    for (let i = 1; i < 1000; i++) {
+      const slug = i === 1 ? `${root}-kopya` : `${root}-kopya-${i}`;
+      if (!(await this.prisma.course.findUnique({ where: { slug }, select: { id: true } })))
+        return slug;
+    }
+    throw conflict('SLUG_TAKEN');
+  }
+
+  /** Kursun bütün fəsil, addım, CTF tapşırıq və faylları ilə surəti — qaralama kimi */
+  async copyCourse(id: string, actor: AuthUser): Promise<AdminCourseDto> {
+    const src = await this.prisma.course.findUnique({
+      where: { id },
+      include: {
+        modules: { include: { steps: { include: { ctfTasks: true } } } },
+        assets: true,
+      },
+    });
+    if (!src) throw notFound();
+    const slug = await this.uniqueSlug(src.slug);
+    const order = await nextOrder(this.prisma, 'course', { trackId: src.trackId });
+    // 1) kurs + fəsillər + addımlar + CTF tapşırıqları (bir tranzaksiya)
+    const newId = await this.prisma.$transaction(
+      async (tx) => {
+        const c = await tx.course.create({
+          data: {
+            trackId: src.trackId,
+            slug,
+            title: `${src.title} (surət)`.slice(0, 200),
+            level: src.level,
+            description: src.description,
+            sequential: src.sequential,
+            estimatedHours: src.estimatedHours,
+            instructorName: src.instructorName,
+            instructorTitle: src.instructorTitle,
+            order,
+            isPublished: false,
+            createdById: actor.id,
+          },
+        });
+        for (const m of src.modules) {
+          const nm = await tx.module.create({
+            data: {
+              courseId: c.id,
+              key: m.key,
+              title: m.title,
+              description: m.description,
+              order: m.order,
+              isPublished: m.isPublished,
+            },
+          });
+          for (const st of m.steps) {
+            const ns = await tx.step.create({
+              data: {
+                moduleId: nm.id,
+                key: st.key,
+                type: st.type,
+                title: st.title,
+                config: st.config as Prisma.InputJsonValue,
+                secret: st.secret === null ? Prisma.JsonNull : (st.secret as Prisma.InputJsonValue),
+                xp: st.xp,
+                estimatedMinutes: st.estimatedMinutes,
+                order: st.order,
+                isPublished: st.isPublished,
+              },
+            });
+            if (st.ctfTasks.length)
+              await tx.ctfTask.createMany({
+                data: st.ctfTasks.map((t) => ({
+                  stepId: ns.id,
+                  key: t.key,
+                  order: t.order,
+                  question: t.question,
+                  hint: t.hint,
+                  points: t.points,
+                  caseSensitive: t.caseSensitive,
+                  answerHash: t.answerHash,
+                })),
+              });
+          }
+        }
+        return c.id;
+      },
+      { timeout: 60_000 },
+    );
+    // 2) fayllar diskdə kopyalanır, sonra Asset sətirləri; xəta olarsa surət tam geri alınır
+    const copiedKeys: string[] = [];
+    try {
+      const assetMap = new Map<string, string>();
+      for (const a of src.assets) {
+        const storageKey = await copyInStorage(a.storageKey, newId, a.filename);
+        copiedKeys.push(storageKey);
+        const na = await this.prisma.asset.create({
+          data: {
+            courseId: newId,
+            path: a.path,
+            kind: a.kind,
+            filename: a.filename,
+            mime: a.mime,
+            sizeBytes: a.sizeBytes,
+            sha256: a.sha256,
+            storageKey,
+            uploadedById: actor.id,
+          },
+        });
+        assetMap.set(a.id, na.id);
+      }
+      await this.prisma.course.update({
+        where: { id: newId },
+        data: {
+          coverAssetId: src.coverAssetId ? (assetMap.get(src.coverAssetId) ?? null) : null,
+          instructorAvatarId: src.instructorAvatarId
+            ? (assetMap.get(src.instructorAvatarId) ?? null)
+            : null,
+        },
+      });
+    } catch (e) {
+      await this.prisma.course.delete({ where: { id: newId } }).catch(() => null);
+      await Promise.all(copiedKeys.map((k) => removeFromStorage(k)));
+      throw e;
+    }
+    return this.courseDto(newId);
   }
 
   async reorderCourses(trackId: string, ids: string[]) {

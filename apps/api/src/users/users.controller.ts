@@ -1,3 +1,4 @@
+import { Audit } from '../audit/audit.interceptor';
 import { Body, Controller, Get, Param, Patch, Query } from '@nestjs/common';
 import { verify } from '@node-rs/argon2';
 import {
@@ -98,6 +99,7 @@ export class UsersController {
   }
 
   @AdminOnly()
+  @Audit({ action: 'user.role', entity: 'USER', body: ['role'] })
   @Patch('admin/users/:id/role')
   async setRole(@Param('id') id: string, @Body(new ZodPipe(updateRoleSchema)) dto: { role: Role }) {
     const user = await this.prisma.user
