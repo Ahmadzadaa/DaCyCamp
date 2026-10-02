@@ -1,11 +1,10 @@
 'use client';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
-import { Download, Eye, FolderOpen, Trash2 } from 'lucide-react';
-import Link from 'next/link';
+import { UserRound } from 'lucide-react';
 import {
   createCourseSchema,
   type AdminCourseDto,
@@ -17,41 +16,25 @@ import { errorMessage } from '@/lib/errors-i18n';
 import { t } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
 import { Field } from '@/components/ui/field';
-import { TrackBadge } from '@/components/app/track-badge';
 import { CourseFields, type CourseFormInput, type CourseFormOutput } from '../course-fields';
-import { ConfirmDialog } from '../confirm-dialog';
-import { StatusBadge } from '../status-badge';
-import { useAdmin } from '../admin-context';
 import { uploadAsset } from '../upload';
 
-interface Stats {
-  enrollments: number;
-  completed: number;
-  progressRows: number;
-  assets: number;
-  pathItems: number;
-}
-
+/** Kurs ayarları (başlıq, təsvir, istiqamət, səviyyə, müəllim, müddət, örtük və müəllim şəkli) */
 export function CourseForm({
   course,
   tracks,
   onChange,
   onAssetUploaded,
-  onDeleted,
 }: {
   course: AdminCourseDto;
   tracks: TrackDto[];
   onChange: (c: AdminCourseDto) => void;
   onAssetUploaded: (a: AssetDto) => void;
-  onDeleted: () => void;
 }) {
   const router = useRouter();
-  const { isAdmin } = useAdmin();
-  const [stats, setStats] = useState<Stats | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
-  const [delOpen, setDelOpen] = useState(false);
-  const [delError, setDelError] = useState<string | null>(null);
   const coverInput = useRef<HTMLInputElement>(null);
+  const avatarInput = useRef<HTMLInputElement>(null);
   const form = useForm<CourseFormInput, unknown, CourseFormOutput>({
     resolver: zodResolver(createCourseSchema),
     defaultValues: {
@@ -62,14 +45,10 @@ export function CourseForm({
       description: course.description,
       sequential: course.sequential,
       estimatedHours: course.estimatedHours,
+      instructorName: course.instructorName,
+      instructorTitle: course.instructorTitle,
     },
   });
-
-  useEffect(() => {
-    api<Stats>(`/admin/courses/${course.id}/stats`)
-      .then(setStats)
-      .catch(() => null);
-  }, [course.id]);
 
   async function save(values: CourseFormOutput) {
     try {
@@ -86,36 +65,24 @@ export function CourseForm({
     }
   }
 
-  async function togglePublish() {
-    setBusy('publish');
-    try {
-      const updated = await api<AdminCourseDto>(`/admin/courses/${course.id}/publish`, {
-        method: 'PATCH',
-        body: { isPublished: !course.isPublished },
-      });
-      onChange(updated);
-      toast.success(updated.isPublished ? t('admin.publishedOk') : t('admin.unpublishedOk'));
-    } catch (e) {
-      toast.error(errorMessage(e));
-    } finally {
-      setBusy(null);
-    }
-  }
-
-  async function onCover(e: React.ChangeEvent<HTMLInputElement>) {
+  /** Şəkli kursun fayllarına yükləyir və kursun müvafiq sahəsinə bağlayır */
+  async function uploadImage(
+    e: React.ChangeEvent<HTMLInputElement>,
+    field: 'coverAssetId' | 'instructorAvatarId',
+  ) {
     const file = e.target.files?.[0];
     e.target.value = '';
     if (!file) return;
-    setBusy('cover');
+    setBusy(field);
     try {
       const asset = await uploadAsset(course.id, file, 'IMAGE', {
-        path: `images/${file.name}`,
+        path: `images/${field === 'instructorAvatarId' ? 'muellim-' : ''}${file.name}`,
         replace: true,
       });
       onAssetUploaded(asset);
       const updated = await api<AdminCourseDto>(`/admin/courses/${course.id}`, {
         method: 'PATCH',
-        body: { coverAssetId: asset.id },
+        body: { [field]: asset.id },
       });
       onChange(updated);
       toast.success(t('admin.assetUploaded', { path: asset.path }));
@@ -126,77 +93,44 @@ export function CourseForm({
     }
   }
 
-  async function remove() {
-    setDelError(null);
-    try {
-      await api(`/admin/courses/${course.id}?confirm=${encodeURIComponent(course.slug)}`, {
-        method: 'DELETE',
-      });
-      toast.success(t('admin.deleted'));
-      setDelOpen(false);
-      onDeleted();
-    } catch (e) {
-      setDelError(errorMessage(e));
-    }
-  }
-
   return (
     <div className="flex flex-col gap-5">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <div className="flex flex-wrap items-center gap-2">
-            <TrackBadge color={course.track.color}>{course.track.title}</TrackBadge>
-            <StatusBadge published={course.isPublished} />
-          </div>
-          <h2 className="mt-1.5 text-[1.3rem]">{course.title}</h2>
-          {stats ? (
-            <p className="mt-1 text-xs text-muted">
-              {t('admin.studentsCount', { n: stats.enrollments })} · {t('common.completed')}:{' '}
-              {stats.completed} · {t('nav.files')}: {stats.assets}
-            </p>
-          ) : null}
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={() => window.open(`/kurs/${course.slug}`, '_blank')}
-          >
-            <Eye className="size-4" />
-            {t('common.previewAsStudent')}
-          </Button>
-          <Button asChild variant="ghost">
-            <a href={`/api/admin/courses/${course.id}/export.zip`} download>
-              <Download className="size-4" />
-              {t('admin.exportZip')}
-            </a>
-          </Button>
-          <Button asChild variant="ghost">
-            <Link href={`/admin/fayllar?kurs=${course.id}`}>
-              <FolderOpen className="size-4" />
-              {t('nav.files')}
-            </Link>
-          </Button>
-          <Button
-            type="button"
-            variant={course.isPublished ? 'dark' : 'brand'}
-            loading={busy === 'publish'}
-            onClick={togglePublish}
-          >
-            {course.isPublished ? t('common.unpublish') : t('common.publish')}
-          </Button>
-          {isAdmin ? (
-            <Button type="button" variant="danger" onClick={() => setDelOpen(true)}>
-              <Trash2 className="size-4" />
-              {t('common.delete')}
-            </Button>
-          ) : null}
-        </div>
-      </div>
-
+      <h2 className="text-[1.15rem]">{t('admin.courseSettings')}</h2>
       <form onSubmit={form.handleSubmit(save)} className="grid gap-4 md:grid-cols-2" noValidate>
         <CourseFields form={form} tracks={tracks} />
-        <Field label={t('common.cover')} full>
+        <Field label={t('courseAdmin.instructorAvatar')}>
+          <div className="flex flex-wrap items-center gap-3">
+            {course.instructorAvatarUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={course.instructorAvatarUrl}
+                alt=""
+                className="size-12 rounded-full border border-line object-cover"
+              />
+            ) : (
+              <span className="grid size-12 place-items-center rounded-full border border-dashed border-line text-muted">
+                <UserRound className="size-5" />
+              </span>
+            )}
+            <input
+              ref={avatarInput}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => uploadImage(e, 'instructorAvatarId')}
+            />
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              loading={busy === 'instructorAvatarId'}
+              onClick={() => avatarInput.current?.click()}
+            >
+              {t('common.upload')}
+            </Button>
+          </div>
+        </Field>
+        <Field label={t('common.cover')}>
           <div className="flex flex-wrap items-center gap-3">
             {course.coverUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
@@ -215,13 +149,13 @@ export function CourseForm({
               type="file"
               accept="image/*"
               className="hidden"
-              onChange={onCover}
+              onChange={(e) => uploadImage(e, 'coverAssetId')}
             />
             <Button
               type="button"
               variant="ghost"
               size="sm"
-              loading={busy === 'cover'}
+              loading={busy === 'coverAssetId'}
               onClick={() => coverInput.current?.click()}
             >
               {t('common.upload')}
@@ -234,16 +168,6 @@ export function CourseForm({
           </Button>
         </div>
       </form>
-
-      <ConfirmDialog
-        open={delOpen}
-        onOpenChange={setDelOpen}
-        title={t('admin.deleteCourse')}
-        description={t('admin.deleteCourseDesc')}
-        confirmText={course.slug}
-        onConfirm={remove}
-        error={delError}
-      />
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import type { AdminCourseDto, AdminPathDto, TrackDto } from '@dacy/shared';
+import type { AdminCourseListDto, AdminPathDto, TrackDto } from '@dacy/shared';
 import { apiFetch, apiTry } from '@/lib/api/server';
 import { t } from '@/lib/i18n';
 import { PathEditor } from '@/components/admin/path-editor/path-editor';
@@ -15,10 +15,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function AdminPathPage({ params }: Props) {
   const { slug } = await params;
-  const [path, tracks, courses] = await Promise.all([
+  const [path, tracks, { courses }] = await Promise.all([
     apiTry<AdminPathDto>(`/admin/paths/${slug}`),
     apiFetch<TrackDto[]>('/admin/tracks'),
-    apiFetch<AdminCourseDto[]>('/admin/courses'),
+    apiFetch<AdminCourseListDto>('/admin/courses'),
   ]);
   if (!path) notFound();
   return <PathEditor initial={path} tracks={tracks} courses={courses} />;

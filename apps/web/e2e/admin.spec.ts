@@ -15,7 +15,7 @@ test('admin: kurs → fəsil → nəzəri addım → dərc → tələbə görür
   await login(page, ADMIN);
   // dev rejimində redaktor marşrutunun ilk kompilyasiyası uzun çəkir — əvvəlcədən isidirik
   await page.goto('/admin/kurslar/numune');
-  await expect(page.locator('h2', { hasText: 'NÜMUNƏ — silinə bilər' })).toBeVisible({
+  await expect(page.locator('h1', { hasText: 'NÜMUNƏ — silinə bilər' })).toBeVisible({
     timeout: 60_000,
   });
   await page.goto('/admin/kurslar');
@@ -47,8 +47,8 @@ test('admin: kurs → fəsil → nəzəri addım → dərc → tələbə görür
   await expect(page.getByRole('heading', { name: 'Salam dünya' })).toBeVisible();
   await expect(page.getByText('Qaralama').first()).toBeVisible();
 
-  // boş məzmunla dərc → səhv siyahısı
-  await page.getByRole('button', { name: 'Dərc et' }).click();
+  // boş məzmunla dərc → səhv siyahısı (addımın düyməsi; başlıqdakı «Kursu dərc et»dən fərqli)
+  await page.getByRole('button', { name: 'Dərc et', exact: true }).click();
   await expect(page.getByText('Dərc etmək üçün düzəldin:')).toBeVisible();
 
   // məzmun + canlı önizləmə
@@ -57,13 +57,13 @@ test('admin: kurs → fəsil → nəzəri addım → dərc → tələbə görür
   await page.getByRole('button', { name: 'Yadda saxla' }).click();
   await expect(page.getByText('Addım yadda saxlanıldı')).toBeVisible();
   await page.screenshot({ path: resolve(SHOTS, 'admin-theory.app.png'), fullPage: true });
-  await page.getByRole('button', { name: 'Dərc et' }).click();
+  await page.getByRole('button', { name: 'Dərc et', exact: true }).click();
   await expect(page.getByText('Dərc olundu')).toBeVisible();
 
   // kursu dərc et (addımın toast-u hələ görünə bilər → first)
   await page.locator('.tree h4 button').click();
-  await page.getByRole('button', { name: 'Dərc et' }).click();
-  await expect(page.getByText('Dərc olundu').first()).toBeVisible();
+  await page.getByRole('button', { name: 'Kursu dərc et' }).click();
+  await expect(page.getByText('Kurs dərc olundu').first()).toBeVisible();
 
   // tələbə kimi
   const s = await page.context().browser()!.newContext();
@@ -74,11 +74,14 @@ test('admin: kurs → fəsil → nəzəri addım → dərc → tələbə görür
   await expect(sp.getByText('Salam dünya')).toBeVisible();
   await s.close();
 
-  // sil (ADMIN, slug təsdiqi ilə)
+  // sil (ADMIN): yazılma yoxdur → ad təsdiqi tələb olunmur; kurs «Silinənlər»ə keçir
+  const { id } = await (await page.request.get(`/api/admin/courses/${slug}`)).json();
   await page.getByRole('button', { name: 'Sil', exact: true }).click();
-  await page.getByRole('dialog').getByRole('textbox').fill(slug);
-  await page.getByRole('dialog').getByRole('button', { name: 'Bəli, sil' }).click();
+  await page.getByRole('dialog').getByRole('button', { name: 'Sil' }).click();
   await expect(page).toHaveURL(/\/admin\/kurslar$/);
+  await expect(page.getByText('Kurs silindi').first()).toBeVisible();
+  // test kursu silinənlərdə qalmasın
+  expect((await page.request.delete(`/api/admin/courses/${id}/permanent`)).status()).toBe(200);
 });
 
 test('istiqamətlər və tələbələr səhifələri', async ({ page }) => {

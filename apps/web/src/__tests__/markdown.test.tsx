@@ -37,6 +37,7 @@ describe('courseMeta', () => {
     track: { slug: 'x', title: 'X', color: '#000' },
     moduleCount: 2,
     datasetCount: 0,
+    instructor: null,
   };
   it('lab üstünlük təşkil edəndə "lab" yazır', () => {
     expect(

@@ -135,6 +135,14 @@ Yol = istiqamət daxilində **sıralı addımlar**: `course` (mövcud kurs — b
 - YAML: `path.yaml` (kursla eyni ZIP-də və ya təkbaşına) — format `docs/content-package.md`.
 - API: `GET /paths`, `GET /paths/:slug`, `POST /paths/:slug/enroll`, `GET /learn/paths/:slug/items/:key`, `POST /learn/path-items/:id/{project|assessment|milestone}`, `PUT /me/target-path`, `GET /me/active-path`; admin `/admin/paths/*`, `/admin/path-reviews/*`.
 
+## Admin: kurs nəzarəti
+
+Yalnız **ADMIN** (backend-də yoxlanır): `/admin/kurslar` — status tabları (Dərc olunub / Qaralama / Arxivdə / **Silinənlər**), sətirdə ✎ / 👁 / 🗑 və «…» menyusu (Redaktə et, Dərc et / çıxar, Arxivlə, Kopyala, Önizlə, Tələbələr, Sil). Kurs redaktorunda tablar: **Məzmun · Tələbələr · Fayllar · Tarixçə**.
+
+- Silmə əvvəlcə «Silinənlər»ə (30 gün bərpa), sonra «Həmişəlik sil»; tələbə yazılıbsa kursun adı yazılmalıdır. Sertifikatlar həmişəlik silmədən sonra da etibarlı qalır.
+- Tələbələr tabı: faiz, son aktivlik, kilidli addımı əl ilə aç, irəliləyişi sıfırla, kursdan çıxar (geri qaytarmaq olur).
+- Fəaliyyət tarixçəsi: `/admin/tarixce` — kim, nəyi, nə vaxt dəyişib.
+
 ## Kurs paketi (ZIP)
 
 Müəllim kursu `course.yaml` + `modules/NN-fesil/NN-addim.(md|yaml)` + `datasets/ files/ images/ checks/` quruluşunda ZIP kimi hazırlayıb `/admin/idxal`-da yükləyir: **Yoxla** (heç nə yazılmır, səhv/xəbərdarlıq siyahısı) → **Tətbiq et** (bir tranzaksiyada; mövcud kurs `slug` + açarlar üzrə yenilənir, tələbə irəliləyişi qorunur, paketdə olmayan addımlar dərcdən çıxarılır). Kurs redaktorundakı **ZIP ixrac** eyni formatda paket verir (CTF cavabları yalnız heş). Formatın tam təsviri: `docs/content-package.md` (test `correct` sahəsi 1-dən sayılır).
@@ -161,6 +169,8 @@ docs/           spesifikasiya, dizayn referansı, PLAN.md, screenshots/
 | `/kurs/[slug]/[fəsil]/[addım]`          | dərs ekranı (tam ekran, tünd) — `/kurs/x/2/4` forması da işləyir                                        |
 | `/panel`                                | şəxsi panel                                                                                             |
 | `/admin/kurslar`                        | admin redaktoru (INSTRUCTOR / ADMIN)                                                                    |
+| `/admin/kurslar?status=deleted`         | Silinənlər: 30 gün ərzində bərpa və ya həmişəlik silmə (ADMIN)                                          |
+| `/admin/tarixce`                        | fəaliyyət tarixçəsi — kim, nəyi, nə vaxt dəyişib (ADMIN)                                                |
 | `/yollar`, `/yol/[slug]`                | karyera yolları: siyahı və şaquli yol xəritəsi; `/yol/[slug]/[addım]` layihə / imtahan / final səhifəsi |
 | `/baslangic`                            | onboarding: «Hansı peşəyə hazırlaşırsınız?» → uyğun yol                                                 |
 | `/admin/yollar`, `/admin/layiheler`     | yol qurucusu (addımlar, sürüklə-sırala, dərc), layihə yoxlama növbəsi                                   |

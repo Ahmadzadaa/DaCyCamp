@@ -19,6 +19,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
             toast: 'toast',
             title: 'font-bold',
             description: 'text-on-dark-muted text-sm',
+            actionButton: 'toast-action',
           },
         }}
       />

@@ -86,33 +86,53 @@ describe('admin course control', () => {
 
   it('tələbə və müəllim ADMIN əməliyyatlarını edə bilmir (backend 403)', async () => {
     for (const who of [st, ins]) {
-      expect((await who.patch(`/admin/courses/${courseId}/archive`).send({ archived: true })).status).toBe(403);
+      expect(
+        (await who.patch(`/admin/courses/${courseId}/archive`).send({ archived: true })).status,
+      ).toBe(403);
       expect((await who.post(`/admin/courses/${courseId}/copy`)).status).toBe(403);
-      expect((await who.delete(`/admin/courses/${courseId}?confirm=${encodeURIComponent(title)}`)).status).toBe(403);
+      expect(
+        (await who.delete(`/admin/courses/${courseId}?confirm=${encodeURIComponent(title)}`))
+          .status,
+      ).toBe(403);
       expect((await who.post(`/admin/courses/${courseId}/restore`)).status).toBe(403);
       expect((await who.delete(`/admin/courses/${courseId}/permanent`)).status).toBe(403);
       expect((await who.get(`/admin/courses/${courseId}/students`)).status).toBe(403);
-      expect((await who.post(`/admin/courses/${courseId}/students/${studentId}/reset`)).status).toBe(403);
+      expect(
+        (await who.post(`/admin/courses/${courseId}/students/${studentId}/reset`)).status,
+      ).toBe(403);
       expect((await who.get('/admin/audit')).status).toBe(403);
     }
     // müəllim məzmunu redaktə etməyə davam edir
-    expect((await ins.patch(`/admin/courses/${courseId}`).send({ instructorName: 'Aysel' })).status).toBe(200);
+    expect(
+      (await ins.patch(`/admin/courses/${courseId}`).send({ instructorName: 'Aysel' })).status,
+    ).toBe(200);
   });
 
   it('kursun tələbələri: faiz və son aktivlik', async () => {
     const r = await ad.get(`/admin/courses/${courseId}/students`);
     expect(r.status).toBe(200);
     expect(r.body).toHaveLength(1);
-    expect(r.body[0]).toMatchObject({ userId: studentId, email: 'telebe@test.local', percent: 33 });
+    expect(r.body[0]).toMatchObject({
+      userId: studentId,
+      email: 'telebe@test.local',
+      percent: 33,
+      done: 1,
+      total: 3,
+      lockedStepIds: [stepIds[2]],
+    });
   });
 
   it('kilidli addımı əl ilə açmaq; açıq addımı yenidən açmaq 409', async () => {
     // a tamamlanıb → b açıq, c kilidli
     expect((await st.get(`/learn/courses/${slug}/steps/giris/c`)).body.code).toBe('STEP_LOCKED');
-    const r = await ad.post(`/admin/courses/${courseId}/students/${studentId}/unlock`).send({ stepId: stepIds[2] });
+    const r = await ad
+      .post(`/admin/courses/${courseId}/students/${studentId}/unlock`)
+      .send({ stepId: stepIds[2] });
     expect(r.status).toBe(201);
     expect((await st.get(`/learn/courses/${slug}/steps/giris/c`)).status).toBe(200);
-    const again = await ad.post(`/admin/courses/${courseId}/students/${studentId}/unlock`).send({ stepId: stepIds[1] });
+    const again = await ad
+      .post(`/admin/courses/${courseId}/students/${studentId}/unlock`)
+      .send({ stepId: stepIds[1] });
     expect(again.status).toBe(409);
   });
 
@@ -138,27 +158,40 @@ describe('admin course control', () => {
   });
 
   it('arxiv: kataloqda yoxdur, yazılmış tələbə davam edir, yeni yazılma 409', async () => {
-    expect((await ad.patch(`/admin/courses/${courseId}/archive`).send({ archived: true })).body.status).toBe('archived');
+    expect(
+      (await ad.patch(`/admin/courses/${courseId}/archive`).send({ archived: true })).body.status,
+    ).toBe('archived');
     const cat = await agent(app).get('/courses');
     expect(cat.body.map((c: { slug: string }) => c.slug)).not.toContain(slug);
     expect((await st.get(`/learn/courses/${slug}`)).status).toBe(200);
     expect((await st.get(`/courses/${slug}`)).status).toBe(200);
-    const other = await agent(app).post('/auth/register').send({ email: 'yeni@test.local', name: 'Yeni', password: 'Yeni12345' });
+    const other = await agent(app)
+      .post('/auth/register')
+      .send({ email: 'yeni@test.local', name: 'Yeni', password: 'Yeni12345' });
     expect(other.status).toBe(201);
     const nw = await login(app, 'yeni@test.local', 'Yeni12345');
     expect((await nw.post(`/courses/${slug}/enroll`)).status).toBe(409);
     expect((await nw.get(`/courses/${slug}`)).status).toBe(404);
     const list = await ad.get('/admin/courses?status=archived');
     expect(list.body.counts.archived).toBe(1);
-    expect((await ad.patch(`/admin/courses/${courseId}/archive`).send({ archived: false })).body.status).toBe('published');
+    expect(
+      (await ad.patch(`/admin/courses/${courseId}/archive`).send({ archived: false })).body.status,
+    ).toBe('published');
   });
 
   it('kopyala: bütün fəsil/addım/CTF ilə qaralama surət', async () => {
     const r = await ad.post(`/admin/courses/${courseId}/copy`);
     expect(r.status).toBe(201);
-    expect(r.body).toMatchObject({ slug: `${slug}-kopya`, status: 'draft', moduleCount: 1, stepCount: 3 });
+    expect(r.body).toMatchObject({
+      slug: `${slug}-kopya`,
+      status: 'draft',
+      moduleCount: 1,
+      stepCount: 3,
+    });
     expect(r.body.title).toContain('(surət)');
-    expect(await prisma.ctfTask.count({ where: { step: { module: { courseId: r.body.id } } } })).toBe(1);
+    expect(
+      await prisma.ctfTask.count({ where: { step: { module: { courseId: r.body.id } } } }),
+    ).toBe(1);
     expect(await prisma.enrollment.count({ where: { courseId: r.body.id } })).toBe(0);
     const second = await ad.post(`/admin/courses/${courseId}/copy`);
     expect(second.body.slug).toBe(`${slug}-kopya-2`);
@@ -176,22 +209,34 @@ describe('admin course control', () => {
     expect((await st.get('/me/enrollments')).body).toHaveLength(0);
     const trash = await ad.get('/admin/courses?status=deleted');
     expect(trash.body.courses.map((c: { id: string }) => c.id)).toContain(courseId);
-    expect((await ad.get('/admin/courses')).body.courses.map((c: { id: string }) => c.id)).not.toContain(courseId);
+    expect(
+      (await ad.get('/admin/courses')).body.courses.map((c: { id: string }) => c.id),
+    ).not.toContain(courseId);
     expect((await ad.post(`/admin/courses/${courseId}/restore`)).body.status).toBe('published');
     expect((await st.get(`/learn/courses/${slug}`)).status).toBe(200);
   });
 
   it('həmişəlik silmə: yetim qeyd qalmır, sertifikat və XP qalır', async () => {
     await prisma.certificate.create({
-      data: { serial: 'DACY-C-TEST-1', userId: studentId, courseId, snapshot: { courseTitle: title } },
+      data: {
+        serial: 'DACY-C-TEST-1',
+        userId: studentId,
+        courseId,
+        snapshot: { courseTitle: title },
+      },
     });
     await st.post(`/learn/steps/${stepIds[0]}/complete`);
     const xpBefore = (await prisma.user.findUniqueOrThrow({ where: { id: studentId } })).xpTotal;
     // əvvəlcə silinənlərdə olmalıdır
-    expect((await ad.delete(`/admin/courses/${courseId}/permanent?confirm=${encodeURIComponent(title)}`)).status).toBe(409);
+    expect(
+      (await ad.delete(`/admin/courses/${courseId}/permanent?confirm=${encodeURIComponent(title)}`))
+        .status,
+    ).toBe(409);
     await ad.delete(`/admin/courses/${courseId}?confirm=${encodeURIComponent(title)}`);
     expect((await ad.delete(`/admin/courses/${courseId}/permanent`)).status).toBe(400);
-    const r = await ad.delete(`/admin/courses/${courseId}/permanent?confirm=${encodeURIComponent(title)}`);
+    const r = await ad.delete(
+      `/admin/courses/${courseId}/permanent?confirm=${encodeURIComponent(title)}`,
+    );
     expect(r.status).toBe(200);
     expect(await prisma.course.count({ where: { id: courseId } })).toBe(0);
     expect(await prisma.module.count({ where: { courseId } })).toBe(0);
@@ -204,7 +249,9 @@ describe('admin course control', () => {
     const cert = await prisma.certificate.findUniqueOrThrow({ where: { serial: 'DACY-C-TEST-1' } });
     expect(cert.courseId).toBeNull();
     expect(cert.revokedAt).toBeNull();
-    expect((await prisma.user.findUniqueOrThrow({ where: { id: studentId } })).xpTotal).toBe(xpBefore);
+    expect((await prisma.user.findUniqueOrThrow({ where: { id: studentId } })).xpTotal).toBe(
+      xpBefore,
+    );
   });
 
   it('audit log: hər əməliyyat kim/nə/nə vaxt ilə yazılır', async () => {
@@ -225,7 +272,11 @@ describe('admin course control', () => {
     ])
       expect(actions).toContain(a);
     const purge = r.body.items.find((i: { action: string }) => i.action === 'course.purge');
-    expect(purge).toMatchObject({ entityTitle: title, entityType: 'COURSE', actor: { email: 'admin@test.local' } });
+    expect(purge).toMatchObject({
+      entityTitle: title,
+      entityType: 'COURSE',
+      actor: { email: 'admin@test.local' },
+    });
     const reset = r.body.items.find((i: { action: string }) => i.action === 'enrollment.reset');
     expect(reset.details).toMatchObject({ userId: studentId, email: 'telebe@test.local' });
     // uğursuz (403/400) cəhdlər jurnala düşmür

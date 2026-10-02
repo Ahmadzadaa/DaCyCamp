@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { STUDENT } from './helpers';
+import { ADMIN, STUDENT } from './helpers';
 
 test.describe.configure({ mode: 'serial' });
 const email = `e2e+${Date.now()}@dacy.local`;
@@ -74,7 +74,7 @@ test('çıxış edilmiş halda /panel → /giris, yanlış şifrə mesajı', asy
 
 test('sürüklənən ayırıcı panelin enini dəyişir (müəllim önizləməsi)', async ({ page }) => {
   await page.request.post('/api/auth/login', {
-    data: { email: 'admin@dacy.local', password: 'Admin123!' },
+    data: { email: ADMIN.email, password: ADMIN.password },
   });
   await page.goto('/kurs/numune/numune-fesil/sql?onizle=1');
   const left = page.locator('.ws-left');

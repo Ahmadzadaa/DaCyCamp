@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import type { AdminCourseDto } from '@dacy/shared';
+import type { AdminCourseListDto } from '@dacy/shared';
 import { apiFetch } from '@/lib/api/server';
 import { t } from '@/lib/i18n';
 import { AssetsLibrary } from '@/components/admin/assets-library';
@@ -10,6 +10,6 @@ export default async function FilesPage({
   searchParams: Promise<{ kurs?: string }>;
 }) {
   const { kurs } = await searchParams;
-  const courses = await apiFetch<AdminCourseDto[]>('/admin/courses');
+  const { courses } = await apiFetch<AdminCourseListDto>('/admin/courses');
   return <AssetsLibrary courses={courses} initialCourseId={kurs} />;
 }

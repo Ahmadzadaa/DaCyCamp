@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import type { AdminCourseStudentDto } from '@dacy/shared';
+import { computeCourseMap, type AdminCourseStudentDto, type ProgressStatus } from '@dacy/shared';
 import { PrismaService } from '../prisma/prisma.service';
 import { ProgressService } from '../progress/progress.service';
 import { badRequest, conflict, notFound } from '../common/errors';
@@ -29,29 +29,53 @@ export class CourseStudentsService {
 
   async list(courseId: string): Promise<AdminCourseStudentDto[]> {
     await this.course(courseId);
-    const [rows, unlocks] = await Promise.all([
+    const shape = await this.progress.loadCourseShape(courseId);
+    const inCourse = { step: { module: { courseId } } };
+    // bir sorğu ilə hamının irəliləyişi və açılmış kilidləri → xəritə yaddaşda hesablanır
+    const [rows, progress, unlocks] = await Promise.all([
       this.prisma.enrollment.findMany({
         where: { courseId },
         include: { user: { select: { id: true, name: true, email: true } } },
         orderBy: { lastActivityAt: 'desc' },
       }),
-      this.prisma.stepUnlock.findMany({
-        where: { step: { module: { courseId } } },
-        select: { userId: true, stepId: true },
+      this.prisma.stepProgress.findMany({
+        where: inCourse,
+        select: { userId: true, stepId: true, status: true, score: true, attempts: true },
       }),
+      this.prisma.stepUnlock.findMany({ where: inCourse, select: { userId: true, stepId: true } }),
     ]);
-    const byUser = new Map<string, string[]>();
-    for (const u of unlocks) byUser.set(u.userId, [...(byUser.get(u.userId) ?? []), u.stepId]);
-    return rows.map((e) => ({
-      userId: e.user.id,
-      name: e.user.name,
-      email: e.user.email,
-      percent: e.percent,
-      enrolledAt: e.enrolledAt.toISOString(),
-      lastActivityAt: e.lastActivityAt.toISOString(),
-      completedAt: e.completedAt?.toISOString() ?? null,
-      unlockedStepIds: byUser.get(e.user.id) ?? [],
-    }));
+    const group = <T extends { userId: string }>(xs: T[]) => {
+      const m = new Map<string, T[]>();
+      for (const x of xs) m.set(x.userId, [...(m.get(x.userId) ?? []), x]);
+      return m;
+    };
+    const progByUser = group(progress);
+    const unlocksByUser = group(unlocks);
+    return rows.map((e) => {
+      const unlocked = (unlocksByUser.get(e.user.id) ?? []).map((u) => u.stepId);
+      const map = computeCourseMap({
+        sequential: shape.sequential,
+        modules: shape.modules,
+        progress: (progByUser.get(e.user.id) ?? []).map((p) => ({
+          ...p,
+          status: p.status as ProgressStatus,
+        })),
+        unlocked,
+      });
+      return {
+        userId: e.user.id,
+        name: e.user.name,
+        email: e.user.email,
+        percent: map.percent,
+        enrolledAt: e.enrolledAt.toISOString(),
+        lastActivityAt: e.lastActivityAt.toISOString(),
+        completedAt: e.completedAt?.toISOString() ?? null,
+        unlockedStepIds: unlocked,
+        lockedStepIds: map.flat.filter((s) => s.state === 'locked').map((s) => s.id),
+        done: map.done,
+        total: map.total,
+      };
+    });
   }
 
   /** Kursdan çıxar: yazılma silinir; irəliləyiş saxlanılır ki, "Geri qaytar" itkisiz olsun */

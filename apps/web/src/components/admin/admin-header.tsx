@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import Link from 'next/link';
 import type { PublicUser } from '@dacy/shared';
 import { Logo } from '@/components/app/logo';
@@ -10,7 +11,9 @@ export function AdminHeader({ user }: { user: PublicUser }) {
   return (
     <header className="apph flex-wrap gap-y-2">
       <Logo text={t('app.admin')} href="/admin/kurslar" />
-      <AdminNav />
+      <Suspense fallback={null}>
+        <AdminNav />
+      </Suspense>
       <div className="flex-1" />
       <Link href="/admin/idxal" className="b b-brand b-sm">
         ⇪ {t('nav.import')}

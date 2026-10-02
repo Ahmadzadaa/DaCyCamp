@@ -6,26 +6,33 @@ export const ROOT = resolve(__dirname, '../../..');
 export const SHOTS = resolve(ROOT, 'docs/screenshots');
 export const REF = resolve(ROOT, 'docs/DACY_DESIGN_REFERENCE.html');
 
-function envOf(key: string, fallback: string) {
+/** Seed hesabları yalnız .env-dən (process.env üstündür) — kodda e-poçt/şifrə saxlanılmır */
+function envOf(key: string): string {
+  if (process.env[key]) return process.env[key]!;
   try {
     const env = readFileSync(resolve(ROOT, '.env'), 'utf8');
-    const m = new RegExp(`^${key}=(.*)$`, 'm').exec(env);
-    return m?.[1]?.trim() || fallback;
+    const v = new RegExp(`^${key}=(.*)$`, 'm').exec(env)?.[1]?.trim();
+    if (v) return v;
   } catch {
-    return fallback;
+    /* aşağıda aydın xəta */
   }
+  throw new Error(`${key} .env-də təyin olunmayıb (README → «Test hesabları»)`);
 }
-export const STUDENT = {
-  email: envOf('SEED_STUDENT_EMAIL', 'telebe@dacy.local'),
-  password: envOf('SEED_STUDENT_PASSWORD', 'Telebe123!'),
-};
-export const ADMIN = {
-  email: envOf('SEED_ADMIN_EMAIL', 'admin@dacy.local'),
-  password: envOf('SEED_ADMIN_PASSWORD', 'Admin123!'),
-};
+const account = (prefix: 'SEED_STUDENT' | 'SEED_ADMIN') => ({
+  get email() {
+    return envOf(`${prefix}_EMAIL`);
+  },
+  get password() {
+    return envOf(`${prefix}_PASSWORD`);
+  },
+});
+export const STUDENT = account('SEED_STUDENT');
+export const ADMIN = account('SEED_ADMIN');
 
 export async function login(page: Page, who: { email: string; password: string }) {
-  const r = await page.request.post('/api/auth/login', { data: who });
+  const r = await page.request.post('/api/auth/login', {
+    data: { email: who.email, password: who.password },
+  });
   if (!r.ok()) throw new Error(`login failed ${r.status()}`);
 }
 

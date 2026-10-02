@@ -9,6 +9,9 @@ import { Switch } from '@/components/ui/switch';
 import { t } from '@/lib/i18n';
 import { Seg } from './seg';
 
+const emptyToNull = (v: unknown) =>
+  typeof v === 'string' && v.trim() === '' ? null : (v as string | null | undefined);
+
 export type CourseFormInput = z.input<typeof createCourseSchema>;
 export type CourseFormOutput = z.output<typeof createCourseSchema>;
 export type CourseForm = UseFormReturn<CourseFormInput, unknown, CourseFormOutput>;
@@ -102,6 +105,21 @@ export function CourseFields({
             setValueAs: (v: unknown) =>
               v === '' || v === null || v === undefined ? null : Number(v),
           })}
+        />
+      </Field>
+      <Field label={t('courseAdmin.instructorName')} error={errors.instructorName?.message}>
+        <Input
+          {...register('instructorName', { setValueAs: emptyToNull })}
+          autoComplete="off"
+          invalid={!!errors.instructorName}
+        />
+      </Field>
+      <Field label={t('courseAdmin.instructorTitle')} error={errors.instructorTitle?.message}>
+        <Input
+          {...register('instructorTitle', { setValueAs: emptyToNull })}
+          placeholder={t('courseAdmin.instructorTitlePh')}
+          autoComplete="off"
+          invalid={!!errors.instructorTitle}
         />
       </Field>
     </>

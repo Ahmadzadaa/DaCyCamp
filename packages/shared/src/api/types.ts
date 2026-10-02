@@ -256,7 +256,12 @@ export interface AdminCourseStudentDto {
   enrolledAt: string;
   lastActivityAt: string;
   completedAt: string | null;
+  /** admin tərəfindən əl ilə açılmış addımlar */
   unlockedStepIds: string[];
+  /** hazırda bu tələbə üçün kilidli olan (dərc olunmuş) addımlar */
+  lockedStepIds: string[];
+  done: number;
+  total: number;
 }
 export interface AuditLogDto {
   id: string;

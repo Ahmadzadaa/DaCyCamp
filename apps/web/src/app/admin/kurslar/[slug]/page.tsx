@@ -5,7 +5,10 @@ import { apiFetch, apiTry } from '@/lib/api/server';
 import { t } from '@/lib/i18n';
 import { CourseEditor } from '@/components/admin/course-editor/course-editor';
 
-type Props = { params: Promise<{ slug: string }>; searchParams: Promise<{ node?: string }> };
+type Props = {
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<{ node?: string; tab?: string }>;
+};
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
@@ -15,7 +18,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function CourseEditorPage({ params, searchParams }: Props) {
   const { slug } = await params;
-  const { node } = await searchParams;
+  const { node, tab } = await searchParams;
   const course = await apiTry<AdminCourseTreeDto>(`/admin/courses/${slug}`);
   if (!course) notFound();
   const [assets, tracks] = await Promise.all([
@@ -28,6 +31,7 @@ export default async function CourseEditorPage({ params, searchParams }: Props) 
       initialAssets={assets}
       tracks={tracks}
       initialNode={node}
+      initialTab={tab}
     />
   );
 }

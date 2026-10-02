@@ -223,6 +223,42 @@ Repoda yer tutucu səhifə qalmayıb (`/yollar`, `/sertifikatlar` Mərhələ 3�
 
 `docs/DACY_DESIGN_REFERENCE.html` yenidən yazıldı (rəng tokenləri dəyişməyib): ağ header + 260px navy sidebar (ikonlu menyu, ÖYRƏN / TƏTBİQ ET bölmələri, «YENİ» badge), 24px radiuslu hero (mint badge, 2 sətir təsvir, xətti SVG), kurs kartı anatomiyası (etiket, 24px başlıq, 3 zolaqlı səviyyə, 4 sətir təsvir, müəllim, müddət + «Başla»), kvadratvari çiplər + «+N» + sayğac/axtarış/Mövzu/Daha çox filtr, tip şkalası 40/28/24/16, boşluq şkalası 4–48, hover/focus/active, skeleton, kömək düyməsi, mobil alt naviqasiya, admin siyahı/redaktor/«…» menyu/təhlükəsiz silmə dialoqu/toast. Skrinşotlar: `docs/screenshots/v2/*.png`. Platformaya köçürmə təsdiqdən sonra.
 
-### Qeyd 4 — Admin kurs nəzarəti (gözləyir)
+### Qeyd 4 — Admin kurs nəzarəti (tamamlandı)
 
-Növbəti iş: müəllim sahələri, arxiv, kopya, soft delete + «Silinənlər» (30 gün), tələbə müdaxiləsi, audit log, ADMIN-only backend yoxlaması, testlər.
+**Rollar.** Təhlükəli əməliyyatlar (arxiv, surət, silmə / bərpa / həmişəlik silmə, kursun tələbələrinə müdaxilə, fəaliyyət tarixçəsi) **yalnız ADMIN** — backend-də `@AdminOnly()` ilə yoxlanır, UI-da da gizlədilir. Kontent redaktəsi (fəsil/addım əlavə, redaktə, sil, sürüklə, köçür, dərc et / gizlət, fayllar) INSTRUCTOR-da da qalır (istifadəçi ilə razılaşdırılıb).
+
+**Kurs səviyyəsində** (`/admin/kurslar` sətirdə ✎ / 👁 / 🗑 + «…» menyusu, kurs redaktorunun başlığında düymələr):
+
+- Redaktə et: başlıq, təsvir, istiqamət, səviyyə, **müəllim (ad, vəzifə, şəkil)**, müddət, örtük şəkli (yeni `Course.instructorName/instructorTitle/instructorAvatarId`).
+- Dərc et / Dərcdən çıxar.
+- Arxivlə: kataloqdan gizlənir, yeni yazılma `409 COURSE_ARCHIVED`; yazılmış tələbələr kurs səhifəsini, dərsləri və irəliləyişi görməyə davam edir.
+- Kopyala: bütün fəsil, addım (config + secret), CTF tapşırıqları (hash-lər) və fayllar (diskdə yeni nüsxə) ilə `<slug>-kopya` qaralama; yazılma/irəliləyiş kopyalanmır.
+- Önizlə (tələbə kimi), Sil.
+- Status tabları: Hamısı · Dərc olunub · Qaralama · Arxivdə · **Silinənlər** (sayğaclarla).
+
+**Təhlükəsiz silmə.**
+
+- Dialoqda tələbə / fəsil / addım sayı; kursa tələbə yazılıbsa kursun adı dəqiq yazılmayınca «Sil» deaktivdir — eyni qayda backend-də (`400 CONFIRM_REQUIRED`).
+- Silmə əvvəlcə **soft delete**: kurs «Silinənlər»ə düşür, tələbələr üçün hər yerdə 404 (kataloq, kurs, dərs, lab, fayllar, panel), 30 gün ərzində «Bərpa et» (toast-da da «Geri qaytar»).
+- «Həmişəlik sil» yalnız Silinənlər-dən, ayrıca dialoqla. 30 gündən köhnə silinənlər avtomatik (6 saatda bir və Silinənlər açılanda) həmişəlik silinir; jurnalda «sistem» kimi qeyd olunur.
+- Həmişəlik silmədə fəsil, addım, yazılma, irəliləyiş, göndəriş, ipucu, CTF həlli, lab sessiyası, əl ilə açılmış kilidlər FK cascade ilə silinir, fayllar diskdən silinir — **yetim qeyd qalmır** (API e2e ilə yoxlanır). **Sertifikatlar qalır və etibarlıdır** (`courseId → NULL`, snapshot), qazanılmış XP jurnalı da qalır. Yola daxil olan kurs həmişəlik silinmir (`409 COURSE_IN_PATH`); silinənlərdəki kurs yolda «dərc olunmamış» sayılır, ZIP idxalı eyni slug üçün aydın səhv verir.
+
+**Kursun içində.** Fəsil/addım əlavə, redaktə, sil, sürüklə, fəsillər arası köçürmə, hər addımı ayrıca dərc et / gizlət (Mərhələ 1-dən) + yeni **Fayllar** tabı: hər fayl üçün «Dəyişdir» (eyni yolda yeni fayl — addımlardakı istinadlar pozulmur) və «Sil».
+
+**Tələbələr tabı** (kurs daxilində, yalnız ADMIN): faiz (+ `tamamlanan / cəmi`), son aktivlik, yazılma tarixi; «Kilidi aç» — ardıcıl kursda kilidli addımı seçilmiş tələbəyə əl ilə açır (yeni `StepUnlock`, `computeCourseMap({ unlocked })`; açılmış addım çipdə görünür, ✕ ilə kilid bərpa olunur); «İrəliləyişi sıfırla» (progress, göndəriş, ipucu, CTF həlli, lab, kilidlər silinir; yazılma 0% qalır; XP qalır); «Kursdan çıxar» (irəliləyiş saxlanılır → toast-dakı «Geri qaytar» itkisiz bərpa edir).
+
+**Fəaliyyət tarixçəsi** (`/admin/tarixce`, kurs redaktorunda «Tarixçə» tabı): yeni `AuditLog` (kim — e-poçt snapshot, nə — əməliyyat kodu, nə vaxt, obyektin başlığı — silmədən əvvəl oxunur, kurs id-si, seçilmiş təfərrüatlar). Bütün admin dəyişiklikləri (kurs / fəsil / addım / fayl / istiqamət / rol / tələbə müdaxiləsi) `@Audit()` dekoratoru + qlobal interceptor ilə yalnız **uğurlu** olduqda yazılır; cavablarda gizli məlumat (CTF cavabı, həll) jurnala düşmür. Filtr və «Daha çox» (cursor).
+
+**Toast-lar:** «Kurs silindi — Geri qaytar», «Kurs arxivləndi — Geri qaytar», «Kurs kopyalandı — Aç», «Tələbə kursdan çıxarıldı — Geri qaytar» və s.
+
+**Miqrasiya:** `20261002212450_admin_course_control`. Mövcud bazada: `pnpm db:deploy` (və ya `pnpm dev`).
+
+**Yoxlama:**
+
+- API e2e `apps/api/test/admin-control.e2e-spec.ts` (10 test: rollar 403, tələbə siyahısı, kilid aç, sıfırla, çıxar / geri yaz, arxiv, surət, soft delete / bərpa, həmişəlik silmədə yetim qeyd yoxlaması + sertifikat və XP qalır, audit). Ümumi API e2e: **69/69**.
+- Playwright `apps/web/e2e/admin-control.spec.ts` — `.env`-dəki admin hesabı ilə UI üzərindən: kopyala → dərc et → arxivlə / geri qaytar → tələbələr (kilid aç, sıfırla, çıxar / geri qaytar) → fayl dəyişdir → müəllim sahələri → silmə dialoqu (say, ad təsdiqi) → Silinənlər → bərpa → həmişəlik silmə → tarixçə; tələbə hesabı üçün bütün bu API-lər 403, `/admin/*` → `/kurslar` (**7/7**). Skrinşotlar: `docs/screenshots/qeyd4/`.
+- Qeyd: Playwright-ın bütün spec-lərini bir dəfəyə işə salanda giriş limiti (dəqiqədə 20, API bütün sorğuları Next proksisinin IP-si ilə görür) `429` verir — spec-ləri ayrı-ayrılıqda işlədin. Bu, istehsalda da bütün istifadəçilər üçün ortaq limit deməkdir; ayrıca düzəliş kimi təklif olunur (`trust proxy` + müştəri IP-sinin ötürülməsi).
+
+### Qeyd 5 — Mövzular və səviyyə filtri (gözləyir)
+
+Admin «Kurslar» bölməsində istiqamətlərdən (Data Analytics, Data Engineering, …) əlavə **mövzu başlıqları** yarada bilsin (məs. «Python» üzrə qısa dərslər), hamısını redaktə edə bilsin; Başlanğıc / Orta / Çətin səviyyələri filtr kimi göstərilsin. Qeyd 4-dən sonra.

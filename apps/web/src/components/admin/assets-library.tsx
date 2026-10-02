@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
-import { Trash2, Upload } from 'lucide-react';
+import { RefreshCw, Trash2, Upload } from 'lucide-react';
 import type { AdminCourseDto, AssetDto, AssetKind } from '@dacy/shared';
 import { api } from '@/lib/api/client';
 import { errorMessage } from '@/lib/errors-i18n';
@@ -24,12 +24,26 @@ const FOLDERS: Array<{ dir: string; kind: AssetKind; label: string }> = [
 export function AssetsLibrary({
   courses,
   initialCourseId,
+  fixedCourseId,
+  onAssetsChange,
 }: {
   courses: AdminCourseDto[];
   initialCourseId?: string;
+  /** kurs redaktorunun "Fayllar" tabı: kurs seçimi gizlənir */
+  fixedCourseId?: string;
+  onAssetsChange?: (assets: AssetDto[]) => void;
 }) {
-  const [courseId, setCourseId] = useState(initialCourseId ?? courses[0]?.id ?? '');
+  const [courseId, setCourseId] = useState(
+    fixedCourseId ?? initialCourseId ?? courses[0]?.id ?? '',
+  );
   const [assets, setAssets] = useState<AssetDto[]>([]);
+  const replaceInput = useRef<HTMLInputElement>(null);
+  const [replacing, setReplacing] = useState<AssetDto | null>(null);
+  const loaded = useRef(false);
+  // redaktorun fayl siyahısını (addım formalarındakı seçicilər) sinxron saxla — yalnız ilk yükləmədən sonra
+  useEffect(() => {
+    if (loaded.current) onAssetsChange?.(assets);
+  }, [assets, onAssetsChange]);
   const [folder, setFolder] = useState(FOLDERS[0]!);
   const [busy, setBusy] = useState(false);
   const [del, setDel] = useState<AssetDto | null>(null);
@@ -39,7 +53,10 @@ export function AssetsLibrary({
   useEffect(() => {
     if (!courseId) return;
     api<AssetDto[]>(`/admin/courses/${courseId}/assets`)
-      .then(setAssets)
+      .then((as) => {
+        loaded.current = true;
+        setAssets(as);
+      })
       .catch((e) => toast.error(errorMessage(e)));
   }, [courseId]);
 
@@ -64,6 +81,28 @@ export function AssetsLibrary({
     }
   }
 
+  /** Eyni yolda yeni fayl — addımlardakı istinadlar pozulmur */
+  async function onReplace(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    const target = replacing;
+    setReplacing(null);
+    if (!file || !target || !courseId) return;
+    setBusy(true);
+    try {
+      const a = await uploadAsset(courseId, file, target.kind, {
+        path: target.path,
+        replace: true,
+      });
+      setAssets((as) => upsertAsset(as, a));
+      toast.success(t('courseAdmin.replaced', { path: a.path }));
+    } catch (err) {
+      toast.error(errorMessage(err));
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function remove() {
     if (!del) return;
     setDelError(null);
@@ -79,17 +118,19 @@ export function AssetsLibrary({
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-2xl">{t('admin.files')}</h1>
+      {fixedCourseId ? null : <h1 className="text-2xl">{t('admin.files')}</h1>}
       <div className="box grid gap-4 md:grid-cols-3">
-        <Field label={t('admin.chooseCourse')}>
-          <Select value={courseId} onChange={(e) => setCourseId(e.target.value)}>
-            {courses.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.title}
-              </option>
-            ))}
-          </Select>
-        </Field>
+        {fixedCourseId ? null : (
+          <Field label={t('admin.chooseCourse')}>
+            <Select value={courseId} onChange={(e) => setCourseId(e.target.value)}>
+              {courses.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.title}
+                </option>
+              ))}
+            </Select>
+          </Field>
+        )}
         <Field label={t('admin.assetKind')}>
           <Select
             value={folder.dir}
@@ -106,6 +147,13 @@ export function AssetsLibrary({
         </Field>
         <div className="flex items-end">
           <input ref={input} type="file" multiple className="hidden" onChange={onFiles} />
+          <input
+            ref={replaceInput}
+            type="file"
+            className="hidden"
+            onChange={onReplace}
+            data-testid="replace-input"
+          />
           <Button
             type="button"
             loading={busy}
@@ -149,18 +197,35 @@ export function AssetsLibrary({
                 <td className="text-muted">{(a.sizeBytes / 1024).toFixed(1)} KB</td>
                 <td className="text-muted">{fmtDate(a.createdAt)}</td>
                 <td>
-                  <Button
-                    type="button"
-                    variant="danger"
-                    size="sm"
-                    onClick={() => {
-                      setDelError(null);
-                      setDel(a);
-                    }}
-                    aria-label={t('admin.deleteAsset')}
-                  >
-                    <Trash2 className="size-4" />
-                  </Button>
+                  <div className="flex justify-end gap-1">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      disabled={busy}
+                      title={t('courseAdmin.replaceHint')}
+                      onClick={() => {
+                        setReplacing(a);
+                        replaceInput.current?.click();
+                      }}
+                      data-testid={`replace-${a.path}`}
+                    >
+                      <RefreshCw className="size-4" />
+                      {t('courseAdmin.replace')}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="danger"
+                      size="sm"
+                      onClick={() => {
+                        setDelError(null);
+                        setDel(a);
+                      }}
+                      aria-label={`${t('admin.deleteAsset')}: ${a.path}`}
+                    >
+                      <Trash2 className="size-4" />
+                    </Button>
+                  </div>
                 </td>
               </tr>
             ))}
