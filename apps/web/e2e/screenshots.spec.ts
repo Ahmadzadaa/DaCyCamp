@@ -72,14 +72,24 @@ test('dərs ekranı (müəllim önizləməsi) və admin', async ({ page }) => {
     ['ctf', 'workspace-ctf'],
     ['test', 'workspace-quiz'],
   ] as const) {
-    await shot(page, `/kurs/numune/numune-fesil/${key}?onizle=1`, `${name}.app.png`, {
-      full: false,
-    });
+    await page.goto(`/kurs/numune/numune-fesil/${key}?onizle=1`);
+    // SQL/Python: redaktor (Monaco) və brauzer mühiti yüklənsin
+    if (key === 'sql' || key === 'python') {
+      await page.locator('.monaco-editor').first().waitFor({ timeout: 90_000 });
+      await page
+        .getByText('Mühit hazırdır')
+        .waitFor({ timeout: 90_000 })
+        .catch(() => {});
+    }
+    await page.waitForLoadState('networkidle').catch(() => {});
+    await page.waitForTimeout(400);
+    await page.screenshot({ path: out(`${name}.app.png`), fullPage: false });
   }
   await page.setViewportSize({ width: 390, height: 844 });
-  await shot(page, '/kurs/numune/numune-fesil/sql?onizle=1', 'workspace-sql.mobile.png', {
-    full: false,
-  });
+  await page.goto('/kurs/numune/numune-fesil/sql?onizle=1');
+  await page.locator('.monaco-editor').first().waitFor({ timeout: 90_000 });
+  await page.waitForTimeout(400);
+  await page.screenshot({ path: out('workspace-sql.mobile.png'), fullPage: false });
   await page.setViewportSize({ width: 1240, height: 900 });
   const tree = await (await page.request.get('/api/admin/courses/numune')).json();
   const sql = tree.modules[0].steps.find((s: { key: string }) => s.key === 'sql');

@@ -162,7 +162,7 @@ export class ProgressService {
   async completeStep(
     userId: string,
     stepId: string,
-    opts: { score?: number | null; attemptsDelta?: number } = {},
+    opts: { score?: number | null; attemptsDelta?: number; xp?: number } = {},
   ): Promise<CompleteResultDto> {
     return this.prisma.$transaction(async (tx) => {
       const step = await tx.step.findUnique({
@@ -203,10 +203,17 @@ export class ProgressService {
       });
       let xpAwarded = 0;
       if (!alreadyDone) {
-        xpAwarded = await this.grantXp(tx, userId, step.xp, 'STEP_COMPLETED', `step:${stepId}`, {
-          stepId,
-          courseId,
-        });
+        xpAwarded = await this.grantXp(
+          tx,
+          userId,
+          opts.xp ?? step.xp,
+          'STEP_COMPLETED',
+          `step:${stepId}`,
+          {
+            stepId,
+            courseId,
+          },
+        );
         const date = dayToDate(dayKey());
         await tx.activityDay.upsert({
           where: { userId_date: { userId, date } },

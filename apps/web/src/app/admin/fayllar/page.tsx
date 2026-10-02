@@ -1,6 +1,15 @@
-import { FolderOpen } from 'lucide-react';
+import type { Metadata } from 'next';
+import type { AdminCourseDto } from '@dacy/shared';
+import { apiFetch } from '@/lib/api/server';
 import { t } from '@/lib/i18n';
-import { SoonPage } from '@/components/admin/soon-page';
-export default function FilesPage() {
-  return <SoonPage phase={2} icon={FolderOpen} title={t('admin.files')} />;
+import { AssetsLibrary } from '@/components/admin/assets-library';
+export const metadata: Metadata = { title: `${t('admin.files')} · ${t('app.admin')}` };
+export default async function FilesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ kurs?: string }>;
+}) {
+  const { kurs } = await searchParams;
+  const courses = await apiFetch<AdminCourseDto[]>('/admin/courses');
+  return <AssetsLibrary courses={courses} initialCourseId={kurs} />;
 }

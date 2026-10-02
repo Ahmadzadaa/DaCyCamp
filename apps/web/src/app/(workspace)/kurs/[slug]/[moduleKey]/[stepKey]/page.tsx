@@ -10,6 +10,9 @@ import { QuizView } from '@/components/workspace/quiz-view';
 import { SplitLayout } from '@/components/workspace/split-layout';
 import { InstructionsPane } from '@/components/workspace/instructions-pane';
 import { RightPlaceholder } from '@/components/workspace/right-placeholder';
+import { SqlWorkspace } from '@/components/workspace/sql-workspace';
+import { PythonWorkspace } from '@/components/workspace/python-workspace';
+import { CtfWorkspace } from '@/components/workspace/ctf-workspace';
 
 type Props = {
   params: Promise<{ slug: string; moduleKey: string; stepKey: string }>;
@@ -72,7 +75,17 @@ export default async function LessonPage({ params, searchParams }: Props) {
       ) : (
         <SplitLayout
           left={<InstructionsPane view={view} />}
-          right={<RightPlaceholder view={view} />}
+          right={
+            v.kind === 'sql' ? (
+              <SqlWorkspace view={view} sql={v} />
+            ) : v.kind === 'python' ? (
+              <PythonWorkspace view={view} py={v} />
+            ) : v.kind === 'ctf' ? (
+              <CtfWorkspace view={view} ctf={v} />
+            ) : (
+              <RightPlaceholder view={view} />
+            )
+          }
         />
       )}
     </>

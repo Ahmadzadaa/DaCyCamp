@@ -1,5 +1,5 @@
 import { createHash, randomUUID } from 'node:crypto';
-import { mkdir, writeFile, rm, stat } from 'node:fs/promises';
+import { mkdir, readFile, writeFile, rm, stat } from 'node:fs/promises';
 import { dirname, extname, join } from 'node:path';
 import type { AssetKind } from '@dacy/shared';
 import { storageDir } from '../config/env';
@@ -66,6 +66,7 @@ export async function saveToStorage(
 }
 
 export const storagePath = (key: string) => join(storageDir, key);
+export const readFromStorage = (key: string) => readFile(storagePath(key));
 
 export async function removeFromStorage(key: string) {
   await rm(storagePath(key), { force: true });

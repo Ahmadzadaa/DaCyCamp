@@ -6,7 +6,7 @@ const compat = new FlatCompat({ baseDirectory: dirname(fileURLToPath(import.meta
 
 export default [
   ...compat.extends('next/core-web-vitals', 'next/typescript'),
-  { ignores: ['.next/**', 'node_modules/**', 'playwright-report/**', 'test-results/**', 'next-env.d.ts'] },
+  { ignores: ['public/duckdb/**', 'public/pyodide/**', 'public/monaco/**', '.next/**', 'node_modules/**', 'playwright-report/**', 'test-results/**', 'next-env.d.ts'] },
   {
     rules: {
       '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],

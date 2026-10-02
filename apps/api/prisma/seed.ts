@@ -85,6 +85,7 @@ const steps: Array<{ key: string; def: StepDefinition }> = [
       check: 'result_match',
       hints: ['Nümunə ipucu: `SELECT *` bütün sütunları qaytarır.'],
       tasks: ['Nümunə maddə 1', 'Nümunə maddə 2'],
+      hint_penalty_xp: 10,
     },
   },
   {
@@ -99,6 +100,7 @@ const steps: Array<{ key: string; def: StepDefinition }> = [
       tests: "assert 'x' in globals(), 'x təyin olunmayıb'\nassert x == 1",
       hints: ['Nümunə ipucu'],
       tasks: ['Nümunə maddə'],
+      hint_penalty_xp: 10,
     },
   },
   {
@@ -113,6 +115,7 @@ const steps: Array<{ key: string; def: StepDefinition }> = [
       check_script: 'checks/numune.sh',
       hints: [],
       tasks: ['Nümunə maddə'],
+      hint_penalty_xp: 0,
     },
   },
   {

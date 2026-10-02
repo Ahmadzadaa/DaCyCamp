@@ -119,6 +119,28 @@ export interface QuizResultDto extends CompleteResultDto {
   attempts: number;
 }
 
+export interface HintResultDto {
+  index: number;
+  hint: string;
+  xpPenalty: number;
+  unlocked: string[];
+}
+
+export interface CtfAnswerResultDto extends CompleteResultDto {
+  correct: boolean;
+  taskId: string;
+  solvedAll: boolean;
+  attempts: number;
+}
+
+export interface CodeSubmitResultDto extends CompleteResultDto {
+  passed: boolean;
+  /** uğursuz olanda səbəb: columns | row_count | values | error */
+  reason?: 'columns' | 'row_count' | 'values' | 'error';
+  message?: string;
+  attempts: number;
+}
+
 export interface DashboardDto {
   user: PublicUser;
   continue: {
@@ -221,6 +243,15 @@ export interface AdminUserDto {
   lastActiveAt: string | null;
   enrollmentCount: number;
 }
+export interface CourseImportDto {
+  id: string;
+  slug: string;
+  filename: string;
+  status: 'VALIDATED' | 'FAILED' | 'APPLIED';
+  createdAt: string;
+  courseId: string | null;
+}
+
 export interface Paged<T> {
   items: T[];
   total: number;

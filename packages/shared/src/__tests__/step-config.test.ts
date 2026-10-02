@@ -21,6 +21,7 @@ const defs: StepDefinition[] = [
   },
   {
     type: 'sql',
+    hint_penalty_xp: 10,
     title: 'S',
     instructions: 'yaz',
     dataset: 'datasets/x.csv',
@@ -32,6 +33,7 @@ const defs: StepDefinition[] = [
   },
   {
     type: 'python',
+    hint_penalty_xp: 10,
     title: 'P',
     instructions: 'yaz',
     starter_code: '',
@@ -42,6 +44,7 @@ const defs: StepDefinition[] = [
   },
   {
     type: 'terminal',
+    hint_penalty_xp: 0,
     title: 'L',
     instructions: 'yaz',
     docker_image: 'img',

@@ -28,6 +28,7 @@ import { IssuesBox } from './issues-box';
 import { TheoryForm } from './theory-form';
 import { QuizForm, type QuizValues } from './quiz-form';
 import { ReadonlyDefinition } from './readonly-definition';
+import { CtfForm, PythonForm, SqlForm, TerminalForm } from './code-forms';
 
 const TYPE_OPTIONS = STEP_TYPES.map((x) => ({ value: x, label: t(`stepTypeShort.${x}`) }));
 
@@ -312,6 +313,30 @@ export function StepEditor({
                 })),
               })
             }
+          />
+        ) : def.type === 'sql' ? (
+          <SqlForm
+            def={def}
+            onChange={(p) => update(p as Partial<StepDefinitionDraft>)}
+            ctx={{ courseId, assets, onAssetUploaded }}
+          />
+        ) : def.type === 'python' ? (
+          <PythonForm
+            def={def}
+            onChange={(p) => update(p as Partial<StepDefinitionDraft>)}
+            ctx={{ courseId, assets, onAssetUploaded }}
+          />
+        ) : def.type === 'terminal' ? (
+          <TerminalForm
+            def={def}
+            onChange={(p) => update(p as Partial<StepDefinitionDraft>)}
+            ctx={{ courseId, assets, onAssetUploaded }}
+          />
+        ) : def.type === 'ctf' ? (
+          <CtfForm
+            def={def}
+            onChange={(p) => update(p as Partial<StepDefinitionDraft>)}
+            ctx={{ courseId, assets, onAssetUploaded }}
           />
         ) : (
           <ReadonlyDefinition def={def} />

@@ -38,7 +38,7 @@ export function QuizView({ view, quiz }: { view: StepViewDto; quiz: QuizStudentV
     try {
       const r = await api<QuizResultDto>(`/learn/steps/${view.id}/submit${q}`, {
         method: 'POST',
-        body: { answers },
+        body: { kind: 'quiz', answers },
       });
       setResult(r);
       if (r.passed)

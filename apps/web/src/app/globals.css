@@ -1108,6 +1108,25 @@
   .drop.over {
     border-color: var(--brand);
   }
+  /* sorğu nəticəsi cədvəli (tünd iş sahəsi) */
+  .tbl {
+    border-collapse: collapse;
+    margin: 10px 14px;
+    font-size: 12.5px;
+    font-family: var(--font-mono);
+  }
+  .tbl th,
+  .tbl td {
+    padding: 5px 14px;
+    border: 1px solid var(--navy-line);
+    text-align: left;
+    white-space: nowrap;
+  }
+  .tbl th {
+    color: var(--on-dark-muted);
+    font-weight: 500;
+  }
+
   .tbl-admin {
     width: 100%;
     border-collapse: collapse;

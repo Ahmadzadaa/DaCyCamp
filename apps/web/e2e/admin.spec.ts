@@ -60,10 +60,10 @@ test('admin: kurs → fəsil → nəzəri addım → dərc → tələbə görür
   await page.getByRole('button', { name: 'Dərc et' }).click();
   await expect(page.getByText('Dərc olundu')).toBeVisible();
 
-  // kursu dərc et
+  // kursu dərc et (addımın toast-u hələ görünə bilər → first)
   await page.locator('.tree h4 button').click();
   await page.getByRole('button', { name: 'Dərc et' }).click();
-  await expect(page.getByText('Dərc olundu')).toBeVisible();
+  await expect(page.getByText('Dərc olundu').first()).toBeVisible();
 
   // tələbə kimi
   const s = await page.context().browser()!.newContext();

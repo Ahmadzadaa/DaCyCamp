@@ -86,19 +86,29 @@ export const updateStepMetaSchema = z.object({ key: slugSchema.optional() });
 
 // learn
 export const quizSubmissionSchema = z.object({
+  kind: z.literal('quiz').default('quiz'),
   answers: z.array(z.array(z.number().int().min(0).max(50)).max(12)).max(100),
 });
 export const sqlSubmissionSchema = z.object({
+  kind: z.literal('sql'),
   query: z.string().max(50_000),
-  row_hash: z.string().max(128),
+  row_hash: z.string().regex(/^[0-9a-f]{64}$/),
   row_count: z.number().int().min(0),
-  columns: z.array(z.string()).max(200).optional(),
+  columns: z.array(z.string().max(200)).max(200),
 });
 export const pythonSubmissionSchema = z.object({
+  kind: z.literal('python'),
   code: z.string().max(100_000),
   passed: z.boolean(),
   stdout: z.string().max(50_000).optional(),
+  error: z.string().max(5_000).optional(),
 });
+export const submissionSchema = z.discriminatedUnion('kind', [
+  quizSubmissionSchema.extend({ kind: z.literal('quiz') }),
+  sqlSubmissionSchema,
+  pythonSubmissionSchema,
+]);
+export type SubmissionInput = z.infer<typeof submissionSchema>;
 export const ctfAnswerSchema = z.object({ answer: z.string().trim().min(1).max(1000) });
 
 export type RegisterInput = z.infer<typeof registerSchema>;
@@ -111,3 +121,5 @@ export type CreateModuleInput = z.infer<typeof createModuleSchema>;
 export type UpdateModuleInput = z.infer<typeof updateModuleSchema>;
 export type CreateStepInput = z.infer<typeof createStepSchema>;
 export type QuizSubmissionInput = z.infer<typeof quizSubmissionSchema>;
+export type SqlSubmissionInput = z.infer<typeof sqlSubmissionSchema>;
+export type PythonSubmissionInput = z.infer<typeof pythonSubmissionSchema>;

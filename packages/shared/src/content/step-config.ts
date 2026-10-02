@@ -157,6 +157,7 @@ export function splitStep(def: StepDefinitionDraft | StepDefinition): SplitResul
           check: def.check ?? 'result_match',
           tasks: def.tasks ?? [],
           hint_count: hints.length,
+          hint_penalty_xp: def.hint_penalty_xp ?? DEFAULT_HINT_PENALTY_XP,
         },
         secret: { solution: def.solution ?? '', hints },
         ctfTasks: [],
@@ -173,6 +174,7 @@ export function splitStep(def: StepDefinitionDraft | StepDefinition): SplitResul
           tests: def.tests ?? '',
           tasks: def.tasks ?? [],
           hint_count: hints.length,
+          hint_penalty_xp: def.hint_penalty_xp ?? DEFAULT_HINT_PENALTY_XP,
         },
         secret: { ...(def.solution ? { solution: def.solution } : {}), hints },
         ctfTasks: [],
@@ -188,6 +190,7 @@ export function splitStep(def: StepDefinitionDraft | StepDefinition): SplitResul
           time_limit_minutes: def.time_limit_minutes ?? DEFAULT_LAB_MINUTES,
           tasks: def.tasks ?? [],
           hint_count: hints.length,
+          hint_penalty_xp: def.hint_penalty_xp ?? 0,
         },
         secret: { check_script: def.check_script ?? '', hints },
         ctfTasks: [],
@@ -284,6 +287,7 @@ export function mergeStep(
         check: ((c.check as string) ?? 'result_match') as 'result_match' | 'result_match_unordered',
         hints: (s.hints as string[]) ?? [],
         tasks: (c.tasks as string[]) ?? [],
+        hint_penalty_xp: (c.hint_penalty_xp as number) ?? DEFAULT_HINT_PENALTY_XP,
       };
     case 'PYTHON':
       return {
@@ -296,6 +300,7 @@ export function mergeStep(
         tests: (c.tests as string) ?? '',
         hints: (s.hints as string[]) ?? [],
         tasks: (c.tasks as string[]) ?? [],
+        hint_penalty_xp: (c.hint_penalty_xp as number) ?? DEFAULT_HINT_PENALTY_XP,
       };
     case 'TERMINAL':
       return {
@@ -307,6 +312,7 @@ export function mergeStep(
         check_script: (s.check_script as string) ?? '',
         hints: (s.hints as string[]) ?? [],
         tasks: (c.tasks as string[]) ?? [],
+        hint_penalty_xp: (c.hint_penalty_xp as number) ?? 0,
       };
     case 'CTF':
       return {
@@ -363,6 +369,7 @@ export type SqlStudentView = {
   tasks: string[];
   hint_count: number;
   hints_unlocked: string[];
+  hint_penalty_xp: number;
 };
 export type PythonStudentView = {
   kind: 'python';
@@ -373,6 +380,7 @@ export type PythonStudentView = {
   tasks: string[];
   hint_count: number;
   hints_unlocked: string[];
+  hint_penalty_xp: number;
 };
 export type TerminalStudentView = {
   kind: 'terminal';
@@ -382,6 +390,7 @@ export type TerminalStudentView = {
   tasks: string[];
   hint_count: number;
   hints_unlocked: string[];
+  hint_penalty_xp: number;
 };
 export type CtfStudentView = {
   kind: 'ctf';
@@ -450,6 +459,7 @@ export function toStudentView(
         tasks: (c.tasks as string[]) ?? [],
         hint_count: (c.hint_count as number) ?? 0,
         hints_unlocked: hints,
+        hint_penalty_xp: (c.hint_penalty_xp as number) ?? DEFAULT_HINT_PENALTY_XP,
       };
     case 'PYTHON':
       return {
@@ -461,6 +471,7 @@ export function toStudentView(
         tasks: (c.tasks as string[]) ?? [],
         hint_count: (c.hint_count as number) ?? 0,
         hints_unlocked: hints,
+        hint_penalty_xp: (c.hint_penalty_xp as number) ?? DEFAULT_HINT_PENALTY_XP,
       };
     case 'TERMINAL':
       return {
@@ -471,6 +482,7 @@ export function toStudentView(
         tasks: (c.tasks as string[]) ?? [],
         hint_count: (c.hint_count as number) ?? 0,
         hints_unlocked: hints,
+        hint_penalty_xp: (c.hint_penalty_xp as number) ?? 0,
       };
     case 'CTF':
       return {
@@ -565,6 +577,7 @@ export function emptyDefinition(type: StepType, title: string): StepDefinitionDr
         check: 'result_match',
         hints: [],
         tasks: [],
+        hint_penalty_xp: DEFAULT_HINT_PENALTY_XP,
       };
     case 'PYTHON':
       return {
@@ -575,6 +588,7 @@ export function emptyDefinition(type: StepType, title: string): StepDefinitionDr
         tests: '',
         hints: [],
         tasks: [],
+        hint_penalty_xp: DEFAULT_HINT_PENALTY_XP,
       };
     case 'TERMINAL':
       return {
@@ -586,6 +600,7 @@ export function emptyDefinition(type: StepType, title: string): StepDefinitionDr
         check_script: '',
         hints: [],
         tasks: [],
+        hint_penalty_xp: 0,
       };
     case 'CTF':
       return {

@@ -35,12 +35,17 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         {...props}
       >
         {loading ? (
-          <span
-            className="inline-block size-3.5 animate-spin rounded-full border-2 border-current border-t-transparent"
-            aria-hidden
-          />
-        ) : null}
-        {children}
+          <>
+            <span
+              className="inline-block size-3.5 animate-spin rounded-full border-2 border-current border-t-transparent"
+              aria-hidden
+            />
+            {children}
+          </>
+        ) : (
+          // asChild (Slot) tək uşaq tələb edir — null belə sayılır, ona görə spinner yalnız loading-də render olunur
+          children
+        )}
       </Comp>
     );
   },

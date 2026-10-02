@@ -4,7 +4,8 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
-import { Eye, Trash2 } from 'lucide-react';
+import { Download, Eye, FolderOpen, Trash2 } from 'lucide-react';
+import Link from 'next/link';
 import {
   createCourseSchema,
   type AdminCourseDto,
@@ -163,6 +164,18 @@ export function CourseForm({
           >
             <Eye className="size-4" />
             {t('common.previewAsStudent')}
+          </Button>
+          <Button asChild variant="ghost">
+            <a href={`/api/admin/courses/${course.id}/export.zip`} download>
+              <Download className="size-4" />
+              {t('admin.exportZip')}
+            </a>
+          </Button>
+          <Button asChild variant="ghost">
+            <Link href={`/admin/fayllar?kurs=${course.id}`}>
+              <FolderOpen className="size-4" />
+              {t('nav.files')}
+            </Link>
           </Button>
           <Button
             type="button"

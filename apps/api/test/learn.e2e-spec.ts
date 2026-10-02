@@ -103,7 +103,11 @@ describe('student flow', () => {
     expect(r.status).toBe(403);
     expect(r.body.code).toBe('STEP_LOCKED');
     expect(
-      (await st.post(`/learn/steps/${stepIds[1]}/submit`).send({ answers: [[1], [0, 2]] })).status,
+      (
+        await st
+          .post(`/learn/steps/${stepIds[1]}/submit`)
+          .send({ kind: 'quiz', answers: [[1], [0, 2]] })
+      ).status,
     ).toBe(403);
   });
 
@@ -130,7 +134,7 @@ describe('student flow', () => {
     expect(JSON.stringify(v.body.view)).not.toContain('correct');
     const fail = await st
       .post(`/learn/steps/${stepIds[1]}/submit`)
-      .send({ answers: [[0], [0, 2]] });
+      .send({ kind: 'quiz', answers: [[0], [0, 2]] });
     expect(fail.status).toBe(200);
     expect(fail.body.passed).toBe(false);
     expect(fail.body.score).toBe(50);
@@ -153,13 +157,15 @@ describe('student flow', () => {
   });
 
   it('quiz keçəndə XP bir dəfə, növbəti fəsil açılır', async () => {
-    const ok = await st.post(`/learn/steps/${stepIds[1]}/submit`).send({ answers: [[1], [2, 0]] });
+    const ok = await st
+      .post(`/learn/steps/${stepIds[1]}/submit`)
+      .send({ kind: 'quiz', answers: [[1], [2, 0]] });
     expect(ok.body.passed).toBe(true);
     expect(ok.body.xpAwarded).toBe(30);
     expect(ok.body.attempts).toBe(2);
     const again = await st
       .post(`/learn/steps/${stepIds[1]}/submit`)
-      .send({ answers: [[1], [2, 0]] });
+      .send({ kind: 'quiz', answers: [[1], [2, 0]] });
     expect(again.body.xpAwarded).toBe(0);
     const map = await st.get(`/learn/courses/${slug}`);
     expect(map.body.map.modules[1].steps[0].state).toBe('available');

@@ -23,6 +23,7 @@ import { AssetsService, assetUrl } from '../assets/assets.service';
 import { badRequest, conflict, notFound, unprocessable } from '../common/errors';
 import { nextOrder, reorderInTx } from '../common/utils/reorder';
 import { hashAnswer } from './ctf-hash';
+import { SqlCheckService } from '../sql-check/sql-check.service';
 
 const courseSelect = {
   track: { select: { id: true, slug: true, title: true, color: true } },
@@ -37,6 +38,7 @@ export class ContentService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly assets: AssetsService,
+    private readonly sqlCheck: SqlCheckService,
   ) {}
 
   /* ───────── kurslar ───────── */
@@ -473,6 +475,7 @@ export class ContentService {
           data: { order: t.order },
         });
     });
+    if (s.isPublished && newType === 'SQL') await this.sqlCheck.computeAndStore(id);
     return this.getStep(id);
   }
 
@@ -480,6 +483,8 @@ export class ContentService {
     const cur = await this.getStep(id);
     if (isPublished && cur.issues.length)
       throw unprocessable('PUBLISH_ISSUES', 'Dərc etmək üçün səhvləri düzəldin', cur.issues);
+    // SQL: həllin gözlənilən nəticəsi dərc zamanı serverdə hesablanır (tələbəyə yalnız hash müqayisəsi)
+    if (isPublished && cur.type === 'SQL') await this.sqlCheck.computeAndStore(id);
     await this.prisma.step.update({ where: { id }, data: { isPublished } });
     return this.getStep(id);
   }

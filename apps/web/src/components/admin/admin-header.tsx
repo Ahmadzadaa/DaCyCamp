@@ -12,14 +12,9 @@ export function AdminHeader({ user }: { user: PublicUser }) {
       <Logo text={t('app.admin')} href="/admin/kurslar" />
       <AdminNav />
       <div className="flex-1" />
-      <span title={t('admin.phase', { n: 2 })} className="inline-flex">
-        <button type="button" className="b b-brand b-sm" disabled aria-describedby="zip-soon">
-          ⇪ {t('nav.import')}
-        </button>
-        <span id="zip-soon" className="sr-only">
-          {t('admin.importSoon')}
-        </span>
-      </span>
+      <Link href="/admin/idxal" className="b b-brand b-sm">
+        ⇪ {t('nav.import')}
+      </Link>
       <Link href="/kurslar" className="text-sm text-on-dark-muted hover:text-on-dark">
         {t('nav.backToSite')}
       </Link>

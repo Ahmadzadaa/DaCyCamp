@@ -1,6 +1,12 @@
-import { Body, Controller, Get, HttpCode, Param, Post, Query, Req } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Param, Post, Query } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { z } from 'zod';
-import { quizSubmissionSchema, type QuizSubmissionInput } from '@dacy/shared';
+import {
+  CTF_MAX_ATTEMPTS_PER_MINUTE,
+  ctfAnswerSchema,
+  submissionSchema,
+  type SubmissionInput,
+} from '@dacy/shared';
 import { LearnService } from './learn.service';
 import { CurrentUser, type AuthUser } from '../common/decorators';
 import { ZodPipe } from '../common/pipes/zod.pipe';
@@ -9,6 +15,7 @@ import { badRequest } from '../common/errors';
 const previewQuery = z.object({ preview: z.enum(['1', 'true']).optional() });
 const isStaff = (u: AuthUser) => u.role === 'ADMIN' || u.role === 'INSTRUCTOR';
 const previewOf = (u: AuthUser, q: { preview?: string }) => !!q.preview && isStaff(u);
+type PQ = z.infer<typeof previewQuery>;
 
 @Controller()
 export class LearnController {
@@ -28,7 +35,7 @@ export class LearnController {
   map(
     @Param('slug') slug: string,
     @CurrentUser() u: AuthUser,
-    @Query(new ZodPipe(previewQuery)) q: z.infer<typeof previewQuery>,
+    @Query(new ZodPipe(previewQuery)) q: PQ,
   ) {
     return this.learn.courseMap(u.id, slug, previewOf(u, q));
   }
@@ -39,7 +46,7 @@ export class LearnController {
     @Param('m') m: string,
     @Param('n') n: string,
     @CurrentUser() u: AuthUser,
-    @Query(new ZodPipe(previewQuery)) q: z.infer<typeof previewQuery>,
+    @Query(new ZodPipe(previewQuery)) q: PQ,
   ) {
     const mi = Number(m);
     const ni = Number(n);
@@ -54,7 +61,7 @@ export class LearnController {
     @Param('moduleKey') moduleKey: string,
     @Param('stepKey') stepKey: string,
     @CurrentUser() u: AuthUser,
-    @Query(new ZodPipe(previewQuery)) q: z.infer<typeof previewQuery>,
+    @Query(new ZodPipe(previewQuery)) q: PQ,
   ) {
     return this.learn.stepView(u.id, slug, moduleKey, stepKey, previewOf(u, q));
   }
@@ -64,7 +71,7 @@ export class LearnController {
   start(
     @Param('id') id: string,
     @CurrentUser() u: AuthUser,
-    @Query(new ZodPipe(previewQuery)) q: z.infer<typeof previewQuery>,
+    @Query(new ZodPipe(previewQuery)) q: PQ,
   ) {
     return this.learn.start(u.id, id, previewOf(u, q));
   }
@@ -74,7 +81,7 @@ export class LearnController {
   complete(
     @Param('id') id: string,
     @CurrentUser() u: AuthUser,
-    @Query(new ZodPipe(previewQuery)) q: z.infer<typeof previewQuery>,
+    @Query(new ZodPipe(previewQuery)) q: PQ,
   ) {
     return this.learn.completeTheory(u.id, id, previewOf(u, q));
   }
@@ -83,12 +90,46 @@ export class LearnController {
   @Post('learn/steps/:id/submit')
   submit(
     @Param('id') id: string,
-    @Body(new ZodPipe(quizSubmissionSchema)) dto: QuizSubmissionInput,
+    @Body(new ZodPipe(submissionSchema)) dto: SubmissionInput,
     @CurrentUser() u: AuthUser,
-    @Query(new ZodPipe(previewQuery)) q: z.infer<typeof previewQuery>,
-    @Req() _req: unknown,
+    @Query(new ZodPipe(previewQuery)) q: PQ,
   ) {
-    return this.learn.submitQuiz(u.id, id, dto.answers, previewOf(u, q));
+    return this.learn.submit(u.id, id, dto, previewOf(u, q));
+  }
+
+  @HttpCode(200)
+  @Post('learn/steps/:id/hints/:index')
+  hint(
+    @Param('id') id: string,
+    @Param('index') index: string,
+    @CurrentUser() u: AuthUser,
+    @Query(new ZodPipe(previewQuery)) q: PQ,
+  ) {
+    const i = Number(index);
+    if (!Number.isInteger(i) || i < 0 || i > 50) throw badRequest('VALIDATION_FAILED');
+    return this.learn.hint(u.id, id, i, previewOf(u, q));
+  }
+
+  @HttpCode(200)
+  @Throttle({ default: { limit: CTF_MAX_ATTEMPTS_PER_MINUTE, ttl: 60_000 } })
+  @Post('learn/ctf-tasks/:id/answer')
+  ctfAnswer(
+    @Param('id') id: string,
+    @Body(new ZodPipe(ctfAnswerSchema)) dto: { answer: string },
+    @CurrentUser() u: AuthUser,
+    @Query(new ZodPipe(previewQuery)) q: PQ,
+  ) {
+    return this.learn.ctfAnswer(u.id, id, dto.answer, previewOf(u, q));
+  }
+
+  @HttpCode(200)
+  @Post('learn/ctf-tasks/:id/hint')
+  ctfHint(
+    @Param('id') id: string,
+    @CurrentUser() u: AuthUser,
+    @Query(new ZodPipe(previewQuery)) q: PQ,
+  ) {
+    return this.learn.ctfHint(u.id, id, previewOf(u, q));
   }
 
   @Get('learn/steps/:id/submissions')

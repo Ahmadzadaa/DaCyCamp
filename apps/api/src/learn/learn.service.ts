@@ -2,18 +2,27 @@ import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import {
   toStudentView,
+  type CodeSubmitResultDto,
   type CourseMapDto,
+  type CtfAnswerResultDto,
+  type HintResultDto,
+  type PythonSubmissionInput,
   type QuizConfig,
   type QuizResultDto,
   type QuizSecret,
+  type SqlExpected,
+  type SqlSubmissionInput,
   type StepType,
   type StepViewDto,
+  type SubmissionInput,
 } from '@dacy/shared';
 import { PrismaService } from '../prisma/prisma.service';
 import { ProgressService } from '../progress/progress.service';
 import { CatalogService } from '../catalog/catalog.service';
 import { AssetsService } from '../assets/assets.service';
-import { badRequest, forbidden, notFound } from '../common/errors';
+import { SqlCheckService } from '../sql-check/sql-check.service';
+import { hashAnswer } from '../content/ctf-hash';
+import { badRequest, forbidden, notFound, unprocessable } from '../common/errors';
 
 const TYPE_INDEX_GROUP: Record<StepType, StepType[]> = {
   THEORY: ['THEORY'],
@@ -24,6 +33,10 @@ const TYPE_INDEX_GROUP: Record<StepType, StepType[]> = {
   CTF: ['CTF'],
 };
 
+const lower = (xs: string[]) => xs.map((x) => x.trim().toLowerCase());
+const sameCols = (a: string[], b: string[]) =>
+  a.length === b.length && lower(a).every((x, i) => x === lower(b)[i]);
+
 @Injectable()
 export class LearnService {
   constructor(
@@ -31,6 +44,7 @@ export class LearnService {
     private readonly progress: ProgressService,
     private readonly catalog: CatalogService,
     private readonly assets: AssetsService,
+    private readonly sqlCheck: SqlCheckService,
   ) {}
 
   async enroll(userId: string, slug: string) {
@@ -137,7 +151,9 @@ export class LearnService {
     const allHints = (secret.hints as string[] | undefined) ?? [];
     const unlockedHints = hints
       .filter((h) => h.hintKey.startsWith('h:'))
-      .map((h) => allHints[Number(h.hintKey.slice(2))])
+      .map((h) => Number(h.hintKey.slice(2)))
+      .sort((a, b) => a - b)
+      .map((i) => allHints[i])
       .filter((x): x is string => typeof x === 'string');
     const solved = new Set(solves.map((x) => x.ctfTaskId));
     const unlockedTaskHints = new Set(
@@ -202,23 +218,22 @@ export class LearnService {
     return this.progress.start(userId, stepId);
   }
 
-  async completeTheory(userId: string, stepId: string, preview: boolean) {
-    const step = await this.prisma.step.findUnique({ where: { id: stepId } });
+  private async loadStep(stepId: string) {
+    const step = await this.prisma.step.findUnique({
+      where: { id: stepId },
+      include: { module: { select: { id: true, courseId: true } } },
+    });
     if (!step) throw notFound();
-    if (step.type !== 'THEORY') throw badRequest('WRONG_STEP_TYPE');
-    await this.assertUnlocked(userId, step.id, preview);
-    if (preview)
-      return { xpAwarded: step.xp, coursePercent: 0, courseCompleted: false, next: null };
-    return this.progress.completeStep(userId, stepId);
+    return step;
   }
 
   private async assertUnlocked(userId: string, stepId: string, preview: boolean) {
     if (preview) return;
-    const step = await this.prisma.step.findUnique({
-      where: { id: stepId },
-      include: { module: { select: { courseId: true } } },
+    const step = await this.loadStep(stepId);
+    const enrolled = await this.prisma.enrollment.findUnique({
+      where: { userId_courseId: { userId, courseId: step.module.courseId } },
     });
-    if (!step) throw notFound();
+    if (!enrolled) throw forbidden('NOT_ENROLLED', 'Əvvəlcə kursa yazılın');
     const course = await this.progress.loadCourseShape(step.module.courseId);
     const map = await this.progress.mapFor(userId, course);
     const s = map.flat.find((x) => x.id === stepId);
@@ -226,15 +241,47 @@ export class LearnService {
     if (s.state === 'locked') throw forbidden('STEP_LOCKED', 'Bu addım kilidlidir');
   }
 
-  /** Quiz: serverdə Step.secret ilə qiymətləndirmə */
+  private async stateAfterAttempt(userId: string, courseId: string, stepId: string) {
+    const course = await this.progress.loadCourseShape(courseId);
+    const map = await this.progress.mapFor(userId, course);
+    const p = await this.prisma.stepProgress.findUnique({
+      where: { userId_stepId: { userId, stepId } },
+    });
+    return {
+      coursePercent: map.percent,
+      courseCompleted: map.isComplete,
+      attempts: p?.attempts ?? 0,
+    };
+  }
+
+  async completeTheory(userId: string, stepId: string, preview: boolean) {
+    const step = await this.loadStep(stepId);
+    if (step.type !== 'THEORY') throw badRequest('WRONG_STEP_TYPE');
+    await this.assertUnlocked(userId, step.id, preview);
+    if (preview)
+      return { xpAwarded: step.xp, coursePercent: 0, courseCompleted: false, next: null };
+    return this.progress.completeStep(userId, stepId);
+  }
+
+  /** Göndəriş: quiz (serverdə qiymətləndirilir), sql (hash müqayisəsi), python (brauzer testləri) */
+  async submit(userId: string, stepId: string, input: SubmissionInput, preview: boolean) {
+    switch (input.kind) {
+      case 'quiz':
+        return this.submitQuiz(userId, stepId, input.answers, preview);
+      case 'sql':
+        return this.submitSql(userId, stepId, input, preview);
+      case 'python':
+        return this.submitPython(userId, stepId, input, preview);
+    }
+  }
+
   async submitQuiz(
     userId: string,
     stepId: string,
     answers: number[][],
     preview: boolean,
   ): Promise<QuizResultDto> {
-    const step = await this.prisma.step.findUnique({ where: { id: stepId } });
-    if (!step) throw notFound();
+    const step = await this.loadStep(stepId);
     if (step.type !== 'QUIZ') throw badRequest('WRONG_STEP_TYPE');
     await this.assertUnlocked(userId, step.id, preview);
     const cfg = step.config as unknown as QuizConfig;
@@ -272,8 +319,8 @@ export class LearnService {
         userId,
         stepId,
         type: 'QUIZ',
-        payload: { answers } as Prisma.InputJsonValue,
-        result: { score, passed } as Prisma.InputJsonValue,
+        payload: { answers } as unknown as Prisma.InputJsonValue,
+        result: { score, passed } as unknown as Prisma.InputJsonValue,
         passed,
         score,
       },
@@ -286,21 +333,325 @@ export class LearnService {
       return { ...r, score, passed, perQuestion, attempts: p?.attempts ?? 1 };
     }
     await this.progress.recordAttempt(userId, stepId, score);
-    const p = await this.prisma.stepProgress.findUnique({
-      where: { userId_stepId: { userId, stepId } },
-    });
-    const course = await this.progress.loadCourseShape(
-      (await this.prisma.module.findUniqueOrThrow({ where: { id: step.moduleId } })).courseId,
-    );
-    const map = await this.progress.mapFor(userId, course);
+    const st = await this.stateAfterAttempt(userId, step.module.courseId, stepId);
     return {
       score,
       passed,
       perQuestion,
-      attempts: p?.attempts ?? 1,
+      attempts: st.attempts,
       xpAwarded: 0,
-      coursePercent: map.percent,
-      courseCompleted: map.isComplete,
+      coursePercent: st.coursePercent,
+      courseCompleted: st.courseCompleted,
+      next: null,
+    };
+  }
+
+  async submitSql(
+    userId: string,
+    stepId: string,
+    input: SqlSubmissionInput,
+    preview: boolean,
+  ): Promise<CodeSubmitResultDto> {
+    const step = await this.loadStep(stepId);
+    if (step.type !== 'SQL') throw badRequest('WRONG_STEP_TYPE');
+    await this.assertUnlocked(userId, step.id, preview);
+    const secret = (step.secret ?? {}) as { expected?: SqlExpected };
+    let expected = secret.expected;
+    if (!expected) {
+      // dərc zamanı hesablanmamışsa (köhnə məlumat) — indi hesabla
+      try {
+        expected = await this.sqlCheck.computeAndStore(step.id);
+      } catch {
+        throw unprocessable(
+          'SQL_NOT_READY',
+          'Bu tapşırığın yoxlaması hazır deyil, müəllimə bildirin',
+        );
+      }
+    }
+    const colsOk = sameCols(expected.columns, input.columns);
+    const countOk = expected.row_count === input.row_count;
+    const hashOk = expected.row_hash === input.row_hash;
+    const passed = colsOk && countOk && hashOk;
+    const reason = passed ? undefined : !colsOk ? 'columns' : !countOk ? 'row_count' : 'values';
+    const message = passed
+      ? undefined
+      : reason === 'columns'
+        ? `Gözlənilən sütunlar: ${expected.columns.join(', ')} (sizdə: ${input.columns.join(', ') || '—'})`
+        : reason === 'row_count'
+          ? `Gözlənilən sətir sayı: ${expected.row_count}, sizdə: ${input.row_count}`
+          : 'Sütunlar və sətir sayı düzgündür, amma dəyərlər fərqlidir';
+    if (preview)
+      return {
+        passed,
+        reason,
+        message,
+        attempts: 0,
+        xpAwarded: passed ? step.xp : 0,
+        coursePercent: 0,
+        courseCompleted: false,
+        next: null,
+      };
+    await this.prisma.submission.create({
+      data: {
+        userId,
+        stepId,
+        type: 'SQL',
+        payload: {
+          query: input.query.slice(0, 20_000),
+          row_hash: input.row_hash,
+          row_count: input.row_count,
+          columns: input.columns,
+        } as unknown as Prisma.InputJsonValue,
+        result: { passed, reason: reason ?? null } as unknown as Prisma.InputJsonValue,
+        passed,
+      },
+    });
+    if (passed) {
+      const r = await this.progress.completeStep(userId, stepId, { attemptsDelta: 1 });
+      const p = await this.prisma.stepProgress.findUnique({
+        where: { userId_stepId: { userId, stepId } },
+      });
+      return { ...r, passed: true, attempts: p?.attempts ?? 1 };
+    }
+    await this.progress.recordAttempt(userId, stepId, null);
+    const st = await this.stateAfterAttempt(userId, step.module.courseId, stepId);
+    return {
+      passed: false,
+      reason,
+      message,
+      attempts: st.attempts,
+      xpAwarded: 0,
+      coursePercent: st.coursePercent,
+      courseCompleted: st.courseCompleted,
+      next: null,
+    };
+  }
+
+  /** Python: testlər brauzerdə (Pyodide) işləyir; nəticə client tərəfindən bildirilir (spesifikasiya: server xərci yoxdur) */
+  async submitPython(
+    userId: string,
+    stepId: string,
+    input: PythonSubmissionInput,
+    preview: boolean,
+  ): Promise<CodeSubmitResultDto> {
+    const step = await this.loadStep(stepId);
+    if (step.type !== 'PYTHON') throw badRequest('WRONG_STEP_TYPE');
+    await this.assertUnlocked(userId, step.id, preview);
+    const passed = input.passed;
+    const reason = passed ? undefined : 'error';
+    if (preview)
+      return {
+        passed,
+        reason,
+        message: input.error,
+        attempts: 0,
+        xpAwarded: passed ? step.xp : 0,
+        coursePercent: 0,
+        courseCompleted: false,
+        next: null,
+      };
+    await this.prisma.submission.create({
+      data: {
+        userId,
+        stepId,
+        type: 'PYTHON',
+        payload: {
+          code: input.code.slice(0, 50_000),
+          stdout: input.stdout?.slice(0, 10_000),
+          error: input.error?.slice(0, 2_000),
+        } as unknown as Prisma.InputJsonValue,
+        result: { passed } as unknown as Prisma.InputJsonValue,
+        passed,
+      },
+    });
+    if (passed) {
+      const r = await this.progress.completeStep(userId, stepId, { attemptsDelta: 1 });
+      const p = await this.prisma.stepProgress.findUnique({
+        where: { userId_stepId: { userId, stepId } },
+      });
+      return { ...r, passed: true, attempts: p?.attempts ?? 1 };
+    }
+    await this.progress.recordAttempt(userId, stepId, null);
+    const st = await this.stateAfterAttempt(userId, step.module.courseId, stepId);
+    return {
+      passed: false,
+      reason,
+      message: input.error,
+      attempts: st.attempts,
+      xpAwarded: 0,
+      coursePercent: st.coursePercent,
+      courseCompleted: st.courseCompleted,
+      next: null,
+    };
+  }
+
+  /** Addım ipucusu: bir dəfə XP cəriməsi (dedupe), mətn yalnız bu endpoint-dən qayıdır */
+  async hint(
+    userId: string,
+    stepId: string,
+    index: number,
+    preview: boolean,
+  ): Promise<HintResultDto> {
+    const step = await this.loadStep(stepId);
+    const secret = (step.secret ?? {}) as { hints?: string[] };
+    const cfg = step.config as { hint_penalty_xp?: number };
+    const hints = secret.hints ?? [];
+    const text = hints[index];
+    if (typeof text !== 'string') throw notFound('NOT_FOUND', 'Belə ipucu yoxdur');
+    const penalty = cfg.hint_penalty_xp ?? 10;
+    if (preview) return { index, hint: text, xpPenalty: 0, unlocked: hints.slice(0, index + 1) };
+    await this.assertUnlocked(userId, stepId, false);
+    const hintKey = `h:${index}`;
+    await this.prisma.$transaction(async (tx) => {
+      const existing = await tx.hintUsage.findUnique({
+        where: { userId_stepId_hintKey: { userId, stepId, hintKey } },
+      });
+      if (existing) return;
+      await tx.hintUsage.create({ data: { userId, stepId, hintKey, xpPenalty: penalty } });
+      if (penalty > 0)
+        await this.progress.grantXp(
+          tx,
+          userId,
+          -penalty,
+          'HINT_USED',
+          `hint:${stepId}:${hintKey}`,
+          { stepId, courseId: step.module.courseId },
+        );
+    });
+    const used = await this.prisma.hintUsage.findMany({
+      where: { userId, stepId, hintKey: { startsWith: 'h:' } },
+    });
+    const unlocked = used
+      .map((u) => Number(u.hintKey.slice(2)))
+      .sort((a, b) => a - b)
+      .map((i) => hints[i])
+      .filter((x): x is string => typeof x === 'string');
+    return { index, hint: text, xpPenalty: penalty, unlocked };
+  }
+
+  async ctfHint(userId: string, taskId: string, preview: boolean): Promise<HintResultDto> {
+    const task = await this.prisma.ctfTask.findUnique({
+      where: { id: taskId },
+      include: { step: { include: { module: { select: { courseId: true } } } } },
+    });
+    if (!task) throw notFound();
+    if (!task.hint) throw notFound('NOT_FOUND', 'Bu sual üçün ipucu yoxdur');
+    const cfg = task.step.config as { hint_penalty_xp?: number };
+    const penalty = cfg.hint_penalty_xp ?? 10;
+    if (preview) return { index: task.order, hint: task.hint, xpPenalty: 0, unlocked: [task.hint] };
+    await this.assertUnlocked(userId, task.stepId, false);
+    const hintKey = `t:${task.key}`;
+    await this.prisma.$transaction(async (tx) => {
+      const existing = await tx.hintUsage.findUnique({
+        where: { userId_stepId_hintKey: { userId, stepId: task.stepId, hintKey } },
+      });
+      if (existing) return;
+      await tx.hintUsage.create({
+        data: { userId, stepId: task.stepId, hintKey, xpPenalty: penalty },
+      });
+      if (penalty > 0)
+        await this.progress.grantXp(
+          tx,
+          userId,
+          -penalty,
+          'HINT_USED',
+          `hint:${task.stepId}:${hintKey}`,
+          { stepId: task.stepId, courseId: task.step.module.courseId },
+        );
+    });
+    return { index: task.order, hint: task.hint, xpPenalty: penalty, unlocked: [task.hint] };
+  }
+
+  /** CTF cavabı: yalnız serverdə hash müqayisəsi; bütün suallar həll olunanda addım tamamlanır (addım XP-si 0, XP sual-sual) */
+  async ctfAnswer(
+    userId: string,
+    taskId: string,
+    answer: string,
+    preview: boolean,
+  ): Promise<CtfAnswerResultDto> {
+    const task = await this.prisma.ctfTask.findUnique({
+      where: { id: taskId },
+      include: { step: { include: { module: { select: { courseId: true } } } } },
+    });
+    if (!task) throw notFound();
+    const stepId = task.stepId;
+    await this.assertUnlocked(userId, stepId, preview);
+    const correct = !!task.answerHash && hashAnswer(answer, task.caseSensitive) === task.answerHash;
+    if (preview)
+      return {
+        correct,
+        taskId,
+        solvedAll: false,
+        attempts: 0,
+        xpAwarded: correct ? task.points : 0,
+        coursePercent: 0,
+        courseCompleted: false,
+        next: null,
+      };
+    await this.prisma.submission.create({
+      data: {
+        userId,
+        stepId,
+        type: 'CTF',
+        payload: { taskKey: task.key } as unknown as Prisma.InputJsonValue,
+        result: { correct } as unknown as Prisma.InputJsonValue,
+        passed: correct,
+      },
+    });
+    if (!correct) {
+      await this.progress.recordAttempt(userId, stepId, null);
+      const st = await this.stateAfterAttempt(userId, task.step.module.courseId, stepId);
+      return {
+        correct: false,
+        taskId,
+        solvedAll: false,
+        attempts: st.attempts,
+        xpAwarded: 0,
+        coursePercent: st.coursePercent,
+        courseCompleted: st.courseCompleted,
+        next: null,
+      };
+    }
+    const xpAwarded = await this.prisma.$transaction(async (tx) => {
+      const existing = await tx.ctfSolve.findUnique({
+        where: { userId_ctfTaskId: { userId, ctfTaskId: taskId } },
+      });
+      if (existing) return 0;
+      await tx.ctfSolve.create({ data: { userId, ctfTaskId: taskId } });
+      return this.progress.grantXp(tx, userId, task.points, 'CTF_TASK_SOLVED', `ctf:${taskId}`, {
+        stepId,
+        ctfTaskId: taskId,
+        courseId: task.step.module.courseId,
+      });
+    });
+    const [total, solved] = await Promise.all([
+      this.prisma.ctfTask.count({ where: { stepId } }),
+      this.prisma.ctfSolve.count({ where: { userId, ctfTask: { stepId } } }),
+    ]);
+    if (solved >= total) {
+      const r = await this.progress.completeStep(userId, stepId, { xp: 0, attemptsDelta: 1 });
+      const p = await this.prisma.stepProgress.findUnique({
+        where: { userId_stepId: { userId, stepId } },
+      });
+      return {
+        ...r,
+        correct: true,
+        taskId,
+        solvedAll: true,
+        xpAwarded,
+        attempts: p?.attempts ?? 1,
+      };
+    }
+    await this.progress.recordAttempt(userId, stepId, null);
+    const st = await this.stateAfterAttempt(userId, task.step.module.courseId, stepId);
+    return {
+      correct: true,
+      taskId,
+      solvedAll: false,
+      attempts: st.attempts,
+      xpAwarded,
+      coursePercent: st.coursePercent,
+      courseCompleted: st.courseCompleted,
       next: null,
     };
   }

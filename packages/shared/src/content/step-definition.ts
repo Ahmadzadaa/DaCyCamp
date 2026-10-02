@@ -106,6 +106,7 @@ export const sqlStrict = z.object({
   check: z.enum(CHECK_MODES).default('result_match'),
   hints: lines.default([]),
   tasks: lines.default([]),
+  hint_penalty_xp: z.number().int().min(0).max(1000).default(DEFAULT_HINT_PENALTY_XP),
 });
 export const sqlDraft = z.object({
   type: z.literal('sql'),
@@ -117,6 +118,7 @@ export const sqlDraft = z.object({
   check: z.enum(CHECK_MODES).default('result_match'),
   hints: lines.default([]),
   tasks: lines.default([]),
+  hint_penalty_xp: z.number().int().min(0).max(1000).default(DEFAULT_HINT_PENALTY_XP),
 });
 
 // ── python ──────────────────────────────────────────────────────────────────
@@ -130,6 +132,7 @@ export const pythonStrict = z.object({
   tests: code.refine((s) => s.trim().length > 0, 'Testlər boş ola bilməz'),
   hints: lines.default([]),
   tasks: lines.default([]),
+  hint_penalty_xp: z.number().int().min(0).max(1000).default(DEFAULT_HINT_PENALTY_XP),
 });
 export const pythonDraft = z.object({
   type: z.literal('python'),
@@ -141,6 +144,7 @@ export const pythonDraft = z.object({
   tests: code.optional(),
   hints: lines.default([]),
   tasks: lines.default([]),
+  hint_penalty_xp: z.number().int().min(0).max(1000).default(DEFAULT_HINT_PENALTY_XP),
 });
 
 // ── terminal ────────────────────────────────────────────────────────────────
@@ -153,6 +157,7 @@ export const terminalStrict = z.object({
   check_script: assetPath,
   hints: lines.default([]),
   tasks: lines.default([]),
+  hint_penalty_xp: z.number().int().min(0).max(1000).default(0),
 });
 export const terminalDraft = z.object({
   type: z.literal('terminal'),
@@ -163,6 +168,7 @@ export const terminalDraft = z.object({
   check_script: assetPath.optional(),
   hints: lines.default([]),
   tasks: lines.default([]),
+  hint_penalty_xp: z.number().int().min(0).max(1000).default(0),
 });
 
 // ── ctf ─────────────────────────────────────────────────────────────────────

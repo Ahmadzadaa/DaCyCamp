@@ -1,6 +1,9 @@
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
-import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { ThrottlerModule } from '@nestjs/throttler';
+import { UserThrottlerGuard } from './common/guards/user-throttler.guard';
+import { SqlCheckModule } from './sql-check/sql-check.module';
+import { ImportExportModule } from './import-export/import-export.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
 import { AuthGuard } from './common/guards/auth.guard';
@@ -30,11 +33,14 @@ import { ProgressModule } from './progress/progress.module';
     LearnModule,
     DashboardModule,
     PathsModule,
+    SqlCheckModule,
+    ImportExportModule,
   ],
   controllers: [HealthController],
   providers: [
-    { provide: APP_GUARD, useClass: ThrottlerGuard },
+    // sıra vacibdir: əvvəl auth (req.user), sonra istifadəçiyə görə limit, sonra rollar
     { provide: APP_GUARD, useClass: AuthGuard },
+    { provide: APP_GUARD, useClass: UserThrottlerGuard },
     { provide: APP_GUARD, useClass: RolesGuard },
   ],
 })

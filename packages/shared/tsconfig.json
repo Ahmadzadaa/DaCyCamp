@@ -4,7 +4,8 @@
     "rootDir": "src",
     "outDir": "dist",
     "declaration": true,
-    "noEmit": true
+    "noEmit": true,
+    "lib": ["ES2022", "DOM"]
   },
   "include": ["src"]
 }

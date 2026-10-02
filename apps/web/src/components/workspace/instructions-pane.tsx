@@ -2,6 +2,7 @@ import type { StepViewDto } from '@dacy/shared';
 import { Markdown } from '@/components/app/markdown';
 import { t } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
+import { HintsBox } from './hints-box';
 
 export function InstructionsPane({ view }: { view: StepViewDto }) {
   const v = view.view;
@@ -10,13 +11,6 @@ export function InstructionsPane({ view }: { view: StepViewDto }) {
     v.kind === 'ctf' ? 'ws.roomOf' : v.kind === 'terminal' ? 'ws.labOf' : 'ws.taskOf';
   const done = view.state === 'completed';
   const tasks: string[] = v.kind === 'ctf' ? [] : v.tasks;
-  const hintCount =
-    'hint_count' in v
-      ? v.hint_count
-      : v.kind === 'ctf'
-        ? v.tasks.filter((x) => x.hint_available).length
-        : 0;
-  const penalty = v.kind === 'ctf' ? v.hint_penalty_xp : v.kind === 'terminal' ? 0 : 10;
   return (
     <div className="ws-left">
       <div className="kicker">
@@ -35,10 +29,7 @@ export function InstructionsPane({ view }: { view: StepViewDto }) {
       {tasks.length ? (
         <>
           <h4>{t('ws.task')}</h4>
-          <div
-            className="task"
-            style={v.kind === 'ctf' ? { borderLeftColor: 'var(--cy)' } : undefined}
-          >
+          <div className="task">
             <ol>
               {tasks.map((task, i) => (
                 <li key={i} className={cn(done && 'done')}>
@@ -67,15 +58,14 @@ export function InstructionsPane({ view }: { view: StepViewDto }) {
           </div>
         </>
       ) : null}
-      {hintCount > 0 ? (
-        <button
-          type="button"
-          className="b hintb"
-          disabled
-          title={t('ws.comingPhase', { phase: 2 })}
-        >
-          💡 {penalty ? t('ws.hintCost', { n: penalty }) : t('ws.showHint')}
-        </button>
+      {v.kind !== 'ctf' ? (
+        <HintsBox
+          stepId={view.id}
+          hintCount={v.hint_count}
+          unlocked={v.hints_unlocked}
+          penalty={v.hint_penalty_xp}
+          preview={view.preview}
+        />
       ) : null}
     </div>
   );

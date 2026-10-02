@@ -12,3 +12,6 @@ test-results/
 apps/api/storage/
 .DS_Store
 *.tsbuildinfo
+apps/web/public/duckdb/
+apps/web/public/pyodide/
+apps/web/public/monaco/
