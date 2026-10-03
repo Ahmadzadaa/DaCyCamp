@@ -8,7 +8,7 @@ import { t } from '@/lib/i18n';
 const LabTerminal = dynamic(() => import('./lab-terminal').then((m) => m.LabTerminal), {
   ssr: false,
   loading: () => (
-    <div className="flex h-full min-h-[240px] items-center justify-center bg-[#0a1424] text-sm text-on-dark-muted">
+    <div className="flex h-full min-h-[240px] items-center justify-center bg-[#141416] text-sm text-on-dark-muted">
       {t('ws.loadingEditor')}
     </div>
   ),
@@ -87,7 +87,7 @@ export function LabPanel({
 
 function Center({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex h-full min-h-[240px] flex-col items-center justify-center gap-3 bg-[#0a1424] p-6 text-center text-sm text-on-dark">
+    <div className="flex h-full min-h-[240px] flex-col items-center justify-center gap-3 bg-[#141416] p-6 text-center text-sm text-on-dark">
       {children}
     </div>
   );

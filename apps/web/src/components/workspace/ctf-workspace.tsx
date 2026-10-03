@@ -87,7 +87,7 @@ export function CtfWorkspace({ view, ctf }: { view: StepViewDto; ctf: CtfStudent
 
   const allSolved = tasks.every((x) => x.solved);
   return (
-    <div className="ws-right !grid-rows-[auto_1fr]">
+    <div className="ws-right !grid-rows-[auto_1fr]" data-theme="dark">
       <div className="ftabs" role="tablist">
         <button
           type="button"

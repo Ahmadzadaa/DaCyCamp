@@ -34,7 +34,7 @@ export function TheoryView({ view, content }: { view: StepViewDto; content: Theo
 
   return (
     <div className="ws-scroll">
-      <div className="ws-center">
+      <div className="ws-center ws-read">
         <div className="kicker mb-3 flex flex-wrap items-center gap-2">
           <span
             className="badge badge-track"

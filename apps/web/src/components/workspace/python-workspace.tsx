@@ -128,7 +128,7 @@ export function PythonWorkspace({ view, py }: { view: StepViewDto; py: PythonStu
   );
 
   return (
-    <div className="ws-right">
+    <div className="ws-right" data-theme="dark">
       <div className="ftabs">
         <span className="on">script.py</span>
         {py.dataset.map((d) => (

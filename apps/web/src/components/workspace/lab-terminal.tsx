@@ -39,12 +39,12 @@ export function LabTerminal({ sessionId, onExit }: { sessionId: string; onExit?:
       scrollback: 3000,
       allowProposedApi: true,
       theme: {
-        background: '#0a1424',
-        foreground: '#e6ecf7',
-        cursor: '#2bd4a4',
-        cursorAccent: '#0a1424',
-        selectionBackground: '#2a3f66',
-        black: '#0e1b30',
+        background: '#141416',
+        foreground: '#f5f5f7',
+        cursor: '#22c79a',
+        cursorAccent: '#141416',
+        selectionBackground: '#3a3a3c',
+        black: '#1c1c1e',
         green: '#2bd4a4',
         blue: '#8fb4ff',
         cyan: '#9ee6cf',
@@ -52,7 +52,7 @@ export function LabTerminal({ sessionId, onExit }: { sessionId: string; onExit?:
         red: '#f79bb5',
         magenta: '#c6a7ff',
         white: '#e6ecf7',
-        brightBlack: '#4d5f82',
+        brightBlack: '#636366',
       },
     });
     const fit = new FitAddon();

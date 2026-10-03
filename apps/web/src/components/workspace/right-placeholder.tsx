@@ -18,7 +18,7 @@ export function RightPlaceholder({ view }: { view: StepViewDto }) {
   if (v.kind === 'sql' || v.kind === 'python') {
     const file = v.kind === 'sql' ? 'query.sql' : 'script.py';
     return (
-      <div className="ws-right">
+      <div className="ws-right" data-theme="dark">
         <div className="ftabs">
           <span className="on">{file}</span>
           {v.dataset.map((d) => (
@@ -56,7 +56,7 @@ export function RightPlaceholder({ view }: { view: StepViewDto }) {
   }
   if (v.kind === 'terminal') {
     return (
-      <div className="ws-right !grid-rows-[auto_1fr_auto]">
+      <div className="ws-right !grid-rows-[auto_1fr_auto]" data-theme="dark">
         <div className="ftabs">
           <span className="on">{t('ws.terminal')}</span>
           <span>{t('ws.files')}</span>
@@ -86,7 +86,7 @@ export function RightPlaceholder({ view }: { view: StepViewDto }) {
   }
   if (v.kind === 'ctf') {
     return (
-      <div className="ws-right !grid-rows-[auto_1fr]">
+      <div className="ws-right !grid-rows-[auto_1fr]" data-theme="dark">
         <div className="ftabs">
           <span className="on">{t('ws.questions')}</span>
           {v.attachments.length ? <span>{t('ws.files')}</span> : null}

@@ -34,7 +34,7 @@ export default async function AdminSearchPage({
           description={t('adminSearch.noneHint')}
         />
       ) : null}
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-2">
         {r.courses.length ? (
           <section className="box">
             <h2 className="box-h">

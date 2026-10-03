@@ -75,7 +75,7 @@ export function TerminalWorkspace({
             : '';
 
   return (
-    <div className="ws-right">
+    <div className="ws-right" data-theme="dark">
       <div className="ftabs" role="tablist">
         <button
           type="button"

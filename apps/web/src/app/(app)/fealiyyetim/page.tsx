@@ -147,7 +147,7 @@ export default async function ActivityPage() {
         </div>
       </section>
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_380px]">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-6 xl:grid-cols-[minmax(0,1fr)_380px]">
         <section className="box" aria-labelledby="ev-h">
           <h2 id="ev-h" className="box-h">
             {t('hub.events')}

@@ -2270,7 +2270,7 @@
     color: var(--on-dark);
   }
   .ws-prose {
-    color: #c6d0e3;
+    color: color-mix(in srgb, var(--on-dark) 88%, transparent);
   }
   .ws-prose p {
     margin-bottom: 12px;
@@ -2292,8 +2292,19 @@
   }
   .ws-prose ul,
   .ws-prose ol {
-    padding-left: 20px;
+    padding-left: 22px;
     margin-bottom: 12px;
+  }
+  .ws-prose ul,
+  .prose-light ul {
+    list-style: disc;
+  }
+  .ws-prose ol,
+  .prose-light ol {
+    list-style: decimal;
+  }
+  .ws-prose li::marker {
+    color: var(--on-dark-muted);
   }
   .ws-prose li {
     margin: 4px 0;
@@ -2303,7 +2314,7 @@
     padding: 1px 6px;
     border-radius: 4px;
     font-size: 0.85em;
-    color: #9ee6cf;
+    color: var(--code-ink, #9ee6cf);
   }
   .ws-prose pre {
     background: var(--navy-2);
@@ -2318,7 +2329,7 @@
   .ws-prose pre code {
     background: transparent;
     padding: 0;
-    color: #c6d0e3;
+    color: var(--on-dark);
   }
   .ws-prose a {
     color: var(--brand);
@@ -2353,7 +2364,7 @@
   .task ol {
     margin: 0;
     padding-left: 18px;
-    color: #d6deec;
+    color: var(--on-dark);
     list-style: decimal;
   }
   .task li {
@@ -2456,11 +2467,11 @@
     width: 42px;
     padding-right: 14px;
     text-align: right;
-    color: #4d5f82;
+    color: color-mix(in srgb, var(--on-dark-muted) 70%, transparent);
   }
   .console {
     border-top: 1px solid var(--navy-line);
-    background: #0a1424;
+    background: var(--navy-2);
     overflow: auto;
     font-family: var(--font-mono);
     font-size: 13px;
@@ -2483,7 +2494,7 @@
     margin: 0;
     padding: 10px 14px;
     white-space: pre-wrap;
-    color: #c6d0e3;
+    color: var(--on-dark);
   }
   .actions {
     display: flex;
@@ -2510,7 +2521,7 @@
   }
   .fq p {
     margin-bottom: 10px;
-    color: #d6deec;
+    color: var(--on-dark);
   }
   .fq .row {
     display: flex;

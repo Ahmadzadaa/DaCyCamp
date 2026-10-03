@@ -34,7 +34,7 @@ export function WorkspaceTop({ view }: { view: StepViewDto }) {
         </Link>
       </div>
       {view.preview ? (
-        <div className="bg-de/90 px-4 py-1.5 text-center text-xs font-semibold text-navy">
+        <div className="bg-de/90 px-4 py-1.5 text-center text-xs font-semibold text-[#2b1d00]">
           {t('common.previewMode')}
         </div>
       ) : null}

@@ -1,7 +1,7 @@
 /*
- * Dizayn təklifi v3 — «iOS üslubu». YALNIZ <html data-ui="ios"> olanda işləyir (?ui=ios),
- * standart görünüşə toxunmur. Prinsiplər: qruplaşdırılmış açıq fon, kölgəli kartlar (çərçivəsiz),
- * nazik ayırıcılar, kapsul düymələr, seqment idarəetmə, şüşə (blur) header/menyular,
+ * Dizayn v3 — «iOS üslubu» (3 oktyabr 2026-da təsdiqləndi, saytın standart görünüşüdür).
+ * Kök layout <html data-ui="ios"> qoyur; qaydalar globals.css-in üzərinə yazılır.
+ * Prinsiplər: qruplaşdırılmış açıq fon, kölgəli kartlar (çərçivəsiz), nazik ayırıcılar, kapsul düymələr, seqment idarəetmə, şüşə (blur) header/menyular,
  * rəngli ikon kafelləri, yumşaq «yay» animasiyaları; prefers-reduced-motion hörmət edilir.
  */
 
@@ -38,7 +38,9 @@
   --top-h: 60px;
   -webkit-font-smoothing: antialiased;
 }
-:root[data-ui='ios'][data-theme='dark'] {
+/* tünd palitra: bütün sayt (data-theme='dark') və ya içəridəki tünd zona (məs. dərsdə redaktor tərəfi) */
+:root[data-ui='ios'][data-theme='dark'],
+[data-ui='ios'] [data-theme='dark'] {
   --paper: #000000;
   --card: #1c1c1e;
   --ink: #f5f5f7;
@@ -390,20 +392,6 @@
     border-color: var(--brand);
     box-shadow: 0 0 0 4px color-mix(in srgb, var(--brand) 18%, transparent);
   }
-  [data-ui='ios'] button[role='switch'] {
-    height: 31px;
-    width: 51px;
-  }
-  [data-ui='ios'] button[role='switch'] > span {
-    width: 27px;
-    height: 27px;
-    box-shadow:
-      0 3px 8px rgba(0, 0, 0, 0.15),
-      0 1px 1px rgba(0, 0, 0, 0.06);
-  }
-  [data-ui='ios'] button[role='switch'][data-state='checked'] > span {
-    transform: translateX(20px);
-  }
 
   /* cədvəllər: inset grouped */
   [data-ui='ios'] .tbl-admin th {
@@ -734,5 +722,172 @@
     );
     background-size: 200% 100%;
     animation: ios-shimmer 1.4s linear infinite;
+  }
+}
+
+/* ── dərs ekranı: oxu hissələri (üst panel, nəzəri, test, təlimat) açıq, ─────
+   redaktor / konsol / terminal (.ws-right) tünd — dəyişənlər zonaya görə yenidən təyin olunur */
+:root[data-ui='ios'] .ws {
+  --navy: var(--card);
+  --navy-2: var(--paper);
+  --navy-3: var(--soft);
+  --navy-line: var(--line);
+  --on-dark: var(--ink);
+  --on-dark-muted: var(--muted);
+  --code-ink: #0b7d5f;
+}
+:root[data-ui='ios'][data-theme='dark'] .ws {
+  --code-ink: #7ee0c3;
+}
+:root[data-ui='ios'] .ws .ws-right {
+  --navy: #1c1c1e;
+  --navy-2: #141416;
+  --navy-3: #2c2c2e;
+  --navy-line: #38383a;
+  --on-dark: #f5f5f7;
+  --on-dark-muted: #98989f;
+  --code-ink: #7ee0c3;
+  color: var(--on-dark);
+  background: var(--navy-2);
+}
+
+@layer components {
+  [data-ui='ios'] .ws-top {
+    background: var(--glass);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    backdrop-filter: saturate(180%) blur(20px);
+    border-bottom: 0.5px solid var(--line);
+    position: sticky;
+    top: 0;
+    z-index: 20;
+  }
+  [data-ui='ios'] .ws .pbar {
+    height: 5px;
+    border-radius: 999px;
+  }
+  [data-ui='ios'] .ws .gutter {
+    width: 1px;
+  }
+  [data-ui='ios'] .ws .gutter:hover,
+  [data-ui='ios'] .ws .gutter[data-resize-handle-state='drag'] {
+    width: 1px;
+    box-shadow: 0 0 0 2px var(--brand);
+  }
+
+  /* nəzəri addım — ağ kart içində oxu mətni */
+  [data-ui='ios'] .ws-read {
+    background: var(--card);
+    border-radius: var(--r-hero);
+    box-shadow: var(--shadow-card);
+    margin: 28px auto 48px;
+    padding: 34px 40px 30px;
+    max-width: 760px;
+    font-size: 15px;
+    line-height: 1.7;
+  }
+  @media (max-width: 640px) {
+    [data-ui='ios'] .ws-read {
+      margin: 12px auto 28px;
+      padding: 22px 18px 20px;
+      border-radius: var(--radius-card);
+      width: calc(100% - 16px);
+    }
+  }
+
+  /* mətn: kod blokları, cədvəllər, qeydlər (blockquote → qeyd kartı) */
+  [data-ui='ios'] .ws .ws-prose pre,
+  [data-ui='ios'] .prose-light pre {
+    border: 0.5px solid var(--line);
+    border-radius: 14px;
+    padding: 14px 16px;
+  }
+  [data-ui='ios'] .ws .ws-prose table {
+    border-collapse: separate;
+    border-spacing: 0;
+    border: 0.5px solid var(--navy-line);
+    border-radius: 12px;
+    overflow: hidden;
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+  }
+  [data-ui='ios'] .ws .ws-prose th,
+  [data-ui='ios'] .ws .ws-prose td {
+    border: 0;
+    border-bottom: 0.5px solid var(--navy-line);
+    padding: 8px 14px;
+  }
+  [data-ui='ios'] .ws .ws-prose tr:last-child td {
+    border-bottom: 0;
+  }
+  [data-ui='ios'] .ws .ws-prose th {
+    background: var(--navy-3);
+    color: var(--on-dark);
+    font-weight: 600;
+  }
+  [data-ui='ios'] .ws .ws-prose blockquote,
+  [data-ui='ios'] .prose-light blockquote {
+    border-left: 3px solid var(--brand);
+    background: color-mix(in srgb, var(--brand) 9%, transparent);
+    border-radius: 0 12px 12px 0;
+    padding: 10px 14px;
+    color: var(--on-dark);
+    margin: 0 0 14px;
+  }
+  [data-ui='ios'] .ws .ws-prose blockquote p:last-child {
+    margin-bottom: 0;
+  }
+  [data-ui='ios'] .ws .ws-prose img {
+    border-radius: 14px;
+    box-shadow: var(--shadow-card);
+    border: 0.5px solid var(--line);
+  }
+  :root[data-ui='ios']:not([data-theme='dark']) .ws .badge-track {
+    color: color-mix(in srgb, var(--c) 70%, #1c1c1e);
+    background: color-mix(in srgb, var(--c) 14%, transparent);
+  }
+
+  /* təlimat paneli və tapşırıq siyahısı */
+  [data-ui='ios'] .ws .task {
+    border-radius: 14px;
+  }
+  [data-ui='ios'] .ws .hintb {
+    border-radius: 999px;
+    border-style: solid;
+    border-width: 0.5px;
+  }
+
+  /* test: hər sual ayrıca kart, variantlar iOS siyahı sətri kimi */
+  [data-ui='ios'] .ws .quiz-q {
+    border: 0;
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+    padding: 18px 20px;
+    margin-bottom: 14px;
+  }
+  [data-ui='ios'] .ws .quiz-q.good {
+    box-shadow:
+      0 0 0 2px var(--ok),
+      var(--shadow-card);
+  }
+  [data-ui='ios'] .ws .quiz-q.bad {
+    box-shadow:
+      0 0 0 2px var(--err),
+      var(--shadow-card);
+  }
+  [data-ui='ios'] .ws .opt-row {
+    border-radius: 12px;
+    padding: 10px 12px;
+    border: 0.5px solid var(--line);
+    transition:
+      background 0.15s var(--ease),
+      transform 0.15s var(--ease);
+  }
+  [data-ui='ios'] .ws .opt-row:active {
+    transform: scale(0.99);
+  }
+  [data-ui='ios'] .ws .opt-row.sel {
+    border-color: var(--brand);
+    box-shadow: inset 0 0 0 1px var(--brand);
   }
 }

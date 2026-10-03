@@ -359,6 +359,15 @@ Mənbə: `Python_Day_1/2.pptx` (nəzəri) + `Python_Day_1/2.docx` (35 tapşırı
 - **Yoxlama:** `pnpm --filter @dacy/web check:python` — hər Python addımında həll testdən keçir, starter keçmir (Node-da Pyodide, şəbəkəsiz; CI-da işləyir). API e2e `content-packages.e2e-spec.ts` hər paketin idxalını yoxlayır. Playwright `python-course.spec.ts`: idxal, kataloq, tələbə axını, Markdown sual, flush və gözətçi.
 - Testlər: API e2e 101/101, Playwright `python-course` 4/4, `check:python` 18/18.
 
+## Dizayn v3 (iOS üslubu) — standart görünüş, 3 oktyabr 2026
+
+İstifadəçi `?ui=ios` önizləməsini təsdiqlədi; indi bütün sayt bu dizayndadır (`<html data-ui="ios">`, `apps/web/src/app/ios.css`). Önizləmə açarı (`?ui=` / localStorage) silindi.
+
+- **Dərs ekranı** (önizləmədə yox idi): oxu hissələri — üst panel (şüşə), nəzəri addım (ağ kart), test sualları, təlimat paneli — açıq; redaktor/konsol/terminal (`.ws-right`, `data-theme="dark"`) tünd. `--navy*` / `--on-dark*` dəyişənləri zonaya görə yenidən təyin olunur — komponentlər dəyişmədən uyğunlaşır. Dərs layout-u artıq məcburi `data-theme="dark"` qoymur (saytın açıq/tünd seçiminə tabedir).
+- Monaco və terminal: Xcode tünd palitrası (#141416). Markdown: siyahı nöqtələri (əvvəl görünmürdü), `blockquote` → yaşıl qeyd kartı, yuvarlaq cədvəllər.
+- Düzəlişlər: iOS açarı (Switch) knopkası iki dəfə sürüşürdü (Tailwind v4 `translate` + `transform`) — ölçülər komponentə köçürüldü; `/fealiyyetim` və `/admin/axtar` telefonda üfüqi daşırdı; `SplitLayout` açar xəbərdarlığı; önizləmə zolağında mətn kontrastı.
+- Bütün marşrutlar 1440 və 390 enində yoxlanıldı (43 səhifə, üfüqi daşma yoxdur).
+
 ## Növbəti mərhələ — digər kursların köçürülməsi (gözləyir)
 
 İstifadəçi qalan dərs və tapşırıq fayllarını göndərəcək (Python Gün 3–10, Docker, SQL, Excel və s.). Hər kurs `content/courses/<slug>/` paketi kimi yazılır (`docs/content-package.md`), `check:python` və idxal validasiyası ilə yoxlanılır. Python4Business-in növbəti günləri eyni kursa yeni fəsillər kimi əlavə olunur (`08-g3-…`). Excel tapşırıqlarının formatı fayllar gələndə seçiləcək (məs. Excel faylı + test sualları, və ya Python/pandas ilə).

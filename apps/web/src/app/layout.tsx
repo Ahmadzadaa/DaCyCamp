@@ -21,19 +21,17 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   viewportFit: 'cover',
-  themeColor: '#13233F',
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#f2f2f7' },
+    { media: '(prefers-color-scheme: dark)', color: '#000000' },
+  ],
 };
-
-const UI_SCRIPT = `try{var q=new URLSearchParams(location.search).get('ui');if(q==='ios'||q==='klassik')localStorage.setItem('dacy_ui',q);if(localStorage.getItem('dacy_ui')==='ios')document.documentElement.setAttribute('data-ui','ios')}catch(e){}`;
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const levels = await getLevelLabels();
   return (
-    <html lang="az" suppressHydrationWarning>
-      <head>
-        {/* Dizayn təklifi (iOS üslubu): ?ui=ios açır, ?ui=klassik qaytarır; ilk boyamadan əvvəl tətbiq olunur */}
-        <script dangerouslySetInnerHTML={{ __html: UI_SCRIPT }} />
-      </head>
+    // data-ui="ios" — təsdiqlənmiş dizayn v3 (ios.css bu atributa bağlıdır)
+    <html lang="az" data-ui="ios" suppressHydrationWarning>
       <body>
         <Providers>
           <LevelLabelsProvider labels={levels}>{children}</LevelLabelsProvider>

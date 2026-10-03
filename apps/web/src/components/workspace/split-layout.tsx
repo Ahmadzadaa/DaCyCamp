@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import {
   Group,
   Panel,
@@ -36,9 +36,10 @@ export function SplitLayout({ left, right }: { left: React.ReactNode; right: Rea
   if (vertical) {
     return (
       <div className="ws-stack">
-        {left}
+        {/* server komponentindən gələn elementlər — açarsız React xəbərdarlıq verir */}
+        <Fragment key="left">{left}</Fragment>
         <div className="h-1.5 shrink-0 bg-navy-line" aria-hidden />
-        {right}
+        <Fragment key="right">{right}</Fragment>
       </div>
     );
   }
