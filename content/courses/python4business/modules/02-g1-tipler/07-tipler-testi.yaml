@@ -1,0 +1,36 @@
+type: quiz
+title: 'Test: məlumat tipləri'
+xp: 20
+pass_score: 70
+questions:
+  - text: '`int(5.7)` nəticəsi nədir?'
+    options: ['6', '5.7', Xəta, '5']
+    correct: [4]
+    explanation: int() yuvarlaqlaşdırmır, sadəcə kəsr hissəni atır.
+  - text: '`divmod(10, 3)` nə qaytarır?'
+    options: ['3.33', '(3, 1)', '(3, 0.33)', '(1, 3)']
+    correct: [2]
+    explanation: 10 = 3 · 3 + 1 → qismət 3, qalıq 1.
+  - text: '`math.ceil(10.2)` və `math.floor(10.8)` nəticələri hansıdır?'
+    options: [11 və 10, 10 və 11, 11 və 11, 10 və 10]
+    correct: [1]
+    explanation: ceil həmişə yuxarı, floor həmişə aşağı yuvarlaqlaşdırır.
+  - text: '`round(2.5)` nəticəsi nədir?'
+    options: ['3', '2.5', '2', Xəta]
+    correct: [3]
+    explanation: Python tam ortadakı dəyərləri ən yaxın cüt ədədə yuvarlaqlaşdırır — round(2.5) → 2, round(3.5) → 4.
+  - text: '`type("10")` nəyi göstərir?'
+    options: [<class 'int'>, <class 'float'>, <class 'str'>, <class 'bool'>]
+    correct: [3]
+    explanation: Dırnaq içindəki hər şey sətirdir — hətta rəqəmlər də.
+  - text: '`name = "Code"` olduqda `name.upper()` nəticəsi nədir?'
+    options: [code, CODE, cODE, Code]
+    correct: [2]
+  - text: '`"Code Academy".split()` nəticəsi nədir?'
+    options: ["['Code Academy']", "['C', 'o', 'd', 'e']", "'CodeAcademy'", "['Code', 'Academy']"]
+    correct: [4]
+  - text: Bunlardan hansılar `True` qaytarır?
+    type: multiple
+    options: ['any([False, True])', bool(0), not True, 'all([True, True])']
+    correct: [1, 4]
+    explanation: any — ən azı biri doğrudursa, all — hamısı doğrudursa True. not True → False, bool(0) → False.

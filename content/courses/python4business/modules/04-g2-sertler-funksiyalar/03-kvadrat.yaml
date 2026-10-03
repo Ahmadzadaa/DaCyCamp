@@ -1,0 +1,36 @@
+type: python
+title: 'İlk funksiya: ədədin kvadratı'
+xp: 30
+estimated_minutes: 5
+instructions: |
+  Daxil edilən ədədin kvadratını **qaytaran** funksiya yaz.
+
+  Funksiya nəticəni `print()` etməməli, `return` ilə qaytarmalıdır — testlər funksiyanı müxtəlif ədədlərlə çağırıb qaytardığı dəyəri yoxlayacaq.
+tasks:
+  - 'kvadrat(eded) funksiyasını yaz: ədədin kvadratını return ilə qaytarsın.'
+  - 'Funksiyanı bir neçə ədədlə çağırıb nəticəni ekrana yazdır.'
+starter_code: |
+  def kvadrat(eded):
+      # ədədin kvadratını qaytar
+      pass
+
+
+  print(kvadrat(4))    # 16 gözlənilir
+  print(kvadrat(-3))   # 9 gözlənilir
+solution: |
+  def kvadrat(eded):
+      # ədədin kvadratını qaytar
+      return eded ** 2
+
+
+  print(kvadrat(4))    # 16 gözlənilir
+  print(kvadrat(-3))   # 9 gözlənilir
+tests: |
+  assert callable(globals().get("kvadrat")), "kvadrat adlı funksiya tapılmadı"
+  for _x, _y in [(4, 16), (-3, 9), (0, 0), (1.5, 2.25), (10, 100)]:
+      _r = kvadrat(_x)
+      assert _r is not None, "Funksiya None qaytarır — nəticəni return ilə qaytar"
+      assert _r == _y, f"kvadrat({_x}) {_y} qaytarmalıdır, sənin funksiyan: {_r!r}"
+hints:
+  - 'pass sətrini return ... ilə əvəz et.'
+  - 'return eded ** 2 və ya return eded * eded'

@@ -1,0 +1,60 @@
+type: python
+title: 'Siyahıda ən böyük, ən kiçik və cəm'
+xp: 30
+estimated_minutes: 6
+instructions: |
+  `max()`, `min()` və `sum()` funksiyaları siyahı ilə işləyir — Excel-dəki `MAX`, `MIN`, `SUM` kimi.
+
+  ```python
+  satislar = [120, 340, 90]
+  max(satislar)   # 340
+  ```
+
+  Siyahıları dəyişmə, nəticələri göstərilən dəyişənlərə yaz və ekrana çıxar.
+tasks:
+  - 'numbers siyahısındakı ən böyük ədədi tap (en_boyuk).'
+  - 'numbers siyahısındakı ən kiçik ədədi tap (en_kicik).'
+  - 'numbers2 siyahısındakı bütün elementlərin cəmini tap (cem).'
+starter_code: |
+  numbers = [3, 7, 9, 5, 1]
+  numbers2 = [2, 4, 6, 8]
+
+  # 1. Ən böyük ədəd
+  en_boyuk = ...
+  print(en_boyuk)
+
+  # 2. Ən kiçik ədəd
+  en_kicik = ...
+  print(en_kicik)
+
+  # 3. numbers2-nin cəmi
+  cem = ...
+  print(cem)
+solution: |
+  numbers = [3, 7, 9, 5, 1]
+  numbers2 = [2, 4, 6, 8]
+
+  # 1. Ən böyük ədəd
+  en_boyuk = max(numbers)
+  print(en_boyuk)
+
+  # 2. Ən kiçik ədəd
+  en_kicik = min(numbers)
+  print(en_kicik)
+
+  # 3. numbers2-nin cəmi
+  cem = sum(numbers2)
+  print(cem)
+tests: |
+  assert numbers == [3, 7, 9, 5, 1] and numbers2 == [2, 4, 6, 8], "Siyahıları dəyişmə"
+  assert en_boyuk == 9, f"en_boyuk 9 olmalıdır, sənin nəticən: {en_boyuk!r}"
+  assert "max(" in dacy.code, "max() funksiyasından istifadə et"
+  assert en_kicik == 1, f"en_kicik 1 olmalıdır, sənin nəticən: {en_kicik!r}"
+  assert "min(" in dacy.code, "min() funksiyasından istifadə et"
+  assert cem == 20, f"cem 20 olmalıdır, sənin nəticən: {cem!r}"
+  assert "sum(" in dacy.code, "sum() funksiyasından istifadə et"
+  for _v in ("9", "1", "20"):
+      assert _v in dacy.lines, f"Ekranda {_v} görünmür — nəticəni print() ilə yazdır"
+hints:
+  - 'max(numbers) siyahının ən böyük elementini qaytarır.'
+  - 'cem = sum(numbers2)'

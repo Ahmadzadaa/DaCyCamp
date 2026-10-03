@@ -1,0 +1,68 @@
+type: quiz
+title: 'Test: dövrlər'
+xp: 20
+pass_score: 70
+questions:
+  - text: '`range(1, 6)` hansı ədədləri verir?'
+    options: ['0, 1, 2, 3, 4, 5', '1, 2, 3, 4, 5, 6', '1, 2, 3, 4, 5', '2, 3, 4, 5, 6']
+    correct: [3]
+    explanation: Son dəyər (6) daxil deyil.
+  - text: '`continue` nə edir?'
+    options:
+      [
+        'Heç nə etmir, boş əməliyyatdır',
+        Cari təkrarı buraxıb növbətiyə keçir,
+        Dövrü tamamilə dayandırır,
+        Proqramı bitirir,
+      ]
+    correct: [2]
+  - text: '`break` nə edir?'
+    options:
+      [
+        Dövrü əvvəldən başladır,
+        Cari təkrarı buraxıb növbətiyə keçir,
+        Funksiyadan dəyər qaytarır,
+        'Dövrü vaxtından əvvəl, tamamilə dayandırır',
+      ]
+    correct: [4]
+  - text: '`pass` nə üçün istifadə olunur?'
+    options:
+      [
+        Növbəti təkrara keçmək üçün,
+        Dövrü dayandırmaq üçün,
+        Xətanı gizlətmək üçün,
+        'Boş blok yazmaq üçün — heç nə etmir, sintaksisi düzgün saxlayır',
+      ]
+    correct: [4]
+  - text: |
+      Bu kod nə edəcək?
+
+      ```python
+      i = 1
+      while i <= 5:
+          print(i)
+      ```
+    options:
+      [
+        '1, 2, 3, 4, 5 çap edəcək',
+        Heç nə çap etməyəcək,
+        Sonsuz dövr — dayanmadan 1 yazacaq,
+        Xəta verəcək,
+      ]
+    correct: [3]
+    explanation: i artırılmır (i += 1 yoxdur), ona görə şərt həmişə doğrudur.
+  - text: |
+      Bu kod neçə ədəd çap edir?
+
+      ```python
+      for i in range(1, 11):
+          if i % 2 == 0:
+              print(i)
+      ```
+    options: ['6', '4', '5', '10']
+    correct: [3]
+    explanation: 2, 4, 6, 8, 10.
+  - text: '`17 % 5` nəticəsi nədir?'
+    options: ['2', '3.4', '3', '85']
+    correct: [1]
+    explanation: '% bölmədən qalığı verir: 17 = 5 · 3 + 2.'

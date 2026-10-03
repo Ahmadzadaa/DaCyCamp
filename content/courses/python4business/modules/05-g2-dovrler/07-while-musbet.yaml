@@ -1,0 +1,59 @@
+type: python
+title: 'while + if: müsbət ədəd daxil edilənə qədər'
+xp: 30
+estimated_minutes: 8
+instructions: |
+  İstifadəçidən ədəd al və onun müsbət olub-olmadığını yoxla. Ədəd müsbət deyilsə, xəbərdarlıq yaz və yenidən soruş. **Müsbət** ədəd daxil ediləndə dövrü dayandır.
+
+  `input()` dəyərləri `girisler` siyahısından götürür. Bu girişlərlə ilk müsbət ədəd `7`-dir — dövr orada dayanmalı, `3` oxunmamalıdır.
+tasks:
+  - 'while dövrü və if şərti ilə istifadəçidən ədəd al.'
+  - 'Ədəd müsbət deyilsə, ekrana xəbərdarlıq yaz.'
+  - 'Müsbət ədəd daxil ediləndə dövrü dayandır və onu musbet dəyişəninə yaz.'
+starter_code: |
+  # ── Brauzerdə klaviatura yoxdur: input() dəyərləri bu siyahıdan növbə ilə götürür ──
+  girisler = ["-5", "0", "-12", "7", "3"]
+
+  def input(sual=""):
+      if not girisler:
+          raise RuntimeError("Girişlər bitdi — dövr müsbət ədəddə dayanmalı idi")
+      deyer = girisler.pop(0)
+      print(sual + deyer)
+      return deyer
+  # ── Kodunu bu xəttdən aşağı yaz ──────────────────────────────────────────────
+
+  musbet = None
+
+
+  print("Müsbət ədəd:", musbet)
+solution: |
+  # ── Brauzerdə klaviatura yoxdur: input() dəyərləri bu siyahıdan növbə ilə götürür ──
+  girisler = ["-5", "0", "-12", "7", "3"]
+
+  def input(sual=""):
+      if not girisler:
+          raise RuntimeError("Girişlər bitdi — dövr müsbət ədəddə dayanmalı idi")
+      deyer = girisler.pop(0)
+      print(sual + deyer)
+      return deyer
+  # ── Kodunu bu xəttdən aşağı yaz ──────────────────────────────────────────────
+
+  musbet = None
+  while True:
+      eded = int(input("Müsbət ədəd daxil edin: "))
+      if eded > 0:
+          musbet = eded
+          break
+      print("Bu ədəd müsbət deyil, yenidən cəhd edin.")
+
+  print("Müsbət ədəd:", musbet)
+tests: |
+  assert "while" in dacy.code and "if" in dacy.code, "while dövrü və if şərtindən istifadə et"
+  assert girisler == ["3"], f"Dövr ilk müsbət ədəddə (7) dayanmalıdır. Oxunmamış girişlər: {girisler}"
+  assert musbet == 7, f"musbet 7 olmalıdır, sənin nəticən: {musbet!r}"
+  # 4 sətir input()-un özünün yazdığı sorğulardır (-5, 0, -12, 7), qalanları sənin çıxışındır
+  assert len(dacy.lines) - 4 >= 3, "Hər müsbət olmayan ədəd (-5, 0, -12) üçün ekrana xəbərdarlıq yaz"
+hints:
+  - 'while True: içində ədədi oxu. if eded > 0: musbet = eded və break.'
+  - 'break-dən sonrakı sətirlər yalnız ədəd müsbət olmayanda işləyir — xəbərdarlığı ora yaz.'
+  - '0 müsbət deyil: şərt eded > 0 olmalıdır, eded >= 0 yox.'

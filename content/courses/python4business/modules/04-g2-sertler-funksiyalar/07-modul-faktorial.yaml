@@ -1,0 +1,71 @@
+type: python
+title: 'Öz modulun: faktorial'
+xp: 40
+estimated_minutes: 10
+instructions: |
+  `hesablama.py` adlı modul yarat və içində ədədin faktorialını qaytaran `faktorial(n)` funksiyasını yerləşdir. Sonra modulu import edib funksiyanı çağır.
+
+  **Faktorial:** `n! = 1 · 2 · 3 · … · n`. Məsələn, `5! = 120`. Tərifə görə `0! = 1`.
+
+  Brauzerdə ayrıca fayl redaktoru yoxdur, ona görə modulun kodunu `modul_kodu` sətrinə yazırıq və kod onu `hesablama.py` faylına köçürür (Jupyter-dəki `%%writefile` kimi). Sən yalnız `faktorial` funksiyasının içini doldur.
+tasks:
+  - 'modul_kodu-nun içində faktorial(n) funksiyasını yaz (for dövrü ilə).'
+  - 'Kodu işə sal: hesablama.py faylı yaranır və import hesablama ilə daxil edilir.'
+  - 'hesablama.faktorial(5) nəticəsini ekrana yazdır.'
+starter_code: |
+  # hesablama.py modulunun məzmunu
+  modul_kodu = '''
+  def faktorial(n):
+      # n! = 1 * 2 * ... * n, 0! = 1
+      pass
+  '''
+
+  # Modulu fayla yaz (Jupyter-də: %%writefile hesablama.py)
+  with open("hesablama.py", "w") as f:
+      f.write(modul_kodu)
+
+  # Brauzerdə kodu təkrar işlədəndə modulun köhnə versiyası yaddaşda qalmasın
+  import importlib, sys
+  importlib.invalidate_caches()
+  sys.modules.pop("hesablama", None)
+
+  import hesablama
+  print(hesablama.faktorial(5))   # 120 gözlənilir
+solution: |
+  # hesablama.py modulunun məzmunu
+  modul_kodu = '''
+  def faktorial(n):
+      # n! = 1 * 2 * ... * n, 0! = 1
+      netice = 1
+      for i in range(1, n + 1):
+          netice = netice * i
+      return netice
+  '''
+
+  # Modulu fayla yaz (Jupyter-də: %%writefile hesablama.py)
+  with open("hesablama.py", "w") as f:
+      f.write(modul_kodu)
+
+  # Brauzerdə kodu təkrar işlədəndə modulun köhnə versiyası yaddaşda qalmasın
+  import importlib, sys
+  importlib.invalidate_caches()
+  sys.modules.pop("hesablama", None)
+
+  import hesablama
+  print(hesablama.faktorial(5))   # 120 gözlənilir
+tests: |
+  import importlib as _il, sys as _sys
+  _il.invalidate_caches()
+  _sys.modules.pop("hesablama", None)
+  import hesablama as _h
+  assert hasattr(_h, "faktorial"), "hesablama.py faylında faktorial funksiyası tapılmadı"
+  for _n, _f in [(0, 1), (1, 1), (3, 6), (5, 120), (6, 720), (10, 3628800)]:
+      _r = _h.faktorial(_n)
+      assert _r is not None, "faktorial None qaytarır — nəticəni return ilə qaytar"
+      assert _r == _f, f"faktorial({_n}) {_f} olmalıdır, sənin funksiyan: {_r!r}"
+  assert "import hesablama" in dacy.code, "Modulu import hesablama ilə daxil et"
+  assert "120" in dacy.lines, "Ekranda 120 görünmür — hesablama.faktorial(5) nəticəsini print() ilə yazdır"
+hints:
+  - 'netice = 1 ilə başla və for i in range(1, n + 1) dövründə netice-ni i-yə vur.'
+  - 'range(1, 1) boşdur — ona görə n = 0 olanda dövr işləmir və netice 1 qalır. Bu, düzgündür: 0! = 1.'
+  - 'Funksiyanın sonunda return netice yazmağı unutma. Kod modul_kodu sətrinin içində olsa da, indentasiya qaydaları eynidir.'

@@ -1,0 +1,62 @@
+type: python
+title: 'while: 0 daxil edilənə qədər oxu və topla'
+xp: 40
+estimated_minutes: 10
+instructions: |
+  İstifadəçidən ədədlər al və **0** daxil ediləndə dövrü dayandır. Eyni zamanda daxil edilən ədədlərin cəmini hesabla.
+
+  Kodun yuxarısındakı hazır hissə `input()`-u əvəz edir: hər çağırışda `girisler` siyahısından növbəti dəyəri götürür (brauzerdə klaviatura girişi yoxdur). Sən adi Jupyter-dəki kimi yaz:
+
+  ```python
+  eded = int(input("Ədəd daxil edin: "))
+  ```
+
+  Bu girişlərlə cəm `8 + (-3) + 15 + 4 = 24` olmalıdır, 0-dan sonrakı `11` isə oxunmamalıdır.
+tasks:
+  - 'while dövrü ilə istifadəçidən ədədlər al, 0 daxil ediləndə dövrü dayandır.'
+  - 'Daxil edilən ədədlərin cəmini hesabla (cem) və ekrana yazdır.'
+starter_code: |
+  # ── Brauzerdə klaviatura yoxdur: input() dəyərləri bu siyahıdan növbə ilə götürür ──
+  girisler = ["8", "-3", "15", "4", "0", "11"]
+
+  def input(sual=""):
+      if not girisler:
+          raise RuntimeError("Girişlər bitdi — dövr 0-da dayanmalı idi")
+      deyer = girisler.pop(0)
+      print(sual + deyer)
+      return deyer
+  # ── Kodunu bu xəttdən aşağı yaz ──────────────────────────────────────────────
+
+  cem = 0
+
+
+  print("Cəm:", cem)
+solution: |
+  # ── Brauzerdə klaviatura yoxdur: input() dəyərləri bu siyahıdan növbə ilə götürür ──
+  girisler = ["8", "-3", "15", "4", "0", "11"]
+
+  def input(sual=""):
+      if not girisler:
+          raise RuntimeError("Girişlər bitdi — dövr 0-da dayanmalı idi")
+      deyer = girisler.pop(0)
+      print(sual + deyer)
+      return deyer
+  # ── Kodunu bu xəttdən aşağı yaz ──────────────────────────────────────────────
+
+  cem = 0
+  eded = int(input("Ədəd daxil edin: "))
+  while eded != 0:
+      cem += eded
+      eded = int(input("Ədəd daxil edin: "))
+
+  print("Cəm:", cem)
+tests: |
+  assert "while" in dacy.code, "while dövründən istifadə et"
+  assert dacy.code.count("input(") >= 2, "Ədədləri input() ilə oxu"
+  assert girisler == ["11"], f"Dövr 0 daxil ediləndə dayanmalıdır — 0-dan sonrakı 11 oxunmamalıdır. Oxunmamış girişlər: {girisler}"
+  assert cem == 24, f"cem 24 olmalıdır (8 - 3 + 15 + 4), sənin nəticən: {cem!r}"
+  assert "24" in dacy.stdout.split(), "Cəmi ekrana yazdır"
+hints:
+  - 'Birinci ədədi dövrdən əvvəl oxu, sonra while eded != 0: — dövrün sonunda növbəti ədədi oxu.'
+  - 'Alternativ: while True: içində ədədi oxu, if eded == 0: break, sonra cem += eded.'
+  - 'input() sətir qaytarır — int(...) ilə ədədə çevir.'

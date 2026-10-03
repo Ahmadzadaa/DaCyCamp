@@ -1,0 +1,53 @@
+type: python
+title: 'while: cəm 100-ə çatana qədər topla'
+xp: 30
+estimated_minutes: 8
+instructions: |
+  İstifadəçidən ədədlər al və topla. Cəm **100-ə çatanda** (100 və ya daha çox olanda) dövrü dayandır.
+
+  `input()` dəyərləri `girisler` siyahısından götürür: `25 + 40 + 30 = 95` hələ 100 deyil, `+ 10 = 105` — dövr burada dayanmalı, `50` oxunmamalıdır.
+tasks:
+  - 'while dövrü ilə istifadəçidən ədədlər al və cem-ə əlavə et.'
+  - 'Cəm 100-ə çatdıqda dövrü dayandır və cəmi ekrana yazdır.'
+starter_code: |
+  # ── Brauzerdə klaviatura yoxdur: input() dəyərləri bu siyahıdan növbə ilə götürür ──
+  girisler = ["25", "40", "30", "10", "50"]
+
+  def input(sual=""):
+      if not girisler:
+          raise RuntimeError("Girişlər bitdi — dövr cəm 100-ə çatanda dayanmalı idi")
+      deyer = girisler.pop(0)
+      print(sual + deyer)
+      return deyer
+  # ── Kodunu bu xəttdən aşağı yaz ──────────────────────────────────────────────
+
+  cem = 0
+
+
+  print("Cəm:", cem)
+solution: |
+  # ── Brauzerdə klaviatura yoxdur: input() dəyərləri bu siyahıdan növbə ilə götürür ──
+  girisler = ["25", "40", "30", "10", "50"]
+
+  def input(sual=""):
+      if not girisler:
+          raise RuntimeError("Girişlər bitdi — dövr cəm 100-ə çatanda dayanmalı idi")
+      deyer = girisler.pop(0)
+      print(sual + deyer)
+      return deyer
+  # ── Kodunu bu xəttdən aşağı yaz ──────────────────────────────────────────────
+
+  cem = 0
+  while cem < 100:
+      eded = int(input("Ədəd daxil edin: "))
+      cem += eded
+
+  print("Cəm:", cem)
+tests: |
+  assert "while" in dacy.code, "while dövründən istifadə et"
+  assert girisler == ["50"], f"Dövr cəm 100-ə çatanda (10 əlavə olunanda) dayanmalıdır. Oxunmamış girişlər: {girisler}"
+  assert cem == 105, f"cem 105 olmalıdır (25 + 40 + 30 + 10), sənin nəticən: {cem!r}"
+  assert "105" in dacy.stdout.split(), "Cəmi ekrana yazdır"
+hints:
+  - 'Şərt: while cem < 100: — cəm 100-dən az olduqca oxumağa davam et.'
+  - 'Dövrün içində: eded = int(input("Ədəd daxil edin: ")) və cem += eded'

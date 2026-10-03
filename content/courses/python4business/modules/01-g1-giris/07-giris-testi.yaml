@@ -1,0 +1,54 @@
+type: quiz
+title: 'Test: Python-a giriş'
+xp: 20
+pass_score: 70
+questions:
+  - text: Open source (açıq mənbəli) proqram təminatı nədir?
+    options:
+      [
+        Mənbə kodu gizli saxlanılan proqram,
+        Yalnız pulsuz sınaq müddəti olan kommersiya proqramı,
+        'Mənbə kodu açıq olan, hər kəsin istifadə edib dəyişdirə bildiyi proqram',
+        Yalnız internetdə işləyən proqram,
+      ]
+    correct: [3]
+    explanation: Open source alətlərin mənbə kodu açıqdır — hər kəs istifadə edə, öyrənə və dəyişdirə bilər.
+  - text: Bunlardan hansılar Python-un data analitikası kitabxanalarıdır?
+    type: multiple
+    options: [NumPy, matplotlib, pandas, Photoshop]
+    correct: [1, 2, 3]
+    explanation: pandas — cədvəl məlumatları, NumPy — ədədi hesablamalar, matplotlib — qrafiklər. Photoshop isə qrafik redaktordur.
+  - text: Jupyter Notebook-un data analitiklər üçün əsas üstünlüyü nədir?
+    options:
+      [
+        'Kod, nəticə və izahlar hüceyrələrdə bir sənəddə saxlanılır',
+        Kodu avtomatik olaraq Excel faylına çevirir,
+        Yalnız Python dilini dəstəkləyir,
+        İnternet olmadan işləmir,
+      ]
+    correct: [1]
+    explanation: Hüceyrə əsaslı interfeys kodu, nəticəni və Markdown izahlarını bir yerdə saxlayır. Jupyter R, Julia və başqa dilləri də dəstəkləyir.
+  - text: Python-da 2-nin 3-cü qüvvətini necə yazırıq?
+    options: [2 ** 3, 2 * 3, 'pow[2, 3]', 2 ^ 3]
+    correct: [1]
+    explanation: Qüvvət operatoru ** -dir. 2 ^ 3 Python-da bit üzrə XOR əməliyyatıdır və nəticəsi 1-dir.
+  - text: Python-da `=` və `==` arasında fərq nədir?
+    options:
+      [
+        Heç bir fərq yoxdur,
+        '= yalnız ədədlər, == yalnız sətirlər üçündür',
+        '== dəyişənə dəyər yazır, = müqayisə edir',
+        '= dəyişənə dəyər yazır, == iki dəyəri müqayisə edir',
+      ]
+    correct: [4]
+  - text: '`sum([2, len([2, 3])])` ifadəsinin nəticəsi nədir?'
+    options: ['4', '5', '7', Xəta]
+    correct: [1]
+    explanation: len([2, 3]) = 2, sonra sum([2, 2]) = 4.
+  - text: PEP8-ə görə dəyişən adı necə yazılmalıdır?
+    options: [orta_gelir, ORTA-GELIR, ortaGelir, OrtaGelir]
+    correct: [1]
+    explanation: Dəyişən və funksiya adları snake_case ilə yazılır. PascalCase isə sinif adları üçündür.
+  - text: Python-da şərh hansı simvolla başlayır?
+    options: ['%', '#', --, //]
+    correct: [2]

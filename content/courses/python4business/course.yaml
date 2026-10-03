@@ -1,0 +1,14 @@
+# Python4Business — Gün 1–2 (slaydlar: Python_Day_1/2.pptx, tapşırıqlar: Python_Day_1/2.docx)
+# Növbəti günlər eyni kursa yeni fəsillər kimi əlavə olunur (09-g3-..., 10-g3-... və s.)
+track: data-analytics
+title: Python4Business
+slug: python4business
+level: beginner
+description: >-
+  Biznes və data analitikası üçün Python — sıfırdan. Məlumat tipləri və strukturları,
+  şərtlər, funksiyalar, modullar, dövrlər, Jupyter Notebook və xətaların idarəsi.
+  Hər mövzu qısa nəzəriyyə, test və brauzerdə işləyən praktik tapşırıqlarla.
+sequential: true
+estimated_hours: 5
+published: true
+topics: [python]

@@ -10,8 +10,8 @@ interface PyodideLike {
   runPython(code: string, opts?: { globals?: unknown }): unknown;
   runPythonAsync(code: string, opts?: { globals?: unknown }): Promise<unknown>;
   loadPackagesFromImports(code: string): Promise<unknown>;
-  setStdout(opts: { batched: (s: string) => void }): void;
-  setStderr(opts: { batched: (s: string) => void }): void;
+  setStdout(opts: { write: (buf: Uint8Array) => number }): void;
+  setStderr(opts: { write: (buf: Uint8Array) => number }): void;
   globals: { get(name: string): unknown };
   toPy(v: unknown): unknown;
   FS: { writeFile(path: string, data: Uint8Array | string): void; mkdirTree?(p: string): void };
@@ -74,6 +74,47 @@ export interface PyRunResult {
   ms: number;
 }
 
+/** Bir icranın (kod və ya testlər) vaxt limiti — sonsuz dövr səhifəni dondurmasın */
+export const PY_TIME_LIMIT_S = 10;
+
+/**
+ * Gözətçi: yalnız tələbə kodunun (<exec>) sətirlərini sayır, limit keçəndə TimeoutError atır.
+ * Kitabxana kodu izlənmir — pandas və s. yavaşımır.
+ */
+const WATCHDOG = `
+import sys as _sys, time as _time
+def _dacy_watch(limit):
+    end = _time.monotonic() + limit
+    n = [0]
+    def local(frame, event, arg):
+        n[0] += 1
+        if n[0] % 2000 == 0 and _time.monotonic() > end:
+            raise TimeoutError(f"Kod {limit:g} saniyədən çox işlədi — sonsuz dövr ola bilər")
+        return local
+    def glob(frame, event, arg):
+        return local if frame.f_code.co_filename == "<exec>" else None
+    _sys.settrace(glob)
+def _dacy_unwatch():
+    _sys.settrace(None)
+`;
+
+/** Sonu yeni sətirsiz çap (print(x, end=" ")) Python bufferində qalmasın */
+const FLUSH = `
+import sys as _sys
+_sys.stdout.flush()
+_sys.stderr.flush()
+`;
+
+/**
+ * Testlər üçün `dacy` obyekti: tələbənin çap etdiyi mətn və kodu.
+ * «Ekrana yazdırın» tipli tapşırıqlar belə yoxlanılır: `assert "12" in dacy.lines`.
+ */
+const DACY_NS = `
+from types import SimpleNamespace as _SN
+dacy = _SN(stdout=_dacy_out, lines=[_l.strip() for _l in _dacy_out.splitlines() if _l.strip()], code=_dacy_code)
+del _SN, _dacy_out, _dacy_code
+`;
+
 const PLOT_COLLECT = `
 import sys
 _imgs = []
@@ -88,16 +129,29 @@ if 'matplotlib' in sys.modules:
 _imgs
 `;
 
+/** Xam baytları toplayır — `batched`-dən fərqli olaraq sonu yeni sətirsiz çapı da itirmir */
+function sink() {
+  const dec = new TextDecoder();
+  let text = '';
+  return {
+    write: (buf: Uint8Array) => {
+      text += dec.decode(buf, { stream: true });
+      return buf.length;
+    },
+    text: () => text.replace(/\n$/, ''),
+  };
+}
+
 /** Tələbə kodunu (və istəsə testləri) təmiz ad sahəsində işlədir */
 export async function runPython(
   code: string,
   opts: { tests?: string; datasets?: AttachmentView[] } = {},
 ): Promise<PyRunResult> {
   const py = await getPyodide();
-  const out: string[] = [];
-  const err: string[] = [];
-  py.setStdout({ batched: (s) => out.push(s) });
-  py.setStderr({ batched: (s) => err.push(s) });
+  const out = sink();
+  const err = sink();
+  py.setStdout({ write: out.write });
+  py.setStderr({ write: err.write });
   for (const d of opts.datasets ?? []) {
     if (!d.url) continue;
     const res = await fetch(d.url, { credentials: 'include' });
@@ -114,14 +168,22 @@ export async function runPython(
       /* paket tapılmadıqda aşağıda xəta olacaq */
     }
   }
-  const ns = (py.globals.get('dict') as () => unknown)();
+  const ns = (py.globals.get('dict') as () => { set(k: string, v: unknown): void })();
+  py.runPython(WATCHDOG);
+  const watch = () => py.runPython(`_dacy_watch(${PY_TIME_LIMIT_S})`);
   let error: string | null = null;
   let passed: boolean | null = null;
   try {
     await py.loadPackagesFromImports(all);
+    watch();
     await py.runPythonAsync(code, { globals: ns });
+    py.runPython(FLUSH);
     if (opts.tests?.trim()) {
       try {
+        ns.set('_dacy_out', out.text());
+        ns.set('_dacy_code', code);
+        py.runPython(DACY_NS, { globals: ns });
+        watch();
         await py.runPythonAsync(opts.tests, { globals: ns });
         passed = true;
       } catch (e) {
@@ -132,6 +194,9 @@ export async function runPython(
   } catch (e) {
     error = pyError(e);
     if (opts.tests?.trim()) passed = false;
+  } finally {
+    py.runPython('_dacy_unwatch()');
+    py.runPython(FLUSH);
   }
   let images: string[] = [];
   try {
@@ -141,8 +206,8 @@ export async function runPython(
     images = [];
   }
   return {
-    stdout: out.join('\n'),
-    stderr: err.join('\n'),
+    stdout: out.text(),
+    stderr: err.text(),
     error,
     passed,
     images,

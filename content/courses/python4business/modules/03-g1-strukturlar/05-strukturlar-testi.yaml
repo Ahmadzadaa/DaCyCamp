@@ -1,0 +1,39 @@
+type: quiz
+title: 'Test: məlumat strukturları'
+xp: 20
+pass_score: 70
+questions:
+  - text: Hansı struktur yaradıldıqdan sonra dəyişdirilə bilməz?
+    options: [list, set, tuple, dict]
+    correct: [3]
+  - text: Hansı strukturda təkrar elementlər avtomatik silinir?
+    options: [dict-in dəyərləri, tuple, set, list]
+    correct: [3]
+  - text: '`meyveler = ["alma", "armud", "heyva"]` olduqda `meyveler[1]` nədir?'
+    options: ['"alma"', IndexError, '"armud"', '"heyva"']
+    correct: [3]
+    explanation: İndeks 0-dan başlayır, [1] ikinci elementdir.
+  - text: '`pop()` ilə `remove()` arasında fərq nədir?'
+    options:
+      [
+        pop() yalnız tuple-da işləyir,
+        'pop() indeksə görə silir (defolt — sonuncunu) və elementi qaytarır, remove() dəyərə görə silir',
+        Heç bir fərq yoxdur,
+        'remove() indeksə görə, pop() dəyərə görə silir',
+      ]
+    correct: [2]
+  - text: '`d = {"ad": "Riyad"}` olduqda `d.get("yaş")` nə qaytarır?'
+    options: [None, KeyError xətası, '0', boş sətir]
+    correct: [1]
+    explanation: get() açar yoxdursa None qaytarır. d["yaş"] isə KeyError verərdi.
+  - text: '`{1, 2, 3}.intersection({2, 3, 4})` nəticəsi nədir?'
+    options: ['{2, 3}', '{1, 2, 3, 4}', '{1, 4}', set()]
+    correct: [1]
+    explanation: Kəsişmə — hər iki setdə olan elementlər.
+  - text: '`(1, 2, 2, 3).count(2)` nəticəsi nədir?'
+    options: ['1', '3', '0', '2']
+    correct: [4]
+  - text: Müştəri haqqında məlumatı (ad, yaş, şəhər) adla müraciət edərək saxlamaq üçün hansı struktur ən uyğundur?
+    options: [tuple, list, dict, set]
+    correct: [3]
+    explanation: 'Dictionary açarla müraciət imkanı verir: musteri["ad"], musteri["yaş"].'

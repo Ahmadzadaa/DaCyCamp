@@ -1,0 +1,56 @@
+type: quiz
+title: 'Test: şərtlər, funksiyalar, modullar'
+xp: 20
+pass_score: 70
+questions:
+  - text: |
+      `x = 0` olduqda bu kod nə çap edir?
+
+      ```python
+      if x > 0:
+          print("A")
+      elif x < 0:
+          print("B")
+      else:
+          print("C")
+      ```
+    options: [C, Heç nə, B, A]
+    correct: [1]
+  - text: Python-da iki şərti «və» ilə necə birləşdiririk?
+    options: [və, plus, '&&', and]
+    correct: [4]
+    explanation: Adi şərtlərdə and/or/not yazılır. & və | pandas filtrlərində istifadə olunur.
+  - text: Funksiya hansı açar sözlə təyin olunur?
+    options: [def, func, define, function]
+    correct: [1]
+  - text: '`return` yazılmayan funksiya nə qaytarır?'
+    options: [Boş sətir, '0', Xəta verir, None]
+    correct: [4]
+  - text: |
+      Bu funksiyada `salamla()` nə qaytarır?
+
+      ```python
+      def salamla(ad="Dost"):
+          return "Salam, " + ad
+      ```
+    options: ['"Salam, Dost"', '"Salam, "', 'Xəta, çünki arqument verilməyib', None]
+    correct: [1]
+    explanation: Arqument verilməyəndə defolt dəyər ("Dost") istifadə olunur.
+  - text: Modul nədir?
+    options:
+      [
+        Funksiya və dəyişənlərin saxlandığı .py faylı — import ilə daxil edilir,
+        Python-un quraşdırma proqramı,
+        Yalnız bir funksiyadan ibarət dəyişən,
+        Jupyter-də xüsusi hüceyrə tipi,
+      ]
+    correct: [1]
+  - text: '`import hesablama` yazdıqdan sonra `topla` funksiyasını necə çağırırıq?'
+    options:
+      [
+        'topla.hesablama(3, 4)',
+        'import topla(3, 4)',
+        'hesablama[topla](3, 4)',
+        'hesablama.topla(3, 4)',
+      ]
+    correct: [4]

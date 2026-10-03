@@ -1,0 +1,50 @@
+type: python
+title: 'Funksiya + if: müsbət, mənfi, yoxsa sıfır?'
+xp: 30
+estimated_minutes: 6
+instructions: |
+  `if / elif / else` istifadə edərək ədədin müsbət, mənfi və ya sıfır olduğunu müəyyən edən funksiya yaz.
+
+  Funksiya bu üç sətirdən birini **qaytarmalıdır** (dəqiq bu yazılışla):
+
+  | Ədəd | Qaytarılan dəyər |
+  |---|---|
+  | 0-dan böyük | `"Müsbət"` |
+  | 0-dan kiçik | `"Mənfi"` |
+  | 0 | `"Sıfır"` |
+tasks:
+  - 'eded_novu(eded) funksiyasını yaz.'
+  - 'Funksiyanı 10, -5 və 0 ilə çağırıb nəticələri ekrana yazdır.'
+starter_code: |
+  def eded_novu(eded):
+      # if / elif / else ilə "Müsbət", "Mənfi" və ya "Sıfır" qaytar
+      pass
+
+
+  print(eded_novu(10))   # Müsbət
+  print(eded_novu(-5))   # Mənfi
+  print(eded_novu(0))    # Sıfır
+solution: |
+  def eded_novu(eded):
+      # if / elif / else ilə "Müsbət", "Mənfi" və ya "Sıfır" qaytar
+      if eded > 0:
+          return "Müsbət"
+      elif eded < 0:
+          return "Mənfi"
+      else:
+          return "Sıfır"
+
+
+  print(eded_novu(10))   # Müsbət
+  print(eded_novu(-5))   # Mənfi
+  print(eded_novu(0))    # Sıfır
+tests: |
+  assert callable(globals().get("eded_novu")), "eded_novu adlı funksiya tapılmadı"
+  for _x, _y in [(10, "Müsbət"), (-5, "Mənfi"), (0, "Sıfır"), (0.5, "Müsbət"), (-0.1, "Mənfi"), (1000, "Müsbət")]:
+      _r = eded_novu(_x)
+      assert _r is not None, "Funksiya None qaytarır — nəticəni return ilə qaytar (print yox)"
+      assert _r == _y, f'eded_novu({_x}) "{_y}" qaytarmalıdır, sənin funksiyan: {_r!r}'
+  assert "if" in dacy.code and "elif" in dacy.code, "if və elif şərtlərindən istifadə et"
+hints:
+  - 'Əvvəl eded > 0 yoxla, sonra elif eded < 0, qalan hal else.'
+  - 'Hər blokda return "..." yaz — böyük hərf və ə, ı hərflərinə diqqət et.'

@@ -2553,6 +2553,25 @@
     padding: 16px 18px;
     margin-bottom: 12px;
   }
+  .quiz-q-text {
+    display: flex;
+    gap: 6px;
+    font-weight: 600;
+    color: var(--on-dark);
+  }
+  .quiz-q-text > .ws-prose {
+    flex: 1;
+    min-width: 0;
+    color: inherit;
+  }
+  .quiz-q-text p:last-child,
+  .quiz-q-text pre:last-child {
+    margin-bottom: 4px;
+  }
+  .quiz-q-text pre {
+    margin-top: 8px;
+    font-weight: 400;
+  }
   .quiz-q.good {
     border-color: var(--ok);
   }

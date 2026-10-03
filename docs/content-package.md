@@ -3,6 +3,18 @@
 Müəllim bütöv kursu ZIP kimi yükləyir (`/admin/idxal`) və eyni formatda geri ixrac edir (kurs redaktorunda «ZIP ixrac»).
 Format spesifikasiyanın §3.2 və §4 bölmələrinə uyğundur. Aşağıdakı nümunələr yalnız **formatı** göstərir.
 
+## Repo-dakı kurslar: `content/courses/`
+
+`content/courses/<slug>/` qovluğundakı hər paket `pnpm dev` zamanı **avtomatik idxal olunur** (bazada olmayan kurslar; admin paneldəki düzəlişlərin üzərinə yazılmır). Əl ilə:
+
+```bash
+pnpm content:sync                    # yeni kursları əlavə et
+pnpm content:sync --update <slug>    # mövcud kursu paketdən yenilə (tələbə irəliləyişi qorunur)
+pnpm --filter @dacy/web check:python # bütün paketlərdə Python addımlarını yoxla (CI-da da işləyir)
+```
+
+Giriş üçün `.env`-dəki `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD` istifadə olunur. CI hər paketin idxal validasiyasından səhvsiz keçdiyini də yoxlayır (`apps/api/test/content-packages.e2e-spec.ts`).
+
 ## Qovluq quruluşu
 
 ```
@@ -82,6 +94,8 @@ video_url: ...
 
 ### quiz — `correct` **1-dən sayılır** (1 = birinci variant)
 
+Sual mətni (`text`) Markdown kimi göstərilir: sətir daxilində `` `kod` `` və ya çoxsətirli kod bloku yazmaq olar (YAML-da `text: |`).
+
 ```yaml
 type: quiz
 title: Yoxlama testi
@@ -131,6 +145,33 @@ tests: |
 hints: [...]
 xp: 50
 ```
+
+Testlər tələbə kodundan sonra **eyni ad sahəsində** işləyir (tələbənin dəyişən və funksiyaları görünür). Əlavə olaraq `dacy` obyekti var:
+
+| Sahə          | Nədir                                                                         |
+| ------------- | ----------------------------------------------------------------------------- |
+| `dacy.stdout` | tələbə kodunun ekrana çap etdiyi bütün mətn                                   |
+| `dacy.lines`  | çıxışın boş olmayan sətirləri (kənar boşluqlar silinmiş)                      |
+| `dacy.code`   | tələbənin kodu (mətn kimi) — məs. lazımi funksiyadan istifadəni yoxlamaq üçün |
+
+```python
+assert tam == 12, f"tam 12 olmalıdır, sənin nəticən: {tam!r}"   # mesaj tələbəyə göstərilir
+assert "12" in dacy.lines, "Nəticəni print() ilə ekrana yazdır"
+assert "int(" in dacy.code, "int() funksiyasından istifadə et"
+```
+
+- Kod və testlər ayrı-ayrılıqda **10 saniyə** işləyə bilər; sonsuz dövr `TimeoutError` ilə dayandırılır, səhifə donmur.
+- Brauzerdə klaviatura girişi yoxdur. `input()` lazım olan tapşırıqda starter koda kiçik əvəzedici qoyun — dəyərləri siyahıdan götürür, testlər isə siyahının nə qədər oxunduğunu yoxlaya bilər (nümunə: `content/courses/python4business/modules/05-g2-dovrler/06-while-sifir.yaml`):
+
+```python
+girisler = ["8", "-3", "0", "11"]
+def input(sual=""):
+    deyer = girisler.pop(0)
+    print(sual + deyer)
+    return deyer
+```
+
+- Paketi idxal etməzdən əvvəl yoxlayın: `pnpm --filter @dacy/web check:python <qovluq>` — hər addımda `solution` testdən **keçməli**, `starter_code` isə **keçməməlidir**.
 
 ### terminal (Mərhələ 3)
 

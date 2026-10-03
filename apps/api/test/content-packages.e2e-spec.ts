@@ -1,0 +1,51 @@
+import { existsSync, readdirSync } from 'node:fs';
+import { join, resolve } from 'node:path';
+import { INestApplication } from '@nestjs/common';
+import AdmZip from 'adm-zip';
+import { createApp, login, resetDb, seedBasics } from './helpers';
+import { PrismaService } from '../src/prisma/prisma.service';
+
+/** content/courses/* — repo-dakı kurs paketləri idxal validasiyasından səhvsiz keçməli və tətbiq olunmalıdır */
+const ROOT = resolve(__dirname, '../../../content/courses');
+const packages = existsSync(ROOT)
+  ? readdirSync(ROOT).filter((d) => existsSync(join(ROOT, d, 'course.yaml')))
+  : [];
+
+describe('Repo kurs paketləri (content/courses)', () => {
+  let app: INestApplication;
+  let prisma: PrismaService;
+  let admin: Awaited<ReturnType<typeof login>>;
+
+  beforeAll(async () => {
+    ({ app, prisma } = await createApp());
+    await resetDb(prisma);
+    await seedBasics(prisma);
+    await prisma.topic.create({ data: { slug: 'python', title: 'Python', order: 1 } });
+    admin = await login(app, 'admin@test.local', 'Admin123!');
+  });
+  afterAll(() => app.close());
+
+  it('ən azı bir paket var', () => {
+    expect(packages.length).toBeGreaterThan(0);
+  });
+
+  it.each(packages)('%s: validasiya səhvsiz, idxal olunur', async (name) => {
+    const zip = new AdmZip();
+    zip.addLocalFolder(join(ROOT, name), name);
+    const v = await admin
+      .post('/admin/import/validate')
+      .attach('file', zip.toBuffer(), `${name}.zip`);
+    expect(v.body.errors).toEqual([]);
+    expect(v.body.warnings).toEqual([]);
+    expect(v.body.ok).toBe(true);
+    const a = await admin.post('/admin/import/apply').attach('file', zip.toBuffer(), `${name}.zip`);
+    expect(a.body.ok).toBe(true);
+    const course = await prisma.course.findUniqueOrThrow({
+      where: { slug: v.body.course.slug },
+      include: { modules: { include: { steps: true } } },
+    });
+    const steps = course.modules.flatMap((m) => m.steps);
+    expect(steps.length).toBe(v.body.summary.steps);
+    expect(steps.every((s) => s.isPublished)).toBe(true);
+  });
+});

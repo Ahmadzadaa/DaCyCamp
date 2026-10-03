@@ -36,4 +36,6 @@ jobs:
       - run: pnpm --filter @dacy/shared test
       - run: pnpm --filter @dacy/api prisma:generate
       - run: pnpm --filter @dacy/api test:e2e
+      # content/courses/* — Python addımları: həll testdən keçir, starter keçmir (Pyodide, şəbəkəsiz)
+      - run: pnpm --filter @dacy/web check:python
       - run: pnpm --filter @dacy/web build

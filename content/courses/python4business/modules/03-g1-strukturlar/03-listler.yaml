@@ -1,0 +1,61 @@
+type: python
+title: 'Listlərlə işləmə: append, silmə, əvəzetmə'
+xp: 40
+estimated_minutes: 8
+instructions: |
+  Listlər dəyişdirilə biləndir: metodlar siyahının **özünü** dəyişir. Məsələn, `my_list.append(6)` yeni siyahı qaytarmır — `my_list`-in sonuna 6 əlavə edir.
+
+  Hər bənddə ayrıca siyahı ilə işləyirik ki, bir bəndin dəyişikliyi digərinə təsir etməsin.
+
+  Xatırlatma: sayma 0-dan başlayır — «3-cü element» indeksi 2 olan elementdir.
+tasks:
+  - 'my_list siyahısına 6 ədədini əlavə et və nəticəni ekrana yazdır.'
+  - 'my_list2 siyahısından 3-cü elementi sil və nəticəni ekrana yazdır.'
+  - 'qarisiq siyahısından son dəyəri çıxar (son dəyişəninə yaz) və 3-cü dəyəri "cherry" ilə əvəz et.'
+starter_code: |
+  # 1. Sona 6 əlavə et
+  my_list = [1, 2, 3, 4, 5]
+
+  print(my_list)
+
+  # 2. 3-cü elementi sil
+  my_list2 = [1, 2, 3, 4, 5]
+
+  print(my_list2)
+
+  # 3. Son dəyəri çıxar, 3-cü dəyəri "cherry" ilə əvəz et
+  qarisiq = [1, 2, 3, "apple", "pineapple", "pine"]
+  son = ...
+
+  print(son)
+  print(qarisiq)
+solution: |
+  # 1. Sona 6 əlavə et
+  my_list = [1, 2, 3, 4, 5]
+  my_list.append(6)
+  print(my_list)
+
+  # 2. 3-cü elementi sil
+  my_list2 = [1, 2, 3, 4, 5]
+  my_list2.pop(2)
+  print(my_list2)
+
+  # 3. Son dəyəri çıxar, 3-cü dəyəri "cherry" ilə əvəz et
+  qarisiq = [1, 2, 3, "apple", "pineapple", "pine"]
+  son = qarisiq.pop()
+  qarisiq[2] = "cherry"
+  print(son)
+  print(qarisiq)
+tests: |
+  assert my_list == [1, 2, 3, 4, 5, 6], f"my_list [1, 2, 3, 4, 5, 6] olmalıdır, sənin nəticən: {my_list!r}"
+  assert ".append(" in dacy.code, "1-ci bənd: append() metodundan istifadə et"
+  assert my_list2 == [1, 2, 4, 5], f"my_list2 [1, 2, 4, 5] olmalıdır, sənin nəticən: {my_list2!r}"
+  assert son == "pine", f'son "pine" olmalıdır (siyahının son dəyəri), sənin nəticən: {son!r}'
+  assert ".pop(" in dacy.code, "3-cü bənd: son dəyəri pop() ilə çıxar"
+  assert qarisiq == [1, 2, "cherry", "apple", "pineapple"], f"qarisiq [1, 2, 'cherry', 'apple', 'pineapple'] olmalıdır, sənin nəticən: {qarisiq!r}"
+  for _v in ("[1, 2, 3, 4, 5, 6]", "[1, 2, 4, 5]", "[1, 2, 'cherry', 'apple', 'pineapple']"):
+      assert _v in dacy.lines, f"Ekranda {_v} görünmür — siyahını print() ilə yazdır"
+hints:
+  - 'my_list.append(6) — siyahının özünü dəyişir, nəticəni dəyişənə yazmağa ehtiyac yoxdur.'
+  - '3-cü elementi silmək: my_list2.pop(2) (indeks) və ya my_list2.remove(3) (dəyər).'
+  - 'son = qarisiq.pop() son elementi silib qaytarır. Sonra: qarisiq[2] = "cherry"'

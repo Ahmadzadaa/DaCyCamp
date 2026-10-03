@@ -1,0 +1,69 @@
+type: python
+title: 'Tuple, dictionary və set'
+xp: 40
+estimated_minutes: 8
+instructions: |
+  Dörd qısa bənd — hər struktur üçün bir əməliyyat.
+
+  - Tuple-da elementin sayını `count()` verir.
+  - Dictionary-də dəyərə **açarla** müraciət olunur: `my_dict["açar"]`. Açarın dəyərini dəyişmək də eyni yazılışladır: `my_dict["açar"] = yeni_dəyər`.
+  - Set-ə element `add()` ilə əlavə olunur.
+tasks:
+  - 'my_tuple-da 20 elementinin neçə dəfə göründüyünü tap (say).'
+  - 'my_dict-də "yaş" açarının dəyərini tap (yas) və ekrana yazdır.'
+  - 'my_set-ə 5 ədədini əlavə et və nəticəni ekrana yazdır.'
+  - 'my_dict2-də "yaş" açarının dəyərini 22 olaraq dəyiş.'
+starter_code: |
+  # 1. Tuple: 20 neçə dəfə görünür?
+  my_tuple = (10, 20, 30, 40)
+  say = ...
+  print(say)
+
+  # 2. Dictionary: "yaş" açarının dəyəri
+  my_dict = {"ad": "Əli", "yaş": 30, "peşə": "Mühəndis"}
+  yas = ...
+  print(yas)
+
+  # 3. Set: 5 əlavə et
+  my_set = {1, 2, 3, 4}
+
+  print(my_set)
+
+  # 4. Dictionary: "yaş" dəyərini 22 et
+  my_dict2 = {"ad": "Riyad", "yaş": 30, "peşə": "Mühəndis"}
+
+  print(my_dict2)
+solution: |
+  # 1. Tuple: 20 neçə dəfə görünür?
+  my_tuple = (10, 20, 30, 40)
+  say = my_tuple.count(20)
+  print(say)
+
+  # 2. Dictionary: "yaş" açarının dəyəri
+  my_dict = {"ad": "Əli", "yaş": 30, "peşə": "Mühəndis"}
+  yas = my_dict["yaş"]
+  print(yas)
+
+  # 3. Set: 5 əlavə et
+  my_set = {1, 2, 3, 4}
+  my_set.add(5)
+  print(my_set)
+
+  # 4. Dictionary: "yaş" dəyərini 22 et
+  my_dict2 = {"ad": "Riyad", "yaş": 30, "peşə": "Mühəndis"}
+  my_dict2["yaş"] = 22
+  print(my_dict2)
+tests: |
+  assert say == 1, f"say 1 olmalıdır, sənin nəticən: {say!r}"
+  assert ".count(" in dacy.code, "1-ci bənd: count() metodundan istifadə et"
+  assert yas == 30, f"yas 30 olmalıdır, sənin nəticən: {yas!r}"
+  assert my_dict == {"ad": "Əli", "yaş": 30, "peşə": "Mühəndis"}, "my_dict-i dəyişmə — yalnız dəyəri oxu"
+  assert "30" in dacy.lines, "Ekranda 30 görünmür — yas-ı print() ilə yazdır"
+  assert my_set == {1, 2, 3, 4, 5}, f"my_set {{1, 2, 3, 4, 5}} olmalıdır, sənin nəticən: {my_set!r}"
+  assert ".add(" in dacy.code, "3-cü bənd: add() metodundan istifadə et"
+  assert "{1, 2, 3, 4, 5}" in dacy.lines, "Ekranda {1, 2, 3, 4, 5} görünmür — my_set-i print() ilə yazdır"
+  assert my_dict2 == {"ad": "Riyad", "yaş": 22, "peşə": "Mühəndis"}, f"my_dict2-də yalnız «yaş» 22 olmalıdır, sənin nəticən: {my_dict2!r}"
+hints:
+  - 'say = my_tuple.count(20)'
+  - 'yas = my_dict["yaş"] və ya my_dict.get("yaş")'
+  - 'my_set.add(5); my_dict2["yaş"] = 22'

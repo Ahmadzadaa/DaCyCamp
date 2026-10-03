@@ -1,0 +1,41 @@
+type: quiz
+title: 'Test: Jupyter, Markdown və ixrac'
+xp: 20
+pass_score: 70
+questions:
+  - text: Python-da cari iş direktoriyasını hansı funksiya göstərir?
+    options: [files.upload(), print(path), os.listdir(), os.getcwd()]
+    correct: [4]
+    explanation: getcwd — «get current working directory». os.listdir() isə qovluqdakı faylları göstərir.
+  - text: 'Kodda fayl adı yolsuz yazılıb: `pd.read_csv("satislar.csv")`. Python faylı harada axtarır?'
+    options: [Cari iş direktoriyasında, Bütün diskdə, İnternetdə, Yalnız «Desktop» qovluğunda]
+    correct: [1]
+  - text: Markdown-da ən böyük başlıq necə yazılır?
+    options: ['# Başlıq', '**Başlıq**', '###### Başlıq', '> Başlıq']
+    correct: [1]
+  - text: Markdown-da mətni necə qalın edirik?
+    options: ['**qalın**', '`qalın`', '*qalın*', ~~qalın~~]
+    correct: [1]
+    explanation: '*mətn* — kursiv, ~~mətn~~ — üstündən xətt, `mətn` — kod.'
+  - text: Markdown-da link necə yazılır?
+    options:
+      [
+        '[Linkin adı](https://example.com)',
+        '#Linkin adı https://example.com',
+        '<Linkin adı>https://example.com',
+        '(Linkin adı)[https://example.com]',
+      ]
+    correct: [1]
+  - text: Notebook-u Jupyter-i olmayan birinə göndərmək üçün ən asan format hansıdır?
+    options: [Python (.py), LaTeX (.tex), Notebook (.ipynb), HTML (.html)]
+    correct: [4]
+    explanation: HTML istənilən brauzerdə açılır və kod, nəticə, qrafik və izahları saxlayır.
+  - text: Notebook-u terminaldan HTML-ə hansı əmr çevirir?
+    options:
+      [
+        jupyter notebook --html,
+        pip install html,
+        jupyter nbconvert --to html analiz.ipynb,
+        python analiz.ipynb,
+      ]
+    correct: [3]

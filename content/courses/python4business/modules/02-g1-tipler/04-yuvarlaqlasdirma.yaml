@@ -1,0 +1,56 @@
+type: python
+title: 'Yuvarlaqlaşdırma: round, ceil, floor'
+xp: 30
+estimated_minutes: 6
+instructions: |
+  Üç fərqli yuvarlaqlaşdırma:
+
+  - `round(x)` — ən yaxın tam ədədə
+  - `math.ceil(x)` — həmişə **yuxarı** (ingiliscə *ceiling* — tavan)
+  - `math.floor(x)` — həmişə **aşağı** (ingiliscə *floor* — döşəmə)
+
+  `math` modulu kodun əvvəlində artıq import olunub.
+tasks:
+  - '15.67 ədədini ən yaxın tam ədədə yuvarlaqlaşdır (yuvarlaq).'
+  - '7.3 ədədini yuxarı yuvarlaqlaşdır (yuxari) və ekrana yazdır.'
+  - '7.9 ədədini aşağı yuvarlaqlaşdır (asagi) və ekrana yazdır.'
+starter_code: |
+  import math
+
+  # 1. Ən yaxın tam ədədə
+  yuvarlaq = ...
+  print(yuvarlaq)
+
+  # 2. Yuxarı yuvarlaqlaşdır
+  yuxari = ...
+  print(yuxari)
+
+  # 3. Aşağı yuvarlaqlaşdır
+  asagi = ...
+  print(asagi)
+solution: |
+  import math
+
+  # 1. Ən yaxın tam ədədə
+  yuvarlaq = round(15.67)
+  print(yuvarlaq)
+
+  # 2. Yuxarı yuvarlaqlaşdır
+  yuxari = math.ceil(7.3)
+  print(yuxari)
+
+  # 3. Aşağı yuvarlaqlaşdır
+  asagi = math.floor(7.9)
+  print(asagi)
+tests: |
+  assert yuvarlaq == 16, f"yuvarlaq 16 olmalıdır, sənin nəticən: {yuvarlaq!r}"
+  assert "round(" in dacy.code, "1-ci bənd: round() funksiyasından istifadə et"
+  assert yuxari == 8, f"yuxari 8 olmalıdır (7.3 → 8), sənin nəticən: {yuxari!r}"
+  assert "ceil(" in dacy.code, "2-ci bənd: math.ceil() funksiyasından istifadə et"
+  assert asagi == 7, f"asagi 7 olmalıdır (7.9 → 7), sənin nəticən: {asagi!r}"
+  assert "floor(" in dacy.code, "3-cü bənd: math.floor() funksiyasından istifadə et"
+  for _v in ("16", "8", "7"):
+      assert _v in dacy.lines, f"Ekranda {_v} görünmür — nəticəni print() ilə yazdır"
+hints:
+  - 'round(15.67) → 16'
+  - 'math.ceil(7.3) → 8, math.floor(7.9) → 7'

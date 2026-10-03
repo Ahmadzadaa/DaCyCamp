@@ -1,0 +1,54 @@
+type: python
+title: 'Sətirlərlə işləmə: len, replace, split'
+xp: 30
+estimated_minutes: 6
+instructions: |
+  Sətir metodlarını tətbiq et. Yadda saxla: sətir metodları əsl sətiri dəyişmir, **yeni** dəyər qaytarır — nəticəni dəyişənə yaz.
+tasks:
+  - 'my_string sətrinin uzunluğunu tap (uzunluq).'
+  - 'my_string sətrində "P" hərfini "J" hərfi ilə əvəz et (yeni_setir).'
+  - 'my_string2 sətrini boşluqlara görə ayır (sozler).'
+starter_code: |
+  my_string = "Python"
+  my_string2 = "Python is fun"
+
+  # 1. Uzunluq
+  uzunluq = ...
+  print(uzunluq)
+
+  # 2. "P" → "J"
+  yeni_setir = ...
+  print(yeni_setir)
+
+  # 3. Boşluqlara görə ayır
+  sozler = ...
+  print(sozler)
+solution: |
+  my_string = "Python"
+  my_string2 = "Python is fun"
+
+  # 1. Uzunluq
+  uzunluq = len(my_string)
+  print(uzunluq)
+
+  # 2. "P" → "J"
+  yeni_setir = my_string.replace("P", "J")
+  print(yeni_setir)
+
+  # 3. Boşluqlara görə ayır
+  sozler = my_string2.split()
+  print(sozler)
+tests: |
+  assert my_string == "Python" and my_string2 == "Python is fun", "my_string və my_string2-ni dəyişmə"
+  assert uzunluq == 6, f"uzunluq 6 olmalıdır, sənin nəticən: {uzunluq!r}"
+  assert "len(" in dacy.code, "1-ci bənd: len() funksiyasından istifadə et"
+  assert yeni_setir == "Jython", f'yeni_setir "Jython" olmalıdır, sənin nəticən: {yeni_setir!r}'
+  assert ".replace(" in dacy.code, "2-ci bənd: replace() metodundan istifadə et"
+  assert sozler == ["Python", "is", "fun"], f"sozler ['Python', 'is', 'fun'] olmalıdır, sənin nəticən: {sozler!r}"
+  assert ".split(" in dacy.code, "3-cü bənd: split() metodundan istifadə et"
+  for _v in ("6", "Jython", "['Python', 'is', 'fun']"):
+      assert _v in dacy.lines, f"Ekranda {_v} görünmür — nəticəni print() ilə yazdır"
+hints:
+  - 'len(my_string) simvolların sayını qaytarır.'
+  - 'my_string.replace("P", "J") — nəticəni yeni_setir-ə yaz.'
+  - 'split() arqumentsiz çağırılanda boşluqlara görə bölür.'

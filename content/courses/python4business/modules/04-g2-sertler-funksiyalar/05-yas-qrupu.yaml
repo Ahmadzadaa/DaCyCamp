@@ -1,0 +1,49 @@
+type: python
+title: 'Yaş qrupu: uşaq, yeniyetmə, yetkin'
+xp: 30
+estimated_minutes: 6
+instructions: |
+  Yaşa görə qrupu müəyyən edən funksiya yaz. Funksiyanın içində `if / elif / else` istifadə et.
+
+  | Yaş | Qaytarılan dəyər |
+  |---|---|
+  | 0 – 12 | `"uşaq"` |
+  | 13 – 17 | `"yeniyetmə"` |
+  | 18 və yuxarı | `"yetkin"` |
+
+  Sərhəd dəyərlərinə diqqət: 12 yaş hələ uşaq, 13 yaş artıq yeniyetmə, 18 yaş artıq yetkindir.
+tasks:
+  - 'yas_qrupu(yas) funksiyasını yaz.'
+  - 'Funksiyanı 8, 15 və 30 yaşları ilə yoxla.'
+starter_code: |
+  def yas_qrupu(yas):
+      # "uşaq", "yeniyetmə" və ya "yetkin" qaytar
+      pass
+
+
+  print(yas_qrupu(8))    # uşaq
+  print(yas_qrupu(15))   # yeniyetmə
+  print(yas_qrupu(30))   # yetkin
+solution: |
+  def yas_qrupu(yas):
+      # "uşaq", "yeniyetmə" və ya "yetkin" qaytar
+      if yas < 13:
+          return "uşaq"
+      elif yas < 18:
+          return "yeniyetmə"
+      else:
+          return "yetkin"
+
+
+  print(yas_qrupu(8))    # uşaq
+  print(yas_qrupu(15))   # yeniyetmə
+  print(yas_qrupu(30))   # yetkin
+tests: |
+  assert callable(globals().get("yas_qrupu")), "yas_qrupu adlı funksiya tapılmadı"
+  for _x, _y in [(8, "uşaq"), (0, "uşaq"), (12, "uşaq"), (13, "yeniyetmə"), (15, "yeniyetmə"), (17, "yeniyetmə"), (18, "yetkin"), (30, "yetkin"), (75, "yetkin")]:
+      _r = yas_qrupu(_x)
+      assert _r is not None, "Funksiya None qaytarır — nəticəni return ilə qaytar"
+      assert str(_r).strip().lower() == _y, f'yas_qrupu({_x}) "{_y}" qaytarmalıdır, sənin funksiyan: {_r!r}'
+hints:
+  - 'Şərtləri kiçikdən böyüyə yoxla: əvvəl yas < 13, sonra yas < 18.'
+  - 'elif yas < 18 bloku yalnız yas 13 və ya böyük olanda yoxlanılır — çünki ilk şərt artıq yanlış olub.'

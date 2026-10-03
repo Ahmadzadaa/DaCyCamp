@@ -21,6 +21,7 @@
     "lab:images": "docker build -t dacy/numune-lab:latest infra/lab-images/numune",
     "db:reset": "pnpm --filter @dacy/api prisma:reset",
     "db:studio": "pnpm --filter @dacy/api prisma:studio",
+    "content:sync": "node scripts/content-sync.mjs",
     "screenshots": "node scripts/screenshots.mjs",
     "format": "prettier --write ."
   },

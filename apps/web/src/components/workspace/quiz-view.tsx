@@ -8,6 +8,7 @@ import { errorMessage } from '@/lib/errors-i18n';
 import { t } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { Markdown } from '@/components/app/markdown';
 import { useAfterComplete } from './use-complete';
 
 export function QuizView({ view, quiz }: { view: StepViewDto; quiz: QuizStudentView }) {
@@ -87,9 +88,10 @@ export function QuizView({ view, quiz }: { view: StepViewDto; quiz: QuizStudentV
           return (
             <fieldset key={qi} className={cn('quiz-q', r && (r.correct ? 'good' : 'bad'))}>
               <legend className="sr-only">{question.text}</legend>
-              <p className="font-semibold text-on-dark">
-                {qi + 1}. {question.text}
-              </p>
+              <div className="quiz-q-text">
+                <span>{qi + 1}.</span>
+                <Markdown content={question.text} assetMap={view.assets} dark />
+              </div>
               <p className="text-xs text-on-dark-muted">
                 {multiple ? t('ws.selectMany') : t('ws.selectOne')}
               </p>

@@ -1,0 +1,70 @@
+type: python
+title: 'try / except: sıfıra bölmə'
+xp: 40
+estimated_minutes: 8
+instructions: |
+  İstifadəçidən ədəd al və `100`-ü bu ədədə böl. Sıfıra bölmə zamanı yaranan xətanı `try / except` ilə idarə et: proqram dayanmasın, ekrana aydın mesaj çıxsın.
+
+  `input()` dəyəri `girisler` siyahısından götürür — istifadəçi məhz `0` daxil edib. Bu halda:
+
+  - `netice` dəyişəni `None` olaraq qalmalıdır;
+  - ekrana içində **«sıfır»** sözü olan xəbərdarlıq yazılmalıdır (məs. «Sıfıra bölmək olmaz!»).
+
+  **Əlavə (yoxlanılmır):** `except ValueError` əlavə et və `girisler`-i `["abc"]` edərək sına. `else` bloku ilə uğurlu nəticəni çap et və `girisler`-i `["4"]` edərək yoxla.
+tasks:
+  - 'try blokunda istifadəçidən ədəd al və 100-ü ona böl (netice).'
+  - 'except ZeroDivisionError ilə sıfıra bölmə xətasını tut və ekrana xəbərdarlıq yaz.'
+starter_code: |
+  # ── Brauzerdə klaviatura yoxdur: input() dəyərləri bu siyahıdan növbə ilə götürür ──
+  girisler = ["0"]
+
+  def input(sual=""):
+      if not girisler:
+          raise RuntimeError("Girişlər bitdi")
+      deyer = girisler.pop(0)
+      print(sual + deyer)
+      return deyer
+  # ── Kodunu bu xəttdən aşağı yaz ──────────────────────────────────────────────
+
+  bolunen = 100
+  netice = None
+
+  eded = int(input("Bölən ədədi daxil edin: "))
+  netice = bolunen / eded
+  print("Nəticə:", netice)
+solution: |
+  # ── Brauzerdə klaviatura yoxdur: input() dəyərləri bu siyahıdan növbə ilə götürür ──
+  girisler = ["0"]
+
+  def input(sual=""):
+      if not girisler:
+          raise RuntimeError("Girişlər bitdi")
+      deyer = girisler.pop(0)
+      print(sual + deyer)
+      return deyer
+  # ── Kodunu bu xəttdən aşağı yaz ──────────────────────────────────────────────
+
+  bolunen = 100
+  netice = None
+
+  try:
+      eded = int(input("Bölən ədədi daxil edin: "))
+      netice = bolunen / eded
+  except ZeroDivisionError:
+      print("Sıfıra bölmək olmaz!")
+  except ValueError:
+      print("Zəhmət olmasa, ədəd daxil edin.")
+  else:
+      print("Nəticə:", netice)
+  finally:
+      print("Proqram icrası tamamlandı.")
+tests: |
+  assert "try" in dacy.code and "except ZeroDivisionError" in dacy.code, "try və except ZeroDivisionError bloklarından istifadə et"
+  assert girisler == [], "Ədədi input() ilə oxu"
+  assert netice is None, f"Sıfıra bölmədə netice None qalmalıdır, sənin nəticən: {netice!r}"
+  _l = dacy.stdout.lower()
+  assert "sıfır" in _l or "sifir" in _l, "Xəta baş verəndə ekrana içində «sıfır» sözü olan xəbərdarlıq yaz"
+hints:
+  - 'Bölmə sətrini try: blokunun içinə köçür (4 boşluq içəri).'
+  - 'try-dan sonra: except ZeroDivisionError: və içində print("Sıfıra bölmək olmaz!")'
+  - 'Starter kodu olduğu kimi işə salsan, ZeroDivisionError görəcəksən — məqsəd məhz bu xətanı tutmaqdır.'

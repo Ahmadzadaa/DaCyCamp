@@ -1,0 +1,54 @@
+type: python
+title: 'İsinmə: ilk Python kodun'
+xp: 20
+estimated_minutes: 5
+instructions: |
+  İlk kodunu yazaq! Bu tapşırıqda platformanın kod redaktoru ilə tanış olacaqsan.
+
+  `print()` funksiyası mötərizədəki dəyəri **konsola** (ekrana) yazdırır:
+
+  ```python
+  print("Salam!")
+  print(2 + 3)      # 5
+  ```
+
+  Kodda `...` gördüyün yerləri öz kodunla əvəz et. Əvvəlcə **İşə sal** ilə nəticəyə bax, sonra **Göndər və davam et** ilə yoxla.
+tasks:
+  - 'Ekrana "Salam, Python!" yazdır.'
+  - 'cem dəyişəninə sum() və len() funksiyalarını birləşdirərək sum([2, len([2, 3])]) nəticəsini yaz.'
+  - 'yeni dəyişəninə a sətrinin replace() metodu ilə "Academy" sözünü "Python" ilə əvəz etdiyin nəticəni yaz.'
+starter_code: |
+  # 1. Ekrana "Salam, Python!" yazdır
+
+
+  # 2. Funksiyanın arqumentində başqa funksiya
+  cem = ...
+  print(cem)
+
+  # 3. Sətir obyektinin replace() metodu
+  a = "Code Academy"
+  yeni = ...
+  print(yeni)
+solution: |
+  # 1. Ekrana "Salam, Python!" yazdır
+  print("Salam, Python!")
+
+  # 2. Funksiyanın arqumentində başqa funksiya
+  cem = sum([2, len([2, 3])])
+  print(cem)
+
+  # 3. Sətir obyektinin replace() metodu
+  a = "Code Academy"
+  yeni = a.replace("Academy", "Python")
+  print(yeni)
+tests: |
+  assert "Salam, Python!" in dacy.lines, 'Ekranda "Salam, Python!" sətri görünmür — print("Salam, Python!") yaz'
+  assert cem == 4, f"cem 4 olmalıdır, sənin nəticən: {cem!r}"
+  assert "sum(" in dacy.code and "len(" in dacy.code, "cem-i sum() və len() funksiyaları ilə hesabla"
+  assert yeni == "Code Python", f'yeni "Code Python" olmalıdır, sənin nəticən: {yeni!r}'
+  assert ".replace(" in dacy.code, "replace() metodundan istifadə et"
+  assert "4" in dacy.lines and "Code Python" in dacy.lines, "Nəticələri print() ilə ekrana yazdır"
+hints:
+  - 'Mətn dırnaq içində yazılır: print("Salam, Python!")'
+  - 'cem = sum([2, len([2, 3])]) — əvvəl len([2, 3]) hesablanır (2), sonra sum([2, 2]).'
+  - 'Metod nöqtə ilə çağırılır: a.replace("köhnə", "yeni")'

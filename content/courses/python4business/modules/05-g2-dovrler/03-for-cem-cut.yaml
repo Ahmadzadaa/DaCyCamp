@@ -1,0 +1,44 @@
+type: python
+title: 'for: cəm və cüt ədədlər'
+xp: 30
+estimated_minutes: 7
+instructions: |
+  `for` dövrü və `range()` ilə iki iş gör.
+
+  1. 1-dən 10-a qədər (10 daxil) ədədlərin cəmini **dövrlə** hesabla. Hazır `sum()` funksiyası olmadan — akkumulyator üsulu ilə: `cem = 0`, sonra hər addımda `cem += i`.
+  2. 1-dən 20-yə qədər olan cüt ədədləri ekrana yazdır.
+
+  Xatırlatma: `range(1, 11)` — 1, 2, …, 10 (son dəyər daxil deyil).
+tasks:
+  - 'for dövrü ilə 1-dən 10-a qədər ədədlərin cəmini hesabla (cem) və ekrana yazdır.'
+  - 'for dövrü ilə 1-dən 20-yə qədər olan cüt ədədləri ekrana yazdır.'
+starter_code: |
+  # 1. 1-dən 10-a qədər ədədlərin cəmi
+  cem = 0
+  # for dövrünü bura yaz
+
+  print("Cəm:", cem)
+
+  # 2. 1-dən 20-yə qədər cüt ədədlər
+solution: |
+  # 1. 1-dən 10-a qədər ədədlərin cəmi
+  cem = 0
+  for i in range(1, 11):
+      cem += i
+  print("Cəm:", cem)
+
+  # 2. 1-dən 20-yə qədər cüt ədədlər
+  for i in range(1, 21):
+      if i % 2 == 0:
+          print(i)
+tests: |
+  assert cem == 55, f"cem 55 olmalıdır (1 + 2 + … + 10), sənin nəticən: {cem!r}"
+  assert "for " in dacy.code, "for dövründən istifadə et"
+  assert "sum(" not in dacy.code, "Bu tapşırıqda cəmi sum() ilə yox, dövrlə hesabla"
+  _nums = [int(_t) for _t in dacy.stdout.replace(",", " ").split() if _t.lstrip("-").isdigit()]
+  assert 55 in _nums, "Cəmi (55) ekrana yazdır"
+  _cut = [_n for _n in _nums if _n != 55]
+  assert _cut == list(range(2, 21, 2)), f"Ekranda 2, 4, …, 20 cüt ədədləri (və yalnız onlar) olmalıdır, sənin çıxışın: {_cut}"
+hints:
+  - 'for i in range(1, 11): blokunun içində cem += i yaz.'
+  - 'Cüt ədəd: i % 2 == 0. Və ya addımlı range: for i in range(2, 21, 2).'

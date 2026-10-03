@@ -349,6 +349,16 @@ Repoda yer tutucu səhifə qalmayıb (`/yollar`, `/sertifikatlar` Mərhələ 3�
 
 ---
 
-## Növbəti mərhələ — kurs məzmununun platformaya köçürülməsi (gözləyir)
+## Kurs məzmunu: Python4Business Gün 1–2 — 3 oktyabr 2026
 
-İstifadəçi bütün dərs və tapşırıq fayllarını göndərəcək (Docker, Python, SQL, Excel və s.). Bunlardan platformada kurslar yaradılacaq — hamısı bir yerdə: istiqamət, mövzu, səviyyə, fəsillər, addımlar (nəzəri, test, SQL, Python, terminal lab, CTF), datasetlər, yollar. Yol: hər kurs üçün ZIP paketi (`docs/content-package.md`) → `/admin/idxal`-da yoxla → tətbiq et. Excel tapşırıqlarının formatı fayllar gələndə seçiləcək (məs. Excel faylı + test sualları, və ya Python/pandas ilə).
+Mənbə: `Python_Day_1/2.pptx` (nəzəri) + `Python_Day_1/2.docx` (35 tapşırıq). Paket: `content/courses/python4business/` — **7 fəsil, 43 addım** (18 nəzəri, 18 Python, 7 test / 55 sual). Ətraflı xəritə, düzəldilən slayd səhvləri və boşluqlar: [`docs/kurslar/python4business.md`](docs/kurslar/python4business.md).
+
+- **Repo-dakı kurslar:** `content/courses/<slug>/` → `pnpm dev` API açılan kimi bazada olmayan kursları idxal edir (`scripts/content-sync.mjs`, admin girişi `.env`-dəki `SEED_ADMIN_*`). Əl ilə: `pnpm content:sync [--update] [slug]`.
+- **Python runtime:** testlərdə `dacy.stdout / dacy.lines / dacy.code`; sonu yeni sətirsiz `print(..., end=" ")` artıq itmir (xam `write` + flush); 10 saniyəlik gözətçi sonsuz dövrü dayandırır (yalnız tələbə kodu izlənir — kitabxanalar yavaşımır).
+- **Testlər:** sual mətni Markdown (inline kod, kod bloku).
+- **Yoxlama:** `pnpm --filter @dacy/web check:python` — hər Python addımında həll testdən keçir, starter keçmir (Node-da Pyodide, şəbəkəsiz; CI-da işləyir). API e2e `content-packages.e2e-spec.ts` hər paketin idxalını yoxlayır. Playwright `python-course.spec.ts`: idxal, kataloq, tələbə axını, Markdown sual, flush və gözətçi.
+- Testlər: API e2e 101/101, Playwright `python-course` 4/4, `check:python` 18/18.
+
+## Növbəti mərhələ — digər kursların köçürülməsi (gözləyir)
+
+İstifadəçi qalan dərs və tapşırıq fayllarını göndərəcək (Python Gün 3–10, Docker, SQL, Excel və s.). Hər kurs `content/courses/<slug>/` paketi kimi yazılır (`docs/content-package.md`), `check:python` və idxal validasiyası ilə yoxlanılır. Python4Business-in növbəti günləri eyni kursa yeni fəsillər kimi əlavə olunur (`08-g3-…`). Excel tapşırıqlarının formatı fayllar gələndə seçiləcək (məs. Excel faylı + test sualları, və ya Python/pandas ilə).

@@ -1,0 +1,61 @@
+type: python
+title: 'Ədədlərlə işləmə: int, abs, qüvvət, divmod'
+xp: 30
+estimated_minutes: 8
+instructions: |
+  Tam ədədlərin əsas funksiyalarını tətbiq et. Hər nəticəni göstərilən dəyişənə yaz və `print()` ilə ekrana çıxar.
+
+  Nəticəni əlinlə hesablayıb yazma (`tam = 12` kimi) — funksiyadan istifadə et. Real işdə dəyərlər məlumatdan gəlir, əvvəlcədən bilinmir.
+tasks:
+  - '12.5 ədədini tam ədədə çevir (tam) və ekrana yazdır.'
+  - '-15 sayısının mütləq dəyərini tap (mutleq) və ekrana yazdır.'
+  - '3-ün 4-cü qüvvətini tap (quvvet) və ekrana yazdır.'
+  - '17-ni 5-ə böl: qisməti (qismet) və qalığı (qaliq) tap.'
+starter_code: |
+  # 1. 12.5 ədədini tam ədədə çevir
+  tam = ...
+  print(tam)
+
+  # 2. -15-in mütləq dəyəri
+  mutleq = ...
+  print(mutleq)
+
+  # 3. 3-ün 4-cü qüvvəti
+  quvvet = ...
+  print(quvvet)
+
+  # 4. 17-ni 5-ə böl: qismət və qalıq
+  qismet = ...
+  qaliq = ...
+  print(qismet, qaliq)
+solution: |
+  # 1. 12.5 ədədini tam ədədə çevir
+  tam = int(12.5)
+  print(tam)
+
+  # 2. -15-in mütləq dəyəri
+  mutleq = abs(-15)
+  print(mutleq)
+
+  # 3. 3-ün 4-cü qüvvəti
+  quvvet = 3 ** 4
+  print(quvvet)
+
+  # 4. 17-ni 5-ə böl: qismət və qalıq
+  qismet, qaliq = divmod(17, 5)
+  print(qismet, qaliq)
+tests: |
+  assert tam == 12 and type(tam) is int, f"tam 12 (int) olmalıdır, sənin nəticən: {tam!r}"
+  assert "int(" in dacy.code, "1-ci bənd: int() funksiyasından istifadə et"
+  assert mutleq == 15, f"mutleq 15 olmalıdır, sənin nəticən: {mutleq!r}"
+  assert "abs(" in dacy.code, "2-ci bənd: abs() funksiyasından istifadə et"
+  assert quvvet == 81, f"quvvet 81 olmalıdır, sənin nəticən: {quvvet!r}"
+  assert "**" in dacy.code or "pow(" in dacy.code, "3-cü bənd: ** operatoru və ya pow() funksiyası ilə hesabla"
+  assert (qismet, qaliq) == (3, 2), f"17 = 5 · 3 + 2 → qismet 3, qaliq 2 olmalıdır, sənin nəticən: {qismet!r}, {qaliq!r}"
+  assert "divmod(" in dacy.code or ("//" in dacy.code and "%" in dacy.code), "4-cü bənd: divmod() (və ya // və %) ilə hesabla"
+  for _v in ("12", "15", "81"):
+      assert _v in dacy.lines, f"Ekranda {_v} görünmür — nəticəni print() ilə yazdır"
+hints:
+  - 'int(12.5) kəsr hissəni atır. Mütləq dəyər: abs(-15).'
+  - 'Qüvvət: 3 ** 4 və ya pow(3, 4). Diqqət: 3 ^ 4 qüvvət deyil!'
+  - 'divmod(17, 5) iki dəyər qaytarır: qismet, qaliq = divmod(17, 5)'

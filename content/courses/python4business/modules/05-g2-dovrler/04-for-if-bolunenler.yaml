@@ -1,0 +1,36 @@
+type: python
+title: 'for + if: bölünən ədədlər'
+xp: 30
+estimated_minutes: 7
+instructions: |
+  Dövrün içində `if` ilə yalnız şərtə uyğun ədədləri çap et. Bölünməni `%` (bölmədən qalıq) ilə yoxla: `i % 5 == 0` — `i` 5-ə qalıqsız bölünür.
+
+  Bəndləri ardıcıl yerinə yetir: əvvəl 5-ə, sonra 3-ə bölünənləri çap et.
+tasks:
+  - 'if şərti və for dövrü ilə 1-dən 20-yə qədər olan ədədlərdən yalnız 5-ə bölünənləri ekrana yazdır.'
+  - 'for dövrü ilə 1-dən 100-ə qədər olan ədədlərdən yalnız 3-ə bölünənləri ekrana yazdır.'
+starter_code: |
+  # 1. 1–20 arası 5-ə bölünən ədədlər
+
+
+  # 2. 1–100 arası 3-ə bölünən ədədlər
+solution: |
+  # 1. 1–20 arası 5-ə bölünən ədədlər
+  for i in range(1, 21):
+      if i % 5 == 0:
+          print(i)
+
+  # 2. 1–100 arası 3-ə bölünən ədədlər
+  for i in range(1, 101):
+      if i % 3 == 0:
+          print(i)
+tests: |
+  assert "for " in dacy.code and "if " in dacy.code, "for dövrü və if şərtindən istifadə et"
+  _nums = [int(_t) for _t in dacy.stdout.replace(",", " ").split() if _t.lstrip("-").isdigit()]
+  _bes = [5, 10, 15, 20]
+  _uc = list(range(3, 101, 3))
+  assert _nums[:4] == _bes, f"Əvvəlcə 5, 10, 15, 20 çap olunmalıdır, sənin çıxışın: {_nums[:4]}"
+  assert _nums[4:] == _uc, "Sonra 3, 6, 9, …, 99 çap olunmalıdır (1–100 arası 3-ə bölünənlər, 100 daxil)"
+hints:
+  - 'for i in range(1, 21): içində if i % 5 == 0: print(i)'
+  - '1-dən 100-ə qədər (100 daxil): range(1, 101). Ən böyük 3-ə bölünən — 99.'

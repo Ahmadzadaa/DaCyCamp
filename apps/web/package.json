@@ -11,7 +11,8 @@
     "test": "vitest run",
     "e2e": "playwright test",
     "screenshots": "playwright test e2e/screenshots.spec.ts",
-    "runtimes": "node scripts/copy-runtimes.mjs"
+    "runtimes": "node scripts/copy-runtimes.mjs",
+    "check:python": "node scripts/check-python-steps.mjs"
   },
   "dependencies": {
     "@dacy/shared": "workspace:*",
