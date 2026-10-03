@@ -4,10 +4,11 @@ import { SqlCheckModule } from '../sql-check/sql-check.module';
 import { PathsLearnModule } from '../paths/paths-learn.module';
 import { ImportExportController } from './import-export.controller';
 import { PackageService } from './package.service';
+import { ContentSyncService } from './content-sync.service';
 @Module({
   imports: [ProgressModule, SqlCheckModule, PathsLearnModule],
   controllers: [ImportExportController],
-  providers: [PackageService],
+  providers: [PackageService, ContentSyncService],
   exports: [PackageService],
 })
 export class ImportExportModule {}

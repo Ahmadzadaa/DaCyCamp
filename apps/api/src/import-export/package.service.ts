@@ -532,7 +532,8 @@ export class PackageService {
 
   /* ───────────── tətbiq ───────────── */
 
-  async apply(buffer: Buffer, filename: string, userId: string): Promise<ImportReport> {
+  /** userId: null — sistem idxalı (repo-dakı content/courses, ContentSyncService) */
+  async apply(buffer: Buffer, filename: string, userId: string | null): Promise<ImportReport> {
     const { report, plan } = await this.validate(buffer);
     if (!plan) {
       await this.prisma.courseImport.create({

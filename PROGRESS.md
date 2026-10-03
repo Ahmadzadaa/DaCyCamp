@@ -353,7 +353,7 @@ Repoda yer tutucu səhifə qalmayıb (`/yollar`, `/sertifikatlar` Mərhələ 3�
 
 Mənbə: `Python_Day_1/2.pptx` (nəzəri) + `Python_Day_1/2.docx` (35 tapşırıq). Paket: `content/courses/python4business/` — **7 fəsil, 43 addım** (18 nəzəri, 18 Python, 7 test / 55 sual). Ətraflı xəritə, düzəldilən slayd səhvləri və boşluqlar: [`docs/kurslar/python4business.md`](docs/kurslar/python4business.md).
 
-- **Repo-dakı kurslar:** `content/courses/<slug>/` → `pnpm dev` API açılan kimi bazada olmayan kursları idxal edir (`scripts/content-sync.mjs`, admin girişi `.env`-dəki `SEED_ADMIN_*`). Əl ilə: `pnpm content:sync [--update] [slug]`.
+- **Repo-dakı kurslar:** `content/courses/<slug>/` → API açılanda bazada olmayan kursları özü idxal edir (`ContentSyncService`, giriş tələb etmir; `CONTENT_SYNC=false` söndürür). Mövcud kursu yeniləmək: `pnpm content:sync --update <slug>`.
 - **Python runtime:** testlərdə `dacy.stdout / dacy.lines / dacy.code`; sonu yeni sətirsiz `print(..., end=" ")` artıq itmir (xam `write` + flush); 10 saniyəlik gözətçi sonsuz dövrü dayandırır (yalnız tələbə kodu izlənir — kitabxanalar yavaşımır).
 - **Testlər:** sual mətni Markdown (inline kod, kod bloku).
 - **Yoxlama:** `pnpm --filter @dacy/web check:python` — hər Python addımında həll testdən keçir, starter keçmir (Node-da Pyodide, şəbəkəsiz; CI-da işləyir). API e2e `content-packages.e2e-spec.ts` hər paketin idxalını yoxlayır. Playwright `python-course.spec.ts`: idxal, kataloq, tələbə axını, Markdown sual, flush və gözətçi.
@@ -367,6 +367,10 @@ Mənbə: `Python_Day_1/2.pptx` (nəzəri) + `Python_Day_1/2.docx` (35 tapşırı
 - Monaco və terminal: Xcode tünd palitrası (#141416). Markdown: siyahı nöqtələri (əvvəl görünmürdü), `blockquote` → yaşıl qeyd kartı, yuvarlaq cədvəllər.
 - Düzəlişlər: iOS açarı (Switch) knopkası iki dəfə sürüşürdü (Tailwind v4 `translate` + `transform`) — ölçülər komponentə köçürüldü; `/fealiyyetim` və `/admin/axtar` telefonda üfüqi daşırdı; `SplitLayout` açar xəbərdarlığı; önizləmə zolağında mətn kontrastı.
 - Bütün marşrutlar 1440 və 390 enində yoxlanıldı (43 səhifə, üfüqi daşma yoxdur).
+
+## Müvəqqəti gizlədilən bölmələr — 3 oktyabr 2026
+
+İstifadəçinin istəyi ilə «Layihələr» və «Yarışlar» hələlik görünmür («sonra baxarıq»): sidebar, header-dəki «Tətbiq et», mobil alt menyu (yerinə «Təcrübə»), tanışlıq səhifəsinin linki. `/layiheler` və `/yarislar/*` kataloqa yönləndirilir. Səhifələr və API qalır — qaytarmaq üçün `apps/web/src/lib/features.ts`-də `projects` / `contests` → `true`. Admin tərəfdə «Layihə yoxlaması» (karyera yollarının layihə addımları) dəyişməyib.
 
 ## Növbəti mərhələ — digər kursların köçürülməsi (gözləyir)
 

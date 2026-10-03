@@ -5,15 +5,14 @@ Format spesifikasiyanın §3.2 və §4 bölmələrinə uyğundur. Aşağıdakı 
 
 ## Repo-dakı kurslar: `content/courses/`
 
-`content/courses/<slug>/` qovluğundakı hər paket `pnpm dev` zamanı **avtomatik idxal olunur** (bazada olmayan kurslar; admin paneldəki düzəlişlərin üzərinə yazılmır). Əl ilə:
+`content/courses/<slug>/` qovluğundakı hər paket **API açılanda avtomatik idxal olunur** (`ContentSyncService`): yalnız bazada olmayan kurslar, admin paneldəki düzəlişlərin üzərinə yazılmır, giriş/şifrə tələb etmir. Söndürmək: `.env`-də `CONTENT_SYNC=false`; başqa qovluq: `CONTENT_DIR=/yol`. Əl ilə:
 
 ```bash
-pnpm content:sync                    # yeni kursları əlavə et
-pnpm content:sync --update <slug>    # mövcud kursu paketdən yenilə (tələbə irəliləyişi qorunur)
+pnpm content:sync --update <slug>    # mövcud kursu paketdən yenilə (tələbə irəliləyişi qorunur; SEED_ADMIN_* lazımdır)
 pnpm --filter @dacy/web check:python # bütün paketlərdə Python addımlarını yoxla (CI-da da işləyir)
 ```
 
-Giriş üçün `.env`-dəki `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD` istifadə olunur. CI hər paketin idxal validasiyasından səhvsiz keçdiyini də yoxlayır (`apps/api/test/content-packages.e2e-spec.ts`).
+CI hər paketin idxal validasiyasından səhvsiz keçdiyini və avtomatik idxalı yoxlayır (`apps/api/test/content-packages.e2e-spec.ts`).
 
 ## Qovluq quruluşu
 

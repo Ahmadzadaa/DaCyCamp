@@ -55,6 +55,12 @@ const schema = z.object({
     .default('true')
     .transform((v) => v !== 'false'),
   LAB_CHECK_TIMEOUT_SEC: z.coerce.number().int().min(5).max(600).default(60),
+  // Repo-dakı kurs paketləri (content/courses/*): API açılanda bazada olmayanlar idxal olunur
+  CONTENT_SYNC: z
+    .string()
+    .default('true')
+    .transform((v) => v !== 'false'),
+  CONTENT_DIR: optionalStr,
 });
 
 const parsed = schema.safeParse(process.env);

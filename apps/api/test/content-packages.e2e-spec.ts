@@ -4,6 +4,7 @@ import { INestApplication } from '@nestjs/common';
 import AdmZip from 'adm-zip';
 import { createApp, login, resetDb, seedBasics } from './helpers';
 import { PrismaService } from '../src/prisma/prisma.service';
+import { ContentSyncService } from '../src/import-export/content-sync.service';
 
 /** content/courses/* — repo-dakı kurs paketləri idxal validasiyasından səhvsiz keçməli və tətbiq olunmalıdır */
 const ROOT = resolve(__dirname, '../../../content/courses');
@@ -47,5 +48,20 @@ describe('Repo kurs paketləri (content/courses)', () => {
     const steps = course.modules.flatMap((m) => m.steps);
     expect(steps.length).toBe(v.body.summary.steps);
     expect(steps.every((s) => s.isPublished)).toBe(true);
+  });
+
+  it('API açılışında avtomatik idxal: qovluq tapılır, yalnız bazada olmayanlar, girişsiz', async () => {
+    expect(ContentSyncService.findDir()).toBe(ROOT);
+    const sync = app.get(ContentSyncService);
+    // yuxarıdakı test hamısını idxal edib → heç nə əlavə olunmur, admin düzəlişləri qorunur
+    expect(await sync.syncNew(ROOT)).toEqual([]);
+    await prisma.course.deleteMany({ where: { importedAt: { not: null } } });
+    expect((await sync.syncNew(ROOT)).sort()).toEqual([...packages].sort());
+    const imp = await prisma.courseImport.findFirstOrThrow({
+      where: { filename: `${packages[0]}.zip`, status: 'APPLIED' },
+      orderBy: { createdAt: 'desc' },
+    });
+    expect(imp.uploadedById).toBeNull();
+    expect(await sync.syncNew(ROOT)).toEqual([]);
   });
 });

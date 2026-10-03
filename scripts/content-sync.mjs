@@ -1,12 +1,13 @@
 #!/usr/bin/env node
 /**
- * content/courses/<kurs>/ qovluqlarındakı kurs paketlərini (docs/content-package.md) işləyən API-yə idxal edir:
+ * content/courses/<kurs>/ paketlərini (docs/content-package.md) işləyən API-yə idxal edir:
  * qovluq ZIP-ə yığılır → /admin/import/validate → /admin/import/apply (admin paneldəki «İdxal» ilə eyni yol).
+ * Qeyd: bazada OLMAYAN kursları API özü açılanda avtomatik əlavə edir (ContentSyncService) —
+ * bu skript əsasən mövcud kursu paketdən YENİLƏMƏK üçündür.
  *
- *   pnpm content:sync                  — bazada OLMAYAN kursları əlavə et (admin düzəlişlərinin üzərinə yazmır)
- *   pnpm content:sync --update         — mövcud kursları da paketdən yenilə (tələbə irəliləyişi qorunur)
- *   pnpm content:sync python4business  — yalnız göstərilən kurs(lar)
- *   --wait                             — API açılana qədər gözlə (pnpm dev bunu özü çağırır)
+ *   pnpm content:sync --update python4business  — mövcud kursu paketdən yenilə (tələbə irəliləyişi qorunur)
+ *   pnpm content:sync                           — bazada olmayan kursları əlavə et
+ *   --wait                                      — API açılana qədər gözlə
  *
  * Giriş: .env-dəki SEED_ADMIN_EMAIL / SEED_ADMIN_PASSWORD.
  */

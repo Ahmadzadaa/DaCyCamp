@@ -22,6 +22,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import type { TKey } from '@/lib/i18n';
+import { FEATURES } from '@/lib/features';
 
 export interface NavItem {
   href: string;
@@ -99,15 +100,29 @@ export const STUDENT_NAV: NavSection[] = [
   {
     title: 'shell.apply',
     items: [
-      {
-        href: '/layiheler',
-        label: 'shell.projects',
-        icon: FolderKanban,
-        isNew: true,
-        auth: true,
-        tint: '#FF9F0A',
-      },
-      { href: '/yarislar', label: 'shell.contests', icon: Swords, isNew: true, tint: '#FF453A' },
+      ...(FEATURES.projects
+        ? [
+            {
+              href: '/layiheler',
+              label: 'shell.projects' as const,
+              icon: FolderKanban,
+              isNew: true,
+              auth: true,
+              tint: '#FF9F0A',
+            },
+          ]
+        : []),
+      ...(FEATURES.contests
+        ? [
+            {
+              href: '/yarislar',
+              label: 'shell.contests' as const,
+              icon: Swords,
+              isNew: true,
+              tint: '#FF453A',
+            },
+          ]
+        : []),
     ],
   },
   {
@@ -150,13 +165,17 @@ export const PILL_NAV: Array<{
       /^\/baslangic/,
     ],
   },
-  {
-    key: 'apply',
-    label: 'shell.apply',
-    icon: FolderKanban,
-    href: () => '/layiheler',
-    match: [/^\/layiheler/, /^\/yarislar/],
-  },
+  ...(FEATURES.projects || FEATURES.contests
+    ? [
+        {
+          key: 'apply' as const,
+          label: 'shell.apply' as const,
+          icon: FolderKanban,
+          href: () => (FEATURES.projects ? '/layiheler' : '/yarislar'),
+          match: [/^\/layiheler/, /^\/yarislar/],
+        },
+      ]
+    : []),
   {
     key: 'certs',
     label: 'shell.certificates',
@@ -177,7 +196,15 @@ export const BOTTOM_NAV: NavItem[] = [
     tint: '#5E5CE6',
   },
   { href: '/kurslar', label: 'shell.courses', icon: BookOpen, match: [/^\/kurslar/, /^\/kurs\//] },
-  { href: '/layiheler', label: 'shell.projects', icon: FolderKanban, auth: true },
+  FEATURES.projects
+    ? { href: '/layiheler', label: 'shell.projects', icon: FolderKanban, auth: true }
+    : {
+        href: '/tecrube',
+        label: 'shell.practice',
+        icon: FlaskConical,
+        auth: true,
+        tint: '#BF5AF2',
+      },
 ];
 
 /** Admin sidebar-ı — skrinşot: Ümumi baxış · KONTENT · İNSANLAR · SİSTEM */

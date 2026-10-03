@@ -239,12 +239,7 @@ const child = spawn('pnpm', ['turbo', 'run', 'dev'], {
   shell: process.platform === 'win32',
   env: { ...process.env, PORT: webPort, WEB_PORT: webPort, API_PORT: apiPort },
 });
-// content/courses/* — bazada olmayan kurs paketləri API açılan kimi idxal olunur (pnpm content:sync)
-spawn(process.execPath, [resolve(root, 'scripts/content-sync.mjs'), '--wait'], {
-  stdio: 'inherit',
-  cwd: root,
-  env: { ...process.env, API_PORT: apiPort },
-});
+// content/courses/* — bazada olmayan kurs paketlərini API özü açılanda idxal edir (ContentSyncService)
 const stop = () => child.kill('SIGINT');
 process.on('SIGINT', stop);
 process.on('SIGTERM', stop);

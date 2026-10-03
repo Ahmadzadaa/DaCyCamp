@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import type { CourseCardDto, LevelLabels, PathCardDto, TrackDto } from '@dacy/shared';
 import { t, type TKey } from '@/lib/i18n';
+import { FEATURES as FLAGS } from '@/lib/features';
 import { fmtNum } from '@/lib/utils';
 import { Logo } from '@/components/app/logo';
 import { CourseCard } from '@/components/app/course-card';
@@ -281,7 +282,7 @@ export function Landing({
             <b>{t('landing.footerLearn')}</b>
             <Link href="/kurslar">{t('landing.navCourses')}</Link>
             <Link href="/yollar">{t('landing.navPaths')}</Link>
-            <Link href="/yarislar">{t('shell.contests')}</Link>
+            {FLAGS.contests ? <Link href="/yarislar">{t('shell.contests')}</Link> : null}
             <Link href="/liderler">{t('shell.leaderboard')}</Link>
           </nav>
           <nav aria-label={t('landing.footerAccount')}>
