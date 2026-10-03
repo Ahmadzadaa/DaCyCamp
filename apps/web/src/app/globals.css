@@ -825,6 +825,14 @@
     white-space: nowrap;
     font-family: var(--font-sans);
   }
+  .ftabs .ftab-reset {
+    display: inline-grid;
+    place-items: center;
+    padding: 9px 12px;
+  }
+  .ftabs .ftab-reset:hover {
+    color: var(--brand);
+  }
   .ftabs .on {
     color: var(--on-dark);
     background: var(--navy-2);
@@ -1060,6 +1068,62 @@
     color: var(--on-dark);
     border-color: var(--navy-line);
     tab-size: 2;
+  }
+  /* admin: Monaco kod sahəsi (referansdakı .inp.code kimi tünd) */
+  .code-field {
+    width: 100%;
+    border: 1px solid var(--navy-line);
+    border-radius: var(--r-input, 12px);
+    overflow: hidden;
+    background: var(--navy-2);
+  }
+  .code-field:focus-within {
+    border-color: var(--brand);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 22%, transparent);
+  }
+  /* admin: «Həlli sına» paneli */
+  .sol-check {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .sol-check-h {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .sol-check-out {
+    background: var(--navy-2);
+    color: var(--on-dark);
+    border: 1px solid var(--navy-line);
+    border-radius: 12px;
+    overflow: hidden;
+    max-height: 320px;
+    overflow-y: auto;
+  }
+  .sol-check-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border-bottom: 1px solid var(--navy-line);
+  }
+  .sol-check-status.ok {
+    color: var(--ok);
+  }
+  .sol-check-status.err {
+    color: var(--err);
+  }
+  .sol-check-pre {
+    margin: 0;
+    padding: 10px 14px;
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    white-space: pre-wrap;
+    color: #c6d0e3;
   }
   .inp.err {
     border-color: var(--err);

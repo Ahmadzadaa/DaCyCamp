@@ -1,7 +1,8 @@
 'use client';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Editor, { loader, type OnMount } from '@monaco-editor/react';
 import { t } from '@/lib/i18n';
+import { cn } from '@/lib/utils';
 
 // Monaco öz serverimizdən (public/monaco/vs) yüklənir — CDN-siz.
 // <Editor> mount olan kimi yükləməyə başlayır, ona görə konfiq modul səviyyəsində (effect-dən əvvəl) qurulur.
@@ -13,18 +14,48 @@ export function CodeEditor({
   language,
   onRun,
   readOnly,
+  autoFocus,
+  height,
+  ariaLabel,
 }: {
   value: string;
   onChange: (v: string) => void;
   language: 'sql' | 'python';
   onRun?: () => void;
   readOnly?: boolean;
+  autoFocus?: boolean;
+  /** sabit hündürlük (admin formaları); verilməsə valideyni doldurur */
+  height?: number;
+  ariaLabel?: string;
 }) {
   const runRef = useRef(onRun);
   runRef.current = onRun;
   const [ready, setReady] = useState(false);
+  // Redaktor idarə olunmayan (uncontrolled) rejimdədir: hər düymədə `value` geri ötürülsəydi,
+  // React yenidən render-i gecikəndə köhnə dəyər redaktora yazılır və sürətli yazıda hərflər itirdi.
+  // Xaricdən gələn dəyişiklik (məs. «Başlanğıc koda qaytar») yalnız son yazılandan fərqli olanda tətbiq olunur.
+  const editorRef = useRef<Parameters<OnMount>[0] | null>(null);
+  const lastEmitted = useRef(value);
+  const latest = useRef(value);
+  latest.current = value;
+
+  useEffect(() => {
+    const ed = editorRef.current;
+    if (!ed || value === lastEmitted.current || value === ed.getValue()) return;
+    lastEmitted.current = value;
+    const model = ed.getModel();
+    if (!model) return;
+    // undo tarixçəsi qorunsun deyə setValue yox, edit əməliyyatı
+    ed.pushUndoStop();
+    ed.executeEdits('external', [{ range: model.getFullModelRange(), text: value }]);
+    ed.pushUndoStop();
+  }, [value]);
 
   const onMount: OnMount = (editor, monaco) => {
+    editorRef.current = editor;
+    // redaktor yüklənənə qədər dəyər dəyişmiş ola bilər (məs. yadda saxlanmış qaralama)
+    lastEmitted.current = latest.current;
+    if (editor.getValue() !== latest.current) editor.setValue(latest.current);
     monaco.editor.defineTheme('dacy', {
       base: 'vs-dark',
       inherit: true,
@@ -49,15 +80,23 @@ export function CodeEditor({
     });
     monaco.editor.setTheme('dacy');
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => runRef.current?.());
+    if (autoFocus) editor.focus();
     setReady(true);
   };
 
   return (
-    <div className="relative min-h-0 flex-1 bg-workspace" data-testid="code-editor">
+    <div
+      className={cn('relative bg-workspace', height ? 'code-field' : 'min-h-0 flex-1')}
+      style={height ? { height } : undefined}
+      data-testid="code-editor"
+    >
       <Editor
         language={language}
-        value={value}
-        onChange={(v) => onChange(v ?? '')}
+        defaultValue={value}
+        onChange={(v) => {
+          lastEmitted.current = v ?? '';
+          onChange(v ?? '');
+        }}
         onMount={onMount}
         theme="dacy"
         loading={
@@ -72,8 +111,14 @@ export function CodeEditor({
           automaticLayout: true,
           padding: { top: 14, bottom: 14 },
           readOnly,
+          // Chromium-un EditContext API-si ilə Monaco 0.5x sürətli yazıda hərfləri itirir — klassik textarea girişi
+          editContext: false,
+          // ı, ə kimi Azərbaycan hərfləri «oxşar simvol» kimi işarələnməsin
+          unicodeHighlight: { ambiguousCharacters: false, invisibleCharacters: true },
+          ariaLabel,
           wordWrap: 'on',
-          tabSize: 2,
+          tabSize: language === 'python' ? 4 : 2,
+          insertSpaces: true,
           renderLineHighlight: 'line',
           lineNumbersMinChars: 3,
           overviewRulerLanes: 0,

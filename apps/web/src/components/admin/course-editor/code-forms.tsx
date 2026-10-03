@@ -10,6 +10,7 @@ import { Switch } from '@/components/ui/switch';
 import { Seg } from '../seg';
 import { AssetPicker } from '../asset-picker';
 import { linesToText, textToLines } from '../lines';
+import { CodeField, PythonSolutionCheck, SqlSolutionCheck } from './code-field';
 
 type Sql = Extract<StepDefinitionDraft, { type: 'sql' }>;
 type Py = Extract<StepDefinitionDraft, { type: 'python' }>;
@@ -98,21 +99,26 @@ export function SqlForm({
         />
       </Field>
       <Field label={t('admin.starterCode')}>
-        <Textarea
-          code
+        <CodeField
+          language="sql"
+          label={t('admin.starterCode')}
           value={def.starter_code ?? ''}
-          onChange={(e) => onChange({ starter_code: e.target.value })}
-          rows={6}
+          onChange={(starter_code) => onChange({ starter_code })}
         />
       </Field>
       <Field label={t('admin.solution')}>
-        <Textarea
-          code
+        <CodeField
+          language="sql"
+          label={t('admin.solution')}
           value={def.solution ?? ''}
-          onChange={(e) => onChange({ solution: e.target.value })}
-          rows={6}
+          onChange={(solution) => onChange({ solution })}
         />
       </Field>
+      <SqlSolutionCheck
+        solution={def.solution ?? ''}
+        dataset={asList(def.dataset)}
+        assets={ctx.assets}
+      />
       <Field label={t('admin.checkMode')}>
         <Seg
           value={def.check ?? 'result_match'}
@@ -167,33 +173,37 @@ export function PythonForm({
         />
       </Field>
       <Field label={t('admin.starterCode')}>
-        <Textarea
-          code
+        <CodeField
+          language="python"
+          label={t('admin.starterCode')}
           value={def.starter_code ?? ''}
-          onChange={(e) => onChange({ starter_code: e.target.value })}
-          rows={6}
+          onChange={(starter_code) => onChange({ starter_code })}
         />
       </Field>
       <Field label={`${t('admin.solution')} (${t('common.optional')})`}>
-        <Textarea
-          code
+        <CodeField
+          language="python"
+          label={t('admin.solution')}
           value={def.solution ?? ''}
-          onChange={(e) => onChange({ solution: e.target.value || undefined })}
-          rows={6}
+          onChange={(v) => onChange({ solution: v || undefined })}
         />
       </Field>
-      <Field
-        label={t('admin.tests')}
-        full
-        hint="Hər assert tələbə kodundan sonra işləyir; hamısı keçərsə tapşırıq həll olunub."
-      >
-        <Textarea
-          code
+      <Field label={t('admin.tests')} full hint={t('admin.testsHint')}>
+        <CodeField
+          language="python"
+          label={t('admin.tests')}
+          height={160}
           value={def.tests ?? ''}
-          onChange={(e) => onChange({ tests: e.target.value })}
-          rows={5}
+          onChange={(tests) => onChange({ tests })}
         />
       </Field>
+      <PythonSolutionCheck
+        solution={def.solution ?? ''}
+        starter={def.starter_code ?? ''}
+        tests={def.tests ?? ''}
+        dataset={asList(def.dataset)}
+        assets={ctx.assets}
+      />
       <HintsTasks
         hints={def.hints}
         tasks={def.tasks}

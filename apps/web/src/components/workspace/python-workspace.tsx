@@ -1,7 +1,7 @@
 'use client';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
-import { Play } from 'lucide-react';
+import { Play, RotateCcw } from 'lucide-react';
 import type { CodeSubmitResultDto, PythonStudentView, StepViewDto } from '@dacy/shared';
 import { api } from '@/lib/api/client';
 import { errorMessage } from '@/lib/errors-i18n';
@@ -9,6 +9,7 @@ import { t } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { CodeEditor } from './code-editor';
+import { useCodeDraft } from './use-code-draft';
 import { useAfterComplete } from './use-complete';
 import type { PyRunResult } from '@/lib/runtimes/pyodide';
 
@@ -16,7 +17,7 @@ type Tab = 'stdout' | 'stderr' | 'plots';
 
 export function PythonWorkspace({ view, py }: { view: StepViewDto; py: PythonStudentView }) {
   const after = useAfterComplete(view.course.slug);
-  const [code, setCode] = useState(py.starter_code);
+  const { code, setCode, reset, dirty } = useCodeDraft(view.id, py.starter_code);
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [statusMsg, setStatusMsg] = useState<string>(t('ws.loadingRuntime'));
   const [running, setRunning] = useState(false);
@@ -135,6 +136,17 @@ export function PythonWorkspace({ view, py }: { view: StepViewDto; py: PythonStu
             {d.filename}
           </span>
         ))}
+        {dirty ? (
+          <button
+            type="button"
+            className="ftab-reset"
+            onClick={reset}
+            title={t('ws.resetCode')}
+            aria-label={t('ws.resetCode')}
+          >
+            <RotateCcw className="size-3.5" />
+          </button>
+        ) : null}
         <span
           className={cn(
             'ml-auto self-center px-3 text-xs',

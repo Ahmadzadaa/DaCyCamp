@@ -1,7 +1,7 @@
 'use client';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
-import { Play } from 'lucide-react';
+import { Play, RotateCcw } from 'lucide-react';
 import {
   resultHash,
   type CheckMode,
@@ -15,6 +15,7 @@ import { t } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { CodeEditor } from './code-editor';
+import { useCodeDraft } from './use-code-draft';
 import { ResultTable } from './result-table';
 import { useAfterComplete } from './use-complete';
 import type { RunResult, SqlSession } from '@/lib/runtimes/duckdb';
@@ -23,7 +24,7 @@ type Tab = 'result' | 'console';
 
 export function SqlWorkspace({ view, sql }: { view: StepViewDto; sql: SqlStudentView }) {
   const after = useAfterComplete(view.course.slug);
-  const [code, setCode] = useState(sql.starter_code);
+  const { code, setCode, reset, dirty } = useCodeDraft(view.id, sql.starter_code);
   const [session, setSession] = useState<SqlSession | null>(null);
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [statusMsg, setStatusMsg] = useState<string>(t('ws.loadingRuntime'));
@@ -167,6 +168,17 @@ export function SqlWorkspace({ view, sql }: { view: StepViewDto; sql: SqlStudent
             {t('ws.tableTab', { name: tb.name })}
           </button>
         ))}
+        {dirty ? (
+          <button
+            type="button"
+            className="ftab-reset"
+            onClick={reset}
+            title={t('ws.resetCode')}
+            aria-label={t('ws.resetCode')}
+          >
+            <RotateCcw className="size-3.5" />
+          </button>
+        ) : null}
         <span
           className={cn(
             'ml-auto self-center px-3 text-xs',
