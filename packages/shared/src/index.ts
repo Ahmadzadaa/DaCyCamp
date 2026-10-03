@@ -6,6 +6,8 @@ export * from './content/step-definition';
 export * from './content/step-config';
 export * from './content/package';
 export * from './content/path';
+export * from './content/roadmap';
+export * from './content/step-templates';
 export * from './sql/canonical';
 export * from './sql/arrow';
 export * from './progress/unlock';

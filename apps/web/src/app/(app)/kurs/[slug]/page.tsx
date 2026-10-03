@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { getLevelLabels } from '@/lib/level-labels';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ArrowRight, Award, Clock, PartyPopper, RotateCcw } from 'lucide-react';
@@ -23,6 +24,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function CoursePage({ params, searchParams }: Props) {
+  const levels = await getLevelLabels();
   const { slug } = await params;
   const sp = await searchParams;
   const user = await getCurrentUser();
@@ -57,7 +59,7 @@ export default async function CoursePage({ params, searchParams }: Props) {
           <div className="hero-k">
             <TrackBadge color={color}>{outline.track.title}</TrackBadge>
             <span className="badge badge-mint">{t(`catalog.kind.${courseKind(outline)}`)}</span>
-            <span className="badge badge-onhero">{t(`level.${outline.level}`)}</span>
+            <span className="badge badge-onhero">{levels[outline.level]}</span>
           </div>
           <h1 className="mt-3">{outline.title}</h1>
           {outline.description ? <p>{outline.description}</p> : null}

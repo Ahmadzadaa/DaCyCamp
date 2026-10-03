@@ -9,9 +9,12 @@ export function LevelBars({
   level,
   color,
   className,
+  label,
   children,
 }: {
   level: Level;
+  /** admin-in dəyişdiyi ad (verilməsə standart) */
+  label?: string;
   color?: string;
   className?: string;
   /** addan sonra əlavə mətn (məs. «· Aysel Məmmədova») */
@@ -27,7 +30,7 @@ export function LevelBars({
         <b />
         <b />
       </i>
-      {t(`level.${level}`)}
+      {label ?? t(`level.${level}`)}
       {children}
     </div>
   );

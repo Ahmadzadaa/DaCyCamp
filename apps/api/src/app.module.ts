@@ -25,6 +25,8 @@ import { AuditModule } from './audit/audit.module';
 import { AdminOverviewModule } from './admin-overview/admin-overview.module';
 import { HubModule } from './hub/hub.module';
 import { TopicsModule } from './topics/topics.module';
+import { RoadmapsModule } from './roadmaps/roadmaps.module';
+import { SettingsModule } from './settings/settings.module';
 
 @Module({
   imports: [
@@ -49,6 +51,8 @@ import { TopicsModule } from './topics/topics.module';
     AdminOverviewModule,
     HubModule,
     TopicsModule,
+    RoadmapsModule,
+    SettingsModule,
   ],
   controllers: [HealthController],
   providers: [

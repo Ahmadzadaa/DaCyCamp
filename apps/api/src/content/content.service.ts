@@ -21,6 +21,7 @@ import {
   type StepType,
   type UpdateCourseInput,
   type UpdateModuleInput,
+  templateDefinition,
 } from '@dacy/shared';
 import { PrismaService } from '../prisma/prisma.service';
 import { AssetsService, assetUrl } from '../assets/assets.service';
@@ -676,6 +677,8 @@ export class ContentService implements OnModuleInit, OnModuleDestroy {
         secret: Prisma.JsonNull,
       },
     });
+    // «nümunə ilə yarat»: tam tərif putStep-dən keçir (sirr, CTF heşləri, yoxlamalar eyni yolla)
+    if (dto.template) return this.putStep(s.id, templateDefinition(dto.type, dto.title), {});
     return this.getStep(s.id);
   }
 

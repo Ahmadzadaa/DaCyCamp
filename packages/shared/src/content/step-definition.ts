@@ -154,7 +154,11 @@ export const terminalStrict = z.object({
   instructions: md.refine((s) => s.trim().length > 0, 'Təlimat boş ola bilməz'),
   docker_image: z.string().trim().min(1, 'Docker imici lazımdır').max(300),
   time_limit_minutes: z.number().int().min(1).max(600).default(DEFAULT_LAB_MINUTES),
-  check_script: assetPath,
+  check_script: z
+    .string()
+    .trim()
+    .min(1, 'Yoxlama skripti seçilməyib — «Fayllar»a .sh yükləyib seçin')
+    .max(300),
   hints: lines.default([]),
   /** konteynerdə internet (defolt: bağlı) */
   network: z.boolean().default(false),

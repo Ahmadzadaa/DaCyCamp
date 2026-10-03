@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { ArrowRight, Check, Clock } from 'lucide-react';
-import type { CourseCardDto } from '@dacy/shared';
+import type { CourseCardDto, LevelLabels } from '@dacy/shared';
 import { t } from '@/lib/i18n';
 import { fmtHours, initials } from '@/lib/utils';
 import { LevelBars } from './level-bars';
@@ -17,8 +17,8 @@ export function courseKind(c: Pick<CourseCardDto, 'stepTypeCounts' | 'stepCount'
   return 'course';
 }
 
-export function courseMeta(c: CourseCardDto): string[] {
-  const parts = [t(`level.${c.level}`)];
+export function courseMeta(c: CourseCardDto, levels?: LevelLabels): string[] {
+  const parts = [levels?.[c.level] ?? t(`level.${c.level}`)];
   parts.push(t('common.modules', { n: c.moduleCount }));
   const kind = courseKind(c);
   if (kind === 'project') parts.push(t('catalog.labs', { n: c.stepTypeCounts.TERMINAL ?? 0 }));
@@ -31,7 +31,14 @@ export function courseMeta(c: CourseCardDto): string[] {
  * Kurs kartı (dizayn v2 anatomiyası): etiket · 24px başlıq · səviyyə zolaqları · 4 sətir təsvir ·
  * müəllim · alt bölmə (istiqamət ikonu + müddət, «Başla» / «Davam et» + irəliləyiş).
  */
-export function CourseCard({ course }: { course: CourseCardDto }) {
+export function CourseCard({
+  course,
+  levels,
+}: {
+  course: CourseCardDto;
+  /** admin-in dəyişdiyi səviyyə adları */
+  levels?: LevelLabels;
+}) {
   const c = course;
   const color = c.track.color;
   const hours = fmtHours(c.estimatedHours);
@@ -52,7 +59,7 @@ export function CourseCard({ course }: { course: CourseCardDto }) {
       <h3>
         <Link href={href}>{c.title}</Link>
       </h3>
-      <LevelBars level={c.level} color={color} />
+      <LevelBars level={c.level} color={color} label={levels?.[c.level]} />
       {c.description ? <p>{c.description}</p> : null}
       {c.instructor ? (
         <div className="inst">

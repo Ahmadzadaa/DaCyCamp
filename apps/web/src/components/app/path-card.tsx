@@ -1,13 +1,16 @@
 import Link from 'next/link';
 import { ArrowRight, Check, Clock } from 'lucide-react';
-import type { PathCardDto } from '@dacy/shared';
+import type { LevelLabels, PathCardDto } from '@dacy/shared';
 import { t } from '@/lib/i18n';
 import { fmtHours } from '@/lib/utils';
 import { LevelBars } from './level-bars';
 import { TrackTile } from './track-icon';
 
-export function pathFacts(p: PathCardDto): string[] {
-  const parts = [t(`level.${p.level}`), t('paths.courses', { n: p.courseCount })];
+export function pathFacts(p: PathCardDto, levels?: LevelLabels): string[] {
+  const parts = [
+    levels?.[p.level] ?? t(`level.${p.level}`),
+    t('paths.courses', { n: p.courseCount }),
+  ];
   if (p.projectCount) parts.push(t('paths.projects', { n: p.projectCount }));
   if (p.assessmentCount) parts.push(t('paths.assessments', { n: p.assessmentCount }));
   if (p.estimatedHours) parts.push(t('paths.hoursTotal', { n: p.estimatedHours }));
@@ -15,7 +18,7 @@ export function pathFacts(p: PathCardDto): string[] {
 }
 
 /** Yol kartı — kurs kartı ilə eyni anatomiya: «YOL» etiketi, səviyyə, təsvir, tərkib, alt bölmə */
-export function PathCard({ path: p }: { path: PathCardDto }) {
+export function PathCard({ path: p, levels }: { path: PathCardDto; levels?: LevelLabels }) {
   const color = p.track.color;
   const href = `/yol/${p.slug}`;
   const pct = p.enrolled ? (p.percent ?? 0) : null;
@@ -41,7 +44,7 @@ export function PathCard({ path: p }: { path: PathCardDto }) {
       <h3>
         <Link href={href}>{p.title}</Link>
       </h3>
-      <LevelBars level={p.level} color={color} />
+      <LevelBars level={p.level} color={color} label={levels?.[p.level]} />
       {p.description ? <p>{p.description}</p> : null}
       <div className="path-parts">{parts.join(' · ')}</div>
       {pct !== null && !p.completedAt ? (

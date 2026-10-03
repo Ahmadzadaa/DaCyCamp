@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import { useLevelLabels } from '@/components/level-labels';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import {
@@ -55,6 +56,7 @@ export function PathForm({
   tracks: TrackDto[];
   onSaved?: (p: AdminPathDto) => void;
 }) {
+  const levels = useLevelLabels();
   const router = useRouter();
   const [d, setD] = useState<Draft>(() => toDraft(path, tracks));
   const [slugTouched, setSlugTouched] = useState(!!path);
@@ -147,7 +149,7 @@ export function PathForm({
         <Select value={d.level} onChange={(e) => set('level', e.target.value as Draft['level'])}>
           {LEVELS.map((l) => (
             <option key={l} value={l}>
-              {t(`level.${l}`)}
+              {levels[l]}
             </option>
           ))}
         </Select>

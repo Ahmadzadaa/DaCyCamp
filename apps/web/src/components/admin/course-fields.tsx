@@ -1,5 +1,6 @@
 'use client';
 import { useRef } from 'react';
+import { useLevelLabels } from '@/components/level-labels';
 import { Controller, type UseFormReturn } from 'react-hook-form';
 import type { z } from 'zod';
 import { LEVELS, createCourseSchema, slugify, type TrackDto } from '@dacy/shared';
@@ -26,6 +27,7 @@ export function CourseFields({
   tracks: TrackDto[];
   autoSlug?: boolean;
 }) {
+  const levels = useLevelLabels();
   const { register, control, setValue, formState } = form;
   const errors = formState.errors;
   const slugTouched = useRef(false);
@@ -74,7 +76,7 @@ export function CourseFields({
               value={field.value ?? 'BEGINNER'}
               onChange={field.onChange}
               label={t('common.level')}
-              options={LEVELS.map((lv) => ({ value: lv, label: t(`level.${lv}`) }))}
+              options={LEVELS.map((lv) => ({ value: lv, label: levels[lv] }))}
             />
           )}
         />

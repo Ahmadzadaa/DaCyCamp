@@ -118,6 +118,8 @@ export const createStepSchema = z.object({
   type: z.enum(STEP_TYPES),
   title: titleSchema,
   key: slugSchema.optional(),
+  /** true — boş yox, işlək nümunə məzmunla yarat */
+  template: z.boolean().optional(),
 });
 export const moveStepSchema = z.object({ moduleId: idSchema, index: z.number().int().min(0) });
 export const updateStepMetaSchema = z.object({ key: slugSchema.optional() });
@@ -180,3 +182,11 @@ export const projectReviewSchema = z.object({
   feedback: z.string().max(5000).optional(),
 });
 export const targetPathSchema = z.object({ pathSlug: z.string().max(80).nullable() });
+
+/** Səviyyə adları (kataloq filtri, kart, kurs səhifəsi) — admin dəyişə bilir */
+export const levelLabelsSchema = z.object({
+  BEGINNER: z.string().trim().min(1).max(30),
+  INTERMEDIATE: z.string().trim().min(1).max(30),
+  ADVANCED: z.string().trim().min(1).max(30),
+});
+export type LevelLabels = z.infer<typeof levelLabelsSchema>;

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
+import { getLevelLabels } from '@/lib/level-labels';
 import Link from 'next/link';
-import { BookOpen, Route } from 'lucide-react';
+import { BookOpen, Pencil, Route } from 'lucide-react';
 import { LEVELS, type CourseCardDto, type Level, type TopicDto, type TrackDto } from '@dacy/shared';
 import { apiFetch, getCurrentUser } from '@/lib/api/server';
 import { t, type TKey } from '@/lib/i18n';
@@ -14,6 +15,7 @@ import {
   LevelPicker,
   MoreChips,
   type ChipOpt,
+  type LevelOpt,
   type TopicOpt,
 } from '@/components/app/catalog-controls';
 
@@ -49,13 +51,13 @@ const PRACTICE: Array<{ value: string; label: TKey; has: (c: CourseCardDto) => b
 const KINDS: CourseKind[] = ['course', 'project', 'room'];
 
 export default async function CatalogPage({ searchParams }: { searchParams: Promise<SP> }) {
+  const levels = await getLevelLabels();
   const sp = await searchParams;
   const level = (LEVELS as readonly string[]).includes(sp.seviyye ?? '')
     ? (sp.seviyye as Level)
     : undefined;
   const qs = new URLSearchParams();
   if (sp.istiqamet) qs.set('track', sp.istiqamet);
-  if (level) qs.set('level', level);
   if (sp.q) qs.set('q', sp.q);
   const [tracks, topics, fetched, user] = await Promise.all([
     apiFetch<TrackDto[]>('/tracks'),
@@ -94,6 +96,13 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
   let courses = fetched;
   if (topicSlug) courses = courses.filter((c) => hasTopic(c, topicSlug));
   if (practice) courses = courses.filter(practice.has);
+  // səviyyə sayğacları — mövzu/praktika filtrindən sonra, səviyyə filtrindən əvvəl
+  const levelOpts: LevelOpt[] = LEVELS.map((lv) => ({
+    value: lv,
+    label: levels[lv],
+    count: courses.filter((c) => c.level === lv).length,
+  }));
+  if (level) courses = courses.filter((c) => c.level === level);
   if (KINDS.includes(sp.nov as CourseKind))
     courses = courses.filter((c) => courseKind(c) === sp.nov);
   if (sp.muddet) {
@@ -165,8 +174,8 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
 
       <nav className="chips scroll-m mt-8" aria-label={t('catalog.filters')}>
         <Link
-          href={href(sp, { istiqamet: undefined, seviyye: undefined, nov: undefined })}
-          className={cn('chip', !sp.istiqamet && !level && !sp.nov && 'on')}
+          href={href(sp, { istiqamet: undefined, nov: undefined })}
+          className={cn('chip', !sp.istiqamet && !sp.nov && 'on')}
         >
           {t('common.all')}
         </Link>
@@ -182,33 +191,29 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
             {tr.title}
           </Link>
         ))}
-        <span className="chip-sep" aria-hidden />
-        {LEVELS.map((lv, i) => (
-          <Link
-            key={lv}
-            href={href(sp, { seviyye: level === lv ? undefined : lv })}
-            className={cn('chip', level === lv && 'on')}
-            aria-current={level === lv ? 'true' : undefined}
-            data-testid={`level-chip-${lv}`}
-          >
-            <span className={cn('lvb', `l${i + 1}`)} aria-hidden>
-              <b />
-              <b />
-              <b />
-            </span>
-            {t(`level.${lv}`)}
-          </Link>
-        ))}
         {sp.nov && KINDS.includes(sp.nov as CourseKind) ? (
           <Link href={href(sp, { nov: undefined })} className="chip on">
             {t(`catalog.kind.${sp.nov as CourseKind}`)}
           </Link>
         ) : null}
         <MoreChips options={moreOpts} />
+        {user?.role === 'ADMIN' ? (
+          <Link
+            href="/admin/movzular"
+            className="chip more ml-auto"
+            title={t('levels.editFilters')}
+            data-testid="edit-filters"
+          >
+            <Pencil aria-hidden />
+            {t('levels.editFilters')}
+          </Link>
+        ) : null}
       </nav>
 
       <CatalogToolbar
         count={courses.length}
+        levels={levelOpts}
+        level={level}
         topics={topicOpts}
         topic={topicSlug}
         practice={practice?.value}
@@ -225,7 +230,7 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
       ) : (
         <div className="cards">
           {courses.map((c) => (
-            <CourseCard key={c.id} course={c} />
+            <CourseCard key={c.id} course={c} levels={levels} />
           ))}
         </div>
       )}

@@ -7,6 +7,8 @@ import '@fontsource/jetbrains-mono/400.css';
 import '@fontsource/jetbrains-mono/500.css';
 import './globals.css';
 import { Providers } from './providers';
+import { LevelLabelsProvider } from '@/components/level-labels';
+import { getLevelLabels } from '@/lib/level-labels';
 import { t } from '@/lib/i18n';
 
 export const metadata: Metadata = {
@@ -20,11 +22,14 @@ export const viewport: Viewport = {
   themeColor: '#13233F',
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const levels = await getLevelLabels();
   return (
     <html lang="az" suppressHydrationWarning>
       <body>
-        <Providers>{children}</Providers>
+        <Providers>
+          <LevelLabelsProvider labels={levels}>{children}</LevelLabelsProvider>
+        </Providers>
       </body>
     </html>
   );

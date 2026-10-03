@@ -125,6 +125,12 @@ export interface TopicOpt {
   count: number;
 }
 
+export interface LevelOpt {
+  value: string;
+  label: string;
+  count: number;
+}
+
 const SORTS: Array<{ value: string; label: TKey }> = [
   { value: '', label: 'catalog.sortDefault' },
   { value: 'yeni', label: 'catalog.sortNew' },
@@ -147,12 +153,16 @@ const STATUSES: Array<{ value: string; label: TKey }> = [
 /** Sayğac · «Bu siyahıda axtar» · Mövzu · Daha çox filtr */
 export function CatalogToolbar({
   count,
+  levels,
+  level,
   topics,
   topic,
   practice,
   authed,
 }: {
   count: number;
+  levels: LevelOpt[];
+  level?: string;
   topics: TopicOpt[];
   topic?: string;
   practice?: string;
@@ -236,6 +246,61 @@ export function CatalogToolbar({
           </button>
         ) : null}
       </label>
+      <Menu.Root>
+        <Menu.Trigger className={cn('sel', level && 'on')} data-testid="catalog-level">
+          {level ? (
+            <span
+              className={cn('lvb', `l${levels.findIndex((x) => x.value === level) + 1}`)}
+              aria-hidden
+            >
+              <b />
+              <b />
+              <b />
+            </span>
+          ) : null}
+          {levels.find((x) => x.value === level)?.label ?? t('catalog.levelFilter')}
+          <ChevronDown aria-hidden />
+        </Menu.Trigger>
+        <Menu.Portal>
+          <Menu.Content className="pop menu-pop min-w-[220px]" sideOffset={8} align="end">
+            <Menu.RadioGroup
+              value={level ?? ''}
+              onValueChange={(v) => go({ seviyye: v || undefined })}
+            >
+              <Menu.RadioItem value="" className="menu-item">
+                {t('topics.levelAll')}
+                <span className="grid ml-auto w-4 place-items-center">
+                  <Menu.ItemIndicator>
+                    <Check className="size-4 text-brand" />
+                  </Menu.ItemIndicator>
+                </span>
+              </Menu.RadioItem>
+              <Menu.Separator className="menu-sep" />
+              {levels.map((o, i) => (
+                <Menu.RadioItem
+                  key={o.value}
+                  value={o.value}
+                  className="menu-item"
+                  disabled={!o.count && level !== o.value}
+                >
+                  <span className={cn('lvb', `l${i + 1}`)} aria-hidden>
+                    <b />
+                    <b />
+                    <b />
+                  </span>
+                  {o.label}
+                  <span className="ml-auto text-xs text-muted">{o.count}</span>
+                  <span className="grid w-4 place-items-center">
+                    <Menu.ItemIndicator>
+                      <Check className="size-4 text-brand" />
+                    </Menu.ItemIndicator>
+                  </span>
+                </Menu.RadioItem>
+              ))}
+            </Menu.RadioGroup>
+          </Menu.Content>
+        </Menu.Portal>
+      </Menu.Root>
       <Menu.Root>
         <Menu.Trigger className={cn('sel', picked.length && 'on')} data-testid="catalog-topic">
           {picked[0]?.color ? (

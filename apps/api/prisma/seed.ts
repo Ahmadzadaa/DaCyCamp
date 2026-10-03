@@ -5,7 +5,13 @@
 import { env } from '../src/config/env';
 import { Prisma, PrismaClient } from '@prisma/client';
 import { hash } from '@node-rs/argon2';
-import { DEFAULT_TRACKS, splitAssessment, splitStep, type StepDefinition } from '@dacy/shared';
+import {
+  DEFAULT_ROADMAPS,
+  DEFAULT_TRACKS,
+  splitAssessment,
+  splitStep,
+  type StepDefinition,
+} from '@dacy/shared';
 import { hashAnswer } from '../src/content/ctf-hash';
 import {
   detectKind,
@@ -428,8 +434,29 @@ async function main() {
     });
   }
 
+  // karyera xəritələri — yalnız yoxdursa yaradılır (admin redaktələri heç vaxt üzərinə yazılmır)
+  for (const [i, r] of DEFAULT_ROADMAPS.entries()) {
+    if (await prisma.roadmap.findUnique({ where: { slug: r.slug } })) continue;
+    const track = r.track
+      ? await prisma.track.findUnique({ where: { slug: r.track }, select: { id: true } })
+      : null;
+    await prisma.roadmap.create({
+      data: {
+        slug: r.slug,
+        title: r.title,
+        tagline: r.tagline ?? null,
+        description: r.description ?? null,
+        trackId: track?.id ?? null,
+        order: i + 1,
+        isPublished: true,
+        content: r.content as unknown as Prisma.InputJsonValue,
+      },
+    });
+  }
+
   const counts = {
     tracks: await prisma.track.count(),
+    roadmaps: await prisma.roadmap.count(),
     paths: await prisma.learningPath.count(),
     courses: await prisma.course.count(),
     modules: await prisma.module.count(),

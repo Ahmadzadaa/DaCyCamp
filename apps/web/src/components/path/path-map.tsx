@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { Check, Lock, Star, Trophy } from 'lucide-react';
-import type { PathItemDto } from '@dacy/shared';
+import type { PathItemDto, LevelLabels } from '@dacy/shared';
 import { t } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 
@@ -39,10 +39,12 @@ export function PathMap({
   items,
   color,
   enrolled,
+  levels,
 }: {
   items: PathItemDto[];
   color: string;
   enrolled: boolean;
+  levels?: LevelLabels;
 }) {
   // xəttin rənglənməsi: tamamlananlar yaşıl, cari addıma qədər istiqamət rəngi, qalanı boz
   const required = items.filter((i) => !i.isOptional);
@@ -84,14 +86,22 @@ export function PathMap({
             ))}
           </li>
         ) : (
-          <Node key={g.item.id} it={g.item} enrolled={enrolled} />
+          <Node key={g.item.id} it={g.item} enrolled={enrolled} levels={levels} />
         ),
       )}
     </ol>
   );
 }
 
-function Node({ it, enrolled }: { it: PathItemDto; enrolled: boolean }) {
+function Node({
+  it,
+  enrolled,
+  levels,
+}: {
+  it: PathItemDto;
+  enrolled: boolean;
+  levels?: LevelLabels;
+}) {
   const ms = it.type === 'MILESTONE' || it.type === 'ASSESSMENT';
   const cls = cn(
     'node',
@@ -127,7 +137,9 @@ function Node({ it, enrolled }: { it: PathItemDto; enrolled: boolean }) {
       <div className="ntop">
         <span className="ntype">
           {TYPE_LABEL[it.type]()}
-          {it.type === 'COURSE' && it.course ? ` · ${t(`level.${it.course.level}`)}` : ''}
+          {it.type === 'COURSE' && it.course
+            ? ` · ${levels?.[it.course.level] ?? t(`level.${it.course.level}`)}`
+            : ''}
         </span>
       </div>
       <h4>{it.title}</h4>

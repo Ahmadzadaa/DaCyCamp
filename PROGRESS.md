@@ -324,6 +324,31 @@ Repoda yer tutucu səhifə qalmayıb (`/yollar`, `/sertifikatlar` Mərhələ 3�
 
 ---
 
+## Karyera yolları (roadmap), səviyyə filtri, addım şablonları — 3 oktyabr 2026
+
+**Karyera yolları (`/yollar`).** «Yollar» bölməsi karyera xəritəsinə çevrildi: peşə tabları (Data Analyst · Data Engineer · Kiber təhlükəsizlik) → səviyyə nərdivanı **Intern → Junior → Middle → Senior** → seçilmiş səviyyənin məzmunu:
+
+- xülasə və təxmini müddət, «İşdə nə edəcəksən», alətlər, **səviyyə layihəsi** (portfolio üçün);
+- bacarıq qrupları → bacarıqlar (əsas / «əlavə» üstünlük, qısa izah);
+- **özümüzə məxsus hissə:** tələbə bildiyi bacarığı işarələyir, hər səviyyə üçün **hazırlıq faizi** (əsas bacarıqlar üzrə) nərdivanda və başlıqda görünür; bacarıq platformadakı kursa bağlıdırsa, «Platformada öyrən» linki çıxır və kurs bitəndə bacarıq **avtomatik ✓** olur;
+- səhifənin altında həmin istiqamətin praktiki yolları (kurs + layihə + imtahan) — köhnə yollar itmədi.
+
+İlkin məzmun roadmap.sh (data-analyst, data-engineer, cyber-security) və Data Engineering Journey əsasında, səviyyələrə bölünmüş öz versiyamızdır: 3 peşə × 4 səviyyə, 120+ bacarıq (`packages/shared/src/content/roadmap.ts` → seed; yalnız yoxdursa yaradılır, admin redaktələri üzərinə yazılmır).
+
+**Yalnız admin dəyişir** (`/admin/karyera`, sidebar → KONTENT → Karyera xəritələri): xəritə yarat / sırala / gizlət / sil; redaktor — peşə adı, slug, şüar, təsvir, istiqamət; səviyyə tabları (əlavə et, sola/sağa, sil); hər səviyyədə xülasə, gözləntilər, alətlər, layihə; qruplar və bacarıqlar (əlavə, yuxarı/aşağı, sil, əsas/əlavə, **kursa bağlama**). Saxlamazdan əvvəl yoxlama (təkrar bacarıq id-si, boş sahələr), yadda saxlanmamış dəyişiklik xəbərdarlığı. API: `GET /roadmaps`, `GET /roadmaps/:slug`, `PUT /roadmaps/:slug/checks/:skillId`; `GET/POST/PUT/DELETE /admin/roadmaps`, `PATCH /admin/roadmaps/reorder` (ADMIN, tarixçəyə düşür).
+
+**Kataloq filtri.** Başlanğıc / Orta / Çətin çipləri çip sırasından çıxarıldı — «Mövzu»nun yanında **«Səviyyə»** menyusu (sayğaclarla). **Filtrləri admin idarə edir:** istiqamətlər (İstiqamətlər), mövzular (Mövzular) və indi **səviyyə adları** (Mövzular səhifəsində «Səviyyə adları» kartı — kataloqda, kurs kartlarında, kurs və yol səhifələrində, admin formalarında eyni ad). Admin üçün kataloqda «Filtrləri redaktə et» keçidi.
+
+**Kurs yaratmaq daha rahat.** «Yeni addım» dialoqu: tip kartları (ikon + nə olduğu), başlıq nümunəsi, **«Nümunə məzmunla doldur»** (defolt açıq) — addım işlək nümunə ilə yaranır: nəzəri mətn şablonu, test sualı, datasetsiz işləyən SQL tapşırığı (həll + ipucu), testləri keçən Python funksiyası, terminal təlimatı, bir bayraqlı CTF (cavab heş kimi saxlanılır). Terminal üçün yalnız yoxlama skripti faylını seçmək qalır (redaktor bunu Azərbaycanca göstərir). «+ + Sual əlavə et» təkrar işarəsi düzəldildi.
+
+**Dev mühiti düzəlişi:** `pnpm dev`-də ortaq paketin izləyicisi `dist`-i silib yenidən qururdu, API izləyicisi həmin anda tərtib edəndə «@dacy/shared tip faylı yoxdur» xətalarını keşləyib restart-a qədər 79 xəta göstərirdi. İndi izləyici `--no-clean` ilə işləyir (`pnpm dev` əvvəlcədən tam build edir).
+
+**Miqrasiyalar:** `20261003155308_roadmaps` (`Roadmap`, `RoadmapCheck`), `20261003160506_settings` (`Setting`). `pnpm dev` özü tətbiq edir.
+
+**Yoxlama:** API e2e **99/99** (yeni `roadmaps.e2e-spec.ts` — 7 test: ictimai siyahı/məzmun, işarələr, kurs bitəndə «completed», yalnız admin, CRUD + validasiya + sıra + audit, səviyyə adları, hər tip üçün şablon addım). Playwright **44/44** (yeni `roadmap.spec.ts` — qonaq nərdivanı, işarələmə + hazırlıq faizi, kataloq səviyyə filtri, admin xəritə və səviyyə adı redaktəsi saytda görünür, tələbə üçün 403).
+
+---
+
 ## Növbəti mərhələ — kurs məzmununun platformaya köçürülməsi (gözləyir)
 
 İstifadəçi bütün dərs və tapşırıq fayllarını göndərəcək (Docker, Python, SQL, Excel və s.). Bunlardan platformada kurslar yaradılacaq — hamısı bir yerdə: istiqamət, mövzu, səviyyə, fəsillər, addımlar (nəzəri, test, SQL, Python, terminal lab, CTF), datasetlər, yollar. Yol: hər kurs üçün ZIP paketi (`docs/content-package.md`) → `/admin/idxal`-da yoxla → tətbiq et. Excel tapşırıqlarının formatı fayllar gələndə seçiləcək (məs. Excel faylı + test sualları, və ya Python/pandas ilə).

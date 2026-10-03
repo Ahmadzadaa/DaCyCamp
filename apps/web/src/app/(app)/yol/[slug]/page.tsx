@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { getLevelLabels } from '@/lib/level-labels';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Award, PartyPopper } from 'lucide-react';
@@ -19,6 +20,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function PathPage({ params, searchParams }: Props) {
+  const levels = await getLevelLabels();
   const { slug } = await params;
   const sp = await searchParams;
   const user = await getCurrentUser();
@@ -34,7 +36,7 @@ export default async function PathPage({ params, searchParams }: Props) {
           <div className="hero-k">
             <TrackBadge color={color}>{path.track.title}</TrackBadge>
             <span className="badge badge-mint">{t('paths.careerPath')}</span>
-            <span className="badge badge-onhero">{t(`level.${path.level}`)}</span>
+            <span className="badge badge-onhero">{levels[path.level]}</span>
           </div>
           <h1 className="mt-3">{path.title}</h1>
           {path.description ? <p>{path.description}</p> : null}
@@ -102,7 +104,7 @@ export default async function PathPage({ params, searchParams }: Props) {
 
       <div className="lp">
         <div className="min-w-0">
-          <PathMap items={d.items} color={color} enrolled={d.enrolled || preview} />
+          <PathMap items={d.items} color={color} enrolled={d.enrolled || preview} levels={levels} />
         </div>
 
         <aside className="flex flex-col gap-4">

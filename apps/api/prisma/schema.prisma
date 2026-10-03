@@ -137,6 +137,7 @@ model User {
   stepUnlocks       StepUnlock[]       @relation("StepUnlockUser")
   grantedUnlocks    StepUnlock[]       @relation("StepUnlockGrantor")
   auditLogs         AuditLog[]
+  roadmapChecks     RoadmapCheck[]
 }
 
 /// Rotating refresh tokens; only the sha256 hash is stored.
@@ -170,8 +171,9 @@ model Track {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  courses Course[]
-  paths   LearningPath[]
+  courses  Course[]
+  paths    LearningPath[]
+  roadmaps Roadmap[]
 }
 
 /// Mövzu (Qeyd 5): istiqamətdən əlavə başlıq — məs. «Python», «Excel», «Linux». Kurs bir neçə mövzuya aid ola bilər.
@@ -674,4 +676,46 @@ model PathCertificate {
   path LearningPath? @relation(fields: [pathId], references: [id], onDelete: SetNull)
 
   @@unique([userId, pathId])
+}
+
+/// Karyera xəritəsi: peşə → səviyyələr → bacarıq qrupları → bacarıqlar (content JSON, shared roadmapContentSchema).
+/// Məzmunu yalnız ADMIN dəyişir.
+model Roadmap {
+  id          String   @id @default(cuid())
+  slug        String   @unique // data-engineer
+  title       String
+  tagline     String?
+  description String?
+  trackId     String?
+  order       Int      @default(0)
+  isPublished Boolean  @default(true)
+  content     Json
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  track  Track?         @relation(fields: [trackId], references: [id], onDelete: SetNull)
+  checks RoadmapCheck[]
+
+  @@index([isPublished, order])
+}
+
+/// Tələbənin «bunu bilirəm» işarəsi (özünüqiymətləndirmə). skillId — content daxilindəki sabit id.
+model RoadmapCheck {
+  userId    String
+  roadmapId String
+  skillId   String
+  createdAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  roadmap Roadmap @relation(fields: [roadmapId], references: [id], onDelete: Cascade)
+
+  @@id([userId, roadmapId, skillId])
+  @@index([roadmapId])
+}
+
+/// Sayt ayarları (açar → JSON), məs. «levels» — səviyyə adları. Yalnız ADMIN dəyişir.
+model Setting {
+  key       String   @id
+  value     Json
+  updatedAt DateTime @updatedAt
 }

@@ -14,7 +14,7 @@ import {
   Zap,
   Code2,
 } from 'lucide-react';
-import type { CourseCardDto, PathCardDto, TrackDto } from '@dacy/shared';
+import type { CourseCardDto, LevelLabels, PathCardDto, TrackDto } from '@dacy/shared';
 import { t, type TKey } from '@/lib/i18n';
 import { fmtNum } from '@/lib/utils';
 import { Logo } from '@/components/app/logo';
@@ -49,10 +49,12 @@ export function Landing({
   tracks,
   courses,
   paths,
+  levels,
 }: {
   tracks: TrackDto[];
   courses: CourseCardDto[];
   paths: PathCardDto[];
+  levels: LevelLabels;
 }) {
   const tasks = courses.reduce(
     (n, c) =>
@@ -210,7 +212,7 @@ export function Landing({
             />
             <div className="cards">
               {courses.slice(0, 6).map((c) => (
-                <CourseCard key={c.id} course={c} />
+                <CourseCard key={c.id} course={c} levels={levels} />
               ))}
             </div>
           </section>
@@ -227,7 +229,7 @@ export function Landing({
             />
             <div className="cards">
               {paths.slice(0, 3).map((p) => (
-                <PathCard key={p.slug} path={p} />
+                <PathCard key={p.slug} path={p} levels={levels} />
               ))}
             </div>
           </section>

@@ -844,3 +844,34 @@ export interface ContestBoardDto {
     me: boolean;
   }>;
 }
+
+/** Karyera xəritəsi — siyahı (tablar) */
+export interface RoadmapSummaryDto {
+  slug: string;
+  title: string;
+  tagline: string | null;
+  track: { slug: string; title: string; color: string; icon: string | null } | null;
+  levels: Array<{ key: string; title: string }>;
+}
+/** Karyera xəritəsi — tam məzmun + daxil olmuş istifadəçinin irəliləyişi */
+export interface RoadmapDto extends RoadmapSummaryDto {
+  description: string | null;
+  content: import('../content/roadmap').RoadmapContent;
+  /** bacarıqlara bağlı kurslar: slug → başlıq (+ istifadəçi bitiribmi) */
+  courses: Record<string, { title: string; completed: boolean; enrolled: boolean }>;
+  /** istifadəçinin özü işarələdiyi bacarıqlar (qonaqda boş) */
+  checked: string[];
+}
+export interface AdminRoadmapDto {
+  id: string;
+  slug: string;
+  title: string;
+  tagline: string | null;
+  description: string | null;
+  track: string | null;
+  isPublished: boolean;
+  order: number;
+  content: import('../content/roadmap').RoadmapContent;
+  skillCount: number;
+  updatedAt: string;
+}

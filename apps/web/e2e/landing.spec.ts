@@ -14,11 +14,12 @@ test('qonaq: «/» tanışlıq səhifəsi → Qeydiyyat / Daxil ol', async ({ pa
   await page.getByText('Platforma pulsuzdurmu?').click();
   await expect(page.getByText(/Qeydiyyat və kurslara yazılma pulsuzdur/)).toBeVisible();
 
+  // dev serverdə auth səhifələri soyuq halda 5–9 s kompilyasiya olunur
   await page.getByTestId('landing-signup').click();
-  await expect(page).toHaveURL(/\/qeydiyyat$/);
+  await expect(page).toHaveURL(/\/qeydiyyat$/, { timeout: 30_000 });
   await page.goto('/');
   await page.getByTestId('landing-login').click();
-  await expect(page).toHaveURL(/\/giris$/);
+  await expect(page).toHaveURL(/\/giris$/, { timeout: 30_000 });
 });
 
 test('mobil: header-də Daxil ol / Qeydiyyat görünür, üfüqi sürüşmə yoxdur', async ({ page }) => {

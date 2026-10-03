@@ -43,6 +43,8 @@ test('admin: kurs → fəsil → nəzəri addım → dərc → tələbə görür
   // addım
   await page.getByRole('button', { name: '+ Addım əlavə et' }).click();
   await dlg.getByLabel('Başlıq').fill('Salam dünya');
+  // boş addım yoxlanılır — «nümunə məzmunla doldur» söndürülür
+  await dlg.getByTestId('step-template').click();
   await dlg.getByRole('button', { name: 'Yarat' }).click();
   await expect(page.getByRole('heading', { name: 'Salam dünya' })).toBeVisible();
   await expect(page.getByText('Qaralama').first()).toBeVisible();

@@ -5,7 +5,17 @@ import { PrismaService } from '../prisma/prisma.service';
 import type { AuthUser } from '../common/decorators';
 
 export type AuditEntity =
-  'COURSE' | 'MODULE' | 'STEP' | 'ASSET' | 'TRACK' | 'TOPIC' | 'USER' | 'CERTIFICATE' | 'PATH';
+  | 'COURSE'
+  | 'MODULE'
+  | 'STEP'
+  | 'ASSET'
+  | 'TRACK'
+  | 'TOPIC'
+  | 'USER'
+  | 'CERTIFICATE'
+  | 'PATH'
+  | 'ROADMAP'
+  | 'SETTING';
 
 export interface AuditInput {
   action: string;
@@ -94,6 +104,12 @@ export class AuditService {
         if (c) return { title: `${c.serial} · ${c.user.email}`, courseId: c.courseId };
         const p = await this.prisma.pathCertificate.findUnique({ where: { id }, select: sel });
         return p ? { title: `${p.serial} · ${p.user.email}`, courseId: null } : null;
+      }
+      case 'SETTING':
+        return null;
+      case 'ROADMAP': {
+        const r = await this.prisma.roadmap.findUnique({ where: { id }, select: { title: true } });
+        return r ? { title: r.title, courseId: null } : null;
       }
       case 'PATH': {
         // id yolun və ya yol addımının (path-items/:id) id-si ola bilər

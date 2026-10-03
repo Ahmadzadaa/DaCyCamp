@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import { useLevelLabels } from '@/components/level-labels';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -76,6 +77,7 @@ export function CoursesTable({
   topic?: string;
   level?: Level;
 }) {
+  const levels = useLevelLabels();
   const { isAdmin } = useAdmin();
   const router = useRouter();
   const actions = useCourseActions();
@@ -193,7 +195,7 @@ export function CoursesTable({
                 <option value="">{t('topics.levelAll')}</option>
                 {LEVELS.map((lv) => (
                   <option key={lv} value={lv}>
-                    {t(`level.${lv}`)}
+                    {levels[lv]}
                   </option>
                 ))}
               </select>
@@ -273,7 +275,7 @@ export function CoursesTable({
                   <td>
                     <TrackBadge color={c.track.color}>{c.track.title}</TrackBadge>
                   </td>
-                  <td>{t(`level.${c.level}`)}</td>
+                  <td>{levels[c.level]}</td>
                   <td>
                     <CourseStatusBadge status={c.status} />
                   </td>
