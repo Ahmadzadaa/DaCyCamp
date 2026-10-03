@@ -33,6 +33,8 @@ export const loginSchema = z.object({ email: emailSchema, password: z.string().m
 export const updateMeSchema = z.object({
   name: z.string().trim().min(2).max(120).optional(),
   locale: z.enum(['az', 'en']).optional(),
+  weeklyGoal: z.number().int().min(1).max(50).optional(),
+  showOnLeaderboard: z.boolean().optional(),
 });
 export const changePasswordSchema = z.object({
   current: z.string().min(1).max(200),

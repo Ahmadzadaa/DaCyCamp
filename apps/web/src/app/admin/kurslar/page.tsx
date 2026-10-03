@@ -3,6 +3,7 @@ import type { AdminCourseListDto, CourseStatus, TrackDto } from '@dacy/shared';
 import { apiFetch } from '@/lib/api/server';
 import { t } from '@/lib/i18n';
 import { CoursesTable } from '@/components/admin/courses-table';
+import { ActivityFeed } from '@/components/admin/activity-feed';
 
 export const metadata: Metadata = { title: `${t('admin.courses')} · ${t('app.admin')}` };
 
@@ -23,5 +24,10 @@ export default async function AdminCoursesPage({
     apiFetch<AdminCourseListDto>(`/admin/courses${qs.size ? `?${qs}` : ''}`),
     apiFetch<TrackDto[]>('/admin/tracks'),
   ]);
-  return <CoursesTable data={data} tracks={tracks} track={sp.istiqamet} q={sp.q} status={status} />;
+  return (
+    <div className="flex flex-col gap-8">
+      <CoursesTable data={data} tracks={tracks} track={sp.istiqamet} q={sp.q} status={status} />
+      {status !== 'deleted' ? <ActivityFeed action="course." limit={5} /> : null}
+    </div>
+  );
 }

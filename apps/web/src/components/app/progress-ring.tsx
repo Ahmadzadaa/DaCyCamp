@@ -12,18 +12,20 @@ export function ProgressRing({
   return (
     <svg width={size} height={size} viewBox="0 0 36 36" aria-hidden>
       <circle cx="18" cy="18" r="15.5" fill="none" stroke="var(--line)" strokeWidth="4" />
-      <circle
-        cx="18"
-        cy="18"
-        r="15.5"
-        fill="none"
-        stroke={color}
-        strokeWidth="4"
-        strokeDasharray={`${dash} ${c}`}
-        transform="rotate(-90 18 18)"
-        strokeLinecap="round"
-        style={{ transition: 'stroke-dasharray .4s' }}
-      />
+      {dash > 0 ? (
+        <circle
+          cx="18"
+          cy="18"
+          r="15.5"
+          fill="none"
+          stroke={color}
+          strokeWidth="4"
+          strokeDasharray={`${dash} ${c}`}
+          transform="rotate(-90 18 18)"
+          strokeLinecap="round"
+          style={{ transition: 'stroke-dasharray .4s' }}
+        />
+      ) : null}
     </svg>
   );
 }

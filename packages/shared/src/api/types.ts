@@ -19,7 +19,35 @@ export interface PublicUser {
   role: Role;
   locale: string;
   xpTotal: number;
+  /** həftəlik hədəf — tapşırıq sayı */
+  weeklyGoal: number;
+  showOnLeaderboard: boolean;
   createdAt: string;
+}
+
+export type NotificationKind =
+  'certificate' | 'project_passed' | 'project_returned' | 'new_course' | 'reviews_pending';
+/** Zəng menyusu: mövcud məlumatdan törədilir (ayrıca cədvəl yoxdur) */
+export interface NotificationDto {
+  id: string;
+  kind: NotificationKind;
+  title: string;
+  body: string | null;
+  url: string;
+  at: string;
+  unread: boolean;
+}
+
+/** Qabıq (sidebar «Həftəlik hədəf», zəng) üçün yüngül xülasə */
+export interface MeSummaryDto {
+  xpTotal: number;
+  streakDays: number;
+  /** bu həftə (B.e–B, APP_TIMEZONE) tamamlanan addımlar */
+  weekTasks: number;
+  weeklyGoal: number;
+  unreadNotifications: number;
+  /** yalnız heyət: yoxlama gözləyən layihələr (admin sidebar sayğacı) */
+  pendingReviews?: number;
 }
 
 export interface TrackDto {
@@ -43,7 +71,9 @@ export interface CourseCardDto {
   coverUrl: string | null;
   estimatedHours: number | null;
   sequential: boolean;
-  track: { slug: string; title: string; color: string };
+  track: { slug: string; title: string; color: string; icon?: string | null };
+  /** kataloqda «Ən yeni» sıralaması üçün */
+  publishedAt?: string | null;
   moduleCount: number;
   stepCount: number;
   stepTypeCounts: Partial<Record<StepType, number>>;
@@ -161,6 +191,10 @@ export interface DashboardDto {
     courseTitle: string;
     moduleTitle: string;
     stepTitle: string;
+    stepType: StepType;
+    /** 1-dən: «Fəsil 2 · Addım 4» */
+    moduleNumber: number;
+    stepNumber: number;
     url: string;
     trackColor: string;
   } | null;
@@ -169,6 +203,8 @@ export interface DashboardDto {
     title: string;
     trackColor: string;
     trackTitle: string;
+    trackSlug: string;
+    trackIcon: string | null;
     percent: number;
     done: number;
     total: number;
@@ -182,6 +218,9 @@ export interface DashboardDto {
   /** son sertifikatlar (panel üçün) */
   certificateItems: CertificateSummaryDto[];
   week: boolean[];
+  /** bu həftə tamamlanan addımlar və həftəlik hədəf */
+  weekTasks: number;
+  weeklyGoal: number;
   activePath: ActivePathDto | null;
 }
 
@@ -238,6 +277,53 @@ export type CourseStatusCounts = Record<CourseStatus | 'all', number>;
 export interface AdminCourseListDto {
   courses: AdminCourseDto[];
   counts: CourseStatusCounts;
+  /** başlıqdakı xülasə: «24 kurs · 3 istiqamət · 1 284 yazılma» (filtrsiz) */
+  totals?: { tracks: number; enrollments: number };
+}
+
+/** Admin header axtarışı: kurslar, tələbələr, fayllar, yollar */
+export interface AdminSearchDto {
+  q: string;
+  courses: Array<{
+    slug: string;
+    title: string;
+    trackTitle: string;
+    trackColor: string;
+    status: CourseStatus;
+  }>;
+  users: Array<{ id: string; name: string; email: string; role: Role }>;
+  assets: Array<{
+    id: string;
+    path: string;
+    filename: string;
+    kind: AssetKind;
+    courseSlug: string;
+    courseTitle: string;
+  }>;
+  paths: Array<{ slug: string; title: string; trackColor: string; isPublished: boolean }>;
+}
+
+/** Admin «Ümumi baxış» */
+export interface AdminOverviewDto {
+  courses: CourseStatusCounts;
+  tracks: number;
+  students: number;
+  newStudents7d: number;
+  enrollments: number;
+  activeLearners7d: number;
+  certificates: number;
+  pendingReviews: number;
+  activeLabs: number;
+  /** son 14 gün: tamamlanan addımlar (gün üzrə) */
+  activity: Array<{ date: string; steps: number }>;
+  topCourses: Array<{
+    slug: string;
+    title: string;
+    trackColor: string;
+    trackTitle: string;
+    enrollments: number;
+    completed: number;
+  }>;
 }
 export interface AdminCourseStatsDto {
   enrollments: number;

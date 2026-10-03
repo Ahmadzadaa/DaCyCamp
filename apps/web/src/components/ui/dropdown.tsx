@@ -5,6 +5,8 @@ import { cn } from '@/lib/utils';
 
 export const Dropdown = DropdownPrimitive.Root;
 export const DropdownTrigger = DropdownPrimitive.Trigger;
+
+/** Açılan menyu (dizayn v2): ağ kart, 14px radius, kölgə; elementlər ikon + mətn */
 export function DropdownContent({
   className,
   ...props
@@ -14,10 +16,7 @@ export function DropdownContent({
       <DropdownPrimitive.Content
         sideOffset={6}
         align="end"
-        className={cn(
-          'z-50 min-w-44 rounded-[10px] border border-line bg-card p-1 text-ink shadow-xl',
-          className,
-        )}
+        className={cn('pop menu-pop min-w-52', className)}
         {...props}
       />
     </DropdownPrimitive.Portal>
@@ -27,16 +26,8 @@ export function DropdownItem({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<typeof DropdownPrimitive.Item>) {
-  return (
-    <DropdownPrimitive.Item
-      className={cn(
-        'flex cursor-pointer select-none items-center gap-2 rounded-md px-3 py-2 text-sm outline-none hover:bg-paper focus:bg-paper',
-        className,
-      )}
-      {...props}
-    />
-  );
+  return <DropdownPrimitive.Item className={cn('menu-item', className)} {...props} />;
 }
 export const DropdownSeparator = (
   props: React.ComponentPropsWithoutRef<typeof DropdownPrimitive.Separator>,
-) => <DropdownPrimitive.Separator className="my-1 h-px bg-line" {...props} />;
+) => <DropdownPrimitive.Separator className="menu-sep" {...props} />;

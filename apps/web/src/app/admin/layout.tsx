@@ -1,20 +1,19 @@
 import { redirect } from 'next/navigation';
-import { getCurrentUser, isStaff } from '@/lib/api/server';
-import { AdminHeader } from '@/components/admin/admin-header';
+import type { MeSummaryDto } from '@dacy/shared';
+import { apiTry, getCurrentUser, isStaff } from '@/lib/api/server';
 import { AdminProvider } from '@/components/admin/admin-context';
+import { AdminShell } from '@/components/shell/admin-shell';
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const user = await getCurrentUser();
   if (!user) redirect('/giris?next=/admin/kurslar');
   if (!isStaff(user)) redirect('/kurslar');
+  const summary = await apiTry<MeSummaryDto>('/me/summary');
   return (
     <AdminProvider role={user.role}>
-      <div className="flex min-h-dvh flex-col">
-        <AdminHeader user={user} />
-        <main className="mx-auto w-full max-w-[1400px] flex-1 px-4 py-6 md:px-[22px]">
-          {children}
-        </main>
-      </div>
+      <AdminShell user={user} summary={summary}>
+        {children}
+      </AdminShell>
     </AdminProvider>
   );
 }

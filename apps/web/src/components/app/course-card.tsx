@@ -1,64 +1,103 @@
 import Link from 'next/link';
+import { ArrowRight, Check, Clock } from 'lucide-react';
 import type { CourseCardDto } from '@dacy/shared';
-import { TrackBadge } from './track-badge';
-import { TrackMotif } from './track-motif';
 import { t } from '@/lib/i18n';
-import { fmtHours } from '@/lib/utils';
+import { fmtHours, initials } from '@/lib/utils';
+import { LevelBars } from './level-bars';
+import { TrackTile } from './track-icon';
+
+export type CourseKind = 'course' | 'project' | 'room';
+
+/** Etiket: kursun əsas addım tipinə görə — CTF üstünlük təşkil edirsə «Otaq», terminal lab-ları «Layihə» */
+export function courseKind(c: Pick<CourseCardDto, 'stepTypeCounts' | 'stepCount'>): CourseKind {
+  const ctf = c.stepTypeCounts.CTF ?? 0;
+  const labs = c.stepTypeCounts.TERMINAL ?? 0;
+  if (c.stepCount && ctf * 2 >= c.stepCount) return 'room';
+  if (c.stepCount && labs * 2 >= c.stepCount) return 'project';
+  return 'course';
+}
 
 export function courseMeta(c: CourseCardDto): string[] {
   const parts = [t(`level.${c.level}`)];
   parts.push(t('common.modules', { n: c.moduleCount }));
-  const labs = c.stepTypeCounts.TERMINAL ?? 0;
-  const rooms = c.stepTypeCounts.CTF ?? 0;
-  if (labs && labs * 2 >= c.stepCount) parts.push(t('catalog.labs', { n: labs }));
-  else if (rooms && rooms * 2 >= c.stepCount) parts.push(t('catalog.rooms', { n: rooms }));
+  const kind = courseKind(c);
+  if (kind === 'project') parts.push(t('catalog.labs', { n: c.stepTypeCounts.TERMINAL ?? 0 }));
+  else if (kind === 'room') parts.push(t('catalog.rooms', { n: c.stepTypeCounts.CTF ?? 0 }));
   else parts.push(t('common.tasks', { n: c.stepCount }));
   return parts;
 }
 
-export function CourseCard({ course, icon }: { course: CourseCardDto; icon?: string | null }) {
-  const hours = fmtHours(course.estimatedHours);
-  const cta = course.completed
-    ? t('catalog.completed')
-    : course.enrolled
-      ? t('catalog.continue')
-      : t('catalog.start');
+/**
+ * Kurs kartı (dizayn v2 anatomiyası): etiket · 24px başlıq · səviyyə zolaqları · 4 sətir təsvir ·
+ * müəllim · alt bölmə (istiqamət ikonu + müddət, «Başla» / «Davam et» + irəliləyiş).
+ */
+export function CourseCard({ course }: { course: CourseCardDto }) {
+  const c = course;
+  const color = c.track.color;
+  const hours = fmtHours(c.estimatedHours);
+  const href = `/kurs/${c.slug}`;
+  const inProgress = !!c.enrolled && !c.completed;
+  const pct = c.percent ?? 0;
   return (
-    <article className="cc" style={{ ['--c' as string]: course.track.color }}>
-      <Link href={`/kurs/${course.slug}`} className="top block" aria-hidden tabIndex={-1}>
-        <TrackMotif icon={icon} slug={course.track.slug} />
-      </Link>
-      <div className="bd">
-        <TrackBadge color={course.track.color} className="self-start">
-          {course.track.title}
-        </TrackBadge>
-        <h3>
-          <Link href={`/kurs/${course.slug}`} className="hover:underline">
-            {course.title}
-          </Link>
-        </h3>
-        <div className="meta">
-          {courseMeta(course).map((m) => (
-            <span key={m}>{m}</span>
-          ))}
-        </div>
-        {course.enrolled && !course.completed ? (
-          <div
-            className="h-1.5 overflow-hidden rounded bg-line"
-            aria-label={t('common.percent', { n: course.percent ?? 0 })}
-          >
-            <i
-              className="block h-full"
-              style={{ width: `${course.percent ?? 0}%`, background: course.track.color }}
-            />
-          </div>
+    <article className="kc" style={{ ['--c' as string]: color }} data-testid="course-card">
+      <span className="kind">
+        {t(`catalog.kind.${courseKind(c)}`)}
+        {inProgress ? <> · {t('catalog.inProgress')}</> : null}
+        {c.completed ? (
+          <span className="badge badge-ok ml-auto">
+            <Check aria-hidden /> {t('catalog.completed')}
+          </span>
         ) : null}
-        <div className="foot">
-          <span>{hours ? t('common.hoursApprox', { n: hours }) : ' '}</span>
-          <Link href={`/kurs/${course.slug}`} className="b b-brand b-sm">
-            {cta}
-          </Link>
+      </span>
+      <h3>
+        <Link href={href}>{c.title}</Link>
+      </h3>
+      <LevelBars level={c.level} color={color} />
+      {c.description ? <p>{c.description}</p> : null}
+      {c.instructor ? (
+        <div className="inst">
+          <span className="ph">
+            {c.instructor.avatarUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={c.instructor.avatarUrl} alt="" />
+            ) : (
+              initials(c.instructor.name)
+            )}
+          </span>
+          <div className="min-w-0">
+            <b>{c.instructor.name}</b>
+            {c.instructor.title ? <span>{c.instructor.title}</span> : null}
+          </div>
         </div>
+      ) : null}
+      {inProgress ? (
+        <div className="prog" aria-label={t('common.percent', { n: pct })}>
+          <i style={{ width: `${pct}%` }} />
+        </div>
+      ) : null}
+      <div className="ft">
+        <span className="dur">
+          <TrackTile color={color} icon={c.track.icon} slug={c.track.slug} />
+          <span>
+            <Clock className="clk" aria-hidden />
+            {hours ? t('common.hoursShort', { n: hours }) : t('common.tasks', { n: c.stepCount })}
+            {inProgress ? ` · ${pct}%` : ''}
+          </span>
+        </span>
+        {inProgress ? (
+          <Link href={href} className="b b-brand b-sm">
+            {t('catalog.continue')}
+            <ArrowRight aria-hidden />
+          </Link>
+        ) : c.completed ? (
+          <Link href={href} className="b b-ghost b-sm">
+            {t('catalog.review')}
+          </Link>
+        ) : (
+          <Link href={href} className="b b-outline b-sm">
+            {t('catalog.start')}
+          </Link>
+        )}
       </div>
     </article>
   );
@@ -66,16 +105,20 @@ export function CourseCard({ course, icon }: { course: CourseCardDto; icon?: str
 
 export function CourseCardSkeleton() {
   return (
-    <div className="cc">
-      <div className="top sk !rounded-none" />
-      <div className="bd">
-        <div className="sk h-5 w-28" />
-        <div className="sk h-6 w-3/4" />
-        <div className="sk h-4 w-1/2" />
-        <div className="foot">
-          <div className="sk h-4 w-14" />
-          <div className="sk h-8 w-16" />
-        </div>
+    <div className="kc skel" aria-hidden>
+      <span className="sk h-3 w-12" />
+      <span className="sk h-7 w-4/5" />
+      <span className="sk h-3.5 w-24" />
+      <span className="sk h-3.5" />
+      <span className="sk h-3.5" />
+      <span className="sk h-3.5 w-3/4" />
+      <div className="flex items-center gap-3">
+        <span className="sk size-[38px] !rounded-full" />
+        <span className="sk h-3.5 w-32" />
+      </div>
+      <div className="ft">
+        <span className="sk h-4 w-20" />
+        <span className="sk h-[34px] w-[70px] !rounded-[10px]" />
       </div>
     </div>
   );

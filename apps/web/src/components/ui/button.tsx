@@ -11,9 +11,12 @@ const buttonVariants = cva('b', {
       ghost: 'b-ghost',
       run: 'b-run',
       danger: 'b-danger',
+      dangerSolid: 'b-danger-solid',
+      outline: 'b-outline',
+      navy: 'b-navy',
       hint: 'hintb',
     },
-    size: { md: '', sm: 'b-sm', full: 'w-full' },
+    size: { md: '', sm: 'b-sm', xs: 'b-xs', full: 'w-full' },
   },
   defaultVariants: { variant: 'brand', size: 'md' },
 });

@@ -98,18 +98,21 @@ enum PathItemStatus {
 // ───────────────────────── users & auth ─────────────────────────
 
 model User {
-  id           String    @id @default(cuid())
-  email        String    @unique // stored lower-cased
-  passwordHash String? // null = gələcəkdə Google OAuth ilə qeydiyyatdan keçən istifadəçi
-  name         String
-  role         Role      @default(STUDENT)
-  avatarUrl    String?
-  locale       String    @default("az")
-  xpTotal      Int       @default(0) // cache of SUM(XpEvent.amount)
-  targetPathId String? // Phase 4 onboarding answer ("Hansı peşəyə hazırlaşırsınız?")
-  lastActiveAt DateTime?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  id                  String    @id @default(cuid())
+  email               String    @unique // stored lower-cased
+  passwordHash        String? // null = gələcəkdə Google OAuth ilə qeydiyyatdan keçən istifadəçi
+  name                String
+  role                Role      @default(STUDENT)
+  avatarUrl           String?
+  locale              String    @default("az")
+  xpTotal             Int       @default(0) // cache of SUM(XpEvent.amount)
+  targetPathId        String? // Phase 4 onboarding answer ("Hansı peşəyə hazırlaşırsınız?")
+  weeklyGoal          Int       @default(8) // həftəlik hədəf (tapşırıq sayı) — sidebar və panel
+  showOnLeaderboard   Boolean   @default(true) // liderlər cədvəlində görünmək (məxfilik)
+  notificationsSeenAt DateTime? // zəng: bu andan yeni olanlar «oxunmamış» sayılır
+  lastActiveAt        DateTime?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
 
   targetPath LearningPath? @relation("UserTargetPath", fields: [targetPathId], references: [id], onDelete: SetNull)
 

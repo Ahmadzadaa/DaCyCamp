@@ -14,7 +14,7 @@ test('qeydiyyat → kataloq → kurs → yazılma → nəzəri → quiz → irə
   await expect(page).toHaveURL(/\/baslangic$/, { timeout: 30_000 });
   await page.getByRole('button', { name: 'Keç, sonra seçərəm' }).click();
   await expect(page).toHaveURL(/\/kurslar/, { timeout: 30_000 });
-  await expect(page.getByRole('heading', { name: 'Nə öyrənmək istəyirsiniz?' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Kurslar', level: 1 })).toBeVisible();
 
   await page.getByRole('link', { name: 'NÜMUNƏ — silinə bilər' }).first().click();
   await expect(page).toHaveURL(/\/kurs\/numune$/);
@@ -59,7 +59,7 @@ test('qeydiyyat → kataloq → kurs → yazılma → nəzəri → quiz → irə
 
   // panel
   await page.goto('/panel');
-  await expect(page.getByText('Qaldığınız yer')).toBeVisible();
+  await expect(page.getByText('Qaldığınız yer', { exact: true })).toBeVisible();
   await expect(page.getByText('40', { exact: true })).toBeVisible(); // 10 + 30 XP
 });
 

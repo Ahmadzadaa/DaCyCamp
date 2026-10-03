@@ -10,6 +10,10 @@ const PROTECTED = [
   /^\/sertifikatlar/,
   /^\/kurs\/[^/]+\/[^/]+\/[^/]+/,
   /^\/baslangic/,
+  /^\/fealiyyetim/,
+  /^\/tecrube/,
+  /^\/imtahanlar/,
+  /^\/layiheler/,
 ];
 const AUTH_PAGES = [/^\/giris/, /^\/qeydiyyat/];
 

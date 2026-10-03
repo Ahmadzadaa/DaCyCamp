@@ -12,9 +12,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useAdmin } from './admin-context';
 import { fmtDate } from './format';
 
-export function UsersTable() {
+export function UsersTable({ initialQ = '' }: { initialQ?: string }) {
   const { isAdmin } = useAdmin();
-  const [q, setQ] = useState('');
+  const [q, setQ] = useState(initialQ);
   const [role, setRole] = useState<Role | ''>('');
   const [page, setPage] = useState(1);
   const [data, setData] = useState<Paged<AdminUserDto> | null>(null);

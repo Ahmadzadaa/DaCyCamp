@@ -1,17 +1,13 @@
-import { AppHeader } from '@/components/app/app-header';
-import { getCurrentUser } from '@/lib/api/server';
+import type { MeSummaryDto } from '@dacy/shared';
+import { AppShell } from '@/components/shell/app-shell';
+import { apiTry, getCurrentUser } from '@/lib/api/server';
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const user = await getCurrentUser();
+  const summary = user ? await apiTry<MeSummaryDto>('/me/summary') : null;
   return (
-    <div className="flex min-h-dvh flex-col">
-      <AppHeader user={user} />
-      <main className="mx-auto w-full max-w-[1240px] flex-1 px-4 py-6 md:px-[22px]">
-        {children}
-      </main>
-      <footer className="px-4 py-6 text-center text-xs text-muted">
-        © {new Date().getFullYear()} DaCy Academy
-      </footer>
-    </div>
+    <AppShell user={user} summary={summary}>
+      {children}
+    </AppShell>
   );
 }

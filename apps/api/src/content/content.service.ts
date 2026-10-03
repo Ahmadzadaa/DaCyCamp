@@ -147,9 +147,20 @@ export class ContentService implements OnModuleInit, OnModuleDestroy {
       ),
     ]);
     const [all, published, draft, archived, deleted] = counts as number[];
+    const [tracks, enrollments] = await Promise.all([
+      this.prisma.track.count(),
+      this.prisma.enrollment.count({ where: { course: { deletedAt: null } } }),
+    ]);
     return {
       courses: rows.map((r) => this.toCourseDto(r)),
-      counts: { all: all!, published: published!, draft: draft!, archived: archived!, deleted: deleted! },
+      counts: {
+        all: all!,
+        published: published!,
+        draft: draft!,
+        archived: archived!,
+        deleted: deleted!,
+      },
+      totals: { tracks, enrollments },
     };
   }
 

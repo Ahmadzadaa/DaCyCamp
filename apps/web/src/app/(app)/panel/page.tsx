@@ -1,11 +1,13 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { Award, BookOpen } from 'lucide-react';
+import { ArrowRight, Award, BookOpen, Check, Flame, Play, Route, Zap } from 'lucide-react';
 import type { DashboardDto } from '@dacy/shared';
 import { apiTry } from '@/lib/api/server';
 import { t, tList } from '@/lib/i18n';
-import { EmptyState } from '@/components/app/empty-state';
+import { cn, firstName, fmtNum } from '@/lib/utils';
+import { HeroArt } from '@/components/app/hero-art';
+import { stepLucide } from '@/components/app/step-icon';
 
 export const metadata: Metadata = { title: t('nav.dashboard') };
 
@@ -13,161 +15,228 @@ export default async function DashboardPage() {
   const d = await apiTry<DashboardDto>('/me/dashboard');
   if (!d) redirect('/giris?next=/panel');
   const days = tList('dash.days');
+  const left = Math.max(0, d.weeklyGoal - d.weekTasks);
+  const summary =
+    d.courses.length === 0
+      ? t('dash.weekSummaryNew')
+      : d.weekTasks === 0
+        ? t('dash.weekSummaryNone', { goal: d.weeklyGoal })
+        : left === 0
+          ? t('dash.weekSummaryDone', { done: d.weekTasks })
+          : t('dash.weekSummary', { done: d.weekTasks, left });
+  const StepIc = d.continue ? stepLucide(d.continue.stepType) : BookOpen;
+
   return (
-    <div className="grid gap-5 md:grid-cols-[1fr_300px]">
-      <div>
-        {d.activePath ? (
-          <section
-            className="box mb-4 flex flex-col gap-2"
-            style={{ ['--c' as string]: d.activePath.trackColor }}
-            data-testid="dash-active-path"
-          >
-            <div className="flex flex-wrap items-center gap-2">
-              <small className="text-muted">{t('dash.activePath')}</small>
-              <span
-                className="inline-block size-2.5 rounded-full"
-                style={{ background: d.activePath.trackColor }}
-              />
-              <small className="text-muted">{d.activePath.trackTitle}</small>
-              <span className="ml-auto text-sm font-semibold">{d.activePath.percent}%</span>
-            </div>
-            <Link href={`/yol/${d.activePath.slug}`} className="text-lg font-bold hover:underline">
-              {d.activePath.title}
-            </Link>
-            <div className="nbar !mt-0">
-              <i style={{ width: `${d.activePath.percent}%` }} />
-            </div>
-            <div className="flex flex-wrap items-center gap-3 text-sm">
-              {d.activePath.next ? (
-                <>
-                  <span className="text-muted">{t('paths.nextStep')}:</span>
-                  <b className="truncate">{d.activePath.next.title}</b>
-                  <Link href={d.activePath.next.url} className="b b-brand b-sm ml-auto">
-                    {t('paths.continue')}
-                  </Link>
-                </>
-              ) : (
-                <span className="text-ok">✓ {t('paths.finishedBanner')}</span>
-              )}
-            </div>
-          </section>
-        ) : (
-          <Link
-            href="/baslangic"
-            className="mb-4 flex items-center gap-3 rounded-xl border border-dashed border-line px-4 py-3 text-sm hover:border-brand"
-            data-testid="dash-pick-path"
-          >
-            <span className="text-muted">{t('paths.dashNoPath')}</span>
-            <span className="ml-auto font-semibold text-brand">{t('paths.dashPick')} →</span>
-          </Link>
-        )}
-        {d.continue ? (
-          <section className="cont">
-            <div className="min-w-0">
-              <small>{t('dash.whereLeft')}</small>
-              <h2 className="truncate">{d.continue.stepTitle}</h2>
-              <small>
-                {d.continue.courseTitle} · {d.continue.moduleTitle}
-              </small>
-            </div>
-            <Link href={d.continue.url} className="b b-brand">
-              {t('dash.continue')}
-            </Link>
-          </section>
-        ) : (
-          <EmptyState
-            icon={BookOpen}
-            title={t('dash.empty')}
-            description={t('dash.emptyDesc')}
-            action={
-              <Link href="/kurslar" className="b b-brand">
-                {t('dash.browse')}
-              </Link>
-            }
-          />
-        )}
-        {d.courses.length ? (
-          <div className="mt-4 flex flex-col gap-3">
-            {d.courses.map((c) => (
-              <Link
-                key={c.slug}
-                href={`/kurs/${c.slug}`}
-                className="pi"
-                style={{ ['--c' as string]: c.trackColor }}
-              >
-                <b className="truncate">{c.title}</b>
-                <span>{c.percent}%</span>
-                <div className="bar">
-                  <i style={{ width: `${c.percent}%` }} />
-                </div>
-              </Link>
-            ))}
-          </div>
-        ) : null}
-      </div>
-      <aside className="flex flex-col gap-[14px]">
-        <div className="grid grid-cols-2 gap-3">
-          <div className="stat">
-            <b>{d.xpTotal.toLocaleString('az-AZ')}</b>
-            <span>{t('dash.xp')}</span>
-          </div>
-          <div className="stat">
-            <b>{d.streakDays} 🔥</b>
-            <span>{t('dash.streak')}</span>
-          </div>
-          <div className="stat">
-            <b>{d.stepsCompleted}</b>
-            <span>{t('dash.tasksDone')}</span>
-          </div>
-          <div className="stat">
-            <b>{d.certificates}</b>
-            <span>{t('dash.certificates')}</span>
-          </div>
-        </div>
-        <div className="box">
-          <b>{t('dash.thisWeek')}</b>
-          <div className="week" aria-label={t('dash.thisWeek')}>
-            {d.week.map((on, i) => (
-              <i key={i} className={on ? 'on' : ''} title={days[i]} />
-            ))}
-          </div>
-          <div className="mt-1 flex gap-1.5 text-[10px] text-muted">
-            {days.map((x) => (
-              <span key={x} className="flex-1 text-center">
-                {x}
+    <div>
+      <section className="hero">
+        <div>
+          <div className="hero-k">
+            <h1>{t('dash.welcome', { name: firstName(d.user.name) })}</h1>
+            {d.streakDays > 0 ? (
+              <span className="badge badge-mint">
+                <Flame aria-hidden />
+                {t('dash.streakBadge', { n: d.streakDays })}
               </span>
-            ))}
+            ) : null}
+          </div>
+          <p>{summary}</p>
+          <div className="hero-act">
+            {d.continue ? (
+              <Link href={d.continue.url} className="b b-brand">
+                <Play aria-hidden />
+                {t('dash.continue')}
+              </Link>
+            ) : (
+              <Link href="/kurslar" className="b b-brand">
+                <BookOpen aria-hidden />
+                {t('dash.pickCourse')}
+              </Link>
+            )}
+            {d.activePath ? (
+              <Link href={`/yol/${d.activePath.slug}`} className="b b-navy">
+                <Route aria-hidden />
+                {t('dash.openPath')}
+              </Link>
+            ) : null}
           </div>
         </div>
-        {d.certificateItems.length ? (
+        <HeroArt kind="dashboard" />
+      </section>
+
+      <div className="dash">
+        <div className="flex min-w-0 flex-col gap-6">
+          {d.continue ? (
+            <section
+              className="cont"
+              style={{ ['--c' as string]: d.continue.trackColor }}
+              aria-label={t('dash.whereLeft')}
+            >
+              <span className="tic lg">
+                <StepIc aria-hidden />
+              </span>
+              <div className="min-w-0">
+                <small>{t('dash.whereLeft')}</small>
+                <h2 className="truncate">{d.continue.stepTitle}</h2>
+                <span className="cont-meta">
+                  {t('dash.positionLine', {
+                    course: d.continue.courseTitle,
+                    m: d.continue.moduleNumber,
+                    s: d.continue.stepNumber,
+                  })}
+                </span>
+              </div>
+              <Link href={d.continue.url} className="b b-dark">
+                {t('dash.continue')}
+                <ArrowRight aria-hidden />
+              </Link>
+            </section>
+          ) : null}
+
+          <section className="box" aria-labelledby="my-courses">
+            <h2 id="my-courses" className="box-h">
+              <BookOpen aria-hidden />
+              {t('dash.myCourses')}
+            </h2>
+            {d.courses.length ? (
+              <ul className="plist">
+                {d.courses.map((c) => (
+                  <li key={c.slug}>
+                    <Link
+                      href={`/kurs/${c.slug}`}
+                      className="pi"
+                      style={{ ['--c' as string]: c.trackColor }}
+                    >
+                      <b className="truncate">{c.title}</b>
+                      <span className={cn('pi-pct', c.completedAt && 'done')}>
+                        {c.completedAt ? (
+                          <>
+                            <Check aria-hidden /> {t('dash.courseDone')}
+                          </>
+                        ) : (
+                          `${c.percent}%`
+                        )}
+                      </span>
+                      <span className="bar" aria-hidden>
+                        <i style={{ width: `${c.percent}%` }} />
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <div className="flex flex-col items-start gap-3 py-2">
+                <p className="text-muted">{t('dash.emptyDesc')}</p>
+                <Link href="/kurslar" className="b b-brand b-sm">
+                  {t('dash.browse')}
+                </Link>
+              </div>
+            )}
+            {d.courses.length ? (
+              <Link href="/kurslar" className="box-more">
+                {t('dash.allCourses')} <ArrowRight aria-hidden />
+              </Link>
+            ) : null}
+          </section>
+        </div>
+
+        <aside className="flex flex-col gap-4">
+          <div className="stats">
+            <div className="stat">
+              <Zap aria-hidden />
+              <b>{fmtNum(d.xpTotal)}</b>
+              <span>{t('dash.xp')}</span>
+            </div>
+            <div className="stat">
+              <Flame aria-hidden />
+              <b>{d.streakDays}</b>
+              <span>{t('dash.streak')}</span>
+            </div>
+            <div className="stat">
+              <Check aria-hidden />
+              <b>{fmtNum(d.stepsCompleted)}</b>
+              <span>{t('dash.tasksDone')}</span>
+            </div>
+            <div className="stat">
+              <Award aria-hidden />
+              <b>{d.certificates}</b>
+              <span>{t('dash.certificates')}</span>
+            </div>
+          </div>
+
           <div className="box">
-            <b>{t('cert.myTitle')}</b>
-            <ul className="mt-2 flex flex-col gap-2">
-              {d.certificateItems.map((c) => (
-                <li key={c.id}>
-                  <Link
-                    href={`/sertifikat/${c.id}`}
-                    className="flex items-center gap-2 text-sm hover:underline"
-                    data-testid="dash-cert"
-                  >
-                    <Award className="size-4 shrink-0" style={{ color: c.trackColor }} />
-                    <span className="truncate">{c.courseTitle}</span>
-                    <span className="ml-auto shrink-0 font-mono text-xs text-muted">
-                      {c.serial}
-                    </span>
-                  </Link>
+            <h2 className="box-h">{t('dash.thisWeek')}</h2>
+            <ol className="week" aria-label={t('dash.thisWeek')}>
+              {d.week.map((on, i) => (
+                <li key={i}>
+                  <i className={on ? 'on' : ''} title={days[i]} />
+                  <span>{days[i]}</span>
                 </li>
               ))}
-            </ul>
-            <Link
-              href="/sertifikatlar"
-              className="mt-2 inline-block text-xs text-muted hover:underline"
-            >
-              {t('nav.certificates')} →
-            </Link>
+            </ol>
           </div>
-        ) : null}
-      </aside>
+
+          {d.activePath ? (
+            <div
+              className="box"
+              style={{ ['--c' as string]: d.activePath.trackColor }}
+              data-testid="dash-active-path"
+            >
+              <h2 className="box-h">{t('dash.activePath')}</h2>
+              <Link href={`/yol/${d.activePath.slug}`} className="font-bold hover:underline">
+                {d.activePath.title}
+              </Link>
+              <div className="nbar">
+                <i style={{ width: `${d.activePath.percent}%` }} />
+              </div>
+              <p className="mt-2 text-sm text-muted">
+                {d.activePath.next
+                  ? t('dash.nextLine', { pct: d.activePath.percent, next: d.activePath.next.title })
+                  : `✓ ${t('dash.pathDone')}`}
+              </p>
+              {d.activePath.next ? (
+                <Link href={d.activePath.next.url} className="b b-ghost b-sm mt-3 w-full">
+                  {t('paths.continue')}
+                  <ArrowRight aria-hidden />
+                </Link>
+              ) : null}
+            </div>
+          ) : (
+            <Link href="/baslangic" className="box path-cta" data-testid="dash-pick-path">
+              <span className="tic lg" style={{ ['--c' as string]: 'var(--da)' }}>
+                <Route aria-hidden />
+              </span>
+              <b>{t('dash.noPathTitle')}</b>
+              <span className="text-sm text-muted">{t('dash.noPathText')}</span>
+            </Link>
+          )}
+
+          {d.certificateItems.length ? (
+            <div className="box">
+              <h2 className="box-h">{t('cert.myTitle')}</h2>
+              <ul className="flex flex-col gap-2">
+                {d.certificateItems.map((c) => (
+                  <li key={c.id}>
+                    <Link
+                      href={`/sertifikat/${c.id}`}
+                      className="flex items-center gap-2 text-sm hover:underline"
+                      data-testid="dash-cert"
+                    >
+                      <Award className="size-4 shrink-0" style={{ color: c.trackColor }} />
+                      <span className="truncate">{c.courseTitle}</span>
+                      <span className="ml-auto shrink-0 font-mono text-xs text-muted">
+                        {c.serial}
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+              <Link href="/sertifikatlar" className="box-more">
+                {t('nav.certificates')} <ArrowRight aria-hidden />
+              </Link>
+            </div>
+          ) : null}
+        </aside>
+      </div>
     </div>
   );
 }

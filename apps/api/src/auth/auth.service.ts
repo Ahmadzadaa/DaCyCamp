@@ -30,6 +30,8 @@ export const toPublicUser = (u: User): PublicUser => ({
   role: u.role,
   locale: u.locale,
   xpTotal: u.xpTotal,
+  weeklyGoal: u.weeklyGoal,
+  showOnLeaderboard: u.showOnLeaderboard,
   createdAt: u.createdAt.toISOString(),
 });
 

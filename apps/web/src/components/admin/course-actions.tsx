@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { AlertTriangle, Trash2 } from 'lucide-react';
+import { AlertTriangle, Archive, Check, Copy, Trash2 } from 'lucide-react';
 import {
   COURSE_TRASH_DAYS,
   type AdminCourseDto,
@@ -66,6 +66,7 @@ export function useCourseActions(onChange?: (c: AdminCourseDto | null) => void) 
     if (!r) return;
     if (archived)
       toast.success(t('courseAdmin.archived'), {
+        icon: <Archive />,
         description: t('courseAdmin.archivedHint'),
         action:
           opts.undo === false
@@ -85,6 +86,7 @@ export function useCourseActions(onChange?: (c: AdminCourseDto | null) => void) 
     );
     if (!r) return;
     toast.success(t('courseAdmin.copied'), {
+      icon: <Copy />,
       description: t('courseAdmin.copiedHint', { title: r.title }),
       action: {
         label: t('courseAdmin.open'),
@@ -110,6 +112,7 @@ export function useCourseActions(onChange?: (c: AdminCourseDto | null) => void) 
       { method: 'DELETE' },
     );
     toast.success(t('courseAdmin.deleted'), {
+      icon: <Check />,
       description: t('courseAdmin.deletedHint', { title: c.title, days: COURSE_TRASH_DAYS }),
       duration: 10_000,
       action: { label: t('courseAdmin.undo'), onClick: () => void restore(r) },
@@ -121,7 +124,11 @@ export function useCourseActions(onChange?: (c: AdminCourseDto | null) => void) 
     await api(`/admin/courses/${c.id}/permanent?confirm=${encodeURIComponent(confirm)}`, {
       method: 'DELETE',
     });
-    toast.success(t('courseAdmin.purged'), { description: t('courseAdmin.purgedHint') });
+    toast.success(t('courseAdmin.purged'), {
+      icon: <AlertTriangle />,
+      className: 'toast-danger',
+      description: t('courseAdmin.purgedHint'),
+    });
     done(null);
   }
 
@@ -182,6 +189,9 @@ export function CourseDeleteDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
+        icon={<AlertTriangle />}
+        tone="danger"
+        className="max-w-[480px]"
         title={
           mode === 'purge'
             ? t('courseAdmin.purgeTitle', { title: course.title })
@@ -193,14 +203,8 @@ export function CourseDeleteDialog({
             : t('courseAdmin.deleteDesc', { days: COURSE_TRASH_DAYS })
         }
       >
-        <div className="flex flex-col gap-4" data-testid="course-delete-dialog">
-          <span
-            className="grid size-11 place-items-center rounded-full bg-error/15 text-error"
-            aria-hidden
-          >
-            <AlertTriangle className="size-5" />
-          </span>
-          <div className="grid grid-cols-3 gap-2" aria-busy={!stats}>
+        <div className="flex flex-col gap-5" data-testid="course-delete-dialog">
+          <div className="dlg-stats" aria-busy={!stats}>
             {(
               [
                 ['enrollments', 'statStudents'],
@@ -208,18 +212,14 @@ export function CourseDeleteDialog({
                 ['steps', 'statSteps'],
               ] as const
             ).map(([k, label]) => (
-              <div
-                key={k}
-                className="rounded-xl bg-paper p-3 text-center"
-                data-testid={`stat-${k}`}
-              >
-                <b className="block text-2xl leading-tight">{stats ? stats[k] : '…'}</b>
-                <span className="text-xs text-muted">{t(`courseAdmin.${label}`)}</span>
+              <div key={k} data-testid={`stat-${k}`}>
+                <b>{stats ? stats[k] : '…'}</b>
+                <span>{t(`courseAdmin.${label}`)}</span>
               </div>
             ))}
           </div>
           {blockedByPath ? (
-            <p role="alert" className="rounded-lg bg-error/10 px-3 py-2 text-sm text-error">
+            <p role="alert" className="dlg-alert">
               {t('courseAdmin.inPaths', { n: stats?.pathItems ?? 0 })}
             </p>
           ) : null}
@@ -239,10 +239,7 @@ export function CourseDeleteDialog({
             </label>
           ) : null}
           {error ? (
-            <div
-              role="alert"
-              className="rounded-lg border border-error/40 bg-error/10 px-3 py-2 text-sm text-error"
-            >
+            <div role="alert" className="dlg-alert">
               {error}
             </div>
           ) : null}
@@ -254,7 +251,7 @@ export function CourseDeleteDialog({
             </DialogClose>
             <Button
               type="button"
-              variant="danger"
+              variant="dangerSolid"
               disabled={!stats || !nameOk || blockedByPath}
               loading={busy}
               onClick={go}
@@ -270,12 +267,13 @@ export function CourseDeleteDialog({
 }
 
 const STATUS_CLASS: Record<CourseStatus, string> = {
-  published: 'bg-ok/20 text-[#0f8a66]',
+  published: 'badge-ok',
   draft: 'badge-muted',
-  archived: 'bg-[color-mix(in_srgb,var(--de)_20%,transparent)] text-[#a86a0c]',
-  deleted: 'bg-error/15 text-[#c93535]',
+  archived: 'badge-warn',
+  deleted: 'badge-err',
 };
 
+/** Status nişanı nöqtə ilə: • Dərc olunub / • Qaralama / • Arxivdə / • Silinib */
 export function CourseStatusBadge({
   status,
   className,
@@ -285,6 +283,7 @@ export function CourseStatusBadge({
 }) {
   return (
     <span className={cn('badge', STATUS_CLASS[status], className)} data-status={status}>
+      <span className="bdot" aria-hidden />
       {t(`courseAdmin.status.${status}`)}
     </span>
   );

@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   Archive,
   ArchiveRestore,
@@ -12,7 +13,9 @@ import {
   Pencil,
   Plus,
   RotateCcw,
+  Search,
   Trash2,
+  Upload,
   Users,
 } from 'lucide-react';
 import {
@@ -23,7 +26,7 @@ import {
   type TrackDto,
 } from '@dacy/shared';
 import { t } from '@/lib/i18n';
-import { cn } from '@/lib/utils';
+import { cn, fmtNum } from '@/lib/utils';
 import { TrackBadge } from '@/components/app/track-badge';
 import { EmptyState } from '@/components/app/empty-state';
 import {
@@ -40,7 +43,7 @@ import {
   daysLeft,
   useCourseActions,
 } from './course-actions';
-import { fmtDate } from './format';
+import { fmtAgo, fmtDate } from './format';
 
 const TABS: Array<{ key: CourseStatus | 'all'; adminOnly?: boolean }> = [
   { key: 'all' },
@@ -50,6 +53,7 @@ const TABS: Array<{ key: CourseStatus | 'all'; adminOnly?: boolean }> = [
   { key: 'deleted', adminOnly: true },
 ];
 
+/** Admin «Kurslar»: başlıq + xülasə, status tabları, istiqamət çipləri, cədvəl, sətir əməliyyatları */
 export function CoursesTable({
   data,
   tracks,
@@ -64,8 +68,10 @@ export function CoursesTable({
   status?: CourseStatus;
 }) {
   const { isAdmin } = useAdmin();
+  const router = useRouter();
   const actions = useCourseActions();
   const [del, setDel] = useState<{ course: AdminCourseDto; mode: 'soft' | 'purge' } | null>(null);
+  const [query, setQuery] = useState(q ?? '');
   const trash = status === 'deleted';
 
   const href = (patch: { istiqamet?: string; q?: string; status?: string }) => {
@@ -78,29 +84,34 @@ export function CoursesTable({
     return `/admin/kurslar${s ? `?${s}` : ''}`;
   };
 
+  const summary = [
+    t('courseAdmin.sumCourses', { n: fmtNum(data.counts.all) }),
+    data.totals ? t('courseAdmin.sumTracks', { n: data.totals.tracks }) : null,
+    data.totals ? t('courseAdmin.sumEnrollments', { n: fmtNum(data.totals.enrollments) }) : null,
+  ]
+    .filter(Boolean)
+    .join(' · ');
+
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center gap-3">
-        <h1 className="text-2xl">{trash ? t('courseAdmin.trash') : t('admin.courses')}</h1>
-        <span className="flex-1" />
-        <form action="/admin/kurslar" className="flex gap-2">
-          {track ? <input type="hidden" name="istiqamet" value={track} /> : null}
-          {status ? <input type="hidden" name="status" value={status} /> : null}
-          <input
-            name="q"
-            defaultValue={q}
-            className="inp max-w-xs"
-            placeholder={t('common.search')}
-            aria-label={t('common.search')}
-          />
-        </form>
-        <Link href="/admin/kurslar/yeni" className="b b-brand">
-          <Plus className="size-4" />
-          {t('admin.newCourse')}
-        </Link>
+    <div className="flex flex-col">
+      <div className="ph1">
+        <div>
+          <h1>{trash ? t('courseAdmin.trash') : t('admin.courses')}</h1>
+          <p>{trash ? t('courseAdmin.trashHint', { days: COURSE_TRASH_DAYS }) : summary}</p>
+        </div>
+        <div className="ph1-act">
+          <Link href="/admin/idxal" className="b b-ghost">
+            <Upload aria-hidden />
+            {t('nav.import')}
+          </Link>
+          <Link href="/admin/kurslar/yeni" className="b b-brand">
+            <Plus aria-hidden />
+            {t('admin.newCourse')}
+          </Link>
+        </div>
       </div>
 
-      <nav className="admin-tabs" aria-label={t('common.status')}>
+      <nav className="tabs" aria-label={t('common.status')}>
         {TABS.filter((tb) => !tb.adminOnly || isAdmin).map((tb) => {
           const on = (status ?? 'all') === tb.key;
           return (
@@ -111,34 +122,51 @@ export function CoursesTable({
               aria-current={on ? 'page' : undefined}
               data-testid={`tab-${tb.key}`}
             >
-              {tb.key === 'deleted' ? <Trash2 className="size-3.5" /> : null}
+              {tb.key === 'deleted' ? <Trash2 aria-hidden /> : null}
               {tb.key === 'deleted' ? t('courseAdmin.trash') : t(`courseAdmin.status.${tb.key}`)}
-              <span className="count">{data.counts[tb.key]}</span>
+              <i>{data.counts[tb.key]}</i>
             </Link>
           );
         })}
       </nav>
 
-      {!trash ? (
-        <nav className="flex flex-wrap gap-2" aria-label={t('common.track')}>
-          <Link href={href({ istiqamet: undefined })} className={cn('chip', !track && 'on')}>
-            {t('common.all')}
-          </Link>
-          {tracks.map((tr) => (
-            <Link
-              key={tr.slug}
-              href={href({ istiqamet: track === tr.slug ? undefined : tr.slug })}
-              className={cn('chip', track === tr.slug && 'on')}
-            >
-              {tr.title}
+      <div className="tb !mt-0">
+        {!trash ? (
+          <nav className="chips" aria-label={t('common.track')}>
+            <Link href={href({ istiqamet: undefined })} className={cn('chip', !track && 'on')}>
+              {t('common.all')}
             </Link>
-          ))}
-        </nav>
-      ) : (
-        <p className="text-sm text-muted">
-          {t('courseAdmin.trashHint', { days: COURSE_TRASH_DAYS })}
-        </p>
-      )}
+            {tracks.map((tr) => (
+              <Link
+                key={tr.slug}
+                href={href({ istiqamet: track === tr.slug ? undefined : tr.slug })}
+                className={cn('chip', track === tr.slug && 'on')}
+                style={{ ['--c' as string]: tr.color }}
+              >
+                <span className="cdot" aria-hidden />
+                {tr.title}
+              </Link>
+            ))}
+          </nav>
+        ) : null}
+        <form
+          className="srch"
+          role="search"
+          onSubmit={(e) => {
+            e.preventDefault();
+            router.push(href({ q: query.trim() || undefined }));
+          }}
+        >
+          <Search aria-hidden className="size-[18px] shrink-0" />
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder={t('courseAdmin.searchCourses')}
+            aria-label={t('courseAdmin.searchCourses')}
+            type="search"
+          />
+        </form>
+      </div>
 
       {data.courses.length === 0 ? (
         <EmptyState
@@ -147,40 +175,42 @@ export function CoursesTable({
           action={
             trash ? undefined : (
               <Link href="/admin/kurslar/yeni" className="b b-brand">
+                <Plus aria-hidden />
                 {t('admin.newCourse')}
               </Link>
             )
           }
         />
       ) : (
-        <div className="card overflow-x-auto">
-          <table className="tbl-admin tbl-hover">
+        <div className="tbl-wrap">
+          <table className="tbl-admin">
             <thead>
               <tr>
-                <th>{t('common.title')}</th>
+                <th>{t('courseAdmin.colCourse')}</th>
                 <th>{t('common.track')}</th>
                 <th>{t('common.level')}</th>
                 <th>{t('common.status')}</th>
-                <th>{t('admin.enrollments')}</th>
-                <th>{trash ? t('courseAdmin.deletedAt') : t('common.date')}</th>
+                <th>{t('courseAdmin.colStudents')}</th>
+                <th>{trash ? t('courseAdmin.deletedAt') : t('courseAdmin.colUpdated')}</th>
                 <th className="text-right">{t('courseAdmin.actions')}</th>
               </tr>
             </thead>
             <tbody>
               {data.courses.map((c) => (
-                <tr key={c.id} data-testid={`course-row-${c.slug}`}>
+                <tr
+                  key={c.id}
+                  data-testid={`course-row-${c.slug}`}
+                  className={cn(c.status === 'archived' && 'dim')}
+                >
                   <td>
                     {trash ? (
-                      <span className="font-semibold">{c.title}</span>
+                      <span className="ttl">{c.title}</span>
                     ) : (
-                      <Link
-                        href={`/admin/kurslar/${c.slug}`}
-                        className="font-semibold hover:underline"
-                      >
+                      <Link href={`/admin/kurslar/${c.slug}`} className="ttl hover:underline">
                         {c.title}
                       </Link>
                     )}
-                    <div className="font-mono text-xs text-muted">{c.slug}</div>
+                    <div className="slug">{c.slug}</div>
                   </td>
                   <td>
                     <TrackBadge color={c.track.color}>{c.track.title}</TrackBadge>
@@ -189,31 +219,31 @@ export function CoursesTable({
                   <td>
                     <CourseStatusBadge status={c.status} />
                   </td>
-                  <td className="tabular-nums">{c.enrollmentCount}</td>
-                  <td className="text-muted">
+                  <td className="tabular-nums">{fmtNum(c.enrollmentCount)}</td>
+                  <td className="dt">
                     {trash ? (
                       <>
                         {fmtDate(c.deletedAt ?? c.updatedAt)}
-                        <div className="text-xs">
+                        <div className="text-xs text-muted">
                           {daysLeft(c.purgeAt)
                             ? t('courseAdmin.purgeIn', { days: daysLeft(c.purgeAt)! })
                             : t('courseAdmin.purgeSoon')}
                         </div>
                       </>
                     ) : (
-                      fmtDate(c.updatedAt)
+                      <span title={fmtDate(c.updatedAt, true)}>{fmtAgo(c.updatedAt)}</span>
                     )}
                   </td>
                   <td>
                     {trash ? (
-                      <div className="flex justify-end gap-1">
+                      <div className="flex justify-end gap-2">
                         <button
                           type="button"
                           className="b b-ghost b-sm"
                           onClick={() => actions.restore(c)}
                           disabled={!!actions.busy}
                         >
-                          <RotateCcw className="size-4" />
+                          <RotateCcw aria-hidden />
                           {t('courseAdmin.restore')}
                         </button>
                         <button
@@ -221,7 +251,7 @@ export function CoursesTable({
                           className="b b-danger b-sm"
                           onClick={() => setDel({ course: c, mode: 'purge' })}
                         >
-                          <Trash2 className="size-4" />
+                          <Trash2 aria-hidden />
                           {t('courseAdmin.purge')}
                         </button>
                       </div>
@@ -267,81 +297,81 @@ function RowActions({
 }) {
   const archived = c.status === 'archived';
   return (
-    <div className="flex items-center justify-end gap-1">
+    <div className="acts">
       <Link
         href={`/admin/kurslar/${c.slug}`}
-        className="iconbtn"
+        className="ib"
         aria-label={t('courseAdmin.edit')}
         title={t('courseAdmin.edit')}
       >
-        <Pencil className="size-4" />
+        <Pencil aria-hidden />
       </Link>
       <a
         href={`/kurs/${c.slug}`}
         target="_blank"
         rel="noreferrer"
-        className="iconbtn"
+        className="ib"
         aria-label={t('courseAdmin.preview')}
         title={t('courseAdmin.preview')}
       >
-        <Eye className="size-4" />
+        <Eye aria-hidden />
       </a>
       {isAdmin ? (
         <button
           type="button"
-          className="iconbtn danger"
+          className="ib danger"
           onClick={onDelete}
           aria-label={t('courseAdmin.delete')}
           title={t('courseAdmin.delete')}
         >
-          <Trash2 className="size-4" />
+          <Trash2 aria-hidden />
         </button>
       ) : null}
       <Dropdown>
         <DropdownTrigger
-          className="iconbtn"
+          className="ib more"
           aria-label={t('courseAdmin.more')}
           title={t('courseAdmin.more')}
           data-testid={`more-${c.slug}`}
         >
-          <MoreHorizontal className="size-4" />
+          <MoreHorizontal aria-hidden />
         </DropdownTrigger>
-        <DropdownContent>
+        <DropdownContent className="min-w-56">
           <DropdownItem asChild>
             <Link href={`/admin/kurslar/${c.slug}`}>
-              <Pencil className="size-4" /> {t('courseAdmin.edit')}
+              <Pencil aria-hidden /> {t('courseAdmin.edit')}
             </Link>
           </DropdownItem>
           <DropdownItem onSelect={() => actions.setPublished(c, !c.isPublished)}>
-            {c.isPublished ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+            {c.isPublished ? <EyeOff aria-hidden /> : <Eye aria-hidden />}
             {c.isPublished ? t('courseAdmin.unpublish') : t('courseAdmin.publish')}
           </DropdownItem>
           {isAdmin ? (
             <>
               <DropdownItem onSelect={() => actions.setArchived(c, !archived)}>
-                {archived ? <ArchiveRestore className="size-4" /> : <Archive className="size-4" />}
+                {archived ? <ArchiveRestore aria-hidden /> : <Archive aria-hidden />}
                 {archived ? t('courseAdmin.unarchive') : t('courseAdmin.archive')}
               </DropdownItem>
               <DropdownItem onSelect={() => actions.copy(c)}>
-                <Copy className="size-4" /> {t('courseAdmin.copy')}
+                <Copy aria-hidden /> {t('courseAdmin.copy')}
               </DropdownItem>
             </>
           ) : null}
           <DropdownItem asChild>
             <a href={`/kurs/${c.slug}`} target="_blank" rel="noreferrer">
-              <Eye className="size-4" /> {t('courseAdmin.preview')}
+              <Eye aria-hidden /> {t('courseAdmin.preview')}
             </a>
           </DropdownItem>
           {isAdmin ? (
             <>
               <DropdownItem asChild>
                 <Link href={`/admin/kurslar/${c.slug}?tab=telebeler`}>
-                  <Users className="size-4" /> {t('courseAdmin.students')}
+                  <Users aria-hidden /> {t('courseAdmin.students')}
                 </Link>
               </DropdownItem>
               <DropdownSeparator />
-              <DropdownItem className="text-error" onSelect={onDelete}>
-                <Trash2 className="size-4" /> {t('courseAdmin.delete')}
+              <DropdownItem className="danger" onSelect={onDelete}>
+                <Trash2 aria-hidden /> {t('courseAdmin.delete')}
               </DropdownItem>
             </>
           ) : null}

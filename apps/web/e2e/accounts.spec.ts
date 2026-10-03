@@ -17,7 +17,8 @@ async function loginViaForm(page: Page, who: { email: string; password: string }
 test('admin hesabı: giriş → /admin açılır', async ({ page }) => {
   await loginViaForm(page, ADMIN);
   await page.goto('/admin');
-  await expect(page).toHaveURL(/\/admin\/kurslar/, { timeout: 30_000 });
+  await expect(page.getByRole('heading', { name: 'Ümumi baxış' })).toBeVisible({ timeout: 30_000 });
+  await page.goto('/admin/kurslar');
   await expect(page.getByRole('heading', { name: 'Kurslar' })).toBeVisible();
   const r = await page.request.get('/api/admin/courses');
   expect(r.status()).toBe(200);

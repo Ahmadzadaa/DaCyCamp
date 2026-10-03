@@ -33,7 +33,13 @@ export class UsersController {
   @Patch('me')
   async updateMe(
     @CurrentUser() u: AuthUser,
-    @Body(new ZodPipe(updateMeSchema)) dto: { name?: string; locale?: 'az' | 'en' },
+    @Body(new ZodPipe(updateMeSchema))
+    dto: {
+      name?: string;
+      locale?: 'az' | 'en';
+      weeklyGoal?: number;
+      showOnLeaderboard?: boolean;
+    },
   ) {
     const user = await this.prisma.user.update({ where: { id: u.id }, data: dto });
     return toPublicUser(user);

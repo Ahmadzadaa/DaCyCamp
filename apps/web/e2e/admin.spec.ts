@@ -90,7 +90,7 @@ test('istiqamətlər və tələbələr səhifələri', async ({ page }) => {
   await expect(page.getByText('Data Analytics').first()).toBeVisible();
   await page.screenshot({ path: resolve(SHOTS, 'admin-tracks.app.png'), fullPage: true });
   await page.goto('/admin/telebeler');
-  await page.getByRole('textbox', { name: 'Axtar' }).fill(ADMIN.email); // siyahı səhifələnir — axtarışla tap
+  await page.getByRole('textbox', { name: 'Axtar', exact: true }).fill(ADMIN.email); // siyahı səhifələnir — axtarışla tap
   await expect(page.getByRole('cell', { name: ADMIN.email })).toBeVisible({ timeout: 15_000 });
   await expect(page.getByRole('combobox').first()).toBeVisible(); // ADMIN rol dəyişə bilir
 });
