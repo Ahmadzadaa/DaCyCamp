@@ -4,7 +4,13 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { loginSchema, registerSchema, type LoginInput, type RegisterInput } from '@dacy/shared';
+import {
+  loginSchema,
+  registerSchema,
+  type LoginInput,
+  type PublicUser,
+  type RegisterInput,
+} from '@dacy/shared';
 import { api } from '@/lib/api/client';
 import { errorMessage } from '@/lib/errors-i18n';
 import { t } from '@/lib/i18n';
@@ -27,8 +33,20 @@ export function AuthForm({ mode, next }: { mode: 'login' | 'register'; next?: st
   async function onSubmit(values: RegisterInput | LoginInput) {
     setError(null);
     try {
-      await api(isLogin ? '/auth/login' : '/auth/register', { method: 'POST', body: values });
-      const target = next && next.startsWith('/') ? next : isLogin ? '/panel' : '/baslangic';
+      const me = await api<PublicUser>(isLogin ? '/auth/login' : '/auth/register', {
+        method: 'POST',
+        body: values,
+      });
+      // admin və müəllim birbaşa admin panelə düşür (tələbə panelində admin girişi gözə dəymirdi)
+      const staff = me.role === 'ADMIN' || me.role === 'INSTRUCTOR';
+      const target =
+        next && next.startsWith('/') && !next.startsWith('//')
+          ? next
+          : staff
+            ? '/admin'
+            : isLogin
+              ? '/panel'
+              : '/baslangic';
       router.push(target);
       router.refresh();
     } catch (e) {

@@ -1,5 +1,6 @@
 import { Suspense } from 'react';
 import Link from 'next/link';
+import { ShieldCheck } from 'lucide-react';
 import type { MeSummaryDto, PublicUser } from '@dacy/shared';
 import { t } from '@/lib/i18n';
 import { Logo } from '@/components/app/logo';
@@ -26,6 +27,7 @@ export function AppShell({
   children: React.ReactNode;
 }) {
   const footer = user ? summary ? <WeeklyGoal summary={summary} /> : null : <GuestCta />;
+  const staff = user?.role === 'ADMIN' || user?.role === 'INSTRUCTOR';
   return (
     <div className="app">
       <a href="#main" className="skip">
@@ -33,7 +35,7 @@ export function AppShell({
       </a>
       <header className="top">
         <div className="top-brand">
-          <Logo text={t('shell.brand')} href={user ? '/panel' : '/kurslar'} />
+          <Logo text={t('shell.brand')} href={user ? '/panel' : '/'} />
         </div>
         <PillNav authed={!!user} />
         <Suspense fallback={<div className="srch" />}>
@@ -42,6 +44,12 @@ export function AppShell({
         <div className="top-actions">
           {user ? (
             <>
+              {staff ? (
+                <Link href="/admin" className="b b-navy b-sm max-md:hidden" data-testid="go-admin">
+                  <ShieldCheck aria-hidden />
+                  {t('shell.adminPanel')}
+                </Link>
+              ) : null}
               <NotificationsBell unread={summary?.unreadNotifications ?? 0} />
               <UserMenu user={user} />
             </>
@@ -59,7 +67,7 @@ export function AppShell({
       </header>
       <div className="shell">
         <Suspense fallback={<aside className="sb" />}>
-          <Sidebar nav="student" footer={footer} />
+          <Sidebar nav="student" footer={footer} staff={staff} />
         </Suspense>
         <main className="content" id="main">
           <div className="content-in">{children}</div>
@@ -67,7 +75,7 @@ export function AppShell({
       </div>
       <HelpButton />
       <Suspense fallback={null}>
-        <BottomNav footer={footer} authed={!!user} />
+        <BottomNav footer={footer} authed={!!user} staff={staff} />
       </Suspense>
     </div>
   );

@@ -1,13 +1,15 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import Link from 'next/link';
 import { toast } from 'sonner';
 import { ROLES, type AdminUserDto, type Paged, type Role } from '@dacy/shared';
 import { api } from '@/lib/api/client';
 import { errorMessage } from '@/lib/errors-i18n';
 import { t } from '@/lib/i18n';
 import { cn, fmtNum, initials } from '@/lib/utils';
-import { Search } from 'lucide-react';
+import { ChevronRight, Search, UserPlus } from 'lucide-react';
 import { PageHeader } from './page-header';
+import { CreateUserDialog } from './user-dialogs';
 import { Button } from '@/components/ui/button';
 import { Select } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -22,19 +24,23 @@ export function UsersTable({ initialQ = '' }: { initialQ?: string }) {
   const [data, setData] = useState<Paged<AdminUserDto> | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const h = setTimeout(() => {
-      setLoading(true);
-      const p = new URLSearchParams({ page: String(page), pageSize: '25' });
-      if (q.trim()) p.set('q', q.trim());
-      if (role) p.set('role', role);
-      api<Paged<AdminUserDto>>(`/admin/users?${p}`)
-        .then(setData)
-        .catch((e) => toast.error(errorMessage(e)))
-        .finally(() => setLoading(false));
-    }, 250);
-    return () => clearTimeout(h);
+  const [creating, setCreating] = useState(false);
+
+  const load = useCallback(() => {
+    setLoading(true);
+    const p = new URLSearchParams({ page: String(page), pageSize: '25' });
+    if (q.trim()) p.set('q', q.trim());
+    if (role) p.set('role', role);
+    api<Paged<AdminUserDto>>(`/admin/users?${p}`)
+      .then(setData)
+      .catch((e) => toast.error(errorMessage(e)))
+      .finally(() => setLoading(false));
   }, [q, role, page]);
+
+  useEffect(() => {
+    const h = setTimeout(load, 250);
+    return () => clearTimeout(h);
+  }, [load]);
 
   async function changeRole(u: AdminUserDto, next: Role) {
     try {
@@ -52,9 +58,25 @@ export function UsersTable({ initialQ = '' }: { initialQ?: string }) {
   return (
     <div className="flex flex-col gap-4">
       <PageHeader
-        title={t('admin.students')}
+        title={t('users.title')}
         subtitle={data ? t('admin.usersCount', { n: fmtNum(data.total) }) : ' '}
-      />
+      >
+        {isAdmin ? (
+          <Button type="button" onClick={() => setCreating(true)} data-testid="user-new">
+            <UserPlus aria-hidden />
+            {t('users.new')}
+          </Button>
+        ) : null}
+      </PageHeader>
+      {creating ? (
+        <CreateUserDialog
+          onClose={() => setCreating(false)}
+          onCreated={() => {
+            setCreating(false);
+            load();
+          }}
+        />
+      ) : null}
       <div className="tb !my-0">
         <div className="chips">
           <button
@@ -104,20 +126,21 @@ export function UsersTable({ initialQ = '' }: { initialQ?: string }) {
               <th>XP</th>
               <th>{t('admin.enrollments')}</th>
               <th>{t('common.date')}</th>
+              <th aria-label={t('users.open')} />
             </tr>
           </thead>
           <tbody>
             {loading && !data ? (
               Array.from({ length: 5 }).map((_, i) => (
                 <tr key={i}>
-                  <td colSpan={6}>
+                  <td colSpan={7}>
                     <Skeleton className="h-5 w-full" />
                   </td>
                 </tr>
               ))
             ) : data && data.items.length === 0 ? (
               <tr>
-                <td colSpan={6} className="text-center text-muted">
+                <td colSpan={7} className="text-center text-muted">
                   {t('common.noResults')}
                 </td>
               </tr>
@@ -125,10 +148,14 @@ export function UsersTable({ initialQ = '' }: { initialQ?: string }) {
               data?.items.map((u) => (
                 <tr key={u.id}>
                   <td>
-                    <span className="flex items-center gap-3">
+                    <Link
+                      href={`/admin/telebeler/${u.id}`}
+                      className="flex items-center gap-3 hover:underline"
+                      data-testid={`user-link-${u.email}`}
+                    >
                       <span className="avatar sm">{initials(u.name)}</span>
                       <b>{u.name}</b>
-                    </span>
+                    </Link>
                   </td>
                   <td className="text-muted">{u.email}</td>
                   <td>
@@ -151,7 +178,17 @@ export function UsersTable({ initialQ = '' }: { initialQ?: string }) {
                   </td>
                   <td>{u.xpTotal}</td>
                   <td>{u.enrollmentCount}</td>
-                  <td className="text-muted">{fmtDate(u.createdAt)}</td>
+                  <td className="whitespace-nowrap text-muted">{fmtDate(u.createdAt)}</td>
+                  <td className="text-right">
+                    <Link
+                      href={`/admin/telebeler/${u.id}`}
+                      className="ib"
+                      aria-label={t('users.open')}
+                      title={t('users.open')}
+                    >
+                      <ChevronRight aria-hidden />
+                    </Link>
+                  </td>
                 </tr>
               ))
             )}

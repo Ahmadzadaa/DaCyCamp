@@ -42,6 +42,24 @@ export const changePasswordSchema = z.object({
 });
 export const updateRoleSchema = z.object({ role: z.enum(ROLES) });
 
+// admin: istifadəçi idarəsi
+export const createUserSchema = z.object({
+  name: z.string().trim().min(2, 'Ad ən azı 2 simvol').max(120),
+  email: emailSchema,
+  password: passwordSchema,
+  role: z.enum(ROLES).default('STUDENT'),
+});
+export const updateUserSchema = z
+  .object({
+    name: z.string().trim().min(2, 'Ad ən azı 2 simvol').max(120).optional(),
+    email: emailSchema.optional(),
+    role: z.enum(ROLES).optional(),
+  })
+  .refine((v) => Object.keys(v).length > 0, 'Heç bir sahə verilməyib');
+export const setPasswordSchema = z.object({ password: passwordSchema });
+export type CreateUserInput = z.infer<typeof createUserSchema>;
+export type UpdateUserInput = z.infer<typeof updateUserSchema>;
+
 // content
 export const reorderSchema = z.object({ ids: z.array(idSchema).min(1).max(500) });
 export const createTrackSchema = z.object({

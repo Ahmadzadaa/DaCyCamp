@@ -298,3 +298,32 @@ Repoda yer tutucu səhifə qalmayıb (`/yollar`, `/sertifikatlar` Mərhələ 3�
 - API e2e: **83/83** (yeni `apps/api/test/topics-hub.e2e-spec.ts` — 14 test: mövzu CRUD + rollar, kursa təyin, kataloq/admin filtrləri, gizli mövzu, sıra, surət, audit; panel xülasəsi, həftəlik hədəf, bildirişlər, fəaliyyət, təcrübə, liderlər + gizlənmə, yarışlar, admin ümumi baxış/axtarış, eyni anda addım açma).
 - Shared unit 45/45, web unit 5/5, typecheck + lint təmiz.
 - Playwright: admin, admin-control, student-flow, accounts, phase2, phase3, phase4 — **34/34** (7 spec bir yerdə işlədildi; bir test dev serverin yaddaş limitinə görə avtomatik yenidən başlaması zamanı `ECONNREFUSED` aldı, ayrıca təkrarda keçdi). Dev serverdə ağır marşrutlar (iş sahəsi, sertifikat) soyuq halda 6–10 s kompilyasiya olunduğu üçün iki keçid yoxlamasının gözləmə vaxtı 30 s-ə qaldırıldı (eyni spec-dəki digər keçidlər kimi).
+
+---
+
+## Admin tam səlahiyyət + tanışlıq səhifəsi — 3 oktyabr 2026
+
+**«Admin heç nəyə çatmır» — səbəblər və düzəliş:**
+
+- **Rol token-dən oxunurdu.** Admin səhifələri rolu bazadan, API isə 15 dəqiqəlik giriş token-indən yoxlayırdı. Rolu dəyişən hesab (məs. seed ilə admin olan) admin menyusunu görürdü, amma hər əməliyyat «İcazə yoxdur» verirdi. İndi `AuthGuard` hər sorğuda rolu bazadan oxuyur: rol dəyişikliyi dərhal qüvvəyə minir, silinmiş hesabın sessiyası dərhal 401 olur.
+- **Admin panelə yol görünmürdü.** Girişdən sonra hamı `/panel`-ə düşürdü, admin keçidi yalnız avatar menyusunda idi. İndi admin/müəllim girişdən sonra birbaşa `/admin`-ə düşür (`/giris`-ə qayıdanda da), tələbə saytında header-də «Admin panel» düyməsi və sidebar-da «İDARƏETMƏ → Admin panel» var (mobil «Daha çox» vərəqində də).
+
+**İstifadəçi idarəsi (`/admin/telebeler` → «İstifadəçilər»):**
+
+- «Yeni istifadəçi» — ad, e-poçt, şifrə, rol; hesab dərhal aktivdir.
+- İstifadəçi kartı (`/admin/telebeler/[id]`): ad / e-poçt / rol redaktəsi; yeni şifrə təyin etmək (bütün sessiyalar bağlanır); kurslar — irəliləyiş, «Kursa yaz», «Kursdan çıxar», «İrəliləyişi sıfırla»; yollar; sertifikatlar — «Ləğv et» / «Bərpa et»; «Təhlükəli zona» — hesabı silmək (e-poçtu yazıb təsdiqləməklə; yazılma, irəliləyiş, XP, sertifikatlar cascade ilə silinir, yaratdığı kurslar qalır).
+- Kursun «Tələbələr» tabında e-poçt ilə tələbə əlavə etmək.
+- Qoruyucular: admin öz rolunu endirə və özünü silə bilməz (`SELF_ACTION`), sonuncu admin hesabı itirilə bilməz (`LAST_ADMIN`). Müəllim kartlara baxır, redaktə edə bilmir.
+- API: `GET/PATCH/DELETE /admin/users/:id`, `POST /admin/users`, `POST /admin/users/:id/password`, `POST /admin/certificates/:id/restore`.
+
+**Fəaliyyət tarixçəsi:** istifadəçi (yaratma, redaktə, şifrə, silmə), sertifikat (ləğv, bərpa), yol (yaratma, redaktə, silmə, dərc, addımlar) əməliyyatları da yazılır; mövzu əməliyyatlarının adları (Qeyd 5-də unudulmuşdu) və filtrləri əlavə olundu.
+
+**Tanışlıq səhifəsi (`/`):** qonaq əvvəlcə platformanı görür — hero (SQL redaktoru görüntüsü, real kurs/tapşırıq/istiqamət sayları), istiqamətlər, «Video izləmək yox — əllə etmək» (SQL, Python, Linux/Docker lab-ları, CTF, karyera yolları, sertifikat), «Üç addımda başlayın», kurslar, karyera yolları, sual-cavab, son çağırış, footer. Yuxarı sağda «Daxil ol» və «Qeydiyyat». Daxil olmuş tələbə `/`-dan panelə, heyət admin panelə yönlənir. Qonağın loqo kliki tanışlıq səhifəsinə aparır. Mobilə uyğundur.
+
+**Yoxlama:** API e2e **92/92** (yeni `admin-users.e2e-spec.ts` — 9 test: rolun dərhal qüvvəyə minməsi, yaratma, kart, redaktə, şifrə + sessiyalar, sertifikat ləğvi/bərpası, öz hesabı və sonuncu admin qoruyucuları, silmə + cascade + 401, audit). Playwright **37/37** (yeni `landing.spec.ts`; `accounts.spec.ts` admin-in birbaşa `/admin`-ə düşməsini və «Admin panel» keçidini yoxlayır). Typecheck və lint təmiz.
+
+---
+
+## Növbəti mərhələ — kurs məzmununun platformaya köçürülməsi (gözləyir)
+
+İstifadəçi bütün dərs və tapşırıq fayllarını göndərəcək (Docker, Python, SQL, Excel və s.). Bunlardan platformada kurslar yaradılacaq — hamısı bir yerdə: istiqamət, mövzu, səviyyə, fəsillər, addımlar (nəzəri, test, SQL, Python, terminal lab, CTF), datasetlər, yollar. Yol: hər kurs üçün ZIP paketi (`docs/content-package.md`) → `/admin/idxal`-da yoxla → tətbiq et. Excel tapşırıqlarının formatı fayllar gələndə seçiləcək (məs. Excel faylı + test sualları, və ya Python/pandas ilə).

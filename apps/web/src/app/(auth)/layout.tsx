@@ -15,7 +15,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
   return (
     <div className="auth">
       <aside className="auth-aside" aria-hidden="false">
-        <Logo text={t('shell.brand')} href="/kurslar" className="text-white" />
+        <Logo text={t('shell.brand')} href="/" className="text-white" />
         <div className="auth-pitch">
           <span className="badge badge-mint">{t('auth.asideBadge')}</span>
           <h2>{t('auth.asideTitle')}</h2>
@@ -35,7 +35,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       </aside>
       <main className="auth-main">
         <div className="auth-top">
-          <Logo text={t('shell.brand')} href="/kurslar" className="auth-logo-m" />
+          <Logo text={t('shell.brand')} href="/" className="auth-logo-m" />
         </div>
         <div className="auth-card">{children}</div>
       </main>

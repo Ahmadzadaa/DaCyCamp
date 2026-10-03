@@ -207,9 +207,10 @@ export class CertificatesService {
     return { buffer, filename: `${c.serial}.pdf` };
   }
 
-  async revoke(id: string): Promise<CertificateSummaryDto> {
+  /** Ləğv et (`restore` = ləğvi geri al) — yoxlama səhifəsində dərhal əks olunur */
+  async revoke(id: string, restore = false): Promise<CertificateSummaryDto> {
     const c = await this.find(id);
-    const now = c.revokedAt ?? new Date();
+    const now = restore ? null : (c.revokedAt ?? new Date());
     const updated =
       c.kind === 'course'
         ? fromCourse(

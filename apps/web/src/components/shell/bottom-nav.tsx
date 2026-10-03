@@ -4,11 +4,19 @@ import { usePathname, useSearchParams } from 'next/navigation';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { MoreHorizontal, X } from 'lucide-react';
 import { t } from '@/lib/i18n';
-import { BOTTOM_NAV, STUDENT_NAV, isActive } from './nav-config';
+import { BOTTOM_NAV, STUDENT_NAV, isActive, visibleSections } from './nav-config';
 
 /** Mobil (<900px): alt naviqasiya + «Daha çox» vərəqi (bütün sidebar elementləri) */
-export function BottomNav({ footer, authed }: { footer?: React.ReactNode; authed: boolean }) {
-  const sections = STUDENT_NAV;
+export function BottomNav({
+  footer,
+  authed,
+  staff = false,
+}: {
+  footer?: React.ReactNode;
+  authed: boolean;
+  staff?: boolean;
+}) {
+  const sections = visibleSections(STUDENT_NAV, { staff });
   const path = usePathname();
   const search = useSearchParams().toString();
   const main = BOTTOM_NAV.filter((it) => authed || !it.auth);

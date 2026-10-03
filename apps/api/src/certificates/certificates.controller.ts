@@ -3,6 +3,7 @@ import { Throttle } from '@nestjs/throttler';
 import type { Response } from 'express';
 import { CertificatesService } from './certificates.service';
 import { AdminOnly, CurrentUser, Public, type AuthUser } from '../common/decorators';
+import { Audit } from '../audit/audit.interceptor';
 
 @Controller()
 export class CertificatesController {
@@ -34,9 +35,18 @@ export class CertificatesController {
   }
 
   @AdminOnly()
+  @Audit({ action: 'certificate.revoke', entity: 'CERTIFICATE' })
   @Post('admin/certificates/:id/revoke')
   @HttpCode(200)
   revoke(@Param('id') id: string) {
     return this.certs.revoke(id);
+  }
+
+  @AdminOnly()
+  @Audit({ action: 'certificate.restore', entity: 'CERTIFICATE' })
+  @Post('admin/certificates/:id/restore')
+  @HttpCode(200)
+  restore(@Param('id') id: string) {
+    return this.certs.revoke(id, true);
   }
 }

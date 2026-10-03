@@ -70,7 +70,7 @@ export function UserMenu({ user, area = 'app' }: { user: PublicUser; area?: 'app
         ) : null}
         {staff && area === 'app' ? (
           <DropdownItem asChild>
-            <Link href="/admin/kurslar">
+            <Link href="/admin">
               <Settings className="size-4" />
               {t('shell.adminPanel')}
             </Link>

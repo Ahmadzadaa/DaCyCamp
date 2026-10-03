@@ -4,6 +4,7 @@ import { JwtService } from '@nestjs/jwt';
 import type { Request } from 'express';
 import { COOKIE_ACCESS } from '@dacy/shared';
 import { env } from '../../config/env';
+import { PrismaService } from '../../prisma/prisma.service';
 import { unauthorized } from '../errors';
 import { IS_OPTIONAL_AUTH, IS_PUBLIC, type AuthUser } from '../decorators';
 
@@ -19,6 +20,7 @@ export class AuthGuard implements CanActivate {
   constructor(
     private readonly reflector: Reflector,
     private readonly jwt: JwtService,
+    private readonly prisma: PrismaService,
   ) {}
 
   async canActivate(ctx: ExecutionContext): Promise<boolean> {
@@ -37,7 +39,14 @@ export class AuthGuard implements CanActivate {
         const p = await this.jwt.verifyAsync<AccessPayload>(token, {
           secret: env.JWT_ACCESS_SECRET,
         });
-        req.user = { id: p.sub, email: p.email, role: p.role, name: p.name };
+        // Rol və hesab bazadan oxunur: token-dəki rol 15 dəq köhnə qala bilər — rolu dəyişən
+        // (məs. seed ilə admin olan) istifadəçi admin səhifəsini görür, API isə 403 qaytarırdı;
+        // silinmiş hesabın token-i də dərhal etibarsız olur
+        const u = await this.prisma.user.findUnique({
+          where: { id: p.sub },
+          select: { id: true, email: true, role: true, name: true },
+        });
+        if (u) req.user = u;
       } catch {
         if (!isPublic && !optional)
           throw unauthorized('AUTH_TOKEN_EXPIRED', 'Sessiyanın vaxtı bitib');

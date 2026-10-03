@@ -2,7 +2,7 @@
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { t } from '@/lib/i18n';
-import { ADMIN_NAV, STUDENT_NAV, isActive } from './nav-config';
+import { ADMIN_NAV, STUDENT_NAV, isActive, visibleSections } from './nav-config';
 
 /**
  * Sol navy sidebar (260px). Aktiv element: navy-3 fon, ağ qalın yazı, mint ikon və sol mint zolaq.
@@ -12,6 +12,7 @@ export function Sidebar({
   nav,
   footer,
   isAdmin = true,
+  staff = false,
   counts,
   label,
 }: {
@@ -19,18 +20,19 @@ export function Sidebar({
   nav: 'student' | 'admin';
   footer?: React.ReactNode;
   isAdmin?: boolean;
+  /** tələbə qabığında «Admin panel» keçidi */
+  staff?: boolean;
   counts?: Partial<Record<'reviews', number>>;
   label?: string;
 }) {
   const path = usePathname();
   const search = useSearchParams().toString();
-  const sections = nav === 'admin' ? ADMIN_NAV : STUDENT_NAV;
+  const sections = visibleSections(nav === 'admin' ? ADMIN_NAV : STUDENT_NAV, { staff, isAdmin });
   return (
     <aside className="sb" aria-label={label ?? t('shell.sideNav')}>
       <nav className="sb-nav">
         {sections.map((sec, i) => {
-          const items = sec.items.filter((it) => isAdmin || !it.adminOnly);
-          if (!items.length) return null;
+          const items = sec.items;
           return (
             <div key={sec.title ?? i} className="sb-group">
               {sec.title ? <div className="sb-sec">{t(sec.title)}</div> : null}

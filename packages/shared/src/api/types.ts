@@ -416,6 +416,33 @@ export interface AdminUserDto {
   lastActiveAt: string | null;
   enrollmentCount: number;
 }
+/** Admin: istifadəçi kartı — profil, kurslar (irəliləyiş), yollar, sertifikatlar */
+export interface AdminUserDetailDto extends AdminUserDto {
+  weeklyGoal: number;
+  showOnLeaderboard: boolean;
+  certificateCount: number;
+  enrollments: Array<{
+    courseId: string;
+    slug: string;
+    title: string;
+    trackColor: string;
+    percent: number;
+    enrolledAt: string;
+    lastActivityAt: string;
+    completedAt: string | null;
+    /** kurs Silinənlər-dədir */
+    deleted: boolean;
+  }>;
+  paths: Array<{ slug: string; title: string; trackColor: string; enrolledAt: string }>;
+  certificates: Array<{
+    id: string;
+    kind: 'course' | 'path';
+    serial: string;
+    title: string;
+    issuedAt: string;
+    revokedAt: string | null;
+  }>;
+}
 export interface CourseImportDto {
   id: string;
   slug: string;

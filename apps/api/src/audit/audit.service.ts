@@ -4,7 +4,8 @@ import type { AuditLogDto, AuditPageDto } from '@dacy/shared';
 import { PrismaService } from '../prisma/prisma.service';
 import type { AuthUser } from '../common/decorators';
 
-export type AuditEntity = 'COURSE' | 'MODULE' | 'STEP' | 'ASSET' | 'TRACK' | 'TOPIC' | 'USER';
+export type AuditEntity =
+  'COURSE' | 'MODULE' | 'STEP' | 'ASSET' | 'TRACK' | 'TOPIC' | 'USER' | 'CERTIFICATE' | 'PATH';
 
 export interface AuditInput {
   action: string;
@@ -83,6 +84,28 @@ export class AuditService {
       case 'USER': {
         const u = await this.prisma.user.findUnique({ where: { id }, select: { email: true } });
         return u ? { title: u.email, courseId: null } : null;
+      }
+      case 'CERTIFICATE': {
+        const sel = { serial: true, user: { select: { email: true } } } as const;
+        const c = await this.prisma.certificate.findUnique({
+          where: { id },
+          select: { ...sel, courseId: true },
+        });
+        if (c) return { title: `${c.serial} · ${c.user.email}`, courseId: c.courseId };
+        const p = await this.prisma.pathCertificate.findUnique({ where: { id }, select: sel });
+        return p ? { title: `${p.serial} · ${p.user.email}`, courseId: null } : null;
+      }
+      case 'PATH': {
+        // id yolun və ya yol addımının (path-items/:id) id-si ola bilər
+        const p =
+          (await this.prisma.learningPath.findUnique({ where: { id }, select: { title: true } })) ??
+          (
+            await this.prisma.pathItem.findUnique({
+              where: { id },
+              select: { path: { select: { title: true } } },
+            })
+          )?.path;
+        return p ? { title: p.title, courseId: null } : null;
       }
     }
   }

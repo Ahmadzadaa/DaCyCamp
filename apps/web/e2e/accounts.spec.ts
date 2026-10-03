@@ -14,10 +14,19 @@ async function loginViaForm(page: Page, who: { email: string; password: string }
   await expect(page).not.toHaveURL(/\/giris/, { timeout: 30_000 });
 }
 
-test('admin hesabı: giriş → /admin açılır', async ({ page }) => {
+test('admin hesabı: giriş → birbaşa /admin açılır; saytda «Admin panel» keçidi', async ({
+  page,
+}) => {
   await loginViaForm(page, ADMIN);
-  await page.goto('/admin');
+  await expect(page).toHaveURL(/\/admin$/, { timeout: 30_000 });
   await expect(page.getByRole('heading', { name: 'Ümumi baxış' })).toBeVisible({ timeout: 30_000 });
+  // giriş səhifəsinə qayıdanda da admin panelə yönlənir
+  await page.goto('/giris');
+  await expect(page).toHaveURL(/\/admin$/);
+  // tələbə saytında admin panelə görünən keçid var
+  await page.goto('/kurslar');
+  await page.getByTestId('go-admin').click();
+  await expect(page).toHaveURL(/\/admin$/, { timeout: 30_000 });
   await page.goto('/admin/kurslar');
   await expect(page.getByRole('heading', { name: 'Kurslar' })).toBeVisible();
   const r = await page.request.get('/api/admin/courses');
@@ -28,6 +37,8 @@ test('admin hesabı: giriş → /admin açılır', async ({ page }) => {
 
 test('tələbə hesabı: giriş → /admin-ə girə bilmir, nümunə kursa yazılıb', async ({ page }) => {
   await loginViaForm(page, STUDENT);
+  await expect(page).toHaveURL(/\/panel$/);
+  await expect(page.getByTestId('go-admin')).toHaveCount(0);
   const me = await (await page.request.get('/api/auth/me')).json();
   expect(me.role).toBe('STUDENT');
   await page.goto('/admin');

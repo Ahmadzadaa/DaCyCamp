@@ -1,3 +1,4 @@
+import { Audit } from '../audit/audit.interceptor';
 import {
   Body,
   Controller,
@@ -39,6 +40,7 @@ export class PathsAdminController {
     return this.admin.list();
   }
 
+  @Audit({ action: 'path.create', entity: 'PATH', target: 'result' })
   @Post('admin/paths')
   create(@Body(new ZodPipe(pathInputSchema)) body: PathInput) {
     return this.admin.create(body);
@@ -49,6 +51,7 @@ export class PathsAdminController {
     return this.admin.get(slug);
   }
 
+  @Audit({ action: 'path.update', entity: 'PATH' })
   @Put('admin/paths/:id')
   update(
     @Param('id') id: string,
@@ -57,22 +60,26 @@ export class PathsAdminController {
     return this.admin.update(id, body);
   }
 
+  @Audit({ action: 'path.delete', entity: 'PATH' })
   @Delete('admin/paths/:id')
   remove(@Param('id') id: string, @Query(new ZodPipe(forceQuery)) q: { force?: string }) {
     return this.admin.remove(id, !!q.force);
   }
 
+  @Audit({ action: 'path.publish', entity: 'PATH', body: ['published'] })
   @Post('admin/paths/:id/publish')
   @HttpCode(200)
   publish(@Param('id') id: string, @Body(new ZodPipe(publishBody)) body: { published: boolean }) {
     return this.admin.publish(id, body.published);
   }
 
+  @Audit({ action: 'path.item_add', entity: 'PATH' })
   @Post('admin/paths/:id/items')
   addItem(@Param('id') id: string, @Body(new ZodPipe(pathItemInputSchema)) body: PathItemInput) {
     return this.admin.addItem(id, body);
   }
 
+  @Audit({ action: 'path.reorder', entity: 'PATH' })
   @Put('admin/paths/:id/items/order')
   reorder(
     @Param('id') id: string,
@@ -81,11 +88,13 @@ export class PathsAdminController {
     return this.admin.reorder(id, body.ids);
   }
 
+  @Audit({ action: 'path.item_update', entity: 'PATH' })
   @Put('admin/path-items/:id')
   updateItem(@Param('id') id: string, @Body(new ZodPipe(pathItemInputSchema)) body: PathItemInput) {
     return this.admin.updateItem(id, body);
   }
 
+  @Audit({ action: 'path.item_delete', entity: 'PATH' })
   @Delete('admin/path-items/:id')
   removeItem(@Param('id') id: string) {
     return this.admin.removeItem(id);

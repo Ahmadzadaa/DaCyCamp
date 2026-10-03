@@ -10,6 +10,7 @@ import {
   Layers,
   LayoutDashboard,
   Route,
+  ShieldCheck,
   SquareTerminal,
   Swords,
   Tags,
@@ -33,6 +34,8 @@ export interface NavItem {
   auth?: boolean;
   /** yalnız ADMIN (müəllim görmür) */
   adminOnly?: boolean;
+  /** yalnız heyət (ADMIN / INSTRUCTOR) — tələbə qabığında admin panelə keçid */
+  staffOnly?: boolean;
   /** sayğac (məs. yoxlama gözləyən layihələr) — qabıq doldurur */
   countKey?: 'reviews';
 }
@@ -70,6 +73,10 @@ export const STUDENT_NAV: NavSection[] = [
       { href: '/layiheler', label: 'shell.projects', icon: FolderKanban, isNew: true, auth: true },
       { href: '/yarislar', label: 'shell.contests', icon: Swords, isNew: true },
     ],
+  },
+  {
+    title: 'shell.secManage',
+    items: [{ href: '/admin', label: 'shell.adminPanel', icon: ShieldCheck, staffOnly: true }],
   },
 ];
 
@@ -172,6 +179,21 @@ export const ADMIN_NAV: NavSection[] = [
     ],
   },
 ];
+
+/** Rola görə görünən elementlər (boş bölmələr atılır) */
+export function visibleSections(
+  sections: NavSection[],
+  opts: { staff?: boolean; isAdmin?: boolean },
+): NavSection[] {
+  return sections
+    .map((sec) => ({
+      ...sec,
+      items: sec.items.filter(
+        (it) => (opts.isAdmin !== false || !it.adminOnly) && (!it.staffOnly || opts.staff),
+      ),
+    }))
+    .filter((sec) => sec.items.length > 0);
+}
 
 /** Verilən yol (və sorğu) üçün element aktivdirmi */
 export function isActive(

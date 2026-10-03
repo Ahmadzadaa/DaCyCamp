@@ -24,6 +24,19 @@ function parseSetCookie(sc: string): { name: string; value: string } | null {
   return { name: first.slice(0, eq).trim(), value: first.slice(eq + 1).trim() };
 }
 
+/** Giriş səhifəsindən hara yönləndirək: heyət → /admin, tələbə → /panel.
+ *  Token yalnız istiqamət seçmək üçün oxunur (yoxlama deyil — admin layout rolu özü yoxlayır) */
+function homeFor(token: string | undefined): string {
+  try {
+    const part = token?.split('.')[1];
+    if (!part) return '/panel';
+    const json = JSON.parse(atob(part.replace(/-/g, '+').replace(/_/g, '/'))) as { role?: string };
+    return json.role === 'ADMIN' || json.role === 'INSTRUCTOR' ? '/admin' : '/panel';
+  } catch {
+    return '/panel';
+  }
+}
+
 export async function middleware(req: NextRequest) {
   const { pathname, search } = req.nextUrl;
   const at = req.cookies.get(AT)?.value;
@@ -32,7 +45,7 @@ export async function middleware(req: NextRequest) {
   const isAuthPage = AUTH_PAGES.some((r) => r.test(pathname));
 
   if (at) {
-    if (isAuthPage) return NextResponse.redirect(new URL('/panel', req.url));
+    if (isAuthPage) return NextResponse.redirect(new URL(homeFor(at), req.url));
     return NextResponse.next();
   }
 
@@ -53,7 +66,7 @@ export async function middleware(req: NextRequest) {
         const headers = new Headers(req.headers);
         headers.set('cookie', `${AT}=${newAt ?? ''}; ${RT}=${newRt ?? rt}`);
         const res = isAuthPage
-          ? NextResponse.redirect(new URL('/panel', req.url))
+          ? NextResponse.redirect(new URL(homeFor(newAt), req.url))
           : NextResponse.next({ request: { headers } });
         for (const sc of setCookies) res.headers.append('set-cookie', sc);
         return res;

@@ -1,8 +1,8 @@
 'use client';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
-import { LockOpen, MoreHorizontal, RotateCcw, UserMinus, Users, X } from 'lucide-react';
-import type { AdminCourseStudentDto, AdminModuleNode } from '@dacy/shared';
+import { LockOpen, MoreHorizontal, RotateCcw, UserMinus, UserPlus, Users, X } from 'lucide-react';
+import type { AdminCourseStudentDto, AdminModuleNode, AdminUserDto, Paged } from '@dacy/shared';
 import { api } from '@/lib/api/client';
 import { errorMessage } from '@/lib/errors-i18n';
 import { t } from '@/lib/i18n';
@@ -106,142 +106,203 @@ export function CourseStudents({
         ))}
       </div>
     );
-  if (rows.length === 0) return <EmptyState icon={Users} title={t('courseAdmin.noStudents')} />;
+  const addForm = <AddStudentForm base={base} onAdded={load} />;
+  if (rows.length === 0)
+    return (
+      <div className="flex flex-col gap-4">
+        {addForm}
+        <EmptyState icon={Users} title={t('courseAdmin.noStudents')} />
+      </div>
+    );
 
   return (
-    <div className="tbl-wrap" data-testid="course-students">
-      <table className="tbl-admin">
-        <thead>
-          <tr>
-            <th>{t('admin.students')}</th>
-            <th>{t('courseAdmin.progress')}</th>
-            <th>{t('courseAdmin.lastActivity')}</th>
-            <th>{t('courseAdmin.enrolledAt')}</th>
-            <th className="text-right">{t('courseAdmin.actions')}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((s) => (
-            <tr key={s.userId} data-testid={`student-row-${s.email}`}>
-              <td>
-                <b className="block">{s.name}</b>
-                <span className="text-xs text-muted">{s.email}</span>
-                {s.unlockedStepIds.length ? (
-                  <div className="mt-1.5 flex flex-wrap gap-1">
-                    {s.unlockedStepIds.map((id) => (
-                      <span
-                        key={id}
-                        className="badge badge-muted inline-flex items-center gap-1"
-                        title={t('courseAdmin.manual')}
-                      >
-                        <LockOpen className="size-3" />
-                        {stepTitle.get(id) ?? id}
-                        <button
-                          type="button"
-                          className="ml-0.5 rounded hover:text-error"
-                          onClick={() => relock(s, id)}
-                          aria-label={`${t('courseAdmin.relock')}: ${stepTitle.get(id) ?? id}`}
-                          title={t('courseAdmin.relock')}
-                        >
-                          <X className="size-3" />
-                        </button>
-                      </span>
-                    ))}
-                  </div>
-                ) : null}
-              </td>
-              <td>
-                <div className="flex items-center gap-2">
-                  <div className="meter w-28" aria-hidden>
-                    <i style={{ width: `${s.percent}%` }} />
-                  </div>
-                  <span className="text-sm tabular-nums" data-testid="student-percent">
-                    {s.percent}%
-                  </span>
-                </div>
-                <span className="text-xs text-muted">
-                  {s.done} / {s.total}
-                </span>
-              </td>
-              <td className="text-muted">{fmtDate(s.lastActivityAt)}</td>
-              <td className="text-muted">{fmtDate(s.enrolledAt)}</td>
-              <td>
-                <div className="flex justify-end gap-1">
-                  <button
-                    type="button"
-                    className="b b-ghost b-sm"
-                    disabled={s.lockedStepIds.length === 0}
-                    onClick={() => {
-                      setError(null);
-                      setPending({ kind: 'unlock', s });
-                    }}
-                    title={
-                      s.lockedStepIds.length ? t('courseAdmin.unlock') : t('courseAdmin.noLocked')
-                    }
-                  >
-                    <LockOpen className="size-4" />
-                    {t('courseAdmin.unlock')}
-                  </button>
-                  <Dropdown>
-                    <DropdownTrigger
-                      className="iconbtn"
-                      aria-label={`${t('courseAdmin.more')}: ${s.email}`}
-                    >
-                      <MoreHorizontal className="size-4" />
-                    </DropdownTrigger>
-                    <DropdownContent>
-                      <DropdownItem
-                        onSelect={() => {
-                          setError(null);
-                          setPending({ kind: 'reset', s });
-                        }}
-                      >
-                        <RotateCcw className="size-4" /> {t('courseAdmin.reset')}
-                      </DropdownItem>
-                      <DropdownSeparator />
-                      <DropdownItem
-                        className="text-error"
-                        onSelect={() => {
-                          setError(null);
-                          setPending({ kind: 'remove', s });
-                        }}
-                      >
-                        <UserMinus className="size-4" /> {t('courseAdmin.remove')}
-                      </DropdownItem>
-                    </DropdownContent>
-                  </Dropdown>
-                </div>
-              </td>
+    <div className="flex flex-col gap-4">
+      {addForm}
+      <div className="tbl-wrap" data-testid="course-students">
+        <table className="tbl-admin">
+          <thead>
+            <tr>
+              <th>{t('admin.students')}</th>
+              <th>{t('courseAdmin.progress')}</th>
+              <th>{t('courseAdmin.lastActivity')}</th>
+              <th>{t('courseAdmin.enrolledAt')}</th>
+              <th className="text-right">{t('courseAdmin.actions')}</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {rows.map((s) => (
+              <tr key={s.userId} data-testid={`student-row-${s.email}`}>
+                <td>
+                  <b className="block">{s.name}</b>
+                  <span className="text-xs text-muted">{s.email}</span>
+                  {s.unlockedStepIds.length ? (
+                    <div className="mt-1.5 flex flex-wrap gap-1">
+                      {s.unlockedStepIds.map((id) => (
+                        <span
+                          key={id}
+                          className="badge badge-muted inline-flex items-center gap-1"
+                          title={t('courseAdmin.manual')}
+                        >
+                          <LockOpen className="size-3" />
+                          {stepTitle.get(id) ?? id}
+                          <button
+                            type="button"
+                            className="ml-0.5 rounded hover:text-error"
+                            onClick={() => relock(s, id)}
+                            aria-label={`${t('courseAdmin.relock')}: ${stepTitle.get(id) ?? id}`}
+                            title={t('courseAdmin.relock')}
+                          >
+                            <X className="size-3" />
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  ) : null}
+                </td>
+                <td>
+                  <div className="flex items-center gap-2">
+                    <div className="meter w-28" aria-hidden>
+                      <i style={{ width: `${s.percent}%` }} />
+                    </div>
+                    <span className="text-sm tabular-nums" data-testid="student-percent">
+                      {s.percent}%
+                    </span>
+                  </div>
+                  <span className="text-xs text-muted">
+                    {s.done} / {s.total}
+                  </span>
+                </td>
+                <td className="text-muted">{fmtDate(s.lastActivityAt)}</td>
+                <td className="text-muted">{fmtDate(s.enrolledAt)}</td>
+                <td>
+                  <div className="flex justify-end gap-1">
+                    <button
+                      type="button"
+                      className="b b-ghost b-sm"
+                      disabled={s.lockedStepIds.length === 0}
+                      onClick={() => {
+                        setError(null);
+                        setPending({ kind: 'unlock', s });
+                      }}
+                      title={
+                        s.lockedStepIds.length ? t('courseAdmin.unlock') : t('courseAdmin.noLocked')
+                      }
+                    >
+                      <LockOpen className="size-4" />
+                      {t('courseAdmin.unlock')}
+                    </button>
+                    <Dropdown>
+                      <DropdownTrigger
+                        className="iconbtn"
+                        aria-label={`${t('courseAdmin.more')}: ${s.email}`}
+                      >
+                        <MoreHorizontal className="size-4" />
+                      </DropdownTrigger>
+                      <DropdownContent>
+                        <DropdownItem
+                          onSelect={() => {
+                            setError(null);
+                            setPending({ kind: 'reset', s });
+                          }}
+                        >
+                          <RotateCcw className="size-4" /> {t('courseAdmin.reset')}
+                        </DropdownItem>
+                        <DropdownSeparator />
+                        <DropdownItem
+                          className="text-error"
+                          onSelect={() => {
+                            setError(null);
+                            setPending({ kind: 'remove', s });
+                          }}
+                        >
+                          <UserMinus className="size-4" /> {t('courseAdmin.remove')}
+                        </DropdownItem>
+                      </DropdownContent>
+                    </Dropdown>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
 
-      <ConfirmDialog
-        open={pending?.kind === 'reset' || pending?.kind === 'remove'}
-        onOpenChange={(o) => !o && setPending(null)}
-        title={
-          pending?.kind === 'reset'
-            ? t('courseAdmin.resetTitle', { name: pending.s.name })
-            : t('courseAdmin.removeTitle', { name: pending?.s.name ?? '' })
-        }
-        description={
-          pending?.kind === 'reset' ? t('courseAdmin.resetDesc') : t('courseAdmin.removeDesc')
-        }
-        confirmLabel={pending?.kind === 'reset' ? t('courseAdmin.reset') : t('courseAdmin.remove')}
-        onConfirm={() => confirmPending()}
-        error={error}
-      />
-      {pending?.kind === 'unlock' ? (
-        <UnlockDialog
-          student={pending.s}
-          stepTitle={stepTitle}
+        <ConfirmDialog
+          open={pending?.kind === 'reset' || pending?.kind === 'remove'}
+          onOpenChange={(o) => !o && setPending(null)}
+          title={
+            pending?.kind === 'reset'
+              ? t('courseAdmin.resetTitle', { name: pending.s.name })
+              : t('courseAdmin.removeTitle', { name: pending?.s.name ?? '' })
+          }
+          description={
+            pending?.kind === 'reset' ? t('courseAdmin.resetDesc') : t('courseAdmin.removeDesc')
+          }
+          confirmLabel={
+            pending?.kind === 'reset' ? t('courseAdmin.reset') : t('courseAdmin.remove')
+          }
+          onConfirm={() => confirmPending()}
           error={error}
-          onClose={() => setPending(null)}
-          onConfirm={(stepId) => confirmPending(stepId)}
         />
-      ) : null}
+        {pending?.kind === 'unlock' ? (
+          <UnlockDialog
+            student={pending.s}
+            stepTitle={stepTitle}
+            error={error}
+            onClose={() => setPending(null)}
+            onConfirm={(stepId) => confirmPending(stepId)}
+          />
+        ) : null}
+      </div>
     </div>
+  );
+}
+
+/** E-poçt ilə mövcud istifadəçini kursa yazır (qeydiyyatdan keçməyibsə — İstifadəçilər-də yaradın) */
+function AddStudentForm({ base, onAdded }: { base: string; onAdded: () => void }) {
+  const [email, setEmail] = useState('');
+  const [busy, setBusy] = useState(false);
+
+  async function add(e: React.FormEvent) {
+    e.preventDefault();
+    const q = email.trim().toLowerCase();
+    if (!q) return;
+    setBusy(true);
+    try {
+      const found = await api<Paged<AdminUserDto>>(
+        `/admin/users?${new URLSearchParams({ q, pageSize: '10' })}`,
+      );
+      const user = found.items.find((u) => u.email === q);
+      if (!user) {
+        toast.error(t('users.notFoundEmail'));
+        return;
+      }
+      await api(`${base}/${user.id}`, { method: 'POST' });
+      toast.success(t('users.enrolled'));
+      setEmail('');
+      onAdded();
+    } catch (err) {
+      toast.error(errorMessage(err));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <form onSubmit={add} className="flex flex-wrap items-center gap-2" data-testid="add-student">
+      <label className="srch max-w-[420px] flex-1">
+        <UserPlus aria-hidden className="size-[18px] shrink-0" />
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder={t('users.addByEmailPh')}
+          aria-label={t('users.addByEmail')}
+        />
+      </label>
+      <Button type="submit" size="sm" disabled={!email.trim()} loading={busy}>
+        {t('users.addByEmailBtn')}
+      </Button>
+    </form>
   );
 }
 
