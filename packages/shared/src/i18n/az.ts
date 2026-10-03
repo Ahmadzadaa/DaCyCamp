@@ -833,6 +833,11 @@ export const az = {
     hint: 'İpucu',
     result: 'Nəticə',
     console: 'Konsol',
+    stdinTab: 'Giriş',
+    stdinPlaceholder: 'input() üçün dəyərlər — hər sətirdə bir dəyər',
+    stdinHint:
+      'Kod input() çağıranda dəyərlər bu siyahıdan növbə ilə götürülür (Jupyter-də klaviaturadan yazdığın kimi).',
+    stdinEof: 'input() üçün dəyər qalmadı. Dəyərləri «Giriş» sekməsində hər sətirdə bir yazın.',
     chart: 'Qrafik',
     questions: 'Suallar',
     terminal: 'Terminal',

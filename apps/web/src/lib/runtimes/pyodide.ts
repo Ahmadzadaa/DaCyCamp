@@ -1,5 +1,6 @@
 'use client';
 import type { AttachmentView } from '@dacy/shared';
+import { t } from '@/lib/i18n';
 
 /** Pyodide: defolt CDN; oflayn/öz serveri üçün NEXT_PUBLIC_PYODIDE_URL (məs. /pyodide/ — yalnız nüvə, pandas üçün tam güzgü lazımdır) */
 export const PYODIDE_URL = (
@@ -12,6 +13,7 @@ interface PyodideLike {
   loadPackagesFromImports(code: string): Promise<unknown>;
   setStdout(opts: { write: (buf: Uint8Array) => number }): void;
   setStderr(opts: { write: (buf: Uint8Array) => number }): void;
+  setStdin(opts: { stdin: () => string | null }): void;
   globals: { get(name: string): unknown };
   toPy(v: unknown): unknown;
   FS: { writeFile(path: string, data: Uint8Array | string): void; mkdirTree?(p: string): void };
@@ -145,13 +147,27 @@ function sink() {
 /** Tələbə kodunu (və istəsə testləri) təmiz ad sahəsində işlədir */
 export async function runPython(
   code: string,
-  opts: { tests?: string; datasets?: AttachmentView[] } = {},
+  opts: { tests?: string; datasets?: AttachmentView[]; stdin?: string } = {},
 ): Promise<PyRunResult> {
   const py = await getPyodide();
   const out = sink();
   const err = sink();
   py.setStdout({ write: out.write });
   py.setStderr({ write: err.write });
+  // input(): «Giriş» sekməsindəki sətirlər növbə ilə; dəyər sorğudan sonra konsola yazılır (terminal kimi).
+  // Bitəndə EOF → EOFError (brauzerin prompt() pəncərəsi açılmır)
+  const lines = opts.stdin?.trim()
+    ? opts.stdin.replace(/\r/g, '').replace(/\n$/, '').split('\n')
+    : [];
+  const enc = new TextEncoder();
+  py.setStdin({
+    stdin: () => {
+      const v = lines.shift();
+      if (v === undefined) return null;
+      out.write(enc.encode(`${v}\n`));
+      return v;
+    },
+  });
   for (const d of opts.datasets ?? []) {
     if (!d.url) continue;
     const res = await fetch(d.url, { credentials: 'include' });
@@ -205,6 +221,7 @@ export async function runPython(
   } catch {
     images = [];
   }
+  if (error && /EOFError/.test(error)) error += `\n\n💡 ${t('ws.stdinEof')}`;
   return {
     stdout: out.text(),
     stderr: err.text(),

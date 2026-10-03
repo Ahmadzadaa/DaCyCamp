@@ -13,7 +13,7 @@ import { useCodeDraft } from './use-code-draft';
 import { useAfterComplete } from './use-complete';
 import type { PyRunResult } from '@/lib/runtimes/pyodide';
 
-type Tab = 'stdout' | 'stderr' | 'plots';
+type Tab = 'stdout' | 'stderr' | 'plots' | 'stdin';
 
 export function PythonWorkspace({ view, py }: { view: StepViewDto; py: PythonStudentView }) {
   const after = useAfterComplete(view.course.slug);
@@ -23,6 +23,8 @@ export function PythonWorkspace({ view, py }: { view: StepViewDto; py: PythonStu
   const [running, setRunning] = useState(false);
   const [result, setResult] = useState<PyRunResult | null>(null);
   const [tab, setTab] = useState<Tab>('stdout');
+  // input() üçün dəyərlər — hər sətir bir input() çağırışı (brauzerin prompt pəncərəsi əvəzinə)
+  const [stdin, setStdin] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [verdict, setVerdict] = useState<{ ok: boolean; text: string } | null>(null);
   const runtime = useRef<typeof import('@/lib/runtimes/pyodide') | null>(null);
@@ -57,6 +59,7 @@ export function PythonWorkspace({ view, py }: { view: StepViewDto; py: PythonStu
         const r = await runtime.current.runPython(code, {
           tests: withTests ? py.tests : undefined,
           datasets: py.dataset,
+          stdin,
         });
         setResult(r);
         setTab(r.error ? 'stderr' : r.images.length ? 'plots' : 'stdout');
@@ -77,7 +80,7 @@ export function PythonWorkspace({ view, py }: { view: StepViewDto; py: PythonStu
         setRunning(false);
       }
     },
-    [code, py.tests, py.dataset, status],
+    [code, py.tests, py.dataset, status, stdin],
   );
 
   async function submit() {
@@ -167,6 +170,7 @@ export function PythonWorkspace({ view, py }: { view: StepViewDto; py: PythonStu
           {tabBtn('stdout', t('ws.console'))}
           {tabBtn('stderr', t('ws.stderr'))}
           {tabBtn('plots', t('ws.chart'))}
+          {tabBtn('stdin', stdin.trim() ? `${t('ws.stdinTab')} •` : t('ws.stdinTab'))}
           {result ? (
             <span className="ml-auto">
               {result.ms} ms
@@ -176,7 +180,21 @@ export function PythonWorkspace({ view, py }: { view: StepViewDto; py: PythonStu
             </span>
           ) : null}
         </div>
-        {tab === 'stdout' ? (
+        {tab === 'stdin' ? (
+          <div className="flex flex-col gap-1.5 p-3">
+            <textarea
+              value={stdin}
+              onChange={(e) => setStdin(e.target.value)}
+              rows={4}
+              spellCheck={false}
+              placeholder={t('ws.stdinPlaceholder')}
+              aria-label={t('ws.stdinTab')}
+              data-testid="py-stdin"
+              className="w-full resize-y rounded-lg border border-navy-line bg-navy px-3 py-2 font-mono text-[13px] text-on-dark outline-none placeholder:text-on-dark-muted focus:border-brand"
+            />
+            <p className="text-xs text-on-dark-muted">{t('ws.stdinHint')}</p>
+          </div>
+        ) : tab === 'stdout' ? (
           <pre>{result ? result.stdout || t('ws.noOutput') : t('ws.pythonCdnNote')}</pre>
         ) : tab === 'stderr' ? (
           <pre className={result?.error ? 'text-error' : undefined}>

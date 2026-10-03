@@ -127,3 +127,30 @@ test('Python runtime: sonu yeni sətirsiz print görünür, sonsuz dövr dayand�
     timeout: 30_000,
   });
 });
+
+test('input(): brauzer pəncərəsi açılmır — dəyərlər «Giriş» sekməsindən, boşdursa aydın ipucu', async ({
+  page,
+}) => {
+  const dialogs: string[] = [];
+  page.on('dialog', (d) => {
+    dialogs.push(d.message());
+    void d.dismiss();
+  });
+  await login(page, ADMIN);
+  await page.goto(`/kurs/${SLUG}/g1-giris/isinma?onizle=1`);
+  await waitRuntime(page);
+  await setEditor(page, 'a = int(input("a: "))\nb = int(input("b: "))\nprint(a + b)');
+
+  // Giriş boş → EOFError + ipucu, prompt() yoxdur
+  await page.getByRole('button', { name: 'İşə sal' }).click();
+  await expect(page.getByText(/input\(\) üçün dəyər qalmadı/)).toBeVisible({ timeout: 60_000 });
+
+  await page.getByRole('tab', { name: /Giriş/ }).click();
+  await page.getByTestId('py-stdin').fill('5\n7');
+  await page.getByRole('button', { name: 'İşə sal' }).click();
+  await page.getByRole('tab', { name: 'Konsol' }).click();
+  await expect(page.locator('[data-testid="py-console"] pre')).toHaveText('a: 5\nb: 7\n12', {
+    timeout: 60_000,
+  });
+  expect(dialogs).toEqual([]);
+});

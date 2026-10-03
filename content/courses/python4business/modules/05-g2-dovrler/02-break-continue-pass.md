@@ -78,4 +78,6 @@ for i in range(1, 11):
 eded = int(input("Ədəd daxil edin: "))
 ```
 
-Bu platformada klaviatura girişi olmadığı üçün `input()` istifadə edən tapşırıqlarda kodun əvvəlində kiçik bir hazır hissə var: `input()` dəyərləri `girisler` siyahısından növbə ilə götürür. Sən adi Jupyter-dəki kimi `input()` yazırsan — sadəcə «istifadəçi» əvəzinə dəyərləri siyahı verir.
+Bu platformada `input()`-un dəyərlərini konsolun **«Giriş»** sekməsinə yazırsan — hər sətirdə bir dəyər. Kod `input()` çağıranda dəyərlər oradan növbə ilə götürülür və konsolda Jupyter-dəki kimi görünür.
+
+Yoxlanılan tapşırıqlarda isə dəyərlər kodun əvvəlindəki `girisler` siyahısından gəlir — belə ki, testlər hər dəfə eyni girişlərlə yoxlaya bilsin. Sən yenə adi Jupyter-dəki kimi `input()` yazırsan.

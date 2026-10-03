@@ -41,7 +41,7 @@ Hər Python addımı yoxlanılıb: nümunə həll testlərdən keçir, boş star
 ## Boşluqlar — mənbədə olmayan və ya təsdiq tələb edən
 
 1. **Yaş qrupları (G2 #4):** sərhədlər verilməyib. Qəbul etdim: 0–12 uşaq, 13–17 yeniyetmə, 18+ yetkin. Başqa sərhəd lazımdırsa, dəyişək.
-2. **`input()` tapşırıqları (G2 #7, 10, 11, 13, 15):** brauzerdə klaviatura girişi yoxdur. Starter kodda kiçik əvəzedici var: `input()` dəyərləri `girisler` siyahısından götürür, tələbə isə Jupyter-dəki kimi `input()` yazır.
+2. **`input()` tapşırıqları (G2 #7, 10, 11, 13, 15):** brauzerdə klaviatura pəncərəsi yoxdur. Sərbəst kodda dəyərlər konsolun **«Giriş»** sekməsindən götürülür (hər sətir bir `input()`). Yoxlanılan tapşırıqlarda testlər sabit girişlə işləməlidir, ona görə starter kodda `input()` dəyərləri `girisler` siyahısından götürür; tələbə Jupyter-dəki kimi `input()` yazır.
 3. **Modul tapşırığı (G2 #3):** brauzerdə ayrıca `.py` faylı yaratmaq üçün redaktor yoxdur. Modulun kodu sətirdən fayla yazılır (Jupyter-dəki `%%writefile` kimi) və `import hesablama` ilə daxil edilir.
 4. **Şəkil-slaydlar (G1 s.8–10, G2 s.17, 19–20):** mətn yox idi. Şəkillər paketə əlavə olundu və izah mətni yazıldı. Colab kodu şəkildən mətnə köçürüldü.
 5. **Tapşırıqlarda dəyişən adları və gözlənilən nəticə yox idi:** avtomatik yoxlama üçün hər bəndə dəyişən adı verildi (`tam`, `en_boyuk`, `sozler` …). G1 #5, 6, 8 eyni `numbers` adını iki fərqli siyahı üçün istifadə edirdi, ona görə ikincisi `numbers2` oldu. G1 #20-dəki siyahıya `qarisiq` adı verildi.
