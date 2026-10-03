@@ -19,7 +19,8 @@ test('qeydiyyat → kataloq → kurs → yazılma → nəzəri → quiz → irə
   await page.getByRole('link', { name: 'NÜMUNƏ — silinə bilər' }).first().click();
   await expect(page).toHaveURL(/\/kurs\/numune$/);
   await page.getByRole('button', { name: 'Kursa başla' }).click();
-  await expect(page).toHaveURL(/\/kurs\/numune\/numune-fesil\/nezeri/);
+  // dev serverdə iş sahəsi marşrutu soyuq kompilyasiya olunur (6–10 s) — digər keçidlər kimi 30 s
+  await expect(page).toHaveURL(/\/kurs\/numune\/numune-fesil\/nezeri/, { timeout: 30_000 });
 
   // nəzəri → "Oxudum, davam et" → quiz
   await page.getByRole('button', { name: /Oxudum, davam et/ }).click();

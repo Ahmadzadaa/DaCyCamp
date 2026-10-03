@@ -73,7 +73,7 @@ export default async function ProjectsPage() {
                     const locked = it.state === 'locked';
                     const card = (
                       <>
-                        <span className="kicker" style={{ color: it.trackColor }}>
+                        <span className="eyebrow" style={{ color: it.trackColor }}>
                           {it.pathTitle}
                         </span>
                         <b className="kan-title">{it.title}</b>

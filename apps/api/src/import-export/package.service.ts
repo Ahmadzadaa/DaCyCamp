@@ -78,6 +78,8 @@ interface ImportPlan {
   coursePublishedExplicit: boolean;
   trackId: string | null;
   existingCourseId: string | null;
+  /** course.yaml-da `topics` verilibsə — bazada tapılan mövzular (verilməyibsə null: dəyişmir) */
+  topicIds: string[] | null;
   modules: PlannedModule[];
   assets: PlannedAsset[];
   path: PlannedPath | null;
@@ -181,6 +183,7 @@ export class PackageService {
                 coursePublishedExplicit: false,
                 trackId: null,
                 existingCourseId: null,
+                topicIds: null,
                 modules: [],
                 assets: [],
                 path,
@@ -397,6 +400,21 @@ export class PackageService {
         else for (const s of m.steps) if (!ks.has(s.key)) willUnpublish.push(`${m.key}/${s.key}`);
       }
     }
+    let topicIds: string[] | null = null;
+    if (course.topics) {
+      const found = await this.prisma.topic.findMany({
+        where: { slug: { in: course.topics } },
+        select: { id: true, slug: true },
+      });
+      topicIds = found.map((x) => x.id);
+      const known = new Set(found.map((x) => x.slug));
+      for (const tslug of course.topics)
+        if (!known.has(tslug))
+          warnings.push({
+            file: 'course.yaml',
+            message: `Mövzu tapılmadı: «${tslug}» — əvvəlcə admin paneldə yaradın (idxalda nəzərə alınmır)`,
+          });
+    }
     const report: ImportReport = {
       ok: errors.length === 0,
       course: { slug: course.slug, title: course.title, track: course.track, exists: !!existing },
@@ -426,6 +444,7 @@ export class PackageService {
             coursePublishedExplicit,
             trackId: track.id,
             existingCourseId: existing?.id ?? null,
+            topicIds,
             modules,
             assets,
             path: plannedPath,
@@ -565,6 +584,7 @@ export class PackageService {
                 sequential: c.sequential,
                 estimatedHours: c.estimated_hours ?? null,
                 importedAt: new Date(),
+                ...(plan.topicIds ? { topics: { set: plan.topicIds.map((id) => ({ id })) } } : {}),
                 ...(plan.coursePublishedExplicit
                   ? {
                       isPublished: c.published,
@@ -593,6 +613,9 @@ export class PackageService {
                 publishedAt: c.published ? new Date() : null,
                 importedAt: new Date(),
                 createdById: userId,
+                ...(plan.topicIds?.length
+                  ? { topics: { connect: plan.topicIds.map((id) => ({ id })) } }
+                  : {}),
               },
             });
         // fayllar
@@ -844,6 +867,7 @@ export class PackageService {
       include: {
         track: true,
         cover: true,
+        topics: { orderBy: { order: 'asc' }, select: { slug: true } },
         modules: {
           orderBy: { order: 'asc' },
           include: {
@@ -870,6 +894,7 @@ export class PackageService {
       sequential: course.sequential,
       ...(course.estimatedHours != null ? { estimated_hours: course.estimatedHours } : {}),
       published: course.isPublished,
+      ...(course.topics.length ? { topics: course.topics.map((x) => x.slug) } : {}),
     };
     add('course.yaml', yaml.dump(courseYaml, { lineWidth: 120, noRefs: true }));
     const pad = (n: number) => String(n).padStart(2, '0');

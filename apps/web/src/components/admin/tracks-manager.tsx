@@ -31,6 +31,7 @@ import { Switch } from '@/components/ui/switch';
 import { TrackBadge } from '@/components/app/track-badge';
 import { ConfirmDialog } from './confirm-dialog';
 import { useAdmin } from './admin-context';
+import { PageHeader } from '@/components/admin/page-header';
 
 type Draft = { title: string; slug: string; color: string; icon: string; description: string };
 const emptyDraft = (): Draft => ({
@@ -130,15 +131,19 @@ export function TracksManager({ initial }: { initial: TrackDto[] }) {
   const d = editing?.draft;
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between gap-3">
-        <h1 className="text-2xl">{t('admin.tracks')}</h1>
+      <PageHeader title={t('admin.tracks')} subtitle={t('admin.tracksDesc')}>
         <Button type="button" onClick={() => setEditing({ id: null, draft: emptyDraft() })}>
           <Plus className="size-4" />
           {t('admin.newTrack')}
         </Button>
-      </div>
+      </PageHeader>
       <div className="card overflow-hidden">
-        <DndContext id="tracks-dnd" sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+        <DndContext
+          id="tracks-dnd"
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={onDragEnd}
+        >
           <SortableContext items={tracks.map((x) => x.id)} strategy={verticalListSortingStrategy}>
             <ul className="m-0 list-none p-0">
               {tracks.map((tr) => (

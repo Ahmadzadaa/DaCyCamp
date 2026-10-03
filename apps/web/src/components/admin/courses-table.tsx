@@ -20,9 +20,12 @@ import {
 } from 'lucide-react';
 import {
   COURSE_TRASH_DAYS,
+  LEVELS,
   type AdminCourseDto,
   type AdminCourseListDto,
   type CourseStatus,
+  type Level,
+  type TopicDto,
   type TrackDto,
 } from '@dacy/shared';
 import { t } from '@/lib/i18n';
@@ -57,15 +60,21 @@ const TABS: Array<{ key: CourseStatus | 'all'; adminOnly?: boolean }> = [
 export function CoursesTable({
   data,
   tracks,
+  topics = [],
   track,
   q,
   status,
+  topic,
+  level,
 }: {
   data: AdminCourseListDto;
   tracks: TrackDto[];
+  topics?: TopicDto[];
   track?: string;
   q?: string;
   status?: CourseStatus;
+  topic?: string;
+  level?: Level;
 }) {
   const { isAdmin } = useAdmin();
   const router = useRouter();
@@ -74,12 +83,20 @@ export function CoursesTable({
   const [query, setQuery] = useState(q ?? '');
   const trash = status === 'deleted';
 
-  const href = (patch: { istiqamet?: string; q?: string; status?: string }) => {
+  const href = (patch: {
+    istiqamet?: string;
+    q?: string;
+    status?: string;
+    movzu?: string;
+    seviyye?: string;
+  }) => {
     const p = new URLSearchParams();
-    const merged = { istiqamet: track, q, status, ...patch };
+    const merged = { istiqamet: track, q, status, movzu: topic, seviyye: level, ...patch };
     if (merged.istiqamet) p.set('istiqamet', merged.istiqamet);
     if (merged.q) p.set('q', merged.q);
     if (merged.status) p.set('status', merged.status);
+    if (merged.movzu) p.set('movzu', merged.movzu);
+    if (merged.seviyye) p.set('seviyye', merged.seviyye);
     const s = p.toString();
     return `/admin/kurslar${s ? `?${s}` : ''}`;
   };
@@ -132,7 +149,7 @@ export function CoursesTable({
 
       <div className="tb !mt-0">
         {!trash ? (
-          <nav className="chips" aria-label={t('common.track')}>
+          <nav className="chips scroll-m" aria-label={t('common.track')}>
             <Link href={href({ istiqamet: undefined })} className={cn('chip', !track && 'on')}>
               {t('common.all')}
             </Link>
@@ -149,23 +166,57 @@ export function CoursesTable({
             ))}
           </nav>
         ) : null}
-        <form
-          className="srch"
-          role="search"
-          onSubmit={(e) => {
-            e.preventDefault();
-            router.push(href({ q: query.trim() || undefined }));
-          }}
-        >
-          <Search aria-hidden className="size-[18px] shrink-0" />
-          <input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder={t('courseAdmin.searchCourses')}
-            aria-label={t('courseAdmin.searchCourses')}
-            type="search"
-          />
-        </form>
+        <div className="ml-auto flex flex-wrap items-center justify-end gap-2 max-md:ml-0 max-md:justify-start">
+          {!trash ? (
+            <>
+              <select
+                className="sel"
+                value={topic ?? ''}
+                onChange={(e) => router.push(href({ movzu: e.target.value || undefined }))}
+                aria-label={t('topics.title')}
+                data-testid="filter-topic"
+              >
+                <option value="">{t('topics.filterAll')}</option>
+                {topics.map((tp) => (
+                  <option key={tp.id} value={tp.slug}>
+                    {tp.title}
+                  </option>
+                ))}
+              </select>
+              <select
+                className="sel"
+                value={level ?? ''}
+                onChange={(e) => router.push(href({ seviyye: e.target.value || undefined }))}
+                aria-label={t('topics.level')}
+                data-testid="filter-level"
+              >
+                <option value="">{t('topics.levelAll')}</option>
+                {LEVELS.map((lv) => (
+                  <option key={lv} value={lv}>
+                    {t(`level.${lv}`)}
+                  </option>
+                ))}
+              </select>
+            </>
+          ) : null}
+          <form
+            className="srch"
+            role="search"
+            onSubmit={(e) => {
+              e.preventDefault();
+              router.push(href({ q: query.trim() || undefined }));
+            }}
+          >
+            <Search aria-hidden className="size-[18px] shrink-0" />
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder={t('courseAdmin.searchCourses')}
+              aria-label={t('courseAdmin.searchCourses')}
+              type="search"
+            />
+          </form>
+        </div>
       </div>
 
       {data.courses.length === 0 ? (
@@ -210,7 +261,14 @@ export function CoursesTable({
                         {c.title}
                       </Link>
                     )}
-                    <div className="slug">{c.slug}</div>
+                    <div className="slug flex flex-wrap items-center gap-x-2">
+                      {c.slug}
+                      {c.topics.map((tp) => (
+                        <span key={tp.id} className="tdot" style={{ ['--c' as string]: tp.color }}>
+                          {tp.title}
+                        </span>
+                      ))}
+                    </div>
                   </td>
                   <td>
                     <TrackBadge color={c.track.color}>{c.track.title}</TrackBadge>
@@ -231,7 +289,9 @@ export function CoursesTable({
                         </div>
                       </>
                     ) : (
-                      <span title={fmtDate(c.updatedAt, true)}>{fmtAgo(c.updatedAt)}</span>
+                      <span title={fmtDate(c.updatedAt, true)} suppressHydrationWarning>
+                        {fmtAgo(c.updatedAt)}
+                      </span>
                     )}
                   </td>
                   <td>

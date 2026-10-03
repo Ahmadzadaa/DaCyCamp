@@ -10,6 +10,7 @@ import { t } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { fmtDate } from './format';
+import { PageHeader } from '@/components/admin/page-header';
 
 export function ImportPanel() {
   const input = useRef<HTMLInputElement>(null);
@@ -55,13 +56,16 @@ export function ImportPanel() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div>
-        <h1 className="text-2xl">{t('admin.importTitle')}</h1>
-        <p className="mt-1 text-sm text-muted">
-          {t('admin.importDesc')} <span className="font-mono text-xs">docs/content-package.md</span>{' '}
-          — {t('admin.importFormat')}.
-        </p>
-      </div>
+      <PageHeader
+        title={t('admin.importTitle')}
+        subtitle={
+          <>
+            {t('admin.importDesc')}{' '}
+            <span className="font-mono text-sm">docs/content-package.md</span> —{' '}
+            {t('admin.importFormat')}.
+          </>
+        }
+      />
       <div
         className={cn('drop', over && 'over')}
         onDragOver={(e) => {
@@ -205,7 +209,7 @@ export function ImportPanel() {
       ) : null}
 
       {history.length ? (
-        <div className="card overflow-x-auto">
+        <div className="tbl-wrap">
           <table className="tbl-admin">
             <thead>
               <tr>
@@ -225,13 +229,14 @@ export function ImportPanel() {
                       className={cn(
                         'badge',
                         h.status === 'APPLIED'
-                          ? 'bg-ok/20 text-[#159b74]'
+                          ? 'badge-ok'
                           : h.status === 'FAILED'
-                            ? 'bg-error/15 text-error'
+                            ? 'badge-err'
                             : 'badge-muted',
                       )}
                     >
-                      {h.status}
+                      <span className="bdot" aria-hidden />
+                      {t(`admin.importStatus.${h.status as 'APPLIED' | 'FAILED' | 'VALIDATED'}`)}
                     </span>
                   </td>
                   <td className="text-muted">{fmtDate(h.createdAt, true)}</td>

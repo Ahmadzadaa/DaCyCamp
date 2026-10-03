@@ -12,6 +12,7 @@ import { Field } from '@/components/ui/field';
 import { ConfirmDialog } from './confirm-dialog';
 import { uploadAsset, upsertAsset } from './upload';
 import { fmtDate } from './format';
+import { PageHeader } from '@/components/admin/page-header';
 
 const FOLDERS: Array<{ dir: string; kind: AssetKind; label: string }> = [
   { dir: 'datasets', kind: 'DATASET', label: 'datasets/ (csv, parquet, sql)' },
@@ -118,7 +119,9 @@ export function AssetsLibrary({
 
   return (
     <div className="flex flex-col gap-4">
-      {fixedCourseId ? null : <h1 className="text-2xl">{t('admin.files')}</h1>}
+      {fixedCourseId ? null : (
+        <PageHeader title={t('admin.files')} subtitle={t('admin.filesDesc')} />
+      )}
       <div className="box grid gap-4 md:grid-cols-3">
         {fixedCourseId ? null : (
           <Field label={t('admin.chooseCourse')}>
@@ -165,7 +168,7 @@ export function AssetsLibrary({
           </Button>
         </div>
       </div>
-      <div className="card overflow-x-auto">
+      <div className="tbl-wrap">
         <table className="tbl-admin">
           <thead>
             <tr>

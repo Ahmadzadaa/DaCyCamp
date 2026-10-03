@@ -1,6 +1,5 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import {
   Archive,
   ArchiveRestore,
@@ -51,7 +50,6 @@ export function CourseHeader({
   tab: CourseTab;
   onTab: (t: CourseTab) => void;
 }) {
-  const router = useRouter();
   const { isAdmin } = useAdmin();
   const [stats, setStats] = useState<AdminCourseStatsDto | null>(null);
   const [del, setDel] = useState<'soft' | 'purge' | null>(null);
@@ -172,7 +170,9 @@ export function CourseHeader({
               onClick={() => actions.setPublished(course, !course.isPublished)}
             >
               {course.isPublished ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-              {course.isPublished ? t('courseAdmin.unpublishCourse') : t('courseAdmin.publishCourse')}
+              {course.isPublished
+                ? t('courseAdmin.unpublishCourse')
+                : t('courseAdmin.publishCourse')}
             </Button>
             {isAdmin ? (
               <Button
@@ -216,13 +216,8 @@ export function CourseHeader({
         open={!!del}
         onOpenChange={(o) => !o && setDel(null)}
         onConfirm={async (c, typed) => {
-          if (del === 'purge') {
-            await actions.purge(c, typed);
-            router.push('/admin/kurslar?status=deleted');
-          } else {
-            await actions.softDelete(c, typed);
-            router.push('/admin/kurslar');
-          }
+          if (del === 'purge') await actions.purge(c, typed, '/admin/kurslar?status=deleted');
+          else await actions.softDelete(c, typed, '/admin/kurslar');
         }}
       />
     </div>

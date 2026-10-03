@@ -128,18 +128,27 @@ export class ProgressService {
       where: { userId_courseId: { userId, courseId: step.module.courseId } },
     });
     if (!enrollment) throw forbidden('NOT_ENROLLED', 'Əvvəlcə kursa yazılın');
-    await this.prisma.$transaction([
-      this.prisma.stepProgress.upsert({
-        where: { userId_stepId: { userId, stepId } },
-        create: { userId, stepId },
-        update: {},
-      }),
-      this.prisma.enrollment.update({
-        where: { id: enrollment.id },
-        data: { lastStepId: stepId, lastActivityAt: new Date() },
-      }),
-      this.prisma.user.update({ where: { id: userId }, data: { lastActiveAt: new Date() } }),
-    ]);
+    const run = () =>
+      this.prisma.$transaction([
+        this.prisma.stepProgress.upsert({
+          where: { userId_stepId: { userId, stepId } },
+          create: { userId, stepId },
+          update: {},
+        }),
+        this.prisma.enrollment.update({
+          where: { id: enrollment.id },
+          data: { lastStepId: stepId, lastActivityAt: new Date() },
+        }),
+        this.prisma.user.update({ where: { id: userId }, data: { lastActiveAt: new Date() } }),
+      ]);
+    try {
+      await run();
+    } catch (e) {
+      // eyni anda iki açılış (iki tab, dev-də StrictMode): ikisi də INSERT edir → unikal pozuntu.
+      // Sətir artıq var — təkrar cəhd yeniləmə yoluna düşür.
+      if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002') await run();
+      else throw e;
+    }
     return { ok: true };
   }
 

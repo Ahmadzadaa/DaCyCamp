@@ -155,6 +155,21 @@ export default async function CoursePage({ params, searchParams }: Props) {
                 : ''}{' '}
               · {t('course.certificate')}
             </p>
+            {outline.topics?.length ? (
+              <div className="mt-3 flex flex-wrap gap-2" data-testid="course-topics">
+                {outline.topics.map((tp) => (
+                  <Link
+                    key={tp.id}
+                    href={`/kurslar?movzu=${tp.slug}`}
+                    className="tchip"
+                    style={{ ['--c' as string]: tp.color }}
+                  >
+                    <i aria-hidden />
+                    {tp.title}
+                  </Link>
+                ))}
+              </div>
+            ) : null}
           </div>
           {pathRefs.length ? (
             <div className="box" data-testid="course-paths">

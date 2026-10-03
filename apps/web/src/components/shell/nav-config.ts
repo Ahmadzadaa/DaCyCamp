@@ -12,6 +12,7 @@ import {
   Route,
   SquareTerminal,
   Swords,
+  Tags,
   Trash2,
   Trophy,
   Upload,
@@ -138,6 +139,7 @@ export const ADMIN_NAV: NavSection[] = [
     title: 'shell.secContent',
     items: [
       { href: '/admin/kurslar', label: 'shell.courses', icon: BookOpen },
+      { href: '/admin/movzular', label: 'shell.topics', icon: Tags },
       { href: '/admin/istiqametler', label: 'shell.tracks', icon: Layers },
       { href: '/admin/yollar', label: 'shell.paths', icon: Route },
       { href: '/admin/fayllar', label: 'shell.files', icon: Folder },

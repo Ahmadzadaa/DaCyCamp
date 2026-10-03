@@ -27,9 +27,12 @@ export function useCourseActions(onChange?: (c: AdminCourseDto | null) => void) 
   const router = useRouter();
   const [busy, setBusy] = useState<string | null>(null);
 
-  const done = (c: AdminCourseDto | null) => {
+  /** `next` verilibsə ora keçir, yoxsa səhifəni yeniləyir — refresh + push ardıcıl çağırılanda
+   *  gedən refresh keçidi «udurdu» (silinmiş kursun səhifəsində qalırdıq) */
+  const done = (c: AdminCourseDto | null, next?: string) => {
     if (onChange) onChange(c);
-    router.refresh();
+    if (next) router.push(next);
+    else router.refresh();
   };
 
   async function run<T>(key: string, fn: () => Promise<T>): Promise<T | null> {
@@ -106,7 +109,7 @@ export function useCourseActions(onChange?: (c: AdminCourseDto | null) => void) 
   }
 
   /** Dialoq təsdiqləyəndən sonra çağırılır; xətanı dialoqa qaytarır */
-  async function softDelete(c: CourseRef, confirm: string) {
+  async function softDelete(c: CourseRef, confirm: string, next?: string) {
     const r = await api<AdminCourseDto>(
       `/admin/courses/${c.id}?confirm=${encodeURIComponent(confirm)}`,
       { method: 'DELETE' },
@@ -117,10 +120,10 @@ export function useCourseActions(onChange?: (c: AdminCourseDto | null) => void) 
       duration: 10_000,
       action: { label: t('courseAdmin.undo'), onClick: () => void restore(r) },
     });
-    done(r);
+    done(r, next);
   }
 
-  async function purge(c: CourseRef, confirm: string) {
+  async function purge(c: CourseRef, confirm: string, next?: string) {
     await api(`/admin/courses/${c.id}/permanent?confirm=${encodeURIComponent(confirm)}`, {
       method: 'DELETE',
     });
@@ -129,7 +132,7 @@ export function useCourseActions(onChange?: (c: AdminCourseDto | null) => void) 
       className: 'toast-danger',
       description: t('courseAdmin.purgedHint'),
     });
-    done(null);
+    done(null, next);
   }
 
   return { busy, setPublished, setArchived, copy, restore, softDelete, purge };

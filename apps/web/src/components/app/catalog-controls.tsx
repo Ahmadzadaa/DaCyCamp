@@ -83,7 +83,7 @@ export interface ChipOpt {
   label: string;
 }
 
-/** «+N» çipi: sığmayan filtrlər (İrəli səviyyəsi, kurs növləri) */
+/** «+N» çipi: sığmayan filtrlər (kurs növləri) */
 export function MoreChips({ options }: { options: ChipOpt[] }) {
   const { go, sp } = useParamNav();
   if (!options.length) return null;
@@ -117,8 +117,11 @@ export function MoreChips({ options }: { options: ChipOpt[] }) {
 }
 
 export interface TopicOpt {
+  /** URL parametri: admin mövzusu (`movzu`) və ya praktika növü (`praktika`) */
+  key: 'movzu' | 'praktika';
   value: string;
   label: string;
+  color?: string;
   count: number;
 }
 
@@ -145,17 +148,25 @@ const STATUSES: Array<{ value: string; label: TKey }> = [
 export function CatalogToolbar({
   count,
   topics,
+  topic,
+  practice,
   authed,
 }: {
   count: number;
   topics: TopicOpt[];
+  topic?: string;
+  practice?: string;
   authed: boolean;
 }) {
   const { go, sp, pending } = useParamNav();
   const [q, setQ] = useState(sp.get('q') ?? '');
   const urlQ = sp.get('q') ?? '';
-  const topic = sp.get('movzu') ?? '';
-  const topicLabel = topics.find((x) => x.value === topic)?.label;
+  const picked = topics.filter(
+    (x) =>
+      (x.key === 'movzu' && x.value === topic) || (x.key === 'praktika' && x.value === practice),
+  );
+  const own = topics.filter((x) => x.key === 'movzu');
+  const kinds = topics.filter((x) => x.key === 'praktika');
 
   // yazdıqca (300ms gecikmə ilə) URL yenilənir — yalnız dəyər URL-dəkindən fərqlidirsə
   // (əks halda mount-dakı effekt eyni URL-ə replace edib istifadəçinin kliklədiyi linki ləğv edirdi)
@@ -168,6 +179,37 @@ export function CatalogToolbar({
   useEffect(() => setQ(urlQ), [urlQ]);
 
   const extra = ['sirala', 'muddet', 'status'].filter((k) => sp.get(k)).length;
+
+  const item = (o: TopicOpt) => {
+    const on = o.key === 'movzu' ? o.value === topic : o.value === practice;
+    return (
+      <Menu.CheckboxItem
+        key={`${o.key}:${o.value}`}
+        className="menu-item"
+        checked={on}
+        disabled={!o.count && !on}
+        // köhnə ?movzu=sql linkini də təmizləyir
+        onCheckedChange={() =>
+          go(
+            o.key === 'movzu'
+              ? { movzu: on ? undefined : o.value }
+              : { praktika: on ? undefined : o.value, ...(topic ? {} : { movzu: undefined }) },
+          )
+        }
+      >
+        {o.color ? (
+          <span className="cdot" style={{ ['--c' as string]: o.color }} aria-hidden />
+        ) : null}
+        {o.label}
+        <span className="ml-auto text-xs text-muted">{o.count}</span>
+        <span className="grid w-4 place-items-center">
+          <Menu.ItemIndicator>
+            <Check className="size-4 text-brand" />
+          </Menu.ItemIndicator>
+        </span>
+      </Menu.CheckboxItem>
+    );
+  };
 
   return (
     <div className={cn('tb', pending && 'opacity-70')}>
@@ -195,35 +237,37 @@ export function CatalogToolbar({
         ) : null}
       </label>
       <Menu.Root>
-        <Menu.Trigger className={cn('sel', topic && 'on')}>
-          {topicLabel ?? t('catalog.topic')}
+        <Menu.Trigger className={cn('sel', picked.length && 'on')} data-testid="catalog-topic">
+          {picked[0]?.color ? (
+            <span className="cdot" style={{ ['--c' as string]: picked[0].color }} aria-hidden />
+          ) : null}
+          {picked.length ? picked.map((x) => x.label).join(' · ') : t('catalog.topic')}
           <ChevronDown aria-hidden />
         </Menu.Trigger>
         <Menu.Portal>
-          <Menu.Content className="pop menu-pop min-w-[230px]" sideOffset={8} align="end">
-            <Menu.RadioGroup value={topic} onValueChange={(v) => go({ movzu: v || undefined })}>
-              <Menu.RadioItem value="" className="menu-item">
-                {t('catalog.topicAll')}
-                <Menu.ItemIndicator className="ml-auto">
-                  <Check className="size-4 text-brand" />
-                </Menu.ItemIndicator>
-              </Menu.RadioItem>
-              <Menu.Separator className="my-1 h-px bg-line" />
-              {topics.map((o) => (
-                <Menu.RadioItem
-                  key={o.value}
-                  value={o.value}
-                  className="menu-item"
-                  disabled={!o.count && topic !== o.value}
-                >
-                  {o.label}
-                  <span className="ml-auto text-xs text-muted">{o.count}</span>
-                  <Menu.ItemIndicator>
-                    <Check className="size-4 text-brand" />
-                  </Menu.ItemIndicator>
-                </Menu.RadioItem>
-              ))}
-            </Menu.RadioGroup>
+          <Menu.Content
+            className="pop menu-pop max-h-[min(70vh,460px)] min-w-[250px] overflow-y-auto"
+            sideOffset={8}
+            align="end"
+          >
+            <Menu.Item
+              className="menu-item"
+              disabled={!picked.length}
+              onSelect={() => go({ movzu: undefined, praktika: undefined })}
+            >
+              {t('catalog.topicAll')}
+              {!picked.length ? <Check className="ml-auto size-4 text-brand" /> : null}
+            </Menu.Item>
+            {own.length ? (
+              <>
+                <Menu.Separator className="menu-sep" />
+                <Menu.Label className="menu-label">{t('topics.groupTopics')}</Menu.Label>
+                {own.map(item)}
+              </>
+            ) : null}
+            <Menu.Separator className="menu-sep" />
+            <Menu.Label className="menu-label">{t('topics.groupPractice')}</Menu.Label>
+            {kinds.map(item)}
           </Menu.Content>
         </Menu.Portal>
       </Menu.Root>

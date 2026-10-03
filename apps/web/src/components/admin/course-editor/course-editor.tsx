@@ -99,7 +99,7 @@ export function CourseEditor({
       ) : null}
       {tab === 'history' ? <AuditLog courseId={course.id} compact /> : null}
       <div
-        className="card grid overflow-hidden md:grid-cols-[260px_1fr]"
+        className="card admin-ed grid overflow-hidden md:grid-cols-[280px_1fr]"
         hidden={tab !== 'content'}
       >
         <CourseTree
@@ -111,7 +111,7 @@ export function CourseEditor({
           onAddModule={() => setAddModuleOpen(true)}
           onAddStep={(id) => setAddStepFor(id)}
         />
-        <section className="min-w-0 p-5 md:p-6" aria-live="polite">
+        <section className="min-w-0 p-5 md:px-7 md:py-6" aria-live="polite">
           {effective.kind === 'course' ? (
             <CourseForm
               course={course}

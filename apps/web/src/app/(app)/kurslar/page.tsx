@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { BookOpen, Route } from 'lucide-react';
-import { LEVELS, type CourseCardDto, type Level, type TrackDto } from '@dacy/shared';
+import { LEVELS, type CourseCardDto, type Level, type TopicDto, type TrackDto } from '@dacy/shared';
 import { apiFetch, getCurrentUser } from '@/lib/api/server';
 import { t, type TKey } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
@@ -24,6 +24,7 @@ type SP = {
   seviyye?: string;
   q?: string;
   movzu?: string;
+  praktika?: string;
   nov?: string;
   muddet?: string;
   status?: string;
@@ -37,8 +38,8 @@ function href(sp: SP, patch: Partial<SP>) {
   return `/kurslar${s ? `?${s}` : ''}`;
 }
 
-/** «Mövzu» — kursda hansı praktika var (addım tiplərinə görə) */
-const TOPICS: Array<{ value: string; label: TKey; has: (c: CourseCardDto) => boolean }> = [
+/** «Praktika növü» — kursda hansı tapşırıqlar var (addım tiplərinə görə) */
+const PRACTICE: Array<{ value: string; label: TKey; has: (c: CourseCardDto) => boolean }> = [
   { value: 'sql', label: 'catalog.topicSql', has: (c) => !!c.stepTypeCounts.SQL },
   { value: 'python', label: 'catalog.topicPython', has: (c) => !!c.stepTypeCounts.PYTHON },
   { value: 'terminal', label: 'catalog.topicTerminal', has: (c) => !!c.stepTypeCounts.TERMINAL },
@@ -56,22 +57,43 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
   if (sp.istiqamet) qs.set('track', sp.istiqamet);
   if (level) qs.set('level', level);
   if (sp.q) qs.set('q', sp.q);
-  const [tracks, fetched, user] = await Promise.all([
+  const [tracks, topics, fetched, user] = await Promise.all([
     apiFetch<TrackDto[]>('/tracks'),
+    apiFetch<TopicDto[]>('/topics'),
     apiFetch<CourseCardDto[]>(`/courses${qs.size ? `?${qs}` : ''}`),
     getCurrentUser(),
   ]);
 
-  // mövzu sayğacları — mövzu filtri tətbiq olunmamış siyahıdan
-  const topicOpts: TopicOpt[] = TOPICS.map((tp) => ({
-    value: tp.value,
-    label: t(tp.label),
-    count: fetched.filter(tp.has).length,
-  }));
+  // köhnə linklər (?movzu=sql) praktika növünə yönəlir
+  const legacy =
+    !topics.some((x) => x.slug === sp.movzu) && PRACTICE.some((p) => p.value === sp.movzu);
+  const topicSlug = legacy ? undefined : sp.movzu;
+  const practiceKey = sp.praktika ?? (legacy ? sp.movzu : undefined);
+  const practice = PRACTICE.find((p) => p.value === practiceKey);
+  const hasTopic = (c: CourseCardDto, slug: string) => !!c.topics?.some((x) => x.slug === slug);
+
+  // sayğaclar — digər qrupun filtri tətbiq olunmuş siyahıdan (öz qrupu nəzərə alınmadan)
+  const byPractice = practice ? fetched.filter(practice.has) : fetched;
+  const byTopic = topicSlug ? fetched.filter((c) => hasTopic(c, topicSlug)) : fetched;
+  const topicOpts: TopicOpt[] = [
+    ...topics.map((tp) => ({
+      key: 'movzu' as const,
+      value: tp.slug,
+      label: tp.title,
+      color: tp.color,
+      count: byPractice.filter((c) => hasTopic(c, tp.slug)).length,
+    })),
+    ...PRACTICE.map((p) => ({
+      key: 'praktika' as const,
+      value: p.value,
+      label: t(p.label),
+      count: byTopic.filter(p.has).length,
+    })),
+  ];
 
   let courses = fetched;
-  const topic = TOPICS.find((tp) => tp.value === sp.movzu);
-  if (topic) courses = courses.filter(topic.has);
+  if (topicSlug) courses = courses.filter((c) => hasTopic(c, topicSlug));
+  if (practice) courses = courses.filter(practice.has);
   if (KINDS.includes(sp.nov as CourseKind))
     courses = courses.filter((c) => courseKind(c) === sp.nov);
   if (sp.muddet) {
@@ -107,25 +129,19 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
     'seviyye',
     'q',
     'movzu',
+    'praktika',
     'nov',
     'muddet',
     'status',
     'sirala',
   ].filter((k) => sp[k as keyof SP]).length;
 
-  // görünən çiplər: Başlanğıc, Orta; qalanı «+N»-də (seçilibsə çölə çıxır)
-  const shownLevels: Level[] = ['BEGINNER', 'INTERMEDIATE'];
-  if (level === 'ADVANCED') shownLevels.push('ADVANCED');
-  const moreOpts: ChipOpt[] = [
-    ...(level === 'ADVANCED'
-      ? []
-      : [{ key: 'seviyye', value: 'ADVANCED', label: t('level.ADVANCED') }]),
-    ...KINDS.filter((k) => k !== sp.nov).map((k) => ({
-      key: 'nov',
-      value: k,
-      label: t(`catalog.kind.${k}`),
-    })),
-  ];
+  // Qeyd 5: Başlanğıc / Orta / Çətin hamısı görünür; kurs növləri «+N»-də (seçilən çölə çıxır)
+  const moreOpts: ChipOpt[] = KINDS.filter((k) => k !== sp.nov).map((k) => ({
+    key: 'nov',
+    value: k,
+    label: t(`catalog.kind.${k}`),
+  }));
 
   return (
     <div className="flex flex-col">
@@ -147,7 +163,7 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
         <HeroArt kind="catalog" />
       </section>
 
-      <nav className="chips mt-8" aria-label={t('catalog.filters')}>
+      <nav className="chips scroll-m mt-8" aria-label={t('catalog.filters')}>
         <Link
           href={href(sp, { istiqamet: undefined, seviyye: undefined, nov: undefined })}
           className={cn('chip', !sp.istiqamet && !level && !sp.nov && 'on')}
@@ -166,13 +182,20 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
             {tr.title}
           </Link>
         ))}
-        {shownLevels.map((lv) => (
+        <span className="chip-sep" aria-hidden />
+        {LEVELS.map((lv, i) => (
           <Link
             key={lv}
             href={href(sp, { seviyye: level === lv ? undefined : lv })}
             className={cn('chip', level === lv && 'on')}
             aria-current={level === lv ? 'true' : undefined}
+            data-testid={`level-chip-${lv}`}
           >
+            <span className={cn('lvb', `l${i + 1}`)} aria-hidden>
+              <b />
+              <b />
+              <b />
+            </span>
             {t(`level.${lv}`)}
           </Link>
         ))}
@@ -184,7 +207,13 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
         <MoreChips options={moreOpts} />
       </nav>
 
-      <CatalogToolbar count={courses.length} topics={topicOpts} authed={!!user} />
+      <CatalogToolbar
+        count={courses.length}
+        topics={topicOpts}
+        topic={topicSlug}
+        practice={practice?.value}
+        authed={!!user}
+      />
 
       {courses.length === 0 ? (
         <EmptyState

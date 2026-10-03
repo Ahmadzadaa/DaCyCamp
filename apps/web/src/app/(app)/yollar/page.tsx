@@ -47,7 +47,7 @@ export default async function PathsPage({
         <HeroArt kind="route" />
       </section>
 
-      <nav className="chips mt-8" aria-label={t('common.track')}>
+      <nav className="chips scroll-m mt-8" aria-label={t('common.track')}>
         <Link
           href="/yollar"
           className={cn('chip', !sp.istiqamet && 'on')}

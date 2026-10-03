@@ -34,6 +34,10 @@ import { SqlCheckService } from '../sql-check/sql-check.service';
 
 const courseSelect = {
   track: { select: { id: true, slug: true, title: true, color: true } },
+  topics: {
+    orderBy: { order: 'asc' as const },
+    select: { id: true, slug: true, title: true, color: true },
+  },
   cover: { select: { id: true, filename: true } },
   instructorAvatar: { select: { id: true, filename: true } },
   modules: { select: { _count: { select: { steps: true } } } },
@@ -105,6 +109,7 @@ export class ContentService implements OnModuleInit, OnModuleDestroy {
       instructorAvatarId: c.instructorAvatarId,
       instructorAvatarUrl: c.instructorAvatar ? assetUrl(c.instructorAvatar) : null,
       status: courseStatus(c),
+      topics: c.topics,
       archivedAt: c.archivedAt?.toISOString() ?? null,
       deletedAt: c.deletedAt?.toISOString() ?? null,
       purgeAt: c.deletedAt
@@ -123,9 +128,13 @@ export class ContentService implements OnModuleInit, OnModuleDestroy {
     q?: string;
     published?: boolean;
     status?: CourseStatus;
+    topic?: string;
+    level?: Level;
   }): Promise<AdminCourseListDto> {
     const base: Prisma.CourseWhereInput = {
       ...(opts.track ? { track: { slug: opts.track } } : {}),
+      ...(opts.topic ? { topics: { some: { slug: opts.topic } } } : {}),
+      ...(opts.level ? { level: opts.level } : {}),
       ...(opts.q ? { title: { contains: opts.q, mode: 'insensitive' } } : {}),
     };
     const statusWhere = opts.status
@@ -246,10 +255,20 @@ export class ContentService implements OnModuleInit, OnModuleDestroy {
         order: await nextOrder(this.prisma, 'course', { trackId: dto.trackId }),
       };
     }
+    const { topicIds, ...fields } = dto;
+    if (topicIds?.length) {
+      const found = await this.prisma.topic.count({ where: { id: { in: topicIds } } });
+      if (found !== new Set(topicIds).size)
+        throw badRequest('VALIDATION_FAILED', 'Mövzu tapılmadı');
+    }
     const updated = await this.prisma.$transaction(async (tx) => {
       const u = await tx.course.update({
         where: { id },
-        data: { ...dto, ...(trackChanged ?? {}) },
+        data: {
+          ...fields,
+          ...(trackChanged ?? {}),
+          ...(topicIds ? { topics: { set: topicIds.map((tid) => ({ id: tid })) } } : {}),
+        },
         include: courseSelect,
       });
       if (trackChanged) {
@@ -433,6 +452,7 @@ export class ContentService implements OnModuleInit, OnModuleDestroy {
       include: {
         modules: { include: { steps: { include: { ctfTasks: true } } } },
         assets: true,
+        topics: { select: { id: true } },
       },
     });
     if (!src) throw notFound();
@@ -455,6 +475,7 @@ export class ContentService implements OnModuleInit, OnModuleDestroy {
             order,
             isPublished: false,
             createdById: actor.id,
+            topics: { connect: src.topics.map((tp) => ({ id: tp.id })) },
           },
         });
         for (const m of src.modules) {

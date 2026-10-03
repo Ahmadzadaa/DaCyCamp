@@ -4,7 +4,7 @@ import type { AuditLogDto, AuditPageDto } from '@dacy/shared';
 import { PrismaService } from '../prisma/prisma.service';
 import type { AuthUser } from '../common/decorators';
 
-export type AuditEntity = 'COURSE' | 'MODULE' | 'STEP' | 'ASSET' | 'TRACK' | 'USER';
+export type AuditEntity = 'COURSE' | 'MODULE' | 'STEP' | 'ASSET' | 'TRACK' | 'TOPIC' | 'USER';
 
 export interface AuditInput {
   action: string;
@@ -74,6 +74,10 @@ export class AuditService {
       }
       case 'TRACK': {
         const t = await this.prisma.track.findUnique({ where: { id }, select: { title: true } });
+        return t ? { title: t.title, courseId: null } : null;
+      }
+      case 'TOPIC': {
+        const t = await this.prisma.topic.findUnique({ where: { id }, select: { title: true } });
         return t ? { title: t.title, courseId: null } : null;
       }
       case 'USER': {

@@ -219,7 +219,7 @@ Repoda yer tutucu səhifə qalmayıb (`/yollar`, `/sertifikatlar` Mərhələ 3�
 - Şifrələr bazada **argon2id** heşi ilə (bcrypt əvəzinə — platformanın mövcud, daha güclü sxemi; dəyişdirilməsi bütün hesabların heşlərini pozardı). İstənilsə bcrypt-ə keçid ayrıca iş kimi edilə bilər.
 - Yoxlama: `apps/web/e2e/accounts.spec.ts` — admin giriş → `/admin` açılır; tələbə giriş → `/admin`-dən `/kurslar`-a yönlənir, `GET /api/admin/courses` 403, nümunə kursa yazılıb (2/2 ✓). README-də «Test hesabları (seed)» bölməsi.
 
-### Qeyd 2 — Dizayn referansı v2 (təsdiq gözləyir)
+### Qeyd 2 — Dizayn referansı v2 (tamamlandı — 3 oktyabr 2026-da bütün sayta köçürüldü, aşağıya bax)
 
 `docs/DACY_DESIGN_REFERENCE.html` yenidən yazıldı (rəng tokenləri dəyişməyib): ağ header + 260px navy sidebar (ikonlu menyu, ÖYRƏN / TƏTBİQ ET bölmələri, «YENİ» badge), 24px radiuslu hero (mint badge, 2 sətir təsvir, xətti SVG), kurs kartı anatomiyası (etiket, 24px başlıq, 3 zolaqlı səviyyə, 4 sətir təsvir, müəllim, müddət + «Başla»), kvadratvari çiplər + «+N» + sayğac/axtarış/Mövzu/Daha çox filtr, tip şkalası 40/28/24/16, boşluq şkalası 4–48, hover/focus/active, skeleton, kömək düyməsi, mobil alt naviqasiya, admin siyahı/redaktor/«…» menyu/təhlükəsiz silmə dialoqu/toast. Skrinşotlar: `docs/screenshots/v2/*.png`. Platformaya köçürmə təsdiqdən sonra.
 
@@ -259,6 +259,42 @@ Repoda yer tutucu səhifə qalmayıb (`/yollar`, `/sertifikatlar` Mərhələ 3�
 - Playwright `apps/web/e2e/admin-control.spec.ts` — `.env`-dəki admin hesabı ilə UI üzərindən: kopyala → dərc et → arxivlə / geri qaytar → tələbələr (kilid aç, sıfırla, çıxar / geri qaytar) → fayl dəyişdir → müəllim sahələri → silmə dialoqu (say, ad təsdiqi) → Silinənlər → bərpa → həmişəlik silmə → tarixçə; tələbə hesabı üçün bütün bu API-lər 403, `/admin/*` → `/kurslar` (**7/7**). Skrinşotlar: `docs/screenshots/qeyd4/`.
 - Qeyd: Playwright-ın bütün spec-lərini bir dəfəyə işə salanda giriş limiti (dəqiqədə 20, API bütün sorğuları Next proksisinin IP-si ilə görür) `429` verir — spec-ləri ayrı-ayrılıqda işlədin. Bu, istehsalda da bütün istifadəçilər üçün ortaq limit deməkdir; ayrıca düzəliş kimi təklif olunur (`trust proxy` + müştəri IP-sinin ötürülməsi).
 
-### Qeyd 5 — Mövzular və səviyyə filtri (gözləyir)
+### Qeyd 5 — Mövzular və səviyyə filtri (tamamlandı)
 
-Admin «Kurslar» bölməsində istiqamətlərdən (Data Analytics, Data Engineering, …) əlavə **mövzu başlıqları** yarada bilsin (məs. «Python» üzrə qısa dərslər), hamısını redaktə edə bilsin; Başlanğıc / Orta / Çətin səviyyələri filtr kimi göstərilsin. Qeyd 4-dən sonra.
+**Admin — «Mövzular»** (`/admin/movzular`, sidebar-da KONTENT → Mövzular): istiqamətlərdən ayrı başlıqlar (məs. «Python», «Excel», «Linux»). Yarat / redaktə et (ad, slug, rəng — 8 hazır + sərbəst, qısa təsvir), «Kataloqda görünür» açarı (gizli mövzu kataloqda yoxdur), sürüklə-burax ilə sıra, sil (kurslar silinmir, yalnız mövzu onlardan çıxır). Hər sətirdə kurs sayı. Heyət (ADMIN + INSTRUCTOR) idarə edir; dəyişikliklər fəaliyyət tarixçəsinə düşür (`topic.create/update/reorder/delete`).
+
+**Kursa təyin:** kurs redaktorunda «Mövzular» sahəsi (çiplərlə çoxlu seçim, «Mövzuları idarə et» linki). ZIP paketində `course.yaml` → `topics: [python, sql]` (slug-lar; naməlum slug xəbərdarlıq verir, ixracda yazılır) — `docs/content-package.md`. Kurs surəti mövzuları saxlayır.
+
+**Admin kurs siyahısı:** «Bütün mövzular» və «Bütün səviyyələr» seçiciləri (`?movzu=`, `?seviyye=`), sətirdə slug-un yanında mövzular rəngli nöqtə ilə.
+
+**Tələbə kataloqu (`/kurslar`):** çip sırasında istiqamətlərdən sonra **Başlanğıc / Orta / Çətin** — üçü də görünür, 1–3 zolaqlı mini ikonla (əvvəl «İrəli» `+N`-in içində idi; ad «Çətin» oldu). «Mövzu» menyusu iki qrupdan: **Mövzular** (admin-in yaratdıqları, rəngli nöqtə + say) və **Praktika növü** (SQL / Python / Terminal / CTF / Test — addım tiplərinə görə). Qruplar birlikdə işləyir (məs. Python mövzusu + SQL tapşırığı olan kurslar); sayğaclar digər filtr nəzərə alınaraq hesablanır, boş seçimlər deaktivdir. Köhnə `?movzu=sql` linkləri praktika növünə yönəlir. Kurs səhifəsində «Bu kursda» blokunda mövzu çipləri → kataloqa filtrlə keçid.
+
+**API:** `GET /topics` (ictimai, dərc olunmuş kurs sayı ilə), `GET/POST /admin/topics`, `PATCH /admin/topics/reorder`, `PATCH/DELETE /admin/topics/:id`; `GET /courses?topic=&level=`, `GET /admin/courses?topic=&level=`; `PATCH /admin/courses/:id` → `topicIds` (naməlum id → 400; verilməsə toxunulmur). Kartda və kurs səhifəsində `topics`.
+
+**Miqrasiya:** `20261003122727_qeyd5_topics` (`Topic` + `_CourseTopics`).
+
+---
+
+## Dizayn v2 köçürməsi + tapşırıq redaktoru — 3 oktyabr 2026
+
+**Tapşırıqlarda yazmaq (SQL / Python).** Səbəb: Chromium-un EditContext API-si ilə Monaco 0.5x bəzi düymələri itirirdi (`SELECT` → `SC`) və redaktor hər düymədə React state-dən yenidən yazılırdı. Həll: Monaco idarəsiz rejimdə (`defaultValue`, xarici dəyişiklik `executeEdits` ilə — geri al / təkrarla işləyir), `editContext: false`, Python üçün 4 boşluq tab. Qaralama brauzerdə avtomatik saxlanılır (`dacy:draft:<addım>`), «Başlanğıc koda qaytar» düyməsi. Admin addım redaktorunda da eyni redaktor + «Həlli yoxla» (SQL: həll sorğusu DuckDB-də işləyir, nəticə cədvəli; Python: həll və başlanğıc kod testlərlə yoxlanır).
+
+**Tələbə qabığı (skrinşot 3–4):** ağ header (loqo · Öyrən / Tətbiq et / Sertifikatlar pill menyusu · «/» qısayollu axtarış · zəng · avatar menyusu), 260px navy sidebar (Panel, Fəaliyyətim, Liderlər · ÖYRƏN: Yollar, Kurslar, Təcrübə, İmtahanlar · TƏTBİQ ET: Layihələr, Yarışlar; «YENİ» nişanları; altda «Həftəlik hədəf» kartı), mobil-də alt naviqasiya + «Daha çox» paneli, kömək düyməsi. Səhifələr v2 anatomiyası ilə: Panel (hero «Xoş gəldiniz», qaldığınız yer, kurslarım, 2×2 statistika, bu həftə, aktiv yol), Kurslar (hero, çiplər, sayğac/axtarış/Mövzu/Daha çox filtr, kartlar, skeleton), kurs səhifəsi (hero, akkordeon fəsillər, irəliləyiş halqası), Yollar və yol xəritəsi, Sertifikatlar, Profil (həftəlik hədəf 3/5/8/12/20, liderlər cədvəlində görünmə, tema), giriş/qeydiyyat (iki sütun), onboarding, 404.
+
+**Yeni bölmələr (sidebar-dakı «YENİ»lər real səhifədir):** Fəaliyyətim (53 həftəlik istilik xəritəsi, seriya, XP jurnalı, istiqamətlər üzrə), Liderlər cədvəli (həftə / ay / bütün dövr; profil-dən gizlənmək olur), Təcrübə (yazıldığı kurslardakı SQL / Python / Terminal / CTF tapşırıqları, tip filtri), İmtahanlar (yol imtahanları + kurs testləri), Layihələr (kanban: başlanmayıb / işdə / yoxlamada / tamamlandı), Yarışlar (CTF otaqları + hər otağın xal cədvəli). Zəng: sertifikat, layihə rəyi, yeni kurslar, (heyət üçün) yoxlama gözləyənlər — mövcud qeydlərdən törədilir, «oxundu» `User.notificationsSeenAt`.
+
+**Admin (skrinşot 1–2):** «DaCy Admin» header (axtarış — kurs / tələbə / fayl / yol, «Sayta keç»), navy sidebar Ümumi baxış · KONTENT · İNSANLAR · SİSTEM (yoxlama sayğacı), yeni «Ümumi baxış» (8 KPI, 14 günlük aktivlik, top kurslar, son fəaliyyət), Kurslar cədvəli (status tabları sayğacla, çiplər, axtarış, «…» menyu, status nöqtəli badge-lər), silmə dialoqu (ikon, 3 statistika plitəsi, ad təsdiqi), navy toast-lar sol vurğu xətti ilə, bütün admin səhifələrində vahid başlıq (`PageHeader`) və cədvəl üslubu, mobil-də sürüşən tablar.
+
+**Miqrasiya:** `20261003110423_v2_profile_goal_notifications` (`User.weeklyGoal`, `showOnLeaderboard`, `notificationsSeenAt`).
+
+**Yol üstündə tapılan və düzəldilən səhvlər:**
+
+- Addımı eyni anda iki dəfə açmaq (iki tab, dev-də StrictMode) `stepProgress` unikal pozuntusu ilə 500 verirdi → təkrar cəhd (regressiya testi var).
+- Kurs redaktorundan silmədən sonra `router.refresh()` + `router.push()` ardıcıl çağırılırdı, gedən refresh keçidi «udurdu» — admin silinmiş kursun səhifəsində qalırdı → `done(c, next)` ya keçir, ya yeniləyir.
+- Admin kurs cədvəlində «N dəq əvvəl» dəqiqə sərhədində hidratasiya xəbərdarlığı verirdi → `suppressHydrationWarning`.
+
+**Yoxlama:**
+
+- API e2e: **83/83** (yeni `apps/api/test/topics-hub.e2e-spec.ts` — 14 test: mövzu CRUD + rollar, kursa təyin, kataloq/admin filtrləri, gizli mövzu, sıra, surət, audit; panel xülasəsi, həftəlik hədəf, bildirişlər, fəaliyyət, təcrübə, liderlər + gizlənmə, yarışlar, admin ümumi baxış/axtarış, eyni anda addım açma).
+- Shared unit 45/45, web unit 5/5, typecheck + lint təmiz.
+- Playwright: admin, admin-control, student-flow, accounts, phase2, phase3, phase4 — **34/34** (7 spec bir yerdə işlədildi; bir test dev serverin yaddaş limitinə görə avtomatik yenidən başlaması zamanı `ECONNREFUSED` aldı, ayrıca təkrarda keçdi). Dev serverdə ağır marşrutlar (iş sahəsi, sertifikat) soyuq halda 6–10 s kompilyasiya olunduğu üçün iki keçid yoxlamasının gözləmə vaxtı 30 s-ə qaldırıldı (eyni spec-dəki digər keçidlər kimi).

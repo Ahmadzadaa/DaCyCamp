@@ -12,6 +12,7 @@ import { Select } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/app/empty-state';
 import { fmtDate } from './format';
+import { PageHeader } from '@/components/admin/page-header';
 
 const FILTERS = Object.keys(az.audit.filter) as Array<keyof typeof az.audit.filter>;
 
@@ -83,10 +84,7 @@ export function AuditLog({ courseId, compact }: { courseId?: string; compact?: b
     <div className="flex flex-col gap-4" data-testid="audit-log">
       {!compact ? (
         <div className="flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <h1 className="text-2xl">{t('audit.title')}</h1>
-            <p className="mt-1 text-sm text-muted">{t('audit.subtitle')}</p>
-          </div>
+          <PageHeader title={t('audit.title')} subtitle={t('audit.subtitle')} />
           <Select
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
@@ -112,8 +110,8 @@ export function AuditLog({ courseId, compact }: { courseId?: string; compact?: b
       ) : items.length === 0 ? (
         <EmptyState icon={History} title={t('audit.empty')} />
       ) : (
-        <div className="card overflow-x-auto">
-          <table className="tbl-admin tbl-hover">
+        <div className="tbl-wrap">
+          <table className="tbl-admin">
             <thead>
               <tr>
                 <th>{t('audit.when')}</th>

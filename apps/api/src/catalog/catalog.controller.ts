@@ -9,6 +9,7 @@ const listQuery = z.object({
   track: z.string().max(80).optional(),
   level: z.enum(LEVELS).optional(),
   q: z.string().trim().max(100).optional(),
+  topic: z.string().max(80).optional(),
 });
 
 @Controller('courses')

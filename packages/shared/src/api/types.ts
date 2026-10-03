@@ -50,6 +50,19 @@ export interface MeSummaryDto {
   pendingReviews?: number;
 }
 
+/** Mövzu (Qeyd 5): istiqamətdən əlavə başlıq — «Python», «Excel», «Linux» */
+export interface TopicDto {
+  id: string;
+  slug: string;
+  title: string;
+  description: string | null;
+  color: string;
+  order: number;
+  isPublished: boolean;
+  courseCount?: number;
+}
+export type TopicRefDto = Pick<TopicDto, 'id' | 'slug' | 'title' | 'color'>;
+
 export interface TrackDto {
   id: string;
   slug: string;
@@ -74,6 +87,8 @@ export interface CourseCardDto {
   track: { slug: string; title: string; color: string; icon?: string | null };
   /** kataloqda «Ən yeni» sıralaması üçün */
   publishedAt?: string | null;
+  /** dərc olunmuş mövzular */
+  topics?: TopicRefDto[];
   moduleCount: number;
   stepCount: number;
   stepTypeCounts: Partial<Record<StepType, number>>;
@@ -262,6 +277,7 @@ export interface AdminCourseDto {
   instructorAvatarId: string | null;
   instructorAvatarUrl: string | null;
   status: CourseStatus;
+  topics: TopicRefDto[];
   archivedAt: string | null;
   deletedAt: string | null;
   /** soft delete-dən sonra həmişəlik silinmə tarixi */

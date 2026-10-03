@@ -109,8 +109,8 @@ export function CourseStudents({
   if (rows.length === 0) return <EmptyState icon={Users} title={t('courseAdmin.noStudents')} />;
 
   return (
-    <div className="card overflow-x-auto" data-testid="course-students">
-      <table className="tbl-admin tbl-hover">
+    <div className="tbl-wrap" data-testid="course-students">
+      <table className="tbl-admin">
         <thead>
           <tr>
             <th>{t('admin.students')}</th>

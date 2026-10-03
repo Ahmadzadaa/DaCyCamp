@@ -3,6 +3,7 @@ import type { AdminProjectReviewDto } from '@dacy/shared';
 import { apiFetch } from '@/lib/api/server';
 import { t } from '@/lib/i18n';
 import { ReviewsTable } from '@/components/admin/reviews-table';
+import { PageHeader } from '@/components/admin/page-header';
 
 export const metadata: Metadata = { title: `${t('admin.reviews')} · ${t('app.admin')}` };
 export const dynamic = 'force-dynamic';
@@ -11,8 +12,7 @@ export default async function ReviewsPage() {
   const rows = await apiFetch<AdminProjectReviewDto[]>('/admin/path-reviews');
   return (
     <div>
-      <h1 className="text-2xl">{t('admin.reviews')}</h1>
-      <p className="mb-4 mt-1 text-sm text-muted">{t('admin.reviewsDesc')}</p>
+      <PageHeader title={t('admin.reviews')} subtitle={t('admin.reviewsDesc')} />
       <ReviewsTable initial={rows} />
     </div>
   );

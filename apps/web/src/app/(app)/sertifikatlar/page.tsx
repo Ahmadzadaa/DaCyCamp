@@ -61,7 +61,7 @@ export default async function CertificatesPage() {
                   {c.revokedAt ? t('cert.revoked') : t('cert.valid')}
                 </span>
               </div>
-              <span className="kicker">
+              <span className="eyebrow">
                 {c.kind === 'path' ? t('cert.kindPath') : t('cert.kindCourse')}
               </span>
               <h3>

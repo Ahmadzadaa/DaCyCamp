@@ -55,6 +55,17 @@ export const updateTrackSchema = createTrackSchema
   .partial()
   .extend({ isPublished: z.boolean().optional() });
 
+export const createTopicSchema = z.object({
+  slug: slugSchema,
+  title: titleSchema,
+  color: colorSchema.default('#6C7CF0'),
+  description: z.string().trim().max(1000).nullable().optional(),
+  isPublished: z.boolean().optional(),
+});
+export const updateTopicSchema = createTopicSchema.partial();
+export type CreateTopicInput = z.infer<typeof createTopicSchema>;
+export type UpdateTopicInput = z.infer<typeof updateTopicSchema>;
+
 export const createCourseSchema = z.object({
   trackId: idSchema,
   slug: slugSchema,
@@ -69,6 +80,8 @@ export const createCourseSchema = z.object({
 export const updateCourseSchema = createCourseSchema.partial().extend({
   coverAssetId: idSchema.nullable().optional(),
   instructorAvatarId: idSchema.nullable().optional(),
+  /** mövzular — verilsə tam siyahı ilə əvəz olunur */
+  topicIds: z.array(idSchema).max(20).optional(),
 });
 export const publishSchema = z.object({ isPublished: z.boolean() });
 export const archiveSchema = z.object({ archived: z.boolean() });

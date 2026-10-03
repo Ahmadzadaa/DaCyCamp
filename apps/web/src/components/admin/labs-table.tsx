@@ -49,7 +49,7 @@ export function LabsTable({ initial }: { initial: AdminLabSessionDto[] }) {
   if (!rows.length) return <div className="box text-muted">{t('admin.labsEmpty')}</div>;
   void tick;
   return (
-    <div className="box overflow-x-auto p-0">
+    <div className="tbl-wrap">
       <table className="tbl-admin">
         <thead>
           <tr>

@@ -126,7 +126,8 @@ test('CTF həll → kurs bitir → sertifikat verilir, kurs səhifəsində link'
   expect(certId.length).toBeGreaterThan(10);
 
   await link.click();
-  await expect(page).toHaveURL(new RegExp(`/sertifikat/${certId}$`));
+  // dev serverdə /sertifikat/[id] soyuq kompilyasiya olunur (~10 s)
+  await expect(page).toHaveURL(new RegExp(`/sertifikat/${certId}$`), { timeout: 30_000 });
   await expect(page.getByTestId('cert-name')).toHaveText(fresh.name);
   await expect(page.getByTestId('cert-serial')).toContainText(/DACY-C-\d{4}-\d{6}/);
   await expect(page.getByTestId('cert-status')).toContainText('Etibarlıdır');

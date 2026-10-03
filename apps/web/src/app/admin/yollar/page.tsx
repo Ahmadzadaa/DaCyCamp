@@ -6,6 +6,7 @@ import { apiFetch } from '@/lib/api/server';
 import { t } from '@/lib/i18n';
 import { TrackBadge } from '@/components/app/track-badge';
 import { StatusBadge } from '@/components/admin/status-badge';
+import { PageHeader } from '@/components/admin/page-header';
 
 export const metadata: Metadata = { title: `${t('admin.pathsTitle')} · ${t('app.admin')}` };
 export const dynamic = 'force-dynamic';
@@ -14,19 +15,15 @@ export default async function AdminPathsPage() {
   const paths = await apiFetch<AdminPathDto[]>('/admin/paths');
   return (
     <div>
-      <div className="mb-4 flex flex-wrap items-center gap-3">
-        <div>
-          <h1 className="text-2xl">{t('admin.pathsTitle')}</h1>
-          <p className="mt-1 text-sm text-muted">{t('admin.pathsDesc')}</p>
-        </div>
-        <Link href="/admin/yollar/yeni" className="b b-brand ml-auto" data-testid="new-path">
-          <Plus className="size-4" /> {t('admin.newPath')}
+      <PageHeader title={t('admin.pathsTitle')} subtitle={t('admin.pathsDesc')}>
+        <Link href="/admin/yollar/yeni" className="b b-brand" data-testid="new-path">
+          <Plus aria-hidden /> {t('admin.newPath')}
         </Link>
-      </div>
+      </PageHeader>
       {paths.length === 0 ? (
         <div className="box text-muted">{t('paths.empty')}</div>
       ) : (
-        <div className="box overflow-x-auto p-0">
+        <div className="tbl-wrap">
           <table className="tbl-admin">
             <thead>
               <tr>
@@ -41,13 +38,10 @@ export default async function AdminPathsPage() {
               {paths.map((p) => (
                 <tr key={p.id}>
                   <td>
-                    <Link
-                      href={`/admin/yollar/${p.slug}`}
-                      className="font-semibold hover:underline"
-                    >
+                    <Link href={`/admin/yollar/${p.slug}`} className="ttl hover:underline">
                       {p.title}
                     </Link>
-                    <div className="font-mono text-xs text-muted">{p.slug}</div>
+                    <div className="slug">{p.slug}</div>
                   </td>
                   <td>
                     <TrackBadge color={p.track.color}>{p.track.title}</TrackBadge>

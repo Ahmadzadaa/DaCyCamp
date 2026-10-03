@@ -13,6 +13,7 @@ import { notFound } from '../common/errors';
 
 type CourseWithRel = Course & {
   track: Track;
+  topics?: Array<{ id: string; slug: string; title: string; color: string }>;
   cover: { id: string; filename: string } | null;
   instructorAvatar?: { id: string; filename: string } | null;
   modules: Array<{
@@ -36,6 +37,11 @@ type CourseWithRel = Course & {
 
 export const courseInclude = {
   track: true,
+  topics: {
+    where: { isPublished: true },
+    orderBy: { order: 'asc' as const },
+    select: { id: true, slug: true, title: true, color: true },
+  },
   cover: { select: { id: true, filename: true } },
   instructorAvatar: { select: { id: true, filename: true } },
   modules: {
@@ -82,6 +88,7 @@ export class CatalogService {
         icon: c.track.icon,
       },
       publishedAt: c.publishedAt?.toISOString() ?? null,
+      topics: c.topics ?? [],
       moduleCount: mods.length,
       stepCount: steps.length,
       stepTypeCounts: counts,
@@ -101,6 +108,7 @@ export class CatalogService {
     track?: string;
     level?: Level;
     q?: string;
+    topic?: string;
     userId?: string;
   }): Promise<CourseCardDto[]> {
     const courses = await this.prisma.course.findMany({
@@ -111,6 +119,7 @@ export class CatalogService {
         track: { isPublished: true },
         ...(opts.track ? { track: { slug: opts.track, isPublished: true } } : {}),
         ...(opts.level ? { level: opts.level } : {}),
+        ...(opts.topic ? { topics: { some: { slug: opts.topic, isPublished: true } } } : {}),
         ...(opts.q
           ? {
               OR: [

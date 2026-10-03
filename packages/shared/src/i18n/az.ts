@@ -89,6 +89,7 @@ export const az = {
     secPeople: 'İnsanlar',
     secSystem: 'Sistem',
     zipImport: 'ZIP idxal',
+    topics: 'Mövzular',
     reviewsQueue: 'Layihə yoxlaması',
     labSessions: 'Lab sessiyaları',
     trash: 'Silinənlər',
@@ -97,6 +98,39 @@ export const az = {
     students: 'Tələbələr',
     files: 'Fayllar',
     adminPanel: 'Admin panel',
+  },
+  topics: {
+    title: 'Mövzular',
+    subtitle:
+      'İstiqamətlərdən əlavə başlıqlar (məs. «Python», «Excel», «Linux») — kataloqda «Mövzu» filtri bunlardan qurulur.',
+    new: 'Yeni mövzu',
+    edit: 'Mövzunu redaktə et',
+    titleLabel: 'Ad',
+    slugLabel: 'Slug (URL)',
+    color: 'Rəng',
+    description: 'Qısa təsvir',
+    published: 'Kataloqda görünür',
+    hidden: 'Gizli',
+    courses: '{n} kurs',
+    empty: 'Hələ mövzu yoxdur',
+    emptyHint:
+      'Mövzu yaradın və kurs redaktorunda kurslara təyin edin — tələbələr kataloqda mövzuya görə süzə biləcək.',
+    created: 'Mövzu yaradıldı',
+    saved: 'Mövzu yadda saxlanıldı',
+    deleted: 'Mövzu silindi',
+    deleteTitle: '«{title}» mövzusu silinsin?',
+    deleteDesc: 'Kurslar silinmir — yalnız bu mövzu onlardan çıxarılır.',
+    courseField: 'Mövzular',
+    courseFieldHint:
+      'Kurs bir neçə mövzuya aid ola bilər. Yeni mövzunu «Mövzular» bölməsində yaradın.',
+    none: 'Mövzu seçilməyib',
+    manage: 'Mövzuları idarə et',
+    filterAll: 'Bütün mövzular',
+    groupTopics: 'Mövzular',
+    groupPractice: 'Praktika növü',
+    level: 'Səviyyə',
+    levelAll: 'Bütün səviyyələr',
+    inCourse: 'Mövzular',
   },
   hub: {
     // Fəaliyyətim
@@ -373,7 +407,7 @@ export const az = {
     cover: 'Üz şəkli',
     noResults: 'Nəticə tapılmadı',
   },
-  level: { BEGINNER: 'Başlanğıc', INTERMEDIATE: 'Orta', ADVANCED: 'İrəli' },
+  level: { BEGINNER: 'Başlanğıc', INTERMEDIATE: 'Orta', ADVANCED: 'Çətin' },
   role: { STUDENT: 'Tələbə', INSTRUCTOR: 'Müəllim', ADMIN: 'Admin' },
   stepType: {
     THEORY: 'Nəzəri',
@@ -780,6 +814,10 @@ export const az = {
     courseDone: 'Tamamlandı',
   },
   admin: {
+    tracksDesc: 'Kursların aid olduğu istiqamətlər: rəng, ikon və kataloqdakı sıra',
+    filesDesc: 'Kurs fayllarının kitabxanası: datasetlər, şəkillər, yoxlama skriptləri',
+    usersCount: '{n} istifadəçi',
+    importStatus: { APPLIED: 'Tətbiq olunub', FAILED: 'Səhv', VALIDATED: 'Yoxlanılıb' },
     pathsTitle: 'Karyera yolları',
     pathsDesc:
       'Kursları, layihələri və imtahanları ardıcıl birləşdirin; tələbə yolda harada olduğunu görür.',

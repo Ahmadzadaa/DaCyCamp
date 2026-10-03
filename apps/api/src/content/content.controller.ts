@@ -1,6 +1,7 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query } from '@nestjs/common';
 import { z } from 'zod';
 import {
+  LEVELS,
   archiveSchema,
   createCourseSchema,
   createModuleSchema,
@@ -29,6 +30,8 @@ const listQuery = z.object({
   q: z.string().trim().max(100).optional(),
   published: z.enum(['true', 'false']).optional(),
   status: z.enum(['published', 'draft', 'archived', 'deleted']).optional(),
+  topic: z.string().max(80).optional(),
+  level: z.enum(LEVELS).optional(),
 });
 const confirmQuery = z.object({ confirm: z.string().max(300).optional() });
 const forceQuery = z.object({
@@ -53,6 +56,8 @@ export class ContentController {
       track: q.track,
       q: q.q,
       status: q.status,
+      topic: q.topic,
+      level: q.level,
       published: q.published === undefined ? undefined : q.published === 'true',
     });
   }
@@ -130,7 +135,10 @@ export class ContentController {
   @AdminOnly()
   @Audit({ action: 'course.purge', entity: 'COURSE' })
   @Delete('courses/:id/permanent')
-  purge(@Param('id') id: string, @Query(new ZodPipe(confirmQuery)) q: z.infer<typeof confirmQuery>) {
+  purge(
+    @Param('id') id: string,
+    @Query(new ZodPipe(confirmQuery)) q: z.infer<typeof confirmQuery>,
+  ) {
     return this.content.purgeCourse(id, q.confirm);
   }
 

@@ -18,6 +18,7 @@ import { Button } from '@/components/ui/button';
 import { Field } from '@/components/ui/field';
 import { CourseFields, type CourseFormInput, type CourseFormOutput } from '../course-fields';
 import { uploadAsset } from '../upload';
+import { TopicPicker } from './topic-picker';
 
 /** Kurs ayarları (başlıq, təsvir, istiqamət, səviyyə, müəllim, müddət, örtük və müəllim şəkli) */
 export function CourseForm({
@@ -35,6 +36,7 @@ export function CourseForm({
   const [busy, setBusy] = useState<string | null>(null);
   const coverInput = useRef<HTMLInputElement>(null);
   const avatarInput = useRef<HTMLInputElement>(null);
+  const [topicIds, setTopicIds] = useState<string[]>(course.topics.map((x) => x.id));
   const form = useForm<CourseFormInput, unknown, CourseFormOutput>({
     resolver: zodResolver(createCourseSchema),
     defaultValues: {
@@ -54,7 +56,7 @@ export function CourseForm({
     try {
       const updated = await api<AdminCourseDto>(`/admin/courses/${course.id}`, {
         method: 'PATCH',
-        body: values,
+        body: { ...values, topicIds },
       });
       onChange(updated);
       toast.success(t('admin.courseSaved'));
@@ -98,6 +100,9 @@ export function CourseForm({
       <h2 className="text-[1.15rem]">{t('admin.courseSettings')}</h2>
       <form onSubmit={form.handleSubmit(save)} className="grid gap-4 md:grid-cols-2" noValidate>
         <CourseFields form={form} tracks={tracks} />
+        <Field label={t('topics.courseField')} hint={t('topics.courseFieldHint')} full htmlFor="-">
+          <TopicPicker value={topicIds} onChange={setTopicIds} />
+        </Field>
         <Field label={t('courseAdmin.instructorAvatar')}>
           <div className="flex flex-wrap items-center gap-3">
             {course.instructorAvatarUrl ? (

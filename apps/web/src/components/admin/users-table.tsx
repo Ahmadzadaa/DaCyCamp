@@ -5,9 +5,11 @@ import { ROLES, type AdminUserDto, type Paged, type Role } from '@dacy/shared';
 import { api } from '@/lib/api/client';
 import { errorMessage } from '@/lib/errors-i18n';
 import { t } from '@/lib/i18n';
-import { cn } from '@/lib/utils';
+import { cn, fmtNum, initials } from '@/lib/utils';
+import { Search } from 'lucide-react';
+import { PageHeader } from './page-header';
 import { Button } from '@/components/ui/button';
-import { Input, Select } from '@/components/ui/input';
+import { Select } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAdmin } from './admin-context';
 import { fmtDate } from './format';
@@ -49,46 +51,50 @@ export function UsersTable({ initialQ = '' }: { initialQ?: string }) {
   const pages = data ? Math.max(1, Math.ceil(data.total / data.pageSize)) : 1;
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center gap-3">
-        <h1 className="text-2xl">{t('admin.students')}</h1>
-        <span className="flex-1" />
-        <Input
-          value={q}
-          onChange={(e) => {
-            setQ(e.target.value);
-            setPage(1);
-          }}
-          placeholder={t('common.search')}
-          className="max-w-xs"
-          aria-label={t('common.search')}
-        />
-      </div>
-      <div className="flex flex-wrap gap-2">
-        <button
-          type="button"
-          className={cn('chip', role === '' && 'on')}
-          onClick={() => {
-            setRole('');
-            setPage(1);
-          }}
-        >
-          {t('common.all')}
-        </button>
-        {ROLES.map((r) => (
+      <PageHeader
+        title={t('admin.students')}
+        subtitle={data ? t('admin.usersCount', { n: fmtNum(data.total) }) : ' '}
+      />
+      <div className="tb !my-0">
+        <div className="chips">
           <button
-            key={r}
             type="button"
-            className={cn('chip', role === r && 'on')}
+            className={cn('chip', role === '' && 'on')}
             onClick={() => {
-              setRole(r);
+              setRole('');
               setPage(1);
             }}
           >
-            {t(`role.${r}`)}
+            {t('common.all')}
           </button>
-        ))}
+          {ROLES.map((r) => (
+            <button
+              key={r}
+              type="button"
+              className={cn('chip', role === r && 'on')}
+              onClick={() => {
+                setRole(r);
+                setPage(1);
+              }}
+            >
+              {t(`role.${r}`)}
+            </button>
+          ))}
+        </div>
+        <label className="srch">
+          <Search aria-hidden className="size-[18px] shrink-0" />
+          <input
+            value={q}
+            onChange={(e) => {
+              setQ(e.target.value);
+              setPage(1);
+            }}
+            placeholder={t('common.search')}
+            aria-label={t('common.search')}
+          />
+        </label>
       </div>
-      <div className="card overflow-x-auto">
+      <div className="tbl-wrap">
         <table className="tbl-admin">
           <thead>
             <tr>
@@ -118,14 +124,19 @@ export function UsersTable({ initialQ = '' }: { initialQ?: string }) {
             ) : (
               data?.items.map((u) => (
                 <tr key={u.id}>
-                  <td className="font-semibold">{u.name}</td>
+                  <td>
+                    <span className="flex items-center gap-3">
+                      <span className="avatar sm">{initials(u.name)}</span>
+                      <b>{u.name}</b>
+                    </span>
+                  </td>
                   <td className="text-muted">{u.email}</td>
                   <td>
                     {isAdmin ? (
                       <Select
                         value={u.role}
                         onChange={(e) => changeRole(u, e.target.value as Role)}
-                        className="min-h-0 w-auto py-1 text-xs"
+                        className="!min-h-0 w-auto !py-1.5 text-sm"
                         aria-label={t('admin.changeRole')}
                       >
                         {ROLES.map((r) => (

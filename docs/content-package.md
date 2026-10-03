@@ -42,7 +42,10 @@ cover: cover.png # istəyə bağlı
 sequential: true # false = sərbəst rejim
 estimated_hours: 6 # istəyə bağlı
 published: false # true olsa kurs dərhal dərc olunur (defolt: qaralama)
+topics: [sql, excel] # istəyə bağlı — admin «Mövzular» bölməsindəki slug-lar; olmayanlar xəbərdarlıqla ötürülür
 ```
+
+`topics` verilməsə kursun mövcud mövzuları dəyişmir; boş siyahı (`topics: []`) hamısını silir.
 
 ## module.yaml
 

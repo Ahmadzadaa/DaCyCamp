@@ -32,6 +32,8 @@ export const courseYamlSchema = z.object({
   sequential: z.boolean().default(true),
   estimated_hours: z.number().min(0).optional(),
   published: z.boolean().default(false),
+  /** mövzuların slug-ları (Qeyd 5) — bazada olmayanlar xəbərdarlıqla ötürülür */
+  topics: z.array(slug).max(20).optional(),
 });
 export type CourseYaml = z.infer<typeof courseYamlSchema>;
 
