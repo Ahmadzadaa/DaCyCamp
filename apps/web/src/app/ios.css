@@ -36,6 +36,9 @@
   --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
   --spring: cubic-bezier(0.34, 1.4, 0.64, 1);
   --top-h: 60px;
+  /* sidebar: məzmundan bir az tünd, yumşaq boz (iPadOS kimi) — aktiv sətir və kartlar ağ qalır */
+  --sb-bg: #e8e8ed;
+  --sb-hover: rgba(0, 0, 0, 0.05);
   -webkit-font-smoothing: antialiased;
 }
 /* tünd palitra: bütün sayt (data-theme='dark') və ya içəridəki tünd zona (məs. dərsdə redaktor tərəfi) */
@@ -54,6 +57,8 @@
   --shadow-hover: 0 0 0 0.5px rgba(255, 255, 255, 0.1), 0 20px 40px -18px rgba(0, 0, 0, 0.8);
   --glass: rgba(28, 28, 30, 0.72);
   --brand-ink: #04281d;
+  --sb-bg: #121214;
+  --sb-hover: rgba(255, 255, 255, 0.06);
 }
 
 @layer components {
@@ -104,8 +109,8 @@
 
   /* ── sidebar: iPadOS üslubu, rəngli ikon kafelləri ─────────────────────── */
   [data-ui='ios'] .sb {
-    background: color-mix(in srgb, var(--paper) 70%, var(--card));
-    border-right: 0.5px solid var(--line);
+    background: var(--sb-bg);
+    border-right: 0.5px solid color-mix(in srgb, var(--line) 140%, transparent);
     color: var(--muted);
     scrollbar-color: var(--line) transparent;
   }
@@ -134,7 +139,7 @@
     stroke-width: 2.1;
   }
   [data-ui='ios'] .sb-group a:hover {
-    background: var(--soft);
+    background: var(--sb-hover);
     color: var(--ink);
   }
   [data-ui='ios'] .sb-group a[aria-current='page'] {
