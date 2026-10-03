@@ -357,7 +357,7 @@ Mənbə: `Python_Day_1/2.pptx` (nəzəri) + `Python_Day_1/2.docx` (35 tapşırı
 - **Python runtime:** testlərdə `dacy.stdout / dacy.lines / dacy.code`; sonu yeni sətirsiz `print(..., end=" ")` artıq itmir (xam `write` + flush); 10 saniyəlik gözətçi sonsuz dövrü dayandırır (yalnız tələbə kodu izlənir — kitabxanalar yavaşımır).
 - **Testlər:** sual mətni Markdown (inline kod, kod bloku).
 - **Yoxlama:** `pnpm --filter @dacy/web check:python` — hər Python addımında həll testdən keçir, starter keçmir (Node-da Pyodide, şəbəkəsiz; CI-da işləyir). API e2e `content-packages.e2e-spec.ts` hər paketin idxalını yoxlayır. Playwright `python-course.spec.ts`: idxal, kataloq, tələbə axını, Markdown sual, flush və gözətçi.
-- Testlər: API e2e 101/101, Playwright `python-course` 4/4, `check:python` 18/18.
+- Testlər: API e2e 101/101, Playwright 49/49 (o cümlədən `python-course` 4/4, yeni dizaynla), `check:python` 18/18.
 
 ## Dizayn v3 (iOS üslubu) — standart görünüş, 3 oktyabr 2026
 
