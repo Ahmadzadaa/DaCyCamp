@@ -63,6 +63,7 @@ export function BottomNav({
                         <Link
                           href={it.href}
                           aria-current={isActive(it, path, search) ? 'page' : undefined}
+                          style={it.tint ? { ['--ic' as string]: it.tint } : undefined}
                         >
                           <Icon aria-hidden />
                           <span className="sb-lbl">{t(it.label)}</span>

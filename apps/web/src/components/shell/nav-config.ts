@@ -39,6 +39,8 @@ export interface NavItem {
   staffOnly?: boolean;
   /** sayğac (məs. yoxlama gözləyən layihələr) — qabıq doldurur */
   countKey?: 'reviews';
+  /** ikon kafelinin rəngi (iOS üslubu, `--ic`) */
+  tint?: string;
 }
 export interface NavSection {
   title?: TKey;
@@ -49,35 +51,76 @@ export interface NavSection {
 export const STUDENT_NAV: NavSection[] = [
   {
     items: [
-      { href: '/panel', label: 'shell.panel', icon: LayoutDashboard, auth: true },
-      { href: '/fealiyyetim', label: 'shell.activity', icon: Activity, auth: true },
-      { href: '/liderler', label: 'shell.leaderboard', icon: Trophy, isNew: true },
+      { href: '/panel', label: 'shell.panel', icon: LayoutDashboard, auth: true, tint: '#0A84FF' },
+      {
+        href: '/fealiyyetim',
+        label: 'shell.activity',
+        icon: Activity,
+        auth: true,
+        tint: '#30D158',
+      },
+      { href: '/liderler', label: 'shell.leaderboard', icon: Trophy, isNew: true, tint: '#FF9F0A' },
     ],
   },
   {
     title: 'shell.learn',
     items: [
-      { href: '/yollar', label: 'shell.paths', icon: Route, match: [/^\/yollar/, /^\/yol\//] },
+      {
+        href: '/yollar',
+        label: 'shell.paths',
+        icon: Route,
+        match: [/^\/yollar/, /^\/yol\//],
+        tint: '#5E5CE6',
+      },
       {
         href: '/kurslar',
         label: 'shell.courses',
         icon: BookOpen,
         match: [/^\/kurslar/, /^\/kurs\//],
+        tint: '#12B886',
       },
-      { href: '/tecrube', label: 'shell.practice', icon: FlaskConical, isNew: true, auth: true },
-      { href: '/imtahanlar', label: 'shell.exams', icon: ClipboardCheck, auth: true },
+      {
+        href: '/tecrube',
+        label: 'shell.practice',
+        icon: FlaskConical,
+        isNew: true,
+        auth: true,
+        tint: '#BF5AF2',
+      },
+      {
+        href: '/imtahanlar',
+        label: 'shell.exams',
+        icon: ClipboardCheck,
+        auth: true,
+        tint: '#FF375F',
+      },
     ],
   },
   {
     title: 'shell.apply',
     items: [
-      { href: '/layiheler', label: 'shell.projects', icon: FolderKanban, isNew: true, auth: true },
-      { href: '/yarislar', label: 'shell.contests', icon: Swords, isNew: true },
+      {
+        href: '/layiheler',
+        label: 'shell.projects',
+        icon: FolderKanban,
+        isNew: true,
+        auth: true,
+        tint: '#FF9F0A',
+      },
+      { href: '/yarislar', label: 'shell.contests', icon: Swords, isNew: true, tint: '#FF453A' },
     ],
   },
   {
     title: 'shell.secManage',
-    items: [{ href: '/admin', label: 'shell.adminPanel', icon: ShieldCheck, staffOnly: true }],
+    items: [
+      {
+        href: '/admin',
+        label: 'shell.adminPanel',
+        icon: ShieldCheck,
+        staffOnly: true,
+        tint: '#8E8E93',
+      },
+    ],
   },
 ];
 
@@ -125,8 +168,14 @@ export const PILL_NAV: Array<{
 
 /** Mobil alt naviqasiya: 4 əsas + «Daha çox» */
 export const BOTTOM_NAV: NavItem[] = [
-  { href: '/panel', label: 'shell.panel', icon: LayoutDashboard, auth: true },
-  { href: '/yollar', label: 'shell.paths', icon: Route, match: [/^\/yollar/, /^\/yol\//] },
+  { href: '/panel', label: 'shell.panel', icon: LayoutDashboard, auth: true, tint: '#0A84FF' },
+  {
+    href: '/yollar',
+    label: 'shell.paths',
+    icon: Route,
+    match: [/^\/yollar/, /^\/yol\//],
+    tint: '#5E5CE6',
+  },
   { href: '/kurslar', label: 'shell.courses', icon: BookOpen, match: [/^\/kurslar/, /^\/kurs\//] },
   { href: '/layiheler', label: 'shell.projects', icon: FolderKanban, auth: true },
 ];
@@ -140,43 +189,58 @@ export const ADMIN_NAV: NavSection[] = [
         label: 'shell.adminOverview',
         icon: LayoutDashboard,
         match: [/^\/admin\/?$/],
+        tint: '#0A84FF',
       },
     ],
   },
   {
     title: 'shell.secContent',
     items: [
-      { href: '/admin/kurslar', label: 'shell.courses', icon: BookOpen },
-      { href: '/admin/movzular', label: 'shell.topics', icon: Tags },
-      { href: '/admin/istiqametler', label: 'shell.tracks', icon: Layers },
-      { href: '/admin/yollar', label: 'shell.paths', icon: Route },
-      { href: '/admin/karyera', label: 'shell.roadmaps', icon: Map, adminOnly: true },
-      { href: '/admin/fayllar', label: 'shell.files', icon: Folder },
-      { href: '/admin/idxal', label: 'shell.zipImport', icon: Upload },
+      { href: '/admin/kurslar', label: 'shell.courses', icon: BookOpen, tint: '#12B886' },
+      { href: '/admin/movzular', label: 'shell.topics', icon: Tags, tint: '#FF9F0A' },
+      { href: '/admin/istiqametler', label: 'shell.tracks', icon: Layers, tint: '#5E5CE6' },
+      { href: '/admin/yollar', label: 'shell.paths', icon: Route, tint: '#BF5AF2' },
+      {
+        href: '/admin/karyera',
+        label: 'shell.roadmaps',
+        icon: Map,
+        adminOnly: true,
+        tint: '#30D158',
+      },
+      { href: '/admin/fayllar', label: 'shell.files', icon: Folder, tint: '#64D2FF' },
+      { href: '/admin/idxal', label: 'shell.zipImport', icon: Upload, tint: '#8E8E93' },
     ],
   },
   {
     title: 'shell.secPeople',
     items: [
-      { href: '/admin/telebeler', label: 'shell.students', icon: Users },
+      { href: '/admin/telebeler', label: 'shell.students', icon: Users, tint: '#0A84FF' },
       {
         href: '/admin/layiheler',
         label: 'shell.reviewsQueue',
         icon: ClipboardCheck,
         countKey: 'reviews',
+        tint: '#FF9F0A',
       },
-      { href: '/admin/lablar', label: 'shell.labSessions', icon: SquareTerminal },
+      { href: '/admin/lablar', label: 'shell.labSessions', icon: SquareTerminal, tint: '#1C1C1E' },
     ],
   },
   {
     title: 'shell.secSystem',
     items: [
-      { href: '/admin/tarixce', label: 'shell.auditLog', icon: History, adminOnly: true },
+      {
+        href: '/admin/tarixce',
+        label: 'shell.auditLog',
+        icon: History,
+        adminOnly: true,
+        tint: '#8E8E93',
+      },
       {
         href: '/admin/kurslar?status=deleted',
         label: 'shell.trash',
         icon: Trash2,
         adminOnly: true,
+        tint: '#FF453A',
       },
     ],
   },

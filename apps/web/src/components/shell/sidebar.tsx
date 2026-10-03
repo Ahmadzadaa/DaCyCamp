@@ -41,7 +41,12 @@ export function Sidebar({
                 const on = isActive(it, path, search);
                 const count = it.countKey ? counts?.[it.countKey] : undefined;
                 return (
-                  <Link key={it.href} href={it.href} aria-current={on ? 'page' : undefined}>
+                  <Link
+                    key={it.href}
+                    href={it.href}
+                    aria-current={on ? 'page' : undefined}
+                    style={it.tint ? { ['--ic' as string]: it.tint } : undefined}
+                  >
                     <Icon aria-hidden />
                     <span className="sb-lbl">{t(it.label)}</span>
                     {it.isNew ? <span className="new">{t('shell.newBadge')}</span> : null}
