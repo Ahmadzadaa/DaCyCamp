@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { Check, Lock, Star, Trophy } from 'lucide-react';
 import type { PathItemDto } from '@dacy/shared';
 import { t } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
@@ -102,11 +103,21 @@ function Node({ it, enrolled }: { it: PathItemDto; enrolled: boolean }) {
   );
   const dot =
     it.state === 'completed' ? (
-      <span>✓</span>
+      <span>
+        <Check aria-hidden />
+      </span>
     ) : it.type === 'MILESTONE' ? (
-      <span>🏆</span>
+      <span>
+        <Trophy aria-hidden />
+      </span>
     ) : it.type === 'ASSESSMENT' ? (
-      <span>★</span>
+      <span>
+        <Star aria-hidden />
+      </span>
+    ) : it.state === 'locked' ? (
+      <span>
+        <Lock aria-hidden />
+      </span>
     ) : (
       <span>{it.number}</span>
     );
@@ -114,10 +125,10 @@ function Node({ it, enrolled }: { it: PathItemDto; enrolled: boolean }) {
   const card = (
     <>
       <div className="ntop">
-        <span className="ntype">{TYPE_LABEL[it.type]()}</span>
-        {it.type === 'COURSE' && it.course ? (
-          <span className="ntype">{t(`level.${it.course.level}`)}</span>
-        ) : null}
+        <span className="ntype">
+          {TYPE_LABEL[it.type]()}
+          {it.type === 'COURSE' && it.course ? ` · ${t(`level.${it.course.level}`)}` : ''}
+        </span>
       </div>
       <h4>{it.title}</h4>
       <div className="meta">{meta(it)}</div>

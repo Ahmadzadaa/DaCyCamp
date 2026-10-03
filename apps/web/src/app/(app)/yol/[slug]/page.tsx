@@ -1,11 +1,12 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { Award } from 'lucide-react';
+import { Award, PartyPopper } from 'lucide-react';
 import type { PathDetailDto } from '@dacy/shared';
 import { apiTry, getCurrentUser, isStaff } from '@/lib/api/server';
 import { t } from '@/lib/i18n';
 import { TrackBadge } from '@/components/app/track-badge';
+import { HeroArt } from '@/components/app/hero-art';
 import { PathMap } from '@/components/path/path-map';
 import { PathEnrollButton } from '@/components/path/path-enroll-button';
 
@@ -27,23 +28,31 @@ export default async function PathPage({ params, searchParams }: Props) {
   const { path } = d;
   const color = path.track.color;
   return (
-    <div className="lp" style={{ ['--c' as string]: color }}>
-      <header className="lp-head">
-        <div>
-          <TrackBadge color={color}>
-            {path.track.title} · {t('paths.careerPath')}
-          </TrackBadge>
-          <h1>{path.title}</h1>
-          <p>{path.description}</p>
+    <div style={{ ['--c' as string]: color }}>
+      <section className="hero sm accent">
+        <div className="min-w-0">
+          <div className="hero-k">
+            <TrackBadge color={color}>{path.track.title}</TrackBadge>
+            <span className="badge badge-mint">{t('paths.careerPath')}</span>
+            <span className="badge badge-onhero">{t(`level.${path.level}`)}</span>
+          </div>
+          <h1 className="mt-3">{path.title}</h1>
+          {path.description ? <p>{path.description}</p> : null}
           <div className="lp-facts">
             <div>
               <b>{path.courseCount}</b>
-              <span>{t('paths.courses', { n: '' }).trim()}</span>
+              <span>{t('paths.factsCourses')}</span>
             </div>
             {path.projectCount ? (
               <div>
                 <b>{path.projectCount}</b>
-                <span>{t('paths.projects', { n: '' }).trim()}</span>
+                <span>{t('paths.factsProjects')}</span>
+              </div>
+            ) : null}
+            {path.assessmentCount ? (
+              <div>
+                <b>{path.assessmentCount}</b>
+                <span>{t('paths.factsExams')}</span>
               </div>
             ) : null}
             {path.estimatedHours ? (
@@ -59,71 +68,81 @@ export default async function PathPage({ params, searchParams }: Props) {
               </div>
             ) : null}
           </div>
-          {d.completedAt ? (
-            <p className="mt-3 inline-flex flex-wrap items-center gap-2 rounded-lg bg-brand/15 px-3 py-1 text-sm font-semibold text-brand">
-              🎉 {t('paths.finishedBanner')}
-              {d.certificateId ? (
-                <Link
-                  href={`/sertifikat/${d.certificateId}`}
-                  className="underline"
-                  data-testid="path-cert"
-                >
-                  {t('paths.openCertificate')}
-                </Link>
-              ) : null}
-            </p>
+          <div className="hero-act">
+            {d.completedAt ? (
+              <>
+                <span className="done-pill">
+                  <PartyPopper aria-hidden />
+                  {t('paths.finishedBanner')}
+                </span>
+                {d.certificateId ? (
+                  <Link
+                    href={`/sertifikat/${d.certificateId}`}
+                    className="b b-brand"
+                    data-testid="path-cert"
+                  >
+                    <Award aria-hidden />
+                    {t('paths.openCertificate')}
+                  </Link>
+                ) : null}
+              </>
+            ) : (
+              <PathEnrollButton
+                slug={path.slug}
+                enrolled={d.enrolled}
+                isActive={d.isActive}
+                continueUrl={d.continueUrl}
+                loggedIn={!!user}
+              />
+            )}
+          </div>
+        </div>
+        <HeroArt kind="route" />
+      </section>
+
+      <div className="lp">
+        <div className="min-w-0">
+          <PathMap items={d.items} color={color} enrolled={d.enrolled || preview} />
+        </div>
+
+        <aside className="flex flex-col gap-4">
+          {path.skills.length ? (
+            <div className="box">
+              <h2 className="box-h">{t('paths.skills')}</h2>
+              <div className="skills">
+                {path.skills.map((s) => (
+                  <span key={s}>{s}</span>
+                ))}
+              </div>
+            </div>
           ) : null}
-        </div>
-        <PathEnrollButton
-          slug={path.slug}
-          enrolled={d.enrolled}
-          isActive={d.isActive}
-          continueUrl={d.continueUrl}
-          loggedIn={!!user}
-        />
-      </header>
-
-      <div>
-        <PathMap items={d.items} color={color} enrolled={d.enrolled || preview} />
+          {path.targetAudience ? (
+            <div className="box">
+              <h2 className="box-h">{t('paths.audience')}</h2>
+              <p className="text-sm text-muted">{path.targetAudience}</p>
+            </div>
+          ) : null}
+          <div className="box">
+            <h2 className="box-h">
+              <Award aria-hidden /> {t('paths.certificate')}
+            </h2>
+            <p className="text-sm text-muted">{t('paths.afterAll')}</p>
+          </div>
+          {d.otherPaths.length ? (
+            <div className="box">
+              <h2 className="box-h">{t('paths.others')}</h2>
+              <div className="paths">
+                {d.otherPaths.map((o) => (
+                  <Link key={o.id} href={`/yol/${o.slug}`}>
+                    <span className="min-w-0 truncate">{o.title}</span>
+                    <TrackBadge color={o.track.color}>{o.track.title}</TrackBadge>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          ) : null}
+        </aside>
       </div>
-
-      <aside className="side">
-        {path.skills.length ? (
-          <div className="box">
-            <b>{t('paths.skills')}</b>
-            <div className="skills">
-              {path.skills.map((s) => (
-                <span key={s}>{s}</span>
-              ))}
-            </div>
-          </div>
-        ) : null}
-        {path.targetAudience ? (
-          <div className="box">
-            <b>{t('paths.audience')}</b>
-            <p className="mt-1.5 text-sm text-muted">{path.targetAudience}</p>
-          </div>
-        ) : null}
-        <div className="box">
-          <b className="flex items-center gap-2">
-            <Award className="size-4" /> {t('paths.certificate')}
-          </b>
-          <p className="mt-1.5 text-sm text-muted">{t('paths.afterAll')}</p>
-        </div>
-        {d.otherPaths.length ? (
-          <div className="box">
-            <b>{t('paths.others')}</b>
-            <div className="paths">
-              {d.otherPaths.map((o) => (
-                <Link key={o.id} href={`/yol/${o.slug}`}>
-                  <span>{o.title}</span>
-                  <TrackBadge color={o.track.color}>{o.track.title}</TrackBadge>
-                </Link>
-              ))}
-            </div>
-          </div>
-        ) : null}
-      </aside>
     </div>
   );
 }

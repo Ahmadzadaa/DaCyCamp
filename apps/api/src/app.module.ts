@@ -23,6 +23,7 @@ import { PathsModule } from './paths/paths.module';
 import { ProgressModule } from './progress/progress.module';
 import { AuditModule } from './audit/audit.module';
 import { AdminOverviewModule } from './admin-overview/admin-overview.module';
+import { HubModule } from './hub/hub.module';
 
 @Module({
   imports: [
@@ -45,6 +46,7 @@ import { AdminOverviewModule } from './admin-overview/admin-overview.module';
     CertificatesModule,
     PathsLearnModule,
     AdminOverviewModule,
+    HubModule,
   ],
   controllers: [HealthController],
   providers: [

@@ -2,17 +2,18 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { Compass } from 'lucide-react';
+import { ArrowRight, Check, Compass } from 'lucide-react';
 import type { PathCardDto, TrackDto } from '@dacy/shared';
 import { api } from '@/lib/api/client';
 import { errorMessage } from '@/lib/errors-i18n';
 import { t } from '@/lib/i18n';
-import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { TrackBadge } from '@/components/app/track-badge';
+import { HeroArt } from '@/components/app/hero-art';
+import { LevelBars } from '@/components/app/level-bars';
+import { TrackTile } from '@/components/app/track-icon';
 import { pathFacts } from '@/components/app/path-card';
 
-/** «Hansı peşəyə hazırlaşırsınız?» — istiqamət seç → uyğun yollar → «Bu yola başla» */
+/** «Hansı peşəyə hazırlaşırsınız?» — 1) istiqamət seç → 2) uyğun yollar → «Bu yola başla» */
 export function Onboarding({ tracks, paths }: { tracks: TrackDto[]; paths: PathCardDto[] }) {
   const router = useRouter();
   const [track, setTrack] = useState<string | null>(null);
@@ -32,13 +33,26 @@ export function Onboarding({ tracks, paths }: { tracks: TrackDto[]; paths: PathC
   }
 
   return (
-    <div className="mx-auto max-w-[860px]">
-      <div className="mb-6 text-center">
-        <Compass className="mx-auto mb-3 size-10 text-brand" />
-        <h1 className="text-2xl">{t('paths.onboardingTitle')}</h1>
-        <p className="mt-1 text-sm text-muted">{t('paths.onboardingDesc')}</p>
+    <div>
+      <section className="hero">
+        <div>
+          <div className="hero-k">
+            <span className="badge badge-mint">
+              <Compass aria-hidden />
+              {t('paths.careerPath')}
+            </span>
+          </div>
+          <h1 className="mt-3">{t('paths.onboardingTitle')}</h1>
+          <p>{t('paths.onboardingDesc')}</p>
+        </div>
+        <HeroArt kind="route" />
+      </section>
+
+      <div className="step-h">
+        <span className="n">1</span>
+        <h2>{t('onboarding.pickTrack')}</h2>
       </div>
-      <div className="grid gap-3 sm:grid-cols-3" role="radiogroup" aria-label={t('common.track')}>
+      <div className="grid gap-4 md:grid-cols-3" role="radiogroup" aria-label={t('common.track')}>
         {tracks.map((tr) => (
           <button
             key={tr.slug}
@@ -46,51 +60,68 @@ export function Onboarding({ tracks, paths }: { tracks: TrackDto[]; paths: PathC
             role="radio"
             aria-checked={track === tr.slug}
             onClick={() => setTrack(tr.slug)}
-            className={cn(
-              'box text-left transition hover:border-brand',
-              track === tr.slug && 'border-2 border-brand',
-            )}
+            className="pick"
             style={{ ['--c' as string]: tr.color }}
             data-testid="onboarding-track"
           >
-            <TrackBadge color={tr.color}>{tr.title}</TrackBadge>
-            {tr.description ? <p className="mt-2 text-sm text-muted">{tr.description}</p> : null}
+            <TrackTile color={tr.color} icon={tr.icon} slug={tr.slug} size="lg" />
+            <h3>{tr.title}</h3>
+            {tr.description ? <p>{tr.description}</p> : null}
+            {track === tr.slug ? (
+              <span className="pick-ok" aria-hidden>
+                <Check />
+              </span>
+            ) : null}
           </button>
         ))}
       </div>
+
       {track ? (
-        <div className="mt-6">
-          <h2 className="mb-3 text-lg">{t('paths.suggested')}</h2>
+        <>
+          <div className="step-h">
+            <span className="n">2</span>
+            <h2>{t('paths.suggested')}</h2>
+          </div>
           {suggested.length === 0 ? (
-            <p className="text-sm text-muted">{t('paths.noSuggestion')}</p>
+            <p className="box text-muted">{t('paths.noSuggestion')}</p>
           ) : (
-            <div className="grid gap-3 md:grid-cols-2">
+            <div className="cards">
               {suggested.map((p) => (
-                <div
+                <article
                   key={p.id}
-                  className="box flex flex-col gap-2"
+                  className="kc"
                   style={{ ['--c' as string]: p.track.color }}
                   data-testid="onboarding-path"
                   data-slug={p.slug}
                 >
-                  <b>{p.title}</b>
-                  <p className="line-clamp-3 text-sm text-muted">{p.description}</p>
-                  <div className="text-xs text-muted">{pathFacts(p).join(' · ')}</div>
-                  <Button
-                    type="button"
-                    loading={busy === p.slug}
-                    onClick={() => void choose(p.slug)}
-                    className="mt-1 self-start"
-                  >
-                    {t('paths.chooseThis')}
-                  </Button>
-                </div>
+                  <span className="kind">
+                    {t('paths.kind')} · {p.track.title}
+                  </span>
+                  <h3>{p.title}</h3>
+                  <LevelBars level={p.level} color={p.track.color} />
+                  {p.description ? <p>{p.description}</p> : null}
+                  <div className="path-parts">{pathFacts(p).slice(1).join(' · ')}</div>
+                  <div className="ft">
+                    <span className="dur">
+                      <TrackTile color={p.track.color} icon={p.track.icon} slug={p.track.slug} />
+                    </span>
+                    <Button
+                      type="button"
+                      size="sm"
+                      loading={busy === p.slug}
+                      onClick={() => void choose(p.slug)}
+                    >
+                      {t('paths.chooseThis')}
+                      <ArrowRight aria-hidden />
+                    </Button>
+                  </div>
+                </article>
               ))}
             </div>
           )}
-        </div>
+        </>
       ) : null}
-      <div className="mt-8 text-center">
+      <div className="mt-10 flex justify-center">
         <Button type="button" variant="ghost" onClick={() => router.push('/kurslar')}>
           {t('paths.skip')}
         </Button>

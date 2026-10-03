@@ -191,7 +191,7 @@ export default async function DashboardPage() {
               <p className="mt-2 text-sm text-muted">
                 {d.activePath.next
                   ? t('dash.nextLine', { pct: d.activePath.percent, next: d.activePath.next.title })
-                  : `✓ ${t('dash.pathDone')}`}
+                  : `${d.activePath.percent}% · ✓ ${t('dash.pathDone')}`}
               </p>
               {d.activePath.next ? (
                 <Link href={d.activePath.next.url} className="b b-ghost b-sm mt-3 w-full">

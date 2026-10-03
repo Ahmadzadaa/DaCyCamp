@@ -1,11 +1,12 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { Route } from 'lucide-react';
+import { BookOpen, Compass, Route } from 'lucide-react';
 import type { PathCardDto, TrackDto } from '@dacy/shared';
-import { apiFetch } from '@/lib/api/server';
+import { apiFetch, getCurrentUser } from '@/lib/api/server';
 import { t } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import { EmptyState } from '@/components/app/empty-state';
+import { HeroArt } from '@/components/app/hero-art';
 import { PathCard } from '@/components/app/path-card';
 
 export const metadata: Metadata = { title: t('nav.paths') };
@@ -16,19 +17,37 @@ export default async function PathsPage({
   searchParams: Promise<{ istiqamet?: string }>;
 }) {
   const sp = await searchParams;
-  const [tracks, paths] = await Promise.all([
+  const [tracks, paths, user] = await Promise.all([
     apiFetch<TrackDto[]>('/tracks'),
     apiFetch<PathCardDto[]>(
       `/paths${sp.istiqamet ? `?track=${encodeURIComponent(sp.istiqamet)}` : ''}`,
     ),
+    getCurrentUser(),
   ]);
   return (
-    <div>
-      <header className="mb-5">
-        <h1 className="text-2xl">{t('paths.title')}</h1>
-        <p className="mt-1 max-w-[70ch] text-sm text-muted">{t('paths.subtitle')}</p>
-      </header>
-      <div className="mb-5 flex flex-wrap gap-2" role="tablist" aria-label={t('common.track')}>
+    <div className="flex flex-col">
+      <section className="hero">
+        <div>
+          <div className="hero-k">
+            <h1>{t('paths.title')}</h1>
+            <span className="badge badge-mint">{t('paths.heroBadge')}</span>
+          </div>
+          <p>{t('paths.heroText')}</p>
+          <div className="hero-act">
+            <Link href={user ? '/baslangic' : '/qeydiyyat'} className="b b-brand">
+              <Compass aria-hidden />
+              {t('paths.findMine')}
+            </Link>
+            <Link href="/kurslar" className="b b-navy">
+              <BookOpen aria-hidden />
+              {t('paths.browseCourses')}
+            </Link>
+          </div>
+        </div>
+        <HeroArt kind="route" />
+      </section>
+
+      <nav className="chips mt-8" aria-label={t('common.track')}>
         <Link
           href="/yollar"
           className={cn('chip', !sp.istiqamet && 'on')}
@@ -44,14 +63,20 @@ export default async function PathsPage({
             style={{ ['--c' as string]: tr.color }}
             aria-current={sp.istiqamet === tr.slug ? 'page' : undefined}
           >
+            <span className="cdot" aria-hidden />
             {tr.title}
           </Link>
         ))}
+      </nav>
+      <div className="tb">
+        <span className="cnt">
+          <b>{paths.length}</b> {t('paths.countUnit')}
+        </span>
       </div>
       {paths.length === 0 ? (
         <EmptyState icon={Route} title={t('paths.empty')} description={t('paths.emptyDesc')} />
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="cards">
           {paths.map((p) => (
             <PathCard key={p.id} path={p} />
           ))}

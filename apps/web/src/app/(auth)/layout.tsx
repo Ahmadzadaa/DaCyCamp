@@ -1,14 +1,44 @@
+import { Award, CodeXml, Route, SquareTerminal } from 'lucide-react';
 import { Logo } from '@/components/app/logo';
-import { ThemeToggle } from '@/components/app/theme-toggle';
+import { HeroArt } from '@/components/app/hero-art';
+import { t } from '@/lib/i18n';
 
+const FEATS = [
+  { icon: CodeXml, text: 'auth.feat1' },
+  { icon: SquareTerminal, text: 'auth.feat2' },
+  { icon: Route, text: 'auth.feat3' },
+  { icon: Award, text: 'auth.feat4' },
+] as const;
+
+/** Giriş / qeydiyyat: solda navy təqdimat paneli, sağda forma (mobil — yalnız forma) */
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
-    <main className="flex min-h-dvh flex-col items-center justify-center bg-paper px-4 py-10">
-      <div className="mb-6 flex w-full max-w-md items-center justify-between">
-        <Logo text="DaCy Academy" className="text-ink" />
-        <ThemeToggle className="rounded-md p-1.5 text-muted hover:text-ink" />
-      </div>
-      <div className="box w-full max-w-md p-7">{children}</div>
-    </main>
+    <div className="auth">
+      <aside className="auth-aside" aria-hidden="false">
+        <Logo text={t('shell.brand')} href="/kurslar" className="text-white" />
+        <div className="auth-pitch">
+          <span className="badge badge-mint">{t('auth.asideBadge')}</span>
+          <h2>{t('auth.asideTitle')}</h2>
+          <p>{t('auth.asideText')}</p>
+          <ul>
+            {FEATS.map((f) => (
+              <li key={f.text}>
+                <span>
+                  <f.icon aria-hidden />
+                </span>
+                {t(f.text)}
+              </li>
+            ))}
+          </ul>
+        </div>
+        <HeroArt kind="catalog" />
+      </aside>
+      <main className="auth-main">
+        <div className="auth-top">
+          <Logo text={t('shell.brand')} href="/kurslar" className="auth-logo-m" />
+        </div>
+        <div className="auth-card">{children}</div>
+      </main>
+    </div>
   );
 }

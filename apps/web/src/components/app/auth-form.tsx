@@ -38,9 +38,11 @@ export function AuthForm({ mode, next }: { mode: 'login' | 'register'; next?: st
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4" noValidate>
-      <div>
-        <h1 className="text-2xl">{isLogin ? t('auth.loginTitle') : t('auth.registerTitle')}</h1>
-        <p className="mt-1 text-sm text-muted">
+      <div className="mb-2">
+        <h1 className="text-[32px] font-bold tracking-[-0.01em]">
+          {isLogin ? t('auth.loginTitle') : t('auth.registerTitle')}
+        </h1>
+        <p className="mt-2 text-muted">
           {isLogin ? t('auth.loginSubtitle') : t('auth.registerSubtitle')}
         </p>
       </div>
@@ -70,10 +72,7 @@ export function AuthForm({ mode, next }: { mode: 'login' | 'register'; next?: st
         />
       </Field>
       {error ? (
-        <div
-          role="alert"
-          className="rounded-lg border border-error/40 bg-error/10 px-3 py-2 text-sm text-error"
-        >
+        <div role="alert" className="dlg-alert">
           {error}
         </div>
       ) : null}

@@ -144,9 +144,9 @@ test('qeydiyyat → onboarding → istiqamət → «Bu yola başla» → yol sə
   await expect(page.locator('.opt a')).toHaveCount(1);
   // yollar siyahısı və panel
   await page.goto('/yollar');
-  await expect(page.locator(`[data-testid="path-card"][href="/yol/${pathSlug}"]`)).toContainText(
-    'Aktiv yol',
-  );
+  await expect(
+    page.getByTestId('path-card').filter({ has: page.locator(`a[href="/yol/${pathSlug}"]`) }),
+  ).toContainText('Aktiv yol');
   await page.goto('/panel');
   await expect(page.getByTestId('dash-active-path')).toContainText('E2E yolu');
 });

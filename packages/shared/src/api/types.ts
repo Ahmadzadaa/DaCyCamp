@@ -497,7 +497,7 @@ export interface PathCardDto {
   title: string;
   description: string;
   level: Level;
-  track: { slug: string; title: string; color: string };
+  track: { slug: string; title: string; color: string; icon?: string | null };
   skills: string[];
   targetAudience: string | null;
   estimatedHours: number | null;
@@ -662,4 +662,142 @@ export interface AdminProjectReviewDto {
   files: Array<{ filename: string; size: number; url: string }>;
   link: string | null;
   note: string | null;
+}
+
+// ───────── Öyrənmə mərkəzi (sidebar bölmələri) ─────────
+
+/** Fəaliyyətim */
+export interface ActivityDto {
+  /** son 53 həftə (köhnədən yeniyə), APP_TIMEZONE günləri */
+  days: Array<{ date: string; steps: number; xp: number }>;
+  totals: {
+    xp: number;
+    steps: number;
+    activeDays: number;
+    currentStreak: number;
+    bestStreak: number;
+    certificates: number;
+  };
+  byTrack: Array<{ title: string; color: string; steps: number }>;
+  events: Array<{
+    id: string;
+    at: string;
+    amount: number;
+    reason: string;
+    title: string | null;
+    context: string | null;
+    url: string | null;
+  }>;
+}
+
+export type LeaderboardPeriod = 'week' | 'month' | 'all';
+/** Liderlər cədvəli — ad qısaldılır («Orxan R.»), cədvəldə görünmək istəməyənlər çıxarılır */
+export interface LeaderboardDto {
+  period: LeaderboardPeriod;
+  rows: Array<{ rank: number; name: string; initials: string; xp: number; me: boolean }>;
+  me: { rank: number | null; xp: number; hidden: boolean } | null;
+  participants: number;
+}
+
+/** Təcrübə: yazıldığı kurslardakı praktiki tapşırıqlar (SQL, Python, Terminal, CTF) */
+export interface PracticeDto {
+  courses: Array<{
+    slug: string;
+    title: string;
+    trackTitle: string;
+    trackColor: string;
+    trackIcon: string | null;
+    tasks: Array<{
+      id: string;
+      title: string;
+      type: StepType;
+      xp: number;
+      state: StepState;
+      attempts: number;
+      moduleTitle: string;
+      url: string;
+    }>;
+  }>;
+  counts: { total: number; done: number; byType: Partial<Record<StepType, number>> };
+}
+
+/** İmtahanlar: yol imtahanları + kurs testləri */
+export interface ExamsDto {
+  assessments: Array<{
+    id: string;
+    title: string;
+    pathSlug: string;
+    pathTitle: string;
+    trackColor: string;
+    state: PathItemStateDto;
+    status: 'IN_PROGRESS' | 'SUBMITTED' | 'PASSED' | 'FAILED' | null;
+    score: number | null;
+    attempts: number;
+    passScore: number | null;
+    xp: number;
+    url: string;
+  }>;
+  quizzes: Array<{
+    id: string;
+    title: string;
+    courseSlug: string;
+    courseTitle: string;
+    trackColor: string;
+    state: StepState;
+    score: number | null;
+    attempts: number;
+    xp: number;
+    url: string;
+  }>;
+}
+
+/** Layihələr: yollardakı layihə addımları və təhvil vəziyyəti */
+export interface ProjectsDto {
+  items: Array<{
+    id: string;
+    title: string;
+    pathSlug: string;
+    pathTitle: string;
+    trackColor: string;
+    state: PathItemStateDto;
+    status: 'IN_PROGRESS' | 'SUBMITTED' | 'PASSED' | 'FAILED' | null;
+    submittedAt: string | null;
+    completedAt: string | null;
+    feedback: string | null;
+    reviewMode: 'manual' | 'auto';
+    deliverables: number;
+    estimatedHours: number | null;
+    xp: number;
+    url: string;
+  }>;
+}
+
+/** Yarışlar: CTF otaqları və onların xal cədvəli */
+export interface ContestDto {
+  stepId: string;
+  title: string;
+  courseSlug: string;
+  courseTitle: string;
+  trackTitle: string;
+  trackColor: string;
+  trackIcon: string | null;
+  tasks: number;
+  points: number;
+  participants: number;
+  finishers: number;
+  mine: { solved: number; points: number } | null;
+  enrolled: boolean;
+  url: string;
+}
+export interface ContestBoardDto {
+  contest: ContestDto;
+  rows: Array<{
+    rank: number;
+    name: string;
+    initials: string;
+    solved: number;
+    points: number;
+    lastSolveAt: string;
+    me: boolean;
+  }>;
 }

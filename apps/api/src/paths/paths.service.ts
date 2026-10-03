@@ -98,7 +98,7 @@ export class PathsService {
       title: p.title,
       description: p.description,
       level: p.level as Level,
-      track: { slug: p.track.slug, title: p.track.title, color: p.track.color },
+      track: { slug: p.track.slug, title: p.track.title, color: p.track.color, icon: p.track.icon },
       skills: p.skills,
       targetAudience: p.targetAudience,
       estimatedHours: p.estimatedHours ?? (sum > 0 ? Math.round(sum) : null),

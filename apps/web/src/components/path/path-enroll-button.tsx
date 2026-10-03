@@ -64,13 +64,7 @@ export function PathEnrollButton({
         </Button>
       ) : null}
       {!isActive ? (
-        <Button
-          type="button"
-          variant="ghost"
-          loading={busy}
-          onClick={() => void call('activate')}
-          className="!text-on-dark"
-        >
+        <Button type="button" variant="navy" loading={busy} onClick={() => void call('activate')}>
           {t('paths.makeActive')}
         </Button>
       ) : null}

@@ -7,6 +7,8 @@ import { apiFetch, getCurrentUser, isStaff } from '@/lib/api/server';
 import { t } from '@/lib/i18n';
 import { Markdown } from '@/components/app/markdown';
 import { TrackBadge } from '@/components/app/track-badge';
+import { HeroArt } from '@/components/app/hero-art';
+import { ArrowLeft, Check } from 'lucide-react';
 import { ProjectForm } from '@/components/path/project-form';
 import { AssessmentForm } from '@/components/path/assessment-form';
 import { MilestoneClaim } from '@/components/path/milestone-claim';
@@ -50,28 +52,34 @@ export default async function PathItemPage({ params, searchParams }: Props) {
   }
   if (v.item.type === 'COURSE') redirect(v.item.url);
   const color = v.path.track.color;
+  const art =
+    v.item.type === 'PROJECT' ? 'project' : v.item.type === 'ASSESSMENT' ? 'exam' : 'award';
   return (
-    <div className="mx-auto max-w-[860px]" style={{ ['--c' as string]: color }}>
-      <nav className="mb-4 text-sm text-muted">
-        <Link href={`/yol/${v.path.slug}`} className="hover:underline">
-          ← {v.path.title}
-        </Link>
+    <div style={{ ['--c' as string]: color }}>
+      <Link href={`/yol/${v.path.slug}`} className="crumb-back">
+        <ArrowLeft aria-hidden />
+        {v.path.title}
         {v.item.number ? <span> · {t('paths.stepN', { n: v.item.number })}</span> : null}
-      </nav>
-      <header className="mb-5">
-        <div className="flex flex-wrap items-center gap-2">
-          <TrackBadge color={color}>{v.path.track.title}</TrackBadge>
-          <span className="ntype">{TYPE_LABEL[v.item.type]()}</span>
-          {v.item.xp ? <span className="text-xs text-muted">+{v.item.xp} XP</span> : null}
-          {v.item.state === 'completed' ? (
-            <span className="text-xs font-semibold text-ok">✓ {t('paths.completed')}</span>
-          ) : null}
+      </Link>
+      <section className="hero sm accent mb-6">
+        <div className="min-w-0">
+          <div className="hero-k">
+            <TrackBadge color={color}>{v.path.track.title}</TrackBadge>
+            <span className="badge badge-mint">{TYPE_LABEL[v.item.type]()}</span>
+            {v.item.xp ? <span className="badge badge-onhero">+{v.item.xp} XP</span> : null}
+            {v.item.state === 'completed' ? (
+              <span className="badge badge-ok">
+                <Check aria-hidden /> {t('paths.completed')}
+              </span>
+            ) : null}
+          </div>
+          <h1 className="mt-3">{v.item.title}</h1>
         </div>
-        <h1 className="mt-2 text-2xl">{v.item.title}</h1>
-      </header>
+        <HeroArt kind={art} />
+      </section>
 
       {v.project ? (
-        <div className="grid gap-5 md:grid-cols-[1fr_300px]">
+        <div className="lp !mt-0">
           <div className="box">
             <Markdown content={v.project.instructions} />
             {v.project.deliverables.length ? (
@@ -92,7 +100,7 @@ export default async function PathItemPage({ params, searchParams }: Props) {
         <AssessmentForm itemId={v.item.id} assessment={v.assessment} preview={preview} />
       ) : null}
       {v.milestone ? (
-        <div className="grid gap-5 md:grid-cols-[1fr_320px]">
+        <div className="lp !mt-0">
           <div className="box">
             {v.milestone.description ? (
               <Markdown content={v.milestone.description} />
