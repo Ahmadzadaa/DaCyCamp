@@ -1,0 +1,58 @@
+type: python
+title: Müştəri məlumatlarını təmizlə
+xp: 40
+estimated_minutes: 10
+instructions: |
+  CRM sistemindən gələn məlumatlar səliqəsizdir: artıq boşluqlar, qarışıq böyük-kiçik hərflər. Sətir metodları ilə onları təmizlə.
+tasks:
+- musteri sətrindən kənar boşluqları sil və hər sözü böyük hərflə başlat → ad_temiz ("Aysel Məmmədova").
+- email-i kiçik hərflərə çevir → email_kicik.
+- Kiçik hərfli e-poçtu "@" işarəsinə görə böl və domeni götür → domen ("gmail.com").
+- mesaj sətrində "Sifariş" sözünün neçə dəfə keçdiyini say → say.
+- mesaj "Sifariş" sözü ilə başlayırmı? → baslayir (True/False). Beş dəyəri ekrana yazdır.
+starter_code: |
+  musteri = "   aYSEL məmmədova   "
+  email = "Aysel.Mammadova@Gmail.COM"
+  mesaj = "Sifariş çatdırıldı. Sifariş nömrəsi: 1045. Sifariş üçün təşəkkürlər!"
+
+  ad_temiz = ...
+  email_kicik = ...
+  domen = ...
+  say = ...
+  baslayir = ...
+
+  print(ad_temiz)
+  print(email_kicik)
+  print(domen)
+  print(say)
+  print(baslayir)
+solution: |
+  musteri = "   aYSEL məmmədova   "
+  email = "Aysel.Mammadova@Gmail.COM"
+  mesaj = "Sifariş çatdırıldı. Sifariş nömrəsi: 1045. Sifariş üçün təşəkkürlər!"
+
+  ad_temiz = musteri.strip().title()
+  email_kicik = email.lower()
+  domen = email_kicik.split("@")[1]
+  say = mesaj.count("Sifariş")
+  baslayir = mesaj.startswith("Sifariş")
+
+  print(ad_temiz)
+  print(email_kicik)
+  print(domen)
+  print(say)
+  print(baslayir)
+tests: |
+  assert ad_temiz == "Aysel Məmmədova", f'ad_temiz "Aysel Məmmədova" olmalıdır, sənin nəticən: {ad_temiz!r}'
+  assert email_kicik == "aysel.mammadova@gmail.com", f"email_kicik kiçik hərflərlə olmalıdır, sənin nəticən: {email_kicik!r}"
+  assert domen == "gmail.com", f'domen "gmail.com" olmalıdır, sənin nəticən: {domen!r}'
+  assert say == 3, f"say 3 olmalıdır, sənin nəticən: {say!r}"
+  assert baslayir is True, f"baslayir True olmalıdır, sənin nəticən: {baslayir!r}"
+  assert ".strip()" in dacy.code and ".title()" in dacy.code, "strip() və title() metodlarından istifadə et"
+  assert ".split(" in dacy.code and ".count(" in dacy.code, "split() və count() metodlarından istifadə et"
+  for _v in ("Aysel Məmmədova", "aysel.mammadova@gmail.com", "gmail.com", "3", "True"):
+      assert _v in dacy.lines, f"Ekranda {_v} görünmür"
+hints:
+- 'Metodları zəncirlə: musteri.strip().title()'
+- domen = email_kicik.split("@")[1] — split siyahı qaytarır, [1] ikinci hissədir.
+- say = mesaj.count("Sifariş"); baslayir = mesaj.startswith("Sifariş")

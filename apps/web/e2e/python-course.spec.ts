@@ -1,5 +1,5 @@
 /**
- * content/courses/python4business — repo-dakı kurs paketi: idxal, tələbə axını, Python runtime yenilikləri
+ * content/courses/python-basics — repo-dakı kurs paketi (Python4Business Gün 1–2 + yeni fəsillər): idxal, tələbə axını, Python runtime yenilikləri
  * (dacy.lines ilə çap yoxlaması, sonu yeni sətirsiz print, sonsuz dövr gözətçisi), Markdown test sualları.
  * İşə salma: API + web işləyərkən `pnpm --filter @dacy/web e2e -- e2e/python-course.spec.ts`
  */
@@ -10,7 +10,7 @@ import { ADMIN, ROOT, login } from './helpers';
 
 test.describe.configure({ mode: 'serial' });
 
-const SLUG = 'python4business';
+const SLUG = 'python-basics';
 const fresh = {
   name: 'E2E Python',
   email: `e2e-py-${Date.now()}@dacy.local`,
@@ -48,21 +48,22 @@ test('admin: kurs paketi idxal olunub (yoxdursa idxal edir)', async ({ page }) =
     await page.request.post('/api/admin/import/validate', { multipart: { file } })
   ).json();
   expect(report.errors).toEqual([]);
-  expect(report.summary.byType).toEqual({ THEORY: 18, PYTHON: 18, QUIZ: 7 });
+  expect(report.summary.byType).toEqual({ THEORY: 29, PYTHON: 35, QUIZ: 13 });
   if (!report.course.exists) {
     const applied = await page.request.post('/api/admin/import/apply', { multipart: { file } });
     expect((await applied.json()).ok).toBe(true);
   }
 });
 
-test('kataloq → kurs səhifəsi: 7 fəsil, Gün 1 və Gün 2', async ({ page }) => {
+test('kataloq → kurs səhifəsi: 13 fəsil, girişdən mini layihəyə', async ({ page }) => {
   await page.goto('/kurslar');
-  await expect(page.getByText('Python4Business').first()).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByText('Python Basics').first()).toBeVisible({ timeout: 30_000 });
   await page.goto(`/kurs/${SLUG}`);
-  await expect(page.getByText('Gün 1 · Python-a giriş və iş mühiti')).toBeVisible({
+  await expect(page.getByText('Python-a giriş və iş mühiti')).toBeVisible({
     timeout: 30_000,
   });
-  await expect(page.getByText('Gün 2 · Xətaların idarəsi (exceptions)')).toBeVisible();
+  await expect(page.getByText('Xətaların idarəsi (exceptions)')).toBeVisible();
+  await expect(page.getByText('Mini layihə: satış hesabatı və yekun test')).toBeVisible();
 });
 
 test('tələbə: nəzəri addımlar → isinmə tapşırığı (çap yoxlanılır) → Markdown-lı test', async ({
@@ -78,12 +79,12 @@ test('tələbə: nəzəri addımlar → isinmə tapşırığı (çap yoxlanılı
   }
 
   // şəkilli nəzəri addım: kurs faylından şəkil yüklənir
-  await page.goto(`/kurs/${SLUG}/g1-giris/jupyter-ide`);
+  await page.goto(`/kurs/${SLUG}/giris/jupyter-ide`);
   const img = page.getByRole('img', { name: 'Jupyter Notebook interfeysi' });
   await expect(img).toBeVisible({ timeout: 30_000 });
   expect(await img.evaluate((i: HTMLImageElement) => i.naturalWidth)).toBeGreaterThan(100);
 
-  await page.goto(`/kurs/${SLUG}/g1-giris/isinma`);
+  await page.goto(`/kurs/${SLUG}/giris/isinma`);
   await waitRuntime(page);
   // print yoxdur → test aydın mesajla düşür
   await setEditor(
@@ -99,7 +100,7 @@ test('tələbə: nəzəri addımlar → isinmə tapşırığı (çap yoxlanılı
     'print("Salam, Python!")\ncem = sum([2, len([2, 3])])\nprint(cem)\na = "Code Academy"\nyeni = a.replace("Academy", "Python")\nprint(yeni)',
   );
   await page.getByRole('button', { name: /Göndər və davam et/ }).click();
-  await expect(page).toHaveURL(/\/g1-giris\/giris-testi$/, { timeout: 60_000 });
+  await expect(page).toHaveURL(/\/giris\/giris-testi$/, { timeout: 60_000 });
 
   // test sualında Markdown: inline kod
   const q = page.locator('.quiz-q-text').filter({ hasText: 'arasında fərq' });
@@ -110,7 +111,7 @@ test('Python runtime: sonu yeni sətirsiz print görünür, sonsuz dövr dayand�
   page,
 }) => {
   await login(page, ADMIN);
-  await page.goto(`/kurs/${SLUG}/g2-dovrler/for-cem-cut?onizle=1`);
+  await page.goto(`/kurs/${SLUG}/dovrler/for-cem-cut?onizle=1`);
   await waitRuntime(page);
 
   await setEditor(page, 'for i in range(2, 7, 2):\n    print(i, end=" ")');
@@ -137,7 +138,7 @@ test('input(): brauzer pəncərəsi açılmır — dəyərlər «Giriş» sekmə
     void d.dismiss();
   });
   await login(page, ADMIN);
-  await page.goto(`/kurs/${SLUG}/g1-giris/isinma?onizle=1`);
+  await page.goto(`/kurs/${SLUG}/giris/isinma?onizle=1`);
   await waitRuntime(page);
   await setEditor(page, 'a = int(input("a: "))\nb = int(input("b: "))\nprint(a + b)');
 

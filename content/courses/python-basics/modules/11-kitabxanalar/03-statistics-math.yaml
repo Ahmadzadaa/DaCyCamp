@@ -1,0 +1,49 @@
+type: python
+title: Gündəlik sifarişlərin statistikası
+xp: 40
+estimated_minutes: 10
+instructions: |
+  TechNar-ın Gəncə filialında son 9 gündə qəbul olunan sifarişlərin sayı verilib. `statistics` və `math` modulları ilə xülasə hazırla.
+tasks:
+- Orta gündəlik sifariş sayını tap və 2 onluğa yuvarlaqlaşdır → orta.
+- Median və modanı tap → mediana, moda.
+- Standart kənarlaşmanı (stdev) tap və 2 onluğa yuvarlaqlaşdır → std.
+- Həftəlik planı (orta × 7) yuxarı yuvarlaqlaşdır (math.ceil) → plan.
+starter_code: |
+  import statistics
+  import math
+
+  gunluk = [42, 38, 51, 47, 38, 60, 44, 38, 55]
+
+  orta = ...
+  mediana = ...
+  moda = ...
+  std = ...
+  plan = ...
+
+  print(orta, mediana, moda, std, plan)
+solution: |
+  import statistics
+  import math
+
+  gunluk = [42, 38, 51, 47, 38, 60, 44, 38, 55]
+
+  orta = round(statistics.mean(gunluk), 2)
+  mediana = statistics.median(gunluk)
+  moda = statistics.mode(gunluk)
+  std = round(statistics.stdev(gunluk), 2)
+  plan = math.ceil(statistics.mean(gunluk) * 7)
+
+  print(orta, mediana, moda, std, plan)
+tests: |
+  import statistics as _st, math as _m
+  assert orta == 45.89, f"orta 45.89 olmalıdır, sənin nəticən: {orta!r}"
+  assert mediana == 44, f"mediana 44 olmalıdır, sənin nəticən: {mediana!r}"
+  assert moda == 38, f"moda 38 olmalıdır, sənin nəticən: {moda!r}"
+  assert std == round(_st.stdev(gunluk), 2), f"std {round(_st.stdev(gunluk), 2)} olmalıdır, sənin nəticən: {std!r}"
+  assert plan == 322, f"plan 322 olmalıdır (45.89 × 7 = 321.2 → yuxarı 322), sənin nəticən: {plan!r}"
+  assert "statistics." in dacy.code and "math.ceil(" in dacy.code, "statistics funksiyalarından və math.ceil()-dən istifadə et"
+hints:
+- statistics.mean(), statistics.median(), statistics.mode(), statistics.stdev()
+- round(x, 2) — 2 onluq rəqəm.
+- plan = math.ceil(statistics.mean(gunluk) * 7) — yuvarlaqlaşdırılmamış ortadan hesabla.

@@ -1,0 +1,50 @@
+type: quiz
+title: 'Test: regex'
+xp: 30
+estimated_minutes: 6
+pass_score: 75
+questions:
+- text: Hər funksiyanı qaytardığı nəticəyə görə qruplaşdır.
+  type: classify
+  buckets:
+  - name: Match obyekti və ya None
+    items:
+    - re.search()
+    - re.match()
+  - name: Siyahı
+    items:
+    - re.findall()
+    - re.split()
+  - name: Yeni sətir
+    items:
+    - re.sub()
+  explanation: search/match ilk uyğunluğun Match obyektini (və ya None), findall və split siyahı, sub
+    isə əvəzlənmiş yeni sətir qaytarır.
+- text: '`re.findall(r"\d+", "A1B22C333")` nə qaytarır?'
+  options:
+  - '[''1'', ''2'', ''2'', ''3'', ''3'', ''3'']'
+  - '[''1'', ''22'', ''333'']'
+  - '[1, 22, 333]'
+  - '''122333'''
+  correct:
+  - 2
+  explanation: \d+ bir və ya daha çox ardıcıl rəqəmi bir uyğunluq kimi tutur; findall sətirlər siyahısı
+    qaytarır.
+- text: Hansı nümunə **yalnız** `+994 50 123 45 67` formatlı nömrəni tapır?
+  options:
+  - r"\d+"
+  - r"+994 \d{2} \d{3} \d{2} \d{2}"
+  - r"\+994 \d{2} \d{3} \d{2} \d{2}"
+  - r"994.*"
+  correct:
+  - 3
+  explanation: + xüsusi simvoldur (1 və ya daha çox), ona görə \+ kimi yazılır. \d{n} dəqiq n rəqəm deməkdir.
+- text: '`^` simvolu regex-də nə deməkdir?'
+  options:
+  - Sətrin sonu
+  - Sətrin əvvəli
+  - İstənilən simvol
+  - Qüvvət
+  correct:
+  - 2
+  explanation: ^ sətrin əvvəlini, $ sonunu bildirir. Kvadrat mötərizə içində ([^0-9]) isə «inkar» deməkdir.

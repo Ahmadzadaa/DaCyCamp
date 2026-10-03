@@ -30,6 +30,8 @@ const HINTS: Record<string, (msg: string) => string> = {
   AttributeError: () =>
     'Bu obyektin belə metodu və ya atributu yoxdur — adını yoxlayın (məs. siyahıda .add() yox, .append() var).',
   ModuleNotFoundError: () => 'Belə modul tapılmadı — import sətrində adı yoxlayın.',
+  FileNotFoundError: () =>
+    'Fayl tapılmadı — adını yoxlayın. Tapşırığa əlavə olunmuş fayllar (redaktorun üstündəki adlar) iş qovluğundadır: pd.read_csv("satislar.csv").',
   UnboundLocalError: () =>
     'Dəyişən funksiyanın içində dəyər alınmadan istifadə olunub — əvvəlcə ona dəyər verin.',
   RecursionError: () => 'Funksiya özünü dayanmadan çağırır — dayanma şərtini (base case) yoxlayın.',

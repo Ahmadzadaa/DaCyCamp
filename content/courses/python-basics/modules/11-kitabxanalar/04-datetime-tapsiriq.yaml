@@ -1,0 +1,46 @@
+type: python
+title: Çatdırılma və qaytarma tarixləri
+xp: 40
+estimated_minutes: 10
+instructions: |
+  Müştəri sifarişi 25 noyabr 2024-də verib, məhsul 2 dekabrda çatdırılıb. Qaytarma müddəti çatdırılmadan sonra **14 gündür**.
+tasks:
+- Çatdırılma neçə gün çəkdi → gun (tam ədəd).
+- Sifariş həftənin hansı günü verilib (strftime("%A")) → hefte_gunu.
+- Qaytarma müddətinin son günü → qaytarma (date obyekti).
+- Çatdırılma tarixini "02.12.2024" formatında yaz → formatli.
+starter_code: |
+  from datetime import date, timedelta
+
+  sifaris = date(2024, 11, 25)
+  catdirilma = date(2024, 12, 2)
+
+  gun = ...
+  hefte_gunu = ...
+  qaytarma = ...
+  formatli = ...
+
+  print(gun, hefte_gunu, qaytarma, formatli)
+solution: |
+  from datetime import date, timedelta
+
+  sifaris = date(2024, 11, 25)
+  catdirilma = date(2024, 12, 2)
+
+  gun = (catdirilma - sifaris).days
+  hefte_gunu = sifaris.strftime("%A")
+  qaytarma = catdirilma + timedelta(days=14)
+  formatli = catdirilma.strftime("%d.%m.%Y")
+
+  print(gun, hefte_gunu, qaytarma, formatli)
+tests: |
+  from datetime import date as _date
+  assert gun == 7, f"gun 7 olmalıdır, sənin nəticən: {gun!r}"
+  assert hefte_gunu == "Monday", f'hefte_gunu "Monday" olmalıdır, sənin nəticən: {hefte_gunu!r}'
+  assert qaytarma == _date(2024, 12, 16), f"qaytarma 2024-12-16 olmalıdır, sənin nəticən: {qaytarma!r}"
+  assert formatli == "02.12.2024", f'formatli "02.12.2024" olmalıdır, sənin nəticən: {formatli!r}'
+  assert "timedelta(" in dacy.code and "strftime(" in dacy.code, "timedelta və strftime-dan istifadə et"
+hints:
+- 'İki tarixin fərqi timedelta-dır: (catdirilma - sifaris).days'
+- sifaris.strftime("%A") həftənin gününü ingiliscə verir.
+- qaytarma = catdirilma + timedelta(days=14); formatli = catdirilma.strftime("%d.%m.%Y")

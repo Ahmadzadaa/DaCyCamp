@@ -1,0 +1,63 @@
+type: python
+title: f-string ilə satış qəbzi
+xp: 40
+estimated_minutes: 10
+instructions: |
+  Kassada çap olunan qəbzi f-string ilə formatla. Məbləğlər həmişə **2 onluq rəqəmlə** göstərilməlidir.
+
+  Hər məhsul üçün sətir belə olmalıdır:
+
+  ```text
+  iPhone 15 x1 = 2399.00 ₼
+  ```
+
+  Sonda cəmi və ƏDV (18%) sətirləri:
+
+  ```text
+  Cəmi: 3716.70 ₼
+  ƏDV (18%): 669.01 ₼
+  ```
+tasks:
+- for dövrü ilə hər məhsul üçün "ad xsay = məbləğ ₼" sətrini yazdır (məbləğ = say × qiymət).
+- 'Bütün məbləğlərin cəmini cemi dəyişənində topla və "Cəmi: ... ₼" yazdır.'
+- 'Cəminin 18%-ni edv dəyişəninə yaz və "ƏDV (18%): ... ₼" yazdır.'
+starter_code: |
+  sebet = [
+      ("iPhone 15", 1, 2399.0),
+      ("AirPods Pro 2", 2, 599.0),
+      ("Zara Basic T-Shirt", 3, 39.9),
+  ]
+
+  cemi = 0
+  for ad, say, qiymet in sebet:
+      mebleg = say * qiymet
+      # sətri f-string ilə yazdır
+
+  edv = ...
+solution: |
+  sebet = [
+      ("iPhone 15", 1, 2399.0),
+      ("AirPods Pro 2", 2, 599.0),
+      ("Zara Basic T-Shirt", 3, 39.9),
+  ]
+
+  cemi = 0
+  for ad, say, qiymet in sebet:
+      mebleg = say * qiymet
+      cemi += mebleg
+      print(f"{ad} x{say} = {mebleg:.2f} ₼")
+
+  print(f"Cəmi: {cemi:.2f} ₼")
+  edv = cemi * 0.18
+  print(f"ƏDV (18%): {edv:.2f} ₼")
+tests: |
+  assert abs(cemi - 3716.7) < 0.01, f"cemi 3716.70 olmalıdır, sənin nəticən: {cemi!r}"
+  assert abs(edv - 3716.7 * 0.18) < 0.01, f"edv cəminin 18%-i olmalıdır (669.01), sənin nəticən: {edv!r}"
+  for _v in ("iPhone 15 x1 = 2399.00 ₼", "AirPods Pro 2 x2 = 1198.00 ₼", "Zara Basic T-Shirt x3 = 119.70 ₼",
+             "Cəmi: 3716.70 ₼", "ƏDV (18%): 669.01 ₼"):
+      assert _v in dacy.lines, f"Ekranda bu sətir görünmür: {_v}"
+  assert 'f"' in dacy.code or "f'" in dacy.code, "f-string-dən istifadə et"
+hints:
+- 'Dövrün içində: cemi += mebleg və print(f"{ad} x{say} = {mebleg:.2f} ₼")'
+- ':.2f formatı ədədi 2 onluq rəqəmlə göstərir: 119.7 → 119.70'
+- 'ƏDV: edv = cemi * 0.18, sonra print(f"ƏDV (18%): {edv:.2f} ₼")'

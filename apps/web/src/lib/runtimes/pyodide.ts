@@ -8,10 +8,19 @@ export const PYODIDE_URL = (
   process.env.NEXT_PUBLIC_PYODIDE_URL ?? 'https://cdn.jsdelivr.net/pyodide/v0.29.5/full/'
 ).replace(/\/?$/, '/');
 
+interface LoadOpts {
+  messageCallback?: (msg: string) => void;
+  errorCallback?: (msg: string) => void;
+}
+/** «Loading numpy, pandas…» mesajları tələbənin konsoluna (və dacy.lines-a) düşməsin */
+const QUIET: LoadOpts = { messageCallback: () => {}, errorCallback: (m) => console.warn(m) };
+
 interface PyodideLike {
   runPython(code: string, opts?: { globals?: unknown }): unknown;
-  runPythonAsync(code: string, opts?: { globals?: unknown }): Promise<unknown>;
-  loadPackagesFromImports(code: string): Promise<unknown>;
+  runPythonAsync(code: string, opts?: { globals?: unknown; filename?: string }): Promise<unknown>;
+  loadPackagesFromImports(code: string, opts?: LoadOpts): Promise<unknown>;
+  loadPackage(names: string | string[], opts?: LoadOpts): Promise<unknown>;
+  pyimport(name: string): { install(pkgs: string[]): Promise<unknown> };
   setStdout(opts: { write: (buf: Uint8Array) => number }): void;
   setStderr(opts: { write: (buf: Uint8Array) => number }): void;
   setStdin(opts: { stdin: () => string | null }): void;
@@ -103,6 +112,73 @@ def _dacy_unwatch():
     _sys.settrace(None)
 `;
 
+/**
+ * Qrafik kitabxanaları (matplotlib, seaborn, pandas .plot): ekransız AGG backend, plt.show() — heç nə etmir
+ * (şəkillər icradan sonra toplanır), əvvəlki icranın qrafikləri bağlanır.
+ */
+const PLOT_SETUP = `
+import matplotlib
+matplotlib.use("AGG")
+import matplotlib.pyplot as _dacy_plt
+_dacy_plt.show = lambda *a, **k: None
+_dacy_plt.close("all")
+del _dacy_plt
+`;
+
+/**
+ * Jupyter kimi: kodun son sətri ifadədirsə (məs. df.head()), nəticəsi konsola yazılır; display() da var.
+ * Qrafik obyektləri (Line2D, Axes...) yazılmır — onlar şəkil kimi göstərilir.
+ */
+const DISPLAY = `
+def _dacy_show(v):
+    if v is None or v is Ellipsis:
+        return
+    _m = lambda o: type(o).__module__.split(".")[0]
+    if _m(v) in ("matplotlib", "seaborn", "wordcloud", "plotly"):
+        return
+    if isinstance(v, (list, tuple)) and v and all(_m(o) == "matplotlib" for o in v):
+        return
+    print(repr(v))
+def display(*objs):
+    for _o in objs:
+        print(repr(_o))
+`;
+
+/** Tələbə kodu: fayl adı «<exec>» qalır (gözətçi və xəta mətni ona baxır), son ifadə göstərilir */
+const RUN_USER = `
+from pyodide.code import eval_code_async as _dacy_eval
+_dacy_show(await _dacy_eval(_dacy_src, globals(), filename="<exec>"))
+del _dacy_eval, _dacy_src
+`;
+
+/** Pyodide paylamasında olmayan, saf Python paketləri — micropip ilə PyPI-dan (bir dəfə) */
+const MICROPIP: Array<[RegExp, string]> = [
+  [/^\s*(import|from)\s+seaborn\b/m, 'seaborn'],
+  [/^\s*(import|from)\s+plotly\b/m, 'plotly'],
+  [/read_excel|to_excel|ExcelWriter|^\s*(import|from)\s+openpyxl\b/m, 'openpyxl'],
+];
+export const NEEDS_PLOT = /\b(matplotlib|seaborn|wordcloud)\b|\.plot\b|\.hist\(|\.boxplot\(/;
+const installed = new Set<string>();
+
+async function ensurePackages(py: PyodideLike, src: string) {
+  const want = MICROPIP.filter(([re, name]) => re.test(src) && !installed.has(name)).map(
+    ([, name]) => name,
+  );
+  if (want.length) {
+    await py.loadPackage('micropip', QUIET);
+    try {
+      await py.pyimport('micropip').install(want);
+    } catch (e) {
+      throw new Error(t('ws.pkgFailed', { pkgs: want.join(', '), err: rawError(e) }));
+    }
+    for (const w of want) installed.add(w);
+  }
+  if (NEEDS_PLOT.test(src)) {
+    await py.loadPackage('matplotlib', QUIET);
+    py.runPython(PLOT_SETUP);
+  }
+}
+
 /** Sonu yeni sətirsiz çap (print(x, end=" ")) Python bufferində qalmasın */
 const FLUSH = `
 import sys as _sys
@@ -155,8 +231,10 @@ export async function runPython(
   const py = await getPyodide();
   const out = sink();
   const err = sink();
-  py.setStdout({ write: out.write });
-  py.setStderr({ write: err.write });
+  // paket yüklənərkən (micropip daxil) çıxan mesajlar tələbənin konsoluna düşməsin
+  const discard = { write: (buf: Uint8Array) => buf.length };
+  py.setStdout(discard);
+  py.setStderr(discard);
   // input(): «Giriş» sekməsindəki sətirlər növbə ilə; dəyər sorğudan sonra konsola yazılır (terminal kimi).
   // Bitəndə EOF → EOFError (brauzerin prompt() pəncərəsi açılmır)
   const lines = opts.stdin?.trim()
@@ -179,14 +257,6 @@ export async function runPython(
   }
   const t0 = performance.now();
   const all = `${code}\n${opts.tests ?? ''}`;
-  if (/^\s*(import|from)\s+matplotlib/m.test(all)) {
-    try {
-      await py.loadPackagesFromImports('import matplotlib');
-      py.runPython("import matplotlib\nmatplotlib.use('AGG')");
-    } catch {
-      /* paket tapılmadıqda aşağıda xəta olacaq */
-    }
-  }
   const ns = (py.globals.get('dict') as () => { set(k: string, v: unknown): void })();
   py.runPython(WATCHDOG);
   const watch = () => py.runPython(`_dacy_watch(${PY_TIME_LIMIT_S})`);
@@ -194,9 +264,14 @@ export async function runPython(
   let errorLine: number | null = null;
   let passed: boolean | null = null;
   try {
-    await py.loadPackagesFromImports(all);
+    await ensurePackages(py, all);
+    await py.loadPackagesFromImports(all, QUIET);
+    py.setStdout({ write: out.write });
+    py.setStderr({ write: err.write });
+    py.runPython(DISPLAY, { globals: ns });
+    ns.set('_dacy_src', code);
     watch();
-    await py.runPythonAsync(code, { globals: ns });
+    await py.runPythonAsync(RUN_USER, { globals: ns, filename: '<dacy>' });
     py.runPython(FLUSH);
     if (opts.tests?.trim()) {
       try {

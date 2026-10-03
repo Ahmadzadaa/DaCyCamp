@@ -842,6 +842,7 @@ export const az = {
     stdinHint:
       'Kod input() çağıranda dəyərlər bu siyahıdan növbə ilə götürülür (Jupyter-də klaviaturadan yazdığın kimi).',
     stdinEof: 'input() üçün dəyər qalmadı. Dəyərləri «Giriş» sekməsində hər sətirdə bir yazın.',
+    pkgFailed: 'Python paketi yüklənmədi ({pkgs}). İnternet bağlantısını yoxlayın və yenidən cəhd edin. ({err})',
     chart: 'Qrafik',
     questions: 'Suallar',
     terminal: 'Terminal',

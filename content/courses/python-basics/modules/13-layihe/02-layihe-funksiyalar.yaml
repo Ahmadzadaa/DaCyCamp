@@ -1,0 +1,97 @@
+type: python
+title: 'Layihə 1: hesablama funksiyaları'
+xp: 60
+estimated_minutes: 15
+instructions: |
+  Üç funksiya yaz. Hər biri **arqument kimi aldığı** siyahı ilə işləməlidir — testlər onları başqa ayın datası ilə də çağıracaq.
+
+  Gəlir = `say × qiymet`. Bütün məbləğləri 2 onluğa yuvarlaqlaşdır.
+tasks:
+- umumi_gelir(satislar) — bütün satışların gəlirlərinin cəmini qaytarır (round 2).
+- 'kateqoriya_uzre(satislar) — {kateqoriya: gəlir} dictionary-si qaytarır (round 2).'
+- en_cox_satilan(satislar) — ən çox ədəd satılan məhsulun adını qaytarır (eyni məhsulun ədədləri toplanır).
+starter_code: |
+  satislar = [
+      {"mehsul": "iPhone 15", "kateqoriya": "Electronics", "say": 2, "qiymet": 2399.0},
+      {"mehsul": "Zara Basic T-Shirt", "kateqoriya": "Clothing", "say": 6, "qiymet": 39.9},
+      {"mehsul": "AirPods Pro 2", "kateqoriya": "Electronics", "say": 3, "qiymet": 599.0},
+      {"mehsul": "Nike Air Force 1", "kateqoriya": "Sports", "say": 2, "qiymet": 249.0},
+      {"mehsul": "Zara Basic T-Shirt", "kateqoriya": "Clothing", "say": 8, "qiymet": 39.9},
+      {"mehsul": "Philips Air Fryer XL", "kateqoriya": "Home Appliances", "say": 1, "qiymet": 329.0},
+      {"mehsul": "Yoga Mat Pro", "kateqoriya": "Sports", "say": 5, "qiymet": 59.0},
+      {"mehsul": "iPhone 15", "kateqoriya": "Electronics", "say": 1, "qiymet": 2399.0},
+      {"mehsul": "Nivea Soft 200ml", "kateqoriya": "Beauty", "say": 10, "qiymet": 12.0},
+      {"mehsul": "H&M Hoodie", "kateqoriya": "Clothing", "say": 3, "qiymet": 69.0},
+  ]
+
+
+  def umumi_gelir(satislar):
+      ...
+
+
+  def kateqoriya_uzre(satislar):
+      ...
+
+
+  def en_cox_satilan(satislar):
+      ...
+
+
+  print(umumi_gelir(satislar))
+  print(kateqoriya_uzre(satislar))
+  print(en_cox_satilan(satislar))
+solution: |
+  satislar = [
+      {"mehsul": "iPhone 15", "kateqoriya": "Electronics", "say": 2, "qiymet": 2399.0},
+      {"mehsul": "Zara Basic T-Shirt", "kateqoriya": "Clothing", "say": 6, "qiymet": 39.9},
+      {"mehsul": "AirPods Pro 2", "kateqoriya": "Electronics", "say": 3, "qiymet": 599.0},
+      {"mehsul": "Nike Air Force 1", "kateqoriya": "Sports", "say": 2, "qiymet": 249.0},
+      {"mehsul": "Zara Basic T-Shirt", "kateqoriya": "Clothing", "say": 8, "qiymet": 39.9},
+      {"mehsul": "Philips Air Fryer XL", "kateqoriya": "Home Appliances", "say": 1, "qiymet": 329.0},
+      {"mehsul": "Yoga Mat Pro", "kateqoriya": "Sports", "say": 5, "qiymet": 59.0},
+      {"mehsul": "iPhone 15", "kateqoriya": "Electronics", "say": 1, "qiymet": 2399.0},
+      {"mehsul": "Nivea Soft 200ml", "kateqoriya": "Beauty", "say": 10, "qiymet": 12.0},
+      {"mehsul": "H&M Hoodie", "kateqoriya": "Clothing", "say": 3, "qiymet": 69.0},
+  ]
+
+
+  def umumi_gelir(satislar):
+      return round(sum(s["say"] * s["qiymet"] for s in satislar), 2)
+
+
+  def kateqoriya_uzre(satislar):
+      netice = {}
+      for s in satislar:
+          netice[s["kateqoriya"]] = netice.get(s["kateqoriya"], 0) + s["say"] * s["qiymet"]
+      return {k: round(v, 2) for k, v in netice.items()}
+
+
+  def en_cox_satilan(satislar):
+      sayi = {}
+      for s in satislar:
+          sayi[s["mehsul"]] = sayi.get(s["mehsul"], 0) + s["say"]
+      return max(sayi, key=sayi.get)
+
+
+  print(umumi_gelir(satislar))
+  print(kateqoriya_uzre(satislar))
+  print(en_cox_satilan(satislar))
+tests: |
+  _fevral = [
+      {"mehsul": "Dyson V15", "kateqoriya": "Home Appliances", "say": 2, "qiymet": 1499.0},
+      {"mehsul": "Puma RS-X", "kateqoriya": "Sports", "say": 4, "qiymet": 199.0},
+      {"mehsul": "Puma RS-X", "kateqoriya": "Sports", "say": 3, "qiymet": 199.0},
+      {"mehsul": "Nivea Soft 200ml", "kateqoriya": "Beauty", "say": 6, "qiymet": 12.0},
+  ]
+
+  assert umumi_gelir(satislar) == 11001.6, f"umumi_gelir(satislar) 11001.6 olmalıdır, sənin nəticən: {umumi_gelir(satislar)!r}"
+  assert umumi_gelir(_fevral) == 4463.0, "umumi_gelir başqa datada da işləməlidir — konkret rəqəm yox, arqumenti istifadə et"
+  _k = {"Electronics": 8994.0, "Clothing": 765.6, "Sports": 793.0, "Home Appliances": 329.0, "Beauty": 120.0}
+  assert kateqoriya_uzre(satislar) == _k, f"kateqoriya_uzre(satislar) {_k} olmalıdır, sənin nəticən: {kateqoriya_uzre(satislar)!r}"
+  assert kateqoriya_uzre(_fevral) == {"Home Appliances": 2998.0, "Sports": 1393.0, "Beauty": 72.0}, "kateqoriya_uzre başqa datada da işləməlidir"
+  assert en_cox_satilan(satislar) == "Zara Basic T-Shirt", f'en_cox_satilan "Zara Basic T-Shirt" olmalıdır (6 + 8 = 14 ədəd), sənin nəticən: {en_cox_satilan(satislar)!r}'
+  assert en_cox_satilan(_fevral) == "Puma RS-X", "en_cox_satilan eyni məhsulun ədədlərini toplamalıdır (4 + 3 = 7 > 6)"
+hints:
+- 'umumi_gelir: return round(sum(s["say"] * s["qiymet"] for s in satislar), 2)'
+- 'kateqoriya_uzre: boş dict, dövrdə netice[k] = netice.get(k, 0) + gəlir; sonda dəyərləri round et.'
+- 'en_cox_satilan: əvvəl {məhsul: ədəd} topla, sonra max(sayi, key=sayi.get).'

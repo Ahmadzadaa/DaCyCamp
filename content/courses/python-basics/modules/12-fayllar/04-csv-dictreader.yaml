@@ -1,0 +1,57 @@
+type: python
+title: CSV-ni csv.DictReader ilə oxu
+xp: 40
+estimated_minutes: 12
+instructions: |
+  `satis_yanvar.csv` — TechNar-ın 2024-cü il yanvar satışları. pandas-sız, yalnız `csv` modulu ilə xülasə hazırla.
+
+  Xatırla: DictReader dəyərləri **sətir** kimi verir — məbləğləri `float()` ilə çevir.
+tasks:
+- Faylı csv.DictReader ilə oxu və bütün sətirləri setirler siyahısına yığ.
+- Əməliyyat sayını tap → say.
+- Ümumi gəliri (Total Revenue cəmi) 2 onluğa yuvarlaqlaşdır → cem.
+- 'Regionlar üzrə gəlir dictionary-si qur: {region: cəm (2 onluq)} → region_gelir.'
+dataset: datasets/satis_yanvar.csv
+starter_code: |
+  import csv
+
+  setirler = []
+  # faylı oxu
+
+  say = ...
+  cem = ...
+  region_gelir = {}
+
+  print(say, cem)
+  print(region_gelir)
+solution: |
+  import csv
+
+  with open("satis_yanvar.csv", encoding="utf-8") as f:
+      setirler = list(csv.DictReader(f))
+
+  say = len(setirler)
+  cem = round(sum(float(s["Total Revenue"]) for s in setirler), 2)
+  region_gelir = {}
+  for s in setirler:
+      region_gelir[s["Region"]] = region_gelir.get(s["Region"], 0) + float(s["Total Revenue"])
+  region_gelir = {r: round(v, 2) for r, v in region_gelir.items()}
+
+  print(say, cem)
+  print(region_gelir)
+tests: |
+  import csv as _csv
+  _rows = list(_csv.DictReader(open("satis_yanvar.csv", encoding="utf-8")))
+  assert say == len(_rows), f"say {len(_rows)} olmalıdır, sənin nəticən: {say!r}"
+  _cem = round(sum(float(x["Total Revenue"]) for x in _rows), 2)
+  assert cem == _cem, f"cem {_cem} olmalıdır, sənin nəticən: {cem!r}"
+  _rg = {}
+  for x in _rows:
+      _rg[x["Region"]] = _rg.get(x["Region"], 0) + float(x["Total Revenue"])
+  _rg = {k: round(v, 2) for k, v in _rg.items()}
+  assert region_gelir == _rg, f"region_gelir {_rg} olmalıdır, sənin nəticən: {region_gelir!r}"
+  assert "DictReader(" in dacy.code, "csv.DictReader-dən istifadə et"
+hints:
+- 'with open("satis_yanvar.csv", encoding="utf-8") as f: setirler = list(csv.DictReader(f))'
+- cem = round(sum(float(s["Total Revenue"]) for s in setirler), 2)
+- region_gelir[r] = region_gelir.get(r, 0) + məbləğ — get() açar yoxdursa 0 qaytarır.

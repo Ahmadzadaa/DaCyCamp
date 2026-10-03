@@ -1,0 +1,50 @@
+type: python
+title: Məhsul kodunu hissələrə ayır
+xp: 40
+estimated_minutes: 8
+instructions: |
+  TechNar anbarında hər məhsulun kodu sabit formatdadır: **kateqoriya (3) – nömrə (4) – şəhər – il (4)**.
+
+  Kodu indeks və kəsmə ilə hissələrə ayır. `split()` istifadə etmə — bu tapşırıq kəsməni məşq etmək üçündür.
+tasks:
+- kod-un ilk 3 simvolunu kateqoriya dəyişəninə yaz.
+- Son 4 simvolu (il) il dəyişəninə yaz.
+- Nömrə hissəsini ("1001") nomre dəyişəninə yaz.
+- Kodu tərsinə çevir (terse) və dörd dəyəri ayrı-ayrı ekrana yazdır.
+starter_code: |
+  kod = "TEC-1001-BAKU-2024"
+
+  kateqoriya = ...
+  il = ...
+  nomre = ...
+  terse = ...
+
+  print(kateqoriya)
+  print(il)
+  print(nomre)
+  print(terse)
+solution: |
+  kod = "TEC-1001-BAKU-2024"
+
+  kateqoriya = kod[:3]
+  il = kod[-4:]
+  nomre = kod[4:8]
+  terse = kod[::-1]
+
+  print(kateqoriya)
+  print(il)
+  print(nomre)
+  print(terse)
+tests: |
+  assert kateqoriya == "TEC", f'kateqoriya "TEC" olmalıdır, sənin nəticən: {kateqoriya!r}'
+  assert il == "2024", f'il "2024" olmalıdır, sənin nəticən: {il!r}'
+  assert nomre == "1001", f'nomre "1001" olmalıdır (indeks 4-dən 8-ə qədər), sənin nəticən: {nomre!r}'
+  assert terse == kod[::-1], f"terse kodun tərsi olmalıdır: {kod[::-1]!r}, sənin nəticən: {terse!r}"
+  assert "split(" not in dacy.code, "Bu tapşırıqda split() yox, kəsmə ([a:b]) istifadə et"
+  assert "[" in dacy.code and ":" in dacy.code, "Kəsmədən istifadə et: kod[a:b]"
+  for _v in ("TEC", "2024", "1001", kod[::-1]):
+      assert _v in dacy.lines, f"Ekranda {_v} görünmür — print() ilə yazdır"
+hints:
+- 'İlk 3 simvol: kod[:3]. Son 4 simvol: kod[-4:].'
+- '"TEC-" 4 simvoldur, ona görə nömrə indeks 4-dən başlayır və 4 simvoldur: kod[4:8].'
+- 'Tərsinə çevirmək üçün addım −1 olur: kod[::-1].'

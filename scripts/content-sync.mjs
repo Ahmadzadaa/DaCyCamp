@@ -5,7 +5,7 @@
  * Qeyd: bazada OLMAYAN kursları API özü açılanda avtomatik əlavə edir (ContentSyncService) —
  * bu skript əsasən mövcud kursu paketdən YENİLƏMƏK üçündür.
  *
- *   pnpm content:sync --update python4business  — mövcud kursu paketdən yenilə (tələbə irəliləyişi qorunur)
+ *   pnpm content:sync --update python-basics  — mövcud kursu paketdən yenilə (tələbə irəliləyişi qorunur)
  *   pnpm content:sync                           — bazada olmayan kursları əlavə et
  *   --wait                                      — API açılana qədər gözlə
  *

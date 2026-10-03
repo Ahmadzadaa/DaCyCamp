@@ -10,7 +10,7 @@ test('admin fəslin sonuna video dərs əlavə edir, tələbə ekranında video 
   page,
 }) => {
   await login(page, ADMIN);
-  await page.goto('/admin/kurslar/python4business');
+  await page.goto('/admin/kurslar/python-basics');
   const add = page.locator('[data-testid^="add-video-"]').first();
   await expect(add).toBeVisible({ timeout: 30_000 });
   await add.click();
@@ -29,15 +29,17 @@ test('admin fəslin sonuna video dərs əlavə edir, tələbə ekranında video 
   await expect(page.getByRole('dialog')).toHaveCount(0);
 
   // addım fəslin sonunda, dərc olunub, video yolu ilə
-  const course = await (await page.request.get('/api/admin/courses?q=python4business')).json();
-  const id = course.courses.find((c: { slug: string }) => c.slug === 'python4business').id;
+  const course = await (
+    await page.request.get(`/api/admin/courses?q=${encodeURIComponent('Python Basics')}`)
+  ).json();
+  const id = course.courses.find((c: { slug: string }) => c.slug === 'python-basics').id;
   const tree = await (await page.request.get(`/api/admin/courses/${id}`)).json();
   const mod = tree.modules[0];
   const last = mod.steps[mod.steps.length - 1];
   expect(last.title).toBe('E2E video dərs');
   expect(last.isPublished).toBe(true);
 
-  await page.goto(`/kurs/python4business/${mod.key}/${last.key}?onizle=1`);
+  await page.goto(`/kurs/python-basics/${mod.key}/${last.key}?onizle=1`);
   await expect(page.locator('video')).toHaveAttribute('src', /\/api\/assets\/.+e2e-video\.mp4/, {
     timeout: 30_000,
   });

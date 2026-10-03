@@ -1,0 +1,51 @@
+type: python
+title: Sıralama, max və lambda
+xp: 40
+estimated_minutes: 10
+instructions: |
+  Hər məhsul `(ad, qiymət, satış sayı)` şəklində tuple-dır. `sorted()` və `max()` funksiyalarına `key=lambda ...` verərək sıralama meyarını özün seç.
+tasks:
+- Məhsulları qiymətə görə ucuzdan bahaya sırala → ucuzdan (tuple-ların siyahısı).
+- Satış sayına görə çoxdan aza sırala və ilk 3 məhsulun yalnız adlarını götür → top3.
+- Ən çox gəlir (qiymət × say) gətirən məhsulun adını tap → lider (max + key).
+starter_code: |
+  mehsullar = [
+      ("iPhone 15", 2399, 38),
+      ("Redmi Note 13", 549, 120),
+      ("AirPods Pro 2", 599, 95),
+      ("Dyson V15", 1499, 12),
+      ("Zara T-Shirt", 39, 310),
+  ]
+
+  ucuzdan = ...
+  top3 = ...
+  lider = ...
+
+  print(ucuzdan)
+  print(top3)
+  print(lider)
+solution: |
+  mehsullar = [
+      ("iPhone 15", 2399, 38),
+      ("Redmi Note 13", 549, 120),
+      ("AirPods Pro 2", 599, 95),
+      ("Dyson V15", 1499, 12),
+      ("Zara T-Shirt", 39, 310),
+  ]
+
+  ucuzdan = sorted(mehsullar, key=lambda m: m[1])
+  top3 = [m[0] for m in sorted(mehsullar, key=lambda m: m[2], reverse=True)[:3]]
+  lider = max(mehsullar, key=lambda m: m[1] * m[2])[0]
+
+  print(ucuzdan)
+  print(top3)
+  print(lider)
+tests: |
+  assert ucuzdan == sorted(mehsullar, key=lambda m: m[1]), f"ucuzdan qiymətə görə artan sırada olmalıdır, sənin nəticən: {ucuzdan!r}"
+  assert top3 == ["Zara T-Shirt", "Redmi Note 13", "AirPods Pro 2"], f"top3 ['Zara T-Shirt', 'Redmi Note 13', 'AirPods Pro 2'] olmalıdır, sənin nəticən: {top3!r}"
+  assert lider == "iPhone 15", f'lider "iPhone 15" olmalıdır (2399 × 38 = 91162 ₼), sənin nəticən: {lider!r}'
+  assert "lambda" in dacy.code and "key=" in dacy.code, "sorted()/max() funksiyalarına key=lambda ... ver"
+hints:
+- 'ucuzdan = sorted(mehsullar, key=lambda m: m[1]) — m[1] qiymətdir.'
+- 'Çoxdan aza: sorted(..., key=lambda m: m[2], reverse=True)[:3], sonra adları comprehension ilə götür.'
+- 'lider = max(mehsullar, key=lambda m: m[1] * m[2])[0] — [0] adı verir.'

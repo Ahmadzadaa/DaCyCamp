@@ -1,0 +1,50 @@
+type: quiz
+title: 'Test: comprehension və funksional alətlər'
+xp: 30
+estimated_minutes: 6
+pass_score: 75
+questions:
+- text: Hər təsviri uyğun alətə yerləşdir.
+  type: classify
+  buckets:
+  - name: map
+    items:
+    - Hər qiymətə ƏDV əlavə etmək
+    - Hər adı böyük hərflərə çevirmək
+  - name: filter
+    items:
+    - Yalnız 100 ₼-dan böyük satışları saxlamaq
+    - Boş sətirləri atmaq
+  - name: reduce
+    items:
+    - Bütün satışların cəmini tək ədədə yığmaq
+    - Siyahıdakı ədədlərin hasilini tapmaq
+  explanation: map hər elementi çevirir (say dəyişmir), filter şərtə uyğun olanları saxlayır, reduce bütün
+    elementləri bir dəyərə yığır.
+- text: '`[x * 2 for x in [1, 2, 3] if x != 2]` nəyə bərabərdir?'
+  options:
+  - '[2, 4, 6]'
+  - '[2, 6]'
+  - '[1, 3]'
+  - '[4]'
+  correct:
+  - 2
+  explanation: 'Şərt 2-ni atır: 1 → 2, 3 → 6.'
+- text: '`sorted(mehsullar, key=lambda m: m[1], reverse=True)` nə edir? (m = (ad, qiymət))'
+  options:
+  - Məhsulları ada görə əlifba sırası ilə düzür
+  - Məhsulları qiymətə görə bahadan ucuza düzür
+  - Məhsulları qiymətə görə ucuzdan bahaya düzür
+  - Yalnız ən bahalı məhsulu qaytarır
+  correct:
+  - 2
+  explanation: 'key=lambda m: m[1] — qiymətə görə; reverse=True — azalan sıra.'
+- text: Saytın axtarış sahəsinə yazılan mətni `eval()` ilə icra etmək niyə təhlükəlidir?
+  options:
+  - eval() çox yavaş işləyir
+  - İstifadəçi istənilən Python kodu yaza və icra etdirə bilər
+  - eval() yalnız ədədlərlə işləyir
+  - Təhlükəli deyil
+  correct:
+  - 2
+  explanation: eval() mətni kod kimi icra edir. Kənardan gələn mətn heç vaxt eval() ilə işlədilməməlidir.

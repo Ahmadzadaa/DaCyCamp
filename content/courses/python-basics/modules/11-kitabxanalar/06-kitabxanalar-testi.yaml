@@ -1,0 +1,53 @@
+type: quiz
+title: 'Test: paketlər və standart kitabxana'
+xp: 30
+estimated_minutes: 6
+pass_score: 75
+questions:
+- text: Hansı modullar Python ilə birlikdə gəlir, hansıları pip ilə quraşdırmaq lazımdır?
+  type: classify
+  buckets:
+  - name: Standart kitabxana (quraşdırma lazım deyil)
+    items:
+    - math
+    - datetime
+    - statistics
+    - json
+    - collections
+  - name: PyPI paketi (pip install)
+    items:
+    - pandas
+    - numpy
+    - matplotlib
+    - seaborn
+    - openpyxl
+  explanation: math, datetime, statistics, json, collections Python-un özü ilə gəlir. pandas, numpy, matplotlib,
+    seaborn, openpyxl PyPI-dan quraşdırılan paketlərdir.
+- text: '`import pandas as pd` yazılışında `pd` nədir?'
+  options:
+  - Ayrı bir paket
+  - pandas üçün ləqəb (alias)
+  - Python-un daxili funksiyası
+  - Fayl adı
+  correct:
+  - 2
+  explanation: as ilə paketə qısa ad verilir; sonra pd.read_csv() kimi istifadə olunur.
+- text: '`(date(2024, 3, 10) - date(2024, 3, 1)).days` nəyə bərabərdir?'
+  options:
+  - '10'
+  - '9'
+  - '11'
+  - Xəta verir
+  correct:
+  - 2
+  explanation: İki tarixin fərqi timedelta-dır; .days 9 gün qaytarır.
+- text: Jupyter hüceyrəsində `!pip install seaborn` nə edir?
+  options:
+  - seaborn-u cari notebook-a import edir
+  - seaborn paketini PyPI-dan endirib quraşdırır
+  - seaborn-u silir
+  - Xəta verir — pip yalnız terminalda işləyir
+  correct:
+  - 2
+  explanation: '! işarəsi hüceyrədə terminal əmri işlədir. Quraşdırmadan sonra yenə import seaborn yazmaq
+    lazımdır.'

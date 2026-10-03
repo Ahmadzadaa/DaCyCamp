@@ -186,7 +186,7 @@ assert "int(" in dacy.code, "int() funksiyasından istifadə et"
 ```
 
 - Kod və testlər ayrı-ayrılıqda **10 saniyə** işləyə bilər; sonsuz dövr `TimeoutError` ilə dayandırılır, səhifə donmur.
-- `input()`: tələbə dəyərləri konsolun «Giriş» sekməsinə yazır (hər sətir bir çağırış; bitəndə `EOFError` + ipucu). Testlər sabit girişlə yoxlamalıdırsa, starter koda kiçik əvəzedici qoyun — dəyərləri siyahıdan götürür, testlər isə siyahının nə qədər oxunduğunu yoxlaya bilər (nümunə: `content/courses/python4business/modules/05-g2-dovrler/06-while-sifir.yaml`):
+- `input()`: tələbə dəyərləri konsolun «Giriş» sekməsinə yazır (hər sətir bir çağırış; bitəndə `EOFError` + ipucu). Testlər sabit girişlə yoxlamalıdırsa, starter koda kiçik əvəzedici qoyun — dəyərləri siyahıdan götürür, testlər isə siyahının nə qədər oxunduğunu yoxlaya bilər (nümunə: `content/courses/python-basics/modules/05-dovrler/06-while-sifir.yaml`):
 
 ```python
 girisler = ["8", "-3", "0", "11"]

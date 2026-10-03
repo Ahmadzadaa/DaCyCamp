@@ -1,0 +1,16 @@
+# Python Basics — Python4Business proqramının əsasları (Gün 1–2 slaydları və tapşırıqları + Gün 3, 5, 6-nın
+# Python mövzuları: sətirlər, lambda/map/filter/reduce, regex, paketlər). Python addımları brauzerdə (Pyodide)
+# işləyir; `pnpm --filter @dacy/web check:python` həll/starter yoxlamasını edir.
+slug: python-basics
+track: data-analytics
+title: Python Basics
+level: beginner
+description: Python-a sıfırdan başlanğıc — biznes və data analitikası üçün. İş mühiti, məlumat tipləri
+  və strukturları, şərtlər, funksiyalar, dövrlər, xətaların idarəsi, sətirlər və regex, comprehension
+  və lambda, standart kitabxana, fayllarla iş və mini layihə. Hər mövzu qısa nəzəriyyə, test və brauzerdə
+  işləyən praktik tapşırıqlarla.
+sequential: true
+estimated_hours: 12
+published: true
+topics:
+- python

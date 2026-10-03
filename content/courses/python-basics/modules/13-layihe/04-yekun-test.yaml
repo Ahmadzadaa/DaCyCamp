@@ -1,0 +1,109 @@
+type: quiz
+title: 'Yekun test: Python Basics'
+xp: 50
+estimated_minutes: 12
+pass_score: 70
+questions:
+- text: '`type(7 / 2)` nə qaytarır?'
+  options:
+  - int
+  - float
+  - str
+  - bool
+  correct:
+  - 2
+  explanation: '/ operatoru həmişə float qaytarır: 7 / 2 = 3.5. Tam bölmə üçün // istifadə olunur.'
+- text: Hər xüsusiyyəti uyğun məlumat strukturuna yerləşdir.
+  type: classify
+  buckets:
+  - name: list
+    items:
+    - 'Sıralı və dəyişdirilə bilən: [1, 2, 3]'
+  - name: tuple
+    items:
+    - 'Sıralı, amma dəyişdirilə bilməyən: (1, 2, 3)'
+  - name: dict
+    items:
+    - 'Açar–dəyər cütləri: {"ad": "Aysel"}'
+  - name: set
+    items:
+    - 'Təkrarsız elementlər: {1, 2, 3}'
+  explanation: list dəyişkən və sıralıdır, tuple dəyişməzdir, dict açar–dəyər saxlayır, set təkrarları
+    atır.
+- text: '`sum(range(1, 5))` nəyə bərabərdir?'
+  options:
+  - '15'
+  - '10'
+  - '5'
+  - '14'
+  correct:
+  - 2
+  explanation: range(1, 5) → 1, 2, 3, 4 (5 daxil deyil). Cəm 10.
+- text: '`try` blokunda xəta baş verəndə hansı blok işləyir?'
+  options:
+  - else
+  - except
+  - finally yox, yalnız else
+  - Heç biri
+  correct:
+  - 2
+  explanation: Xəta olduqda except, olmadıqda else işləyir; finally isə hər iki halda.
+- text: '`"Python"[::-1]` nə qaytarır?'
+  options:
+  - '''Python'''
+  - '''nohtyP'''
+  - '''P'''
+  - '''n'''
+  correct:
+  - 2
+  explanation: Addım −1 sətri tərsinə çevirir.
+- text: '`[x for x in [5, 12, 8, 20] if x > 10]` nəyə bərabərdir?'
+  options:
+  - '[12, 20]'
+  - '[5, 8]'
+  - '[True, False]'
+  - '[12, 8, 20]'
+  correct:
+  - 1
+  explanation: Şərt yalnız 10-dan böyükləri saxlayır.
+- text: '`re.findall(r"#(\d+)", "#12 və #345")` nə qaytarır?'
+  options:
+  - '[''#12'', ''#345'']'
+  - '[''12'', ''345'']'
+  - '[12, 345]'
+  - '''12345'''
+  correct:
+  - 2
+  explanation: Qrup olduqda findall yalnız qrupun içini qaytarır; dəyərlər sətirdir.
+- text: Faylın sonuna məlumat əlavə etmək üçün hansı rejim lazımdır?
+  options:
+  - '"r"'
+  - '"w"'
+  - '"a"'
+  - '"x"'
+  correct:
+  - 3
+  explanation: '"a" (append) mövcud məzmunu saxlayıb sona yazır.'
+- text: Bunlardan hansılar **standart kitabxananın** modullarıdır? (Bir neçə cavab)
+  type: multiple
+  options:
+  - datetime
+  - pandas
+  - json
+  - collections
+  - seaborn
+  correct:
+  - 1
+  - 3
+  - 4
+  explanation: datetime, json, collections Python ilə gəlir; pandas və seaborn PyPI paketləridir.
+- text: Funksiya testlərdə başqa data ilə çağırılanda səhv nəticə verir. Ən çox ehtimal olunan səbəb?
+  options:
+  - Funksiya arqument əvəzinə qlobal dəyişəndən və ya sabit rəqəmlərdən istifadə edir
+  - Funksiyanın adı uzundur
+  - Funksiya return əvəzinə print istifadə edir — bu, həmişə düzgündür
+  - Python funksiyaları yalnız bir dəfə çağırmaq olar
+  correct:
+  - 1
+  explanation: Funksiya yalnız ona verilən arqumentlərlə işləməlidir — onda istənilən data üçün düzgün
+    nəticə verir.

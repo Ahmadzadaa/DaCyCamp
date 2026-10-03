@@ -1,0 +1,46 @@
+type: python
+title: Counter ilə saymaq
+xp: 40
+estimated_minutes: 8
+instructions: |
+  Kassa qeydlərində ödəniş üsulları və müştəri rəylərinin sözləri var. `collections.Counter` ilə ən çox təkrarlananları tap.
+tasks:
+- Hər ödəniş üsulunun sayını hesabla → say (Counter).
+- Ən çox istifadə olunan ödəniş üsulunun adını tap → en_cox.
+- rey mətnini sözlərə böl və ən çox təkrarlanan 3 sözü tap → top3 (most_common).
+starter_code: |
+  from collections import Counter
+
+  odenisler = ["Kart", "Nağd", "Kart", "Mobil", "Kart", "Nağd", "Kart", "Mobil", "Kart"]
+  rey = "çatdırılma sürətli idi çatdırılma ucuz idi qiymət ucuz çatdırılma pulsuz"
+
+  say = ...
+  en_cox = ...
+  top3 = ...
+
+  print(say)
+  print(en_cox)
+  print(top3)
+solution: |
+  from collections import Counter
+
+  odenisler = ["Kart", "Nağd", "Kart", "Mobil", "Kart", "Nağd", "Kart", "Mobil", "Kart"]
+  rey = "çatdırılma sürətli idi çatdırılma ucuz idi qiymət ucuz çatdırılma pulsuz"
+
+  say = Counter(odenisler)
+  en_cox = say.most_common(1)[0][0]
+  top3 = Counter(rey.split()).most_common(3)
+
+  print(say)
+  print(en_cox)
+  print(top3)
+tests: |
+  from collections import Counter as _C
+  assert isinstance(say, _C) and say == _C(odenisler), f"say Counter(odenisler) olmalıdır, sənin nəticən: {say!r}"
+  assert en_cox == "Kart", f'en_cox "Kart" olmalıdır, sənin nəticən: {en_cox!r}'
+  assert top3 == [("çatdırılma", 3), ("idi", 2), ("ucuz", 2)], f"top3 düzgün deyil: {top3!r}"
+  assert "most_common(" in dacy.code, "most_common() metodundan istifadə et"
+hints:
+- say = Counter(odenisler)
+- most_common(1) [("Kart", 5)] qaytarır — adı almaq üçün [0][0].
+- top3 = Counter(rey.split()).most_common(3)

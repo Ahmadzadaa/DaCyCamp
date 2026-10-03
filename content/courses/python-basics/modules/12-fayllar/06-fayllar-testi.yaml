@@ -1,0 +1,46 @@
+type: quiz
+title: 'Test: fayllar'
+xp: 30
+estimated_minutes: 6
+pass_score: 75
+questions:
+- text: '`open("hesabat.txt", "w")` fayl artıq varsa nə edir?'
+  options:
+  - Sonuna əlavə edir
+  - İçindəkini silib yenidən yazır
+  - Xəta verir
+  - Faylı yalnız oxumaq üçün açır
+  correct:
+  - 2
+  explanation: '"w" rejimi faylı sıfırlayır. Sona əlavə etmək üçün "a" rejimi lazımdır.'
+- text: '`with open(...) as f:` yazılışının əsas üstünlüyü nədir?'
+  options:
+  - Faylı daha sürətli oxuyur
+  - Blok bitəndə (xəta olsa belə) faylı avtomatik bağlayır
+  - Faylı şifrələyir
+  - Yalnız CSV faylları üçün işləyir
+  correct:
+  - 2
+  explanation: with konteksti faylın bağlanmasını zəmanət altına alır.
+- text: '`csv.DictReader` ilə oxunan `setir["Units Sold"]` dəyərinin tipi nədir?'
+  options:
+  - int
+  - float
+  - str
+  - list
+  correct:
+  - 3
+  explanation: csv modulu hər dəyəri sətir kimi verir — hesablama üçün int()/float() ilə çevirmək lazımdır.
+- text: Hər funksiyanı etdiyi işə görə qruplaşdır.
+  type: classify
+  buckets:
+  - name: Python obyektini JSON-a çevirir
+    items:
+    - json.dumps()
+    - json.dump()
+  - name: JSON-u Python obyektinə çevirir
+    items:
+    - json.loads()
+    - json.load()
+  explanation: dump/dumps — Python → JSON (dump fayla, dumps sətrə); load/loads — JSON → Python (load
+    fayldan, loads sətirdən).

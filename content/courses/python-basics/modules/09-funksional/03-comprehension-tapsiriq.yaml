@@ -1,0 +1,44 @@
+type: python
+title: List və dictionary comprehension
+xp: 40
+estimated_minutes: 10
+instructions: |
+  TechNar-ın qiymət siyahısı ilə işləyirik. Hər bəndi **comprehension** ilə yaz (`for` dövrü ilə `append` yox).
+tasks:
+- Hər qiymətə 18% ƏDV əlavə et və 2 onluğa yuvarlaqlaşdır → edv_li (list comprehension, round(..., 2)).
+- Yalnız 500 ₼-dan baha olan qiymətləri seç → bahali.
+- 'mehsullar və qiymetler siyahılarından {məhsul: qiymət} dictionary-si yarat → qiymet_cedveli (zip ilə).'
+starter_code: |
+  mehsullar = ["iPhone 15", "Redmi Note 13", "T-Shirt", "Apple Watch", "Nivea", "Air Fryer", "Dyson V15"]
+  qiymetler = [2399, 549, 39, 899, 12, 329, 1499]
+
+  edv_li = ...
+  bahali = ...
+  qiymet_cedveli = ...
+
+  print(edv_li)
+  print(bahali)
+  print(qiymet_cedveli)
+solution: |
+  mehsullar = ["iPhone 15", "Redmi Note 13", "T-Shirt", "Apple Watch", "Nivea", "Air Fryer", "Dyson V15"]
+  qiymetler = [2399, 549, 39, 899, 12, 329, 1499]
+
+  edv_li = [round(q * 1.18, 2) for q in qiymetler]
+  bahali = [q for q in qiymetler if q > 500]
+  qiymet_cedveli = {m: q for m, q in zip(mehsullar, qiymetler)}
+
+  print(edv_li)
+  print(bahali)
+  print(qiymet_cedveli)
+tests: |
+  import re as _re
+  _exp = [round(q * 1.18, 2) for q in qiymetler]
+  assert edv_li == _exp, f"edv_li {_exp} olmalıdır, sənin nəticən: {edv_li!r}"
+  assert bahali == [2399, 549, 899, 1499], f"bahali [2399, 549, 899, 1499] olmalıdır, sənin nəticən: {bahali!r}"
+  assert qiymet_cedveli == dict(zip(mehsullar, qiymetler)), f"qiymet_cedveli düzgün deyil: {qiymet_cedveli!r}"
+  assert len(_re.findall(r"[\[{][^\]}]*\bfor\b[^\]}]*\bin\b", dacy.code)) >= 3, "Hər üç bəndi comprehension ilə yaz: [... for ... in ...] və {... for ... in ...}"
+  assert ".append(" not in dacy.code, "append() əvəzinə comprehension istifadə et"
+hints:
+- edv_li = [round(q * 1.18, 2) for q in qiymetler]
+- 'Şərt sona yazılır: [q for q in qiymetler if q > 500]'
+- 'Dictionary: {m: q for m, q in zip(mehsullar, qiymetler)}'

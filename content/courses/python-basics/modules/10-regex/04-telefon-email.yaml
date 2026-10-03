@@ -1,0 +1,48 @@
+type: python
+title: Rəylərdən e-poçt və telefon çıxar
+xp: 40
+estimated_minutes: 10
+instructions: |
+  Müştəri rəylərində əlaqə məlumatları var. Marketinq komandası onları ayrıca siyahıda istəyir.
+
+  - Mobil nömrə formatı: `+994 50 123 45 67`
+  - E-poçt: `ad@domen.zona`
+tasks:
+- Bütün e-poçt ünvanlarını tap → emailler.
+- +994 ilə başlayan bütün mobil nömrələri tap → nomreler (ofis nömrəsi 012... daxil olmamalıdır).
+- E-poçtların domenlərini tap ("gmail.com", "technar.az") → domenler.
+starter_code: |
+  import re
+
+  metn = """Əlaqə: aysel.m@gmail.com, zəng: +994 50 123 45 67
+  Dəstək: help@technar.az, mobil: +994 55 987 65 43, ofis: 012 555 12 34"""
+
+  emailler = ...
+  nomreler = ...
+  domenler = ...
+
+  print(emailler)
+  print(nomreler)
+  print(domenler)
+solution: |
+  import re
+
+  metn = """Əlaqə: aysel.m@gmail.com, zəng: +994 50 123 45 67
+  Dəstək: help@technar.az, mobil: +994 55 987 65 43, ofis: 012 555 12 34"""
+
+  emailler = re.findall(r"[\w.+-]+@[\w-]+\.[\w.]+", metn)
+  nomreler = re.findall(r"\+994 \d{2} \d{3} \d{2} \d{2}", metn)
+  domenler = re.findall(r"@([\w.-]+)", metn)
+
+  print(emailler)
+  print(nomreler)
+  print(domenler)
+tests: |
+  assert emailler == ["aysel.m@gmail.com", "help@technar.az"], f"emailler ['aysel.m@gmail.com', 'help@technar.az'] olmalıdır, sənin nəticən: {emailler!r}"
+  assert nomreler == ["+994 50 123 45 67", "+994 55 987 65 43"], f"nomreler yalnız iki mobil nömrə olmalıdır, sənin nəticən: {nomreler!r}"
+  assert domenler == ["gmail.com", "technar.az"], f"domenler ['gmail.com', 'technar.az'] olmalıdır, sənin nəticən: {domenler!r}"
+  assert dacy.code.count("re.findall(") >= 3, "Hər üç bənddə re.findall() istifadə et"
+hints:
+- '+ işarəsi regex-də xüsusidir — onu \+ kimi yaz: r"\+994 \d{2} \d{3} \d{2} \d{2}"'
+- 'E-poçt: r"[\w.+-]+@[\w-]+\.[\w.]+" — @-dan əvvəl hərf/rəqəm/nöqtə, sonra domen.'
+- 'Domen üçün @-dan sonrakı hissəni qrupa al: r"@([\w.-]+)"'

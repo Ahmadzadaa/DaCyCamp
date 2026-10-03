@@ -30,7 +30,7 @@ describe('Dəstək müraciətləri', () => {
     const r = await student.post('/support/tickets').send({
       subject: 'Python tapşırığında xəta',
       body: 'print(cem) xəta verir, niyə?',
-      pageUrl: '/kurs/python4business/g1-giris/isinma',
+      pageUrl: '/kurs/python-basics/giris/isinma',
     });
     expect(r.status).toBe(201);
     expect(r.body).toMatchObject({ status: 'OPEN', messageCount: 1, unread: false });

@@ -1,0 +1,45 @@
+type: python
+title: 'Mətni təmizlə: sub və split'
+xp: 40
+estimated_minutes: 10
+instructions: |
+  Skan edilmiş qiymət etiketindən gələn mətn səliqəsizdir, kateqoriyalar isə fərqli ayırıcılarla yazılıb. `re.sub` və `re.split` ilə səliqəyə sal.
+tasks:
+- xam mətnində ardıcıl boşluqları tək boşluqla əvəz et və kənar boşluqları sil → temiz.
+- xam mətnindəki bütün ədədləri tap və int siyahısına çevir → ededler ([2399, 10]).
+- setir-i vergül, nöqtəli vergül və | ayırıcılarına görə böl, hər hissənin boşluqlarını sil → hisseler.
+starter_code: |
+  import re
+
+  xam = "  Qiymət:   2399 AZN!!!   Endirim:  10%   "
+  setir = "Electronics, Clothing;Sports | Beauty"
+
+  temiz = ...
+  ededler = ...
+  hisseler = ...
+
+  print(temiz)
+  print(ededler)
+  print(hisseler)
+solution: |
+  import re
+
+  xam = "  Qiymət:   2399 AZN!!!   Endirim:  10%   "
+  setir = "Electronics, Clothing;Sports | Beauty"
+
+  temiz = re.sub(r"\s+", " ", xam).strip()
+  ededler = [int(x) for x in re.findall(r"\d+", xam)]
+  hisseler = [h.strip() for h in re.split(r"[,;|]", setir)]
+
+  print(temiz)
+  print(ededler)
+  print(hisseler)
+tests: |
+  assert temiz == "Qiymət: 2399 AZN!!! Endirim: 10%", f"temiz 'Qiymət: 2399 AZN!!! Endirim: 10%' olmalıdır, sənin nəticən: {temiz!r}"
+  assert ededler == [2399, 10], f"ededler [2399, 10] (tam ədədlər) olmalıdır, sənin nəticən: {ededler!r}"
+  assert hisseler == ["Electronics", "Clothing", "Sports", "Beauty"], f"hisseler düzgün deyil: {hisseler!r}"
+  assert "re.sub(" in dacy.code and "re.split(" in dacy.code, "re.sub() və re.split() funksiyalarından istifadə et"
+hints:
+- '\s+ bir və ya daha çox boşluqdur: re.sub(r"\s+", " ", xam).strip()'
+- 'Ədədlər: re.findall(r"\d+", xam) sətirlər qaytarır — int() ilə çevir.'
+- 'Bir neçə ayırıcı üçün simvol sinfi: re.split(r"[,;|]", setir)'

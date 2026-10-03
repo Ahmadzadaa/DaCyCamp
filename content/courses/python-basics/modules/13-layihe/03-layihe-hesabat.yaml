@@ -1,0 +1,138 @@
+type: python
+title: 'Layihə 2: hesabat mətni'
+xp: 60
+estimated_minutes: 15
+instructions: |
+  İndi hesablamaları səliqəli mətnə çevir. `hesabat(satislar, ay)` funksiyası **sətir qaytarmalıdır** (çap etməməlidir), sonra onu `print()` ilə yazdır.
+
+  Gözlənilən format (yanvar üçün):
+
+  ```text
+  TechNar · Yanvar hesabatı
+  Ümumi gəlir: 11,001.60 ₼
+  - Electronics: 8,994.00 ₼
+  - Sports: 793.00 ₼
+  - Clothing: 765.60 ₼
+  - Home Appliances: 329.00 ₼
+  - Beauty: 120.00 ₼
+  Ən çox satılan: Zara Basic T-Shirt
+  ```
+
+  Kateqoriyalar **gəlirə görə çoxdan aza** sıralanır. Məbləğlər minlik ayırıcısı ilə: `f"{x:,.2f}"`. Sətirləri `"\n".join(...)` ilə birləşdir.
+
+  Əvvəlki tapşırığın funksiyaları burada hazırdır.
+tasks:
+- hesabat(satislar, ay) funksiyası yuxarıdakı formatda çoxsətirli mətn qaytarsın.
+- Kateqoriyaları gəlirə görə azalan sırada yaz (sorted + key).
+- Yanvar hesabatını print(hesabat(satislar, "Yanvar")) ilə ekrana yazdır.
+starter_code: |
+  satislar = [
+      {"mehsul": "iPhone 15", "kateqoriya": "Electronics", "say": 2, "qiymet": 2399.0},
+      {"mehsul": "Zara Basic T-Shirt", "kateqoriya": "Clothing", "say": 6, "qiymet": 39.9},
+      {"mehsul": "AirPods Pro 2", "kateqoriya": "Electronics", "say": 3, "qiymet": 599.0},
+      {"mehsul": "Nike Air Force 1", "kateqoriya": "Sports", "say": 2, "qiymet": 249.0},
+      {"mehsul": "Zara Basic T-Shirt", "kateqoriya": "Clothing", "say": 8, "qiymet": 39.9},
+      {"mehsul": "Philips Air Fryer XL", "kateqoriya": "Home Appliances", "say": 1, "qiymet": 329.0},
+      {"mehsul": "Yoga Mat Pro", "kateqoriya": "Sports", "say": 5, "qiymet": 59.0},
+      {"mehsul": "iPhone 15", "kateqoriya": "Electronics", "say": 1, "qiymet": 2399.0},
+      {"mehsul": "Nivea Soft 200ml", "kateqoriya": "Beauty", "say": 10, "qiymet": 12.0},
+      {"mehsul": "H&M Hoodie", "kateqoriya": "Clothing", "say": 3, "qiymet": 69.0},
+  ]
+
+
+  def umumi_gelir(satislar):
+      return round(sum(s["say"] * s["qiymet"] for s in satislar), 2)
+
+
+  def kateqoriya_uzre(satislar):
+      netice = {}
+      for s in satislar:
+          netice[s["kateqoriya"]] = netice.get(s["kateqoriya"], 0) + s["say"] * s["qiymet"]
+      return {k: round(v, 2) for k, v in netice.items()}
+
+
+  def en_cox_satilan(satislar):
+      sayi = {}
+      for s in satislar:
+          sayi[s["mehsul"]] = sayi.get(s["mehsul"], 0) + s["say"]
+      return max(sayi, key=sayi.get)
+
+
+  def hesabat(satislar, ay):
+      setirler = [f"TechNar · {ay} hesabatı"]
+      # davam et
+      return "\n".join(setirler)
+solution: |
+  satislar = [
+      {"mehsul": "iPhone 15", "kateqoriya": "Electronics", "say": 2, "qiymet": 2399.0},
+      {"mehsul": "Zara Basic T-Shirt", "kateqoriya": "Clothing", "say": 6, "qiymet": 39.9},
+      {"mehsul": "AirPods Pro 2", "kateqoriya": "Electronics", "say": 3, "qiymet": 599.0},
+      {"mehsul": "Nike Air Force 1", "kateqoriya": "Sports", "say": 2, "qiymet": 249.0},
+      {"mehsul": "Zara Basic T-Shirt", "kateqoriya": "Clothing", "say": 8, "qiymet": 39.9},
+      {"mehsul": "Philips Air Fryer XL", "kateqoriya": "Home Appliances", "say": 1, "qiymet": 329.0},
+      {"mehsul": "Yoga Mat Pro", "kateqoriya": "Sports", "say": 5, "qiymet": 59.0},
+      {"mehsul": "iPhone 15", "kateqoriya": "Electronics", "say": 1, "qiymet": 2399.0},
+      {"mehsul": "Nivea Soft 200ml", "kateqoriya": "Beauty", "say": 10, "qiymet": 12.0},
+      {"mehsul": "H&M Hoodie", "kateqoriya": "Clothing", "say": 3, "qiymet": 69.0},
+  ]
+
+
+  def umumi_gelir(satislar):
+      return round(sum(s["say"] * s["qiymet"] for s in satislar), 2)
+
+
+  def kateqoriya_uzre(satislar):
+      netice = {}
+      for s in satislar:
+          netice[s["kateqoriya"]] = netice.get(s["kateqoriya"], 0) + s["say"] * s["qiymet"]
+      return {k: round(v, 2) for k, v in netice.items()}
+
+
+  def en_cox_satilan(satislar):
+      sayi = {}
+      for s in satislar:
+          sayi[s["mehsul"]] = sayi.get(s["mehsul"], 0) + s["say"]
+      return max(sayi, key=sayi.get)
+
+
+  def hesabat(satislar, ay):
+      setirler = [f"TechNar · {ay} hesabatı"]
+      setirler.append(f"Ümumi gəlir: {umumi_gelir(satislar):,.2f} ₼")
+      kat = kateqoriya_uzre(satislar)
+      for k, v in sorted(kat.items(), key=lambda x: x[1], reverse=True):
+          setirler.append(f"- {k}: {v:,.2f} ₼")
+      setirler.append(f"Ən çox satılan: {en_cox_satilan(satislar)}")
+      return "\n".join(setirler)
+
+
+  print(hesabat(satislar, "Yanvar"))
+tests: |
+  _fevral = [
+      {"mehsul": "Dyson V15", "kateqoriya": "Home Appliances", "say": 2, "qiymet": 1499.0},
+      {"mehsul": "Puma RS-X", "kateqoriya": "Sports", "say": 4, "qiymet": 199.0},
+      {"mehsul": "Puma RS-X", "kateqoriya": "Sports", "say": 3, "qiymet": 199.0},
+      {"mehsul": "Nivea Soft 200ml", "kateqoriya": "Beauty", "say": 6, "qiymet": 12.0},
+  ]
+
+  _exp = """TechNar · Yanvar hesabatı
+  Ümumi gəlir: 11,001.60 ₼
+  - Electronics: 8,994.00 ₼
+  - Sports: 793.00 ₼
+  - Clothing: 765.60 ₼
+  - Home Appliances: 329.00 ₼
+  - Beauty: 120.00 ₼
+  Ən çox satılan: Zara Basic T-Shirt"""
+  _got = hesabat(satislar, "Yanvar")
+  assert isinstance(_got, str), "hesabat() sətir qaytarmalıdır (return), print etməməlidir"
+  _gl, _el = _got.strip().splitlines(), _exp.splitlines()
+  for _i, (_g, _e) in enumerate(zip(_gl, _el), 1):
+      assert _g.strip() == _e.strip(), f"{_i}-ci sətir fərqlidir.\nGözlənilən: {_e}\nSənin:      {_g}"
+  assert len(_gl) == len(_el), f"Hesabatda {len(_el)} sətir olmalıdır, səndə {len(_gl)}"
+  _f = hesabat(_fevral, "Fevral").splitlines()
+  assert _f[0] == "TechNar · Fevral hesabatı" and _f[1] == "Ümumi gəlir: 4,463.00 ₼", "hesabat başqa ay və data üçün də işləməlidir"
+  assert _f[2] == "- Home Appliances: 2,998.00 ₼", "Kateqoriyalar gəlirə görə azalan sırada olmalıdır"
+  assert "TechNar · Yanvar hesabatı" in dacy.lines, "Yanvar hesabatını print() ilə ekrana yazdır"
+hints:
+- 'Ümumi gəlir sətri: f"Ümumi gəlir: {umumi_gelir(satislar):,.2f} ₼"'
+- 'Kateqoriyalar: for k, v in sorted(kat.items(), key=lambda x: x[1], reverse=True): ...'
+- 'Sonda: setirler.append(f"Ən çox satılan: {en_cox_satilan(satislar)}") və return "\n".join(setirler)'

@@ -1,0 +1,3 @@
+title: Regular expressions (re modulu)
+description: 'Mətndə nümunə (pattern) axtarmaq, tapmaq, əvəz etmək və bölmək: re.search, findall, sub,
+  split.'

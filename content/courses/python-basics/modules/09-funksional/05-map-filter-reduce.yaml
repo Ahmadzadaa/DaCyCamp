@@ -1,0 +1,46 @@
+type: python
+title: map, filter və reduce
+xp: 40
+estimated_minutes: 10
+instructions: |
+  Gün ərzindəki satış məbləğləri üzərində üç əməliyyatı funksional alətlərlə et.
+tasks:
+- map ilə hər satışı 10% endirimlə hesabla və 2 onluğa yuvarlaqlaşdır → endirimli (list).
+- filter ilə 100 ₼-dan böyük satışları seç → boyuk (list).
+- reduce ilə bütün satışların cəmini hesabla və 2 onluğa yuvarlaqlaşdır → cem.
+starter_code: |
+  from functools import reduce
+
+  satislar = [120.5, 89.9, 300.0, 45.25, 610.0, 15.0]
+
+  endirimli = ...
+  boyuk = ...
+  cem = ...
+
+  print(endirimli)
+  print(boyuk)
+  print(cem)
+solution: |
+  from functools import reduce
+
+  satislar = [120.5, 89.9, 300.0, 45.25, 610.0, 15.0]
+
+  endirimli = list(map(lambda x: round(x * 0.9, 2), satislar))
+  boyuk = list(filter(lambda x: x > 100, satislar))
+  cem = round(reduce(lambda x, y: x + y, satislar), 2)
+
+  print(endirimli)
+  print(boyuk)
+  print(cem)
+tests: |
+  _exp = [round(x * 0.9, 2) for x in satislar]
+  assert isinstance(endirimli, list), "endirimli siyahı olmalıdır — map() nəticəsini list() ilə çevir"
+  assert endirimli == _exp, f"endirimli {_exp} olmalıdır, sənin nəticən: {endirimli!r}"
+  assert boyuk == [120.5, 300.0, 610.0], f"boyuk [120.5, 300.0, 610.0] olmalıdır, sənin nəticən: {boyuk!r}"
+  assert cem == 1180.65, f"cem 1180.65 olmalıdır, sənin nəticən: {cem!r}"
+  for _f in ("map(", "filter(", "reduce("):
+      assert _f in dacy.code, f"{_f[:-1]}() funksiyasından istifadə et"
+hints:
+- 'endirimli = list(map(lambda x: round(x * 0.9, 2), satislar))'
+- 'boyuk = list(filter(lambda x: x > 100, satislar))'
+- 'cem = round(reduce(lambda x, y: x + y, satislar), 2)'

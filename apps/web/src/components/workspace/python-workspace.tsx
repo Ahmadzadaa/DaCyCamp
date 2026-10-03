@@ -182,8 +182,17 @@ export function PythonWorkspace({ view, py }: { view: StepViewDto; py: PythonStu
       />
       <div className="console" data-testid="py-console">
         <div className="ch" role="tablist">
-          {tabBtn('stdout', t('ws.console'))}
-          {tabBtn('stderr', t('ws.stderr'))}
+          {/* «•» — sekmədə baxılmamış nəticə var (məs. qrafik açılanda konsolda da çap olunmuş mətn) */}
+          {tabBtn(
+            'stdout',
+            result?.stdout && tab !== 'stdout' ? `${t('ws.console')} •` : t('ws.console'),
+          )}
+          {tabBtn(
+            'stderr',
+            (result?.error || result?.stderr) && tab !== 'stderr'
+              ? `${t('ws.stderr')} •`
+              : t('ws.stderr'),
+          )}
           {tabBtn('plots', t('ws.chart'))}
           {tabBtn('stdin', stdin.trim() ? `${t('ws.stdinTab')} •` : t('ws.stdinTab'))}
           {result ? (

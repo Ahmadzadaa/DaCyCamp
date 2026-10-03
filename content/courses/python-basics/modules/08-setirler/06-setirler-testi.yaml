@@ -1,0 +1,55 @@
+type: quiz
+title: 'Test: sətirlər'
+xp: 30
+estimated_minutes: 6
+pass_score: 75
+questions:
+- text: Hər sətir metodunu qaytardığı nəticənin tipinə görə qruplaşdır.
+  type: classify
+  buckets:
+  - name: Yeni sətir (str)
+    items:
+    - '"abc".upper()'
+    - '"  x ".strip()'
+    - '"a-b".replace("-", "+")'
+  - name: Siyahı (list)
+    items:
+    - '"a,b,c".split(",")'
+  - name: Ədəd (int)
+    items:
+    - '"banana".count("a")'
+    - '"TechNar".find("Nar")'
+    - len("Bakı")
+  - name: Boolean (bool)
+    items:
+    - '"2024".isdigit()'
+    - '"iPhone 15".startswith("iPhone")'
+  explanation: Təmizləmə və əvəzetmə metodları yeni sətir, split() siyahı, count()/find()/len() ədəd,
+    is…/starts…/ends… metodları isə True/False qaytarır.
+- text: '`s = "Python"` olduqda `s[1:4]` nəyə bərabərdir?'
+  options:
+  - '''Pyt'''
+  - '''yth'''
+  - '''ytho'''
+  - '''Pyth'''
+  correct:
+  - 2
+  explanation: 'Kəsmə indeks 1-dən başlayır və 4-cü indeks daxil deyil: y(1), t(2), h(3).'
+- text: '`ad = "Bakı"` olduqda `ad[0] = "b"` əmri nə edir?'
+  options:
+  - Sətri 'bakı' edir
+  - TypeError verir — sətirlər dəyişməzdir
+  - Heç nə etmir
+  - Sətrin sonuna 'b' əlavə edir
+  correct:
+  - 2
+  explanation: 'Sətirlər dəyişməzdir (immutable). Yeni sətir yaratmaq lazımdır: "b" + ad[1:].'
+- text: '`f"{0.256:.1%}"` nə yazdırır?'
+  options:
+  - '0.256'
+  - 25.6%
+  - 0.3%
+  - 26%
+  correct:
+  - 2
+  explanation: :.1% formatı ədədi 100-ə vurub bir onluqla faiz kimi göstərir.

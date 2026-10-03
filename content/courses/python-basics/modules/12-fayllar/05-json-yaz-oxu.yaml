@@ -1,0 +1,50 @@
+type: python
+title: JSON faylı yaz və oxu
+xp: 40
+estimated_minutes: 8
+instructions: |
+  Aylıq hesabatı başqa sistemə ötürmək üçün JSON formatında saxla, sonra yoxlamaq üçün geri oxu.
+tasks:
+- hesabat dictionary-sini hesabat.json faylına yaz (json.dump, indent=2, ensure_ascii=False).
+- Faylı yenidən oxu → oxunan (json.load).
+- hesabat-ı JSON sətrinə çevir → json_str (json.dumps, ensure_ascii=False).
+starter_code: |
+  import json
+
+  hesabat = {"ay": "Yanvar", "sifaris": 152, "gelir": 48210.5, "top_mehsul": "iPhone 15", "seherler": ["Bakı", "Gəncə"]}
+
+  # 1. fayla yaz
+
+  # 2. geri oxu
+  oxunan = ...
+
+  json_str = ...
+  print(oxunan)
+  print(json_str)
+solution: |
+  import json
+
+  hesabat = {"ay": "Yanvar", "sifaris": 152, "gelir": 48210.5, "top_mehsul": "iPhone 15", "seherler": ["Bakı", "Gəncə"]}
+
+  with open("hesabat.json", "w", encoding="utf-8") as f:
+      json.dump(hesabat, f, indent=2, ensure_ascii=False)
+
+  with open("hesabat.json", encoding="utf-8") as f:
+      oxunan = json.load(f)
+
+  json_str = json.dumps(hesabat, ensure_ascii=False)
+  print(oxunan)
+  print(json_str)
+tests: |
+  import json as _j, os as _os
+  assert _os.path.exists("hesabat.json"), "hesabat.json faylı yaradılmayıb — json.dump(hesabat, f, ...) istifadə et"
+  _txt = open("hesabat.json", encoding="utf-8").read()
+  assert _j.loads(_txt) == hesabat, "Fayldakı JSON hesabat ilə eyni olmalıdır"
+  assert "Gəncə" in _txt, "Faylda Azərbaycan hərfləri kodlaşdırılıb — ensure_ascii=False əlavə et"
+  assert oxunan == hesabat, "oxunan fayldan json.load ilə oxunmuş dictionary olmalıdır"
+  assert isinstance(json_str, str) and _j.loads(json_str) == hesabat and "Bakı" in json_str, "json_str = json.dumps(hesabat, ensure_ascii=False)"
+  assert "json.load(" in dacy.code, "Faylı json.load() ilə oxu"
+hints:
+- 'with open("hesabat.json", "w", encoding="utf-8") as f: json.dump(hesabat, f, indent=2, ensure_ascii=False)'
+- 'Oxumaq: with open("hesabat.json", encoding="utf-8") as f: oxunan = json.load(f)'
+- json_str = json.dumps(hesabat, ensure_ascii=False)

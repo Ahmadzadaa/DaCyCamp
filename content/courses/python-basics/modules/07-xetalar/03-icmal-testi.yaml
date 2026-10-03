@@ -1,0 +1,76 @@
+type: quiz
+title: 'Test: xətalar və 1–7-ci fəsillərin icmalı'
+xp: 40
+pass_score: 70
+shuffle_questions: true
+questions:
+  - text: '`int("abc")` hansı xətanı yaradır?'
+    options: [TypeError, KeyError, ValueError, ZeroDivisionError]
+    correct: [3]
+  - text: '`try` blokunda xəta baş VERMƏYƏNDƏ hansı blok işləyir?'
+    options: [else, except, raise, finally]
+    correct: [1]
+  - text: Hansı blok xəta olsa da, olmasa da həmişə işləyir?
+    options: [finally, except, try, else]
+    correct: [1]
+  - text: Xətanı özümüz yaratmaq üçün hansı açar söz istifadə olunur?
+    options: [raise, except, throw, error]
+    correct: [1]
+  - text: |
+      Bu kodun nəticəsi nədir?
+
+      ```python
+      qiymetler = [12, 7, 30, 5]
+      print(max(qiymetler) - min(qiymetler))
+      ```
+    options: ['5', '30', '25', '54']
+    correct: [3]
+  - text: |
+      Bu kodun nəticəsi nədir?
+
+      ```python
+      d = {"ad": "Aysel", "yaş": 24}
+      d["yaş"] = d["yaş"] + 1
+      print(d["yaş"])
+      ```
+    options: [KeyError, '"yaş"', '25', '24']
+    correct: [3]
+  - text: |
+      Bu funksiya `qiymet(75)` üçün nə qaytarır?
+
+      ```python
+      def qiymet(bal):
+          if bal >= 90:
+              return "Əla"
+          elif bal >= 70:
+              return "Yaxşı"
+          return "Kafi"
+      ```
+    options: ['"Əla"', '"Kafi"', None, '"Yaxşı"']
+    correct: [4]
+  - text: |
+      Bu kod nə çap edir?
+
+      ```python
+      cem = 0
+      for i in range(1, 5):
+          if i == 3:
+              continue
+          cem += i
+      print(cem)
+      ```
+    options: ['3', '6', '7', '10']
+    correct: [3]
+    explanation: 1 + 2 + 4 = 7 (3 continue ilə buraxılır, range(1, 5) 5-i daxil etmir).
+  - text: Unikal müştəri şəhərlərini tapmaq üçün siyahını hansı struktura çevirmək ən rahatdır?
+    options: [tuple, dict, set, list]
+    correct: [3]
+  - text: '`"data,analitika,python".split(",")` nəticəsi nədir?'
+    options:
+      [
+        "['data,analitika,python']",
+        "('data', 'analitika', 'python')",
+        "['data', 'analitika', 'python']",
+        "'data analitika python'",
+      ]
+    correct: [3]

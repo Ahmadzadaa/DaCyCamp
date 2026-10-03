@@ -1,0 +1,48 @@
+type: python
+title: Rəylər faylını oxu
+xp: 40
+estimated_minutes: 10
+instructions: |
+  `reyler.txt` faylında hər sətirdə bir müştəri rəyi var. Faylı oxu və təhlil et.
+tasks:
+- Faylı with open(..., encoding="utf-8") ilə aç, boş olmayan sətirləri kənar boşluqlarsız reyler siyahısına
+  yığ.
+- Rəylərin sayını tap → say.
+- İçində "çatdırılma" sözü keçən rəylərin sayını tap (böyük-kiçik hərf fərq etməsin) → catdirilma_say.
+- Ən uzun rəyin mətnini tap → en_uzun.
+dataset: datasets/reyler.txt
+starter_code: |
+  reyler = []
+  # faylı oxu
+
+  say = ...
+  catdirilma_say = ...
+  en_uzun = ...
+
+  print(say, catdirilma_say)
+  print(en_uzun)
+solution: |
+  reyler = []
+  with open("reyler.txt", encoding="utf-8") as f:
+      for setir in f:
+          if setir.strip():
+              reyler.append(setir.strip())
+
+  say = len(reyler)
+  catdirilma_say = sum(1 for r in reyler if "çatdırılma" in r.lower())
+  en_uzun = max(reyler, key=len)
+
+  print(say, catdirilma_say)
+  print(en_uzun)
+tests: |
+  _r = [s.strip() for s in open("reyler.txt", encoding="utf-8") if s.strip()]
+  assert reyler == _r, "reyler faylın boş olmayan sətirləri (strip edilmiş) olmalıdır"
+  assert say == len(_r), f"say {len(_r)} olmalıdır, sənin nəticən: {say!r}"
+  _c = sum(1 for x in _r if "çatdırılma" in x.lower())
+  assert catdirilma_say == _c, f"catdirilma_say {_c} olmalıdır (lower() ilə yoxla — 'Çatdırılma' da sayılır), sənin nəticən: {catdirilma_say!r}"
+  assert en_uzun == max(_r, key=len), "en_uzun ən uzun rəy olmalıdır — max(reyler, key=len)"
+  assert "with open(" in dacy.code, "Faylı with open(...) ilə aç"
+hints:
+- 'with open("reyler.txt", encoding="utf-8") as f: for setir in f: ...'
+- 'Kiçik hərfə çevirib yoxla: "çatdırılma" in r.lower()'
+- en_uzun = max(reyler, key=len)

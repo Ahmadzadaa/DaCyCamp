@@ -1,0 +1,43 @@
+type: python
+title: 'Sifariş kodlarını tap: findall və search'
+xp: 40
+estimated_minutes: 10
+instructions: |
+  Sifariş qeydlərində kodlar `#A-10234` formatındadır: `#`, seriya hərfi, tire və rəqəmlər. `re` modulu ilə onları çıxar.
+tasks:
+- 'Bütün sifariş kodlarını # işarəsi olmadan tap → kodlar (["A-10234", ...]). Qrupdan istifadə et.'
+- A seriyalı kodların sayını regex ilə tap → a_say.
+- re.search ilə "gündə" sözündən əvvəlki ədədi tap və int-ə çevir → gun.
+starter_code: |
+  import re
+
+  metn = "Sifariş #A-10234 2 gündə çatdı. Sifariş #B-20871 natamam gəldi. Qaytarma: #A-10301."
+
+  kodlar = ...
+  a_say = ...
+  gun = ...
+
+  print(kodlar)
+  print(a_say)
+  print(gun)
+solution: |
+  import re
+
+  metn = "Sifariş #A-10234 2 gündə çatdı. Sifariş #B-20871 natamam gəldi. Qaytarma: #A-10301."
+
+  kodlar = re.findall(r"#([A-Z]-\d+)", metn)
+  a_say = len(re.findall(r"#A-\d+", metn))
+  gun = int(re.search(r"(\d+) gündə", metn).group(1))
+
+  print(kodlar)
+  print(a_say)
+  print(gun)
+tests: |
+  assert kodlar == ["A-10234", "B-20871", "A-10301"], f"kodlar ['A-10234', 'B-20871', 'A-10301'] olmalıdır, sənin nəticən: {kodlar!r}"
+  assert a_say == 2, f"a_say 2 olmalıdır, sənin nəticən: {a_say!r}"
+  assert gun == 2 and isinstance(gun, int), f"gun tam ədəd 2 olmalıdır, sənin nəticən: {gun!r}"
+  assert "re.findall(" in dacy.code and "re.search(" in dacy.code, "re.findall() və re.search() funksiyalarından istifadə et"
+hints:
+- 'Qrup # işarəsini nəticədən çıxarır: re.findall(r"#([A-Z]-\d+)", metn)'
+- 'A seriyası: re.findall(r"#A-\d+", metn) — siyahının uzunluğu len() ilə.'
+- gun = int(re.search(r"(\d+) gündə", metn).group(1)) — group(1) birinci qrupdur.
