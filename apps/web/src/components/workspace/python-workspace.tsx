@@ -25,6 +25,8 @@ export function PythonWorkspace({ view, py }: { view: StepViewDto; py: PythonStu
   const [tab, setTab] = useState<Tab>('stdout');
   // input() üçün dəyərlər — hər sətir bir input() çağırışı (brauzerin prompt pəncərəsi əvəzinə)
   const [stdin, setStdin] = useState('');
+  // son icradakı xəta sətri — kod dəyişəndə silinir
+  const [marker, setMarker] = useState<{ line: number; message: string } | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [verdict, setVerdict] = useState<{ ok: boolean; text: string } | null>(null);
   const runtime = useRef<typeof import('@/lib/runtimes/pyodide') | null>(null);
@@ -62,6 +64,14 @@ export function PythonWorkspace({ view, py }: { view: StepViewDto; py: PythonStu
           stdin,
         });
         setResult(r);
+        setMarker(
+          r.errorLine && r.error
+            ? {
+                line: r.errorLine,
+                message: r.error.split('\n').filter(Boolean).slice(-3).join('\n'),
+              }
+            : null,
+        );
         setTab(r.error ? 'stderr' : r.images.length ? 'plots' : 'stdout');
         return r;
       } catch (e) {
@@ -70,6 +80,7 @@ export function PythonWorkspace({ view, py }: { view: StepViewDto; py: PythonStu
           stdout: '',
           stderr: msg,
           error: msg,
+          errorLine: null,
           passed: withTests ? false : null,
           images: [],
           ms: 0,
@@ -161,7 +172,11 @@ export function PythonWorkspace({ view, py }: { view: StepViewDto; py: PythonStu
       </div>
       <CodeEditor
         value={code}
-        onChange={setCode}
+        onChange={(v) => {
+          setCode(v);
+          setMarker(null);
+        }}
+        marker={marker}
         language="python"
         onRun={() => void execute(false)}
       />

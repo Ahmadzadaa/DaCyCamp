@@ -68,7 +68,7 @@ export const STUDENT_NAV: NavSection[] = [
     items: [
       {
         href: '/yollar',
-        label: 'shell.paths',
+        label: 'shell.roadmap',
         icon: Route,
         match: [/^\/yollar/, /^\/yol\//],
         tint: '#5E5CE6',
@@ -190,7 +190,7 @@ export const BOTTOM_NAV: NavItem[] = [
   { href: '/panel', label: 'shell.panel', icon: LayoutDashboard, auth: true, tint: '#0A84FF' },
   {
     href: '/yollar',
-    label: 'shell.paths',
+    label: 'shell.roadmap',
     icon: Route,
     match: [/^\/yollar/, /^\/yol\//],
     tint: '#5E5CE6',

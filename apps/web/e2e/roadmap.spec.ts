@@ -1,14 +1,14 @@
 import { expect, test } from '@playwright/test';
 import { ADMIN, STUDENT, login } from './helpers';
 
-/** Karyera yolları, kataloqda səviyyə filtri, admin redaktəsi (xəritə + səviyyə adları) */
+/** Roadmap (karyera xəritəsi), kataloqda səviyyə filtri, admin redaktəsi (xəritə + səviyyə adları) */
 test.describe.configure({ mode: 'serial' });
 
 test('qonaq: karyera xəritəsi, səviyyə nərdivanı, işarələmək üçün giriş çağırışı', async ({
   page,
 }) => {
   await page.goto('/yollar?karyera=data-engineer');
-  await expect(page.getByRole('heading', { level: 1, name: 'Karyera yolları' })).toBeVisible();
+  await expect(page.getByRole('heading', { level: 1, name: 'Roadmap' })).toBeVisible();
   await expect(page.getByTestId('career-data-engineer')).toHaveAttribute('aria-current', 'page');
   await expect(page.getByRole('heading', { level: 2, name: 'Intern Data Engineer' })).toBeVisible();
   await page.getByTestId('level-junior').click();

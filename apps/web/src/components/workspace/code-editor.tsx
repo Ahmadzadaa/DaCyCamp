@@ -17,6 +17,7 @@ export function CodeEditor({
   autoFocus,
   height,
   ariaLabel,
+  marker,
 }: {
   value: string;
   onChange: (v: string) => void;
@@ -27,6 +28,8 @@ export function CodeEditor({
   /** sabit hündürlük (admin formaları); verilməsə valideyni doldurur */
   height?: number;
   ariaLabel?: string;
+  /** xəta sətri — qırmızı dalğalı xətt və üzərinə gələndə izah */
+  marker?: { line: number; message: string } | null;
 }) {
   const runRef = useRef(onRun);
   runRef.current = onRun;
@@ -35,6 +38,7 @@ export function CodeEditor({
   // React yenidən render-i gecikəndə köhnə dəyər redaktora yazılır və sürətli yazıda hərflər itirdi.
   // Xaricdən gələn dəyişiklik (məs. «Başlanğıc koda qaytar») yalnız son yazılandan fərqli olanda tətbiq olunur.
   const editorRef = useRef<Parameters<OnMount>[0] | null>(null);
+  const monacoRef = useRef<Parameters<OnMount>[1] | null>(null);
   const lastEmitted = useRef(value);
   const latest = useRef(value);
   latest.current = value;
@@ -51,8 +55,34 @@ export function CodeEditor({
     ed.pushUndoStop();
   }, [value]);
 
+  useEffect(() => {
+    const ed = editorRef.current;
+    const monaco = monacoRef.current;
+    const model = ed?.getModel();
+    if (!ed || !monaco || !model) return;
+    const line = marker && Math.min(Math.max(marker.line, 1), model.getLineCount());
+    monaco.editor.setModelMarkers(
+      model,
+      'dacy',
+      line && marker
+        ? [
+            {
+              startLineNumber: line,
+              endLineNumber: line,
+              startColumn: model.getLineFirstNonWhitespaceColumn(line) || 1,
+              endColumn: model.getLineMaxColumn(line),
+              message: marker.message,
+              severity: monaco.MarkerSeverity.Error,
+            },
+          ]
+        : [],
+    );
+    if (line) ed.revealLineInCenterIfOutsideViewport(line);
+  }, [marker, ready]);
+
   const onMount: OnMount = (editor, monaco) => {
     editorRef.current = editor;
+    monacoRef.current = monaco;
     // redaktor yüklənənə qədər dəyər dəyişmiş ola bilər (məs. yadda saxlanmış qaralama)
     lastEmitted.current = latest.current;
     if (editor.getValue() !== latest.current) editor.setValue(latest.current);

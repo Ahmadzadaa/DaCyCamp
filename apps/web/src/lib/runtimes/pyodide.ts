@@ -1,6 +1,7 @@
 'use client';
 import type { AttachmentView } from '@dacy/shared';
 import { t } from '@/lib/i18n';
+import { formatPyError } from './py-errors';
 
 /** Pyodide: defolt CDN; oflayn/öz serveri üçün NEXT_PUBLIC_PYODIDE_URL (məs. /pyodide/ — yalnız nüvə, pandas üçün tam güzgü lazımdır) */
 export const PYODIDE_URL = (
@@ -71,6 +72,8 @@ export interface PyRunResult {
   stdout: string;
   stderr: string;
   error: string | null;
+  /** tələbə kodunda xəta sətri (redaktorda işarələmək üçün) */
+  errorLine: number | null;
   passed: boolean | null; // testlər işlədilməyibsə null
   images: string[]; // base64 PNG (matplotlib)
   ms: number;
@@ -188,6 +191,7 @@ export async function runPython(
   py.runPython(WATCHDOG);
   const watch = () => py.runPython(`_dacy_watch(${PY_TIME_LIMIT_S})`);
   let error: string | null = null;
+  let errorLine: number | null = null;
   let passed: boolean | null = null;
   try {
     await py.loadPackagesFromImports(all);
@@ -204,11 +208,13 @@ export async function runPython(
         passed = true;
       } catch (e) {
         passed = false;
-        error = pyError(e);
+        error = formatPyError(rawError(e), { tests: true }).text;
       }
     }
   } catch (e) {
-    error = pyError(e);
+    const v = formatPyError(rawError(e));
+    error = v.text;
+    errorLine = v.line;
     if (opts.tests?.trim()) passed = false;
   } finally {
     py.runPython('_dacy_unwatch()');
@@ -226,16 +232,11 @@ export async function runPython(
     stdout: out.text(),
     stderr: err.text(),
     error,
+    errorLine,
     passed,
     images,
     ms: Math.round(performance.now() - t0),
   };
 }
 
-function pyError(e: unknown): string {
-  const msg = e instanceof Error ? e.message : String(e);
-  // Pyodide traceback-in son sətirləri daha faydalıdır
-  const lines = msg.trim().split('\n');
-  const tail = lines.slice(-6).join('\n');
-  return tail.length < msg.length ? `…\n${tail}` : msg;
-}
+const rawError = (e: unknown) => (e instanceof Error ? e.message : String(e));
