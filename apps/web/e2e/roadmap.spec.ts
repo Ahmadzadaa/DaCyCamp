@@ -87,6 +87,8 @@ test('admin: xəritədə bacarığı redaktə edir, saytda görünür; səviyyə
   await lbl.fill('Peşəkar');
   await page.getByTestId('level-labels').getByRole('button', { name: 'Yadda saxla' }).click();
   await expect(page.getByText('Səviyyə adları yadda saxlanıldı')).toBeVisible();
+  // yadda saxlamadan sonrakı router.refresh() bitməmiş naviqasiya etməyək
+  await page.waitForLoadState('networkidle');
   await page.goto('/kurslar');
   await page.getByTestId('catalog-level').click();
   await expect(page.getByRole('menuitemradio', { name: /Peşəkar/ })).toBeVisible();
