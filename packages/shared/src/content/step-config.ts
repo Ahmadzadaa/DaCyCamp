@@ -542,6 +542,8 @@ export function validateForPublish(
   };
   switch (def.type) {
     case 'theory':
+      if (!def.content.trim() && !def.video_url)
+        issues.push({ path: 'content', message: 'Məzmun boş ola bilməz (və ya video əlavə edin)' });
       if (def.video_url && !isUrl(def.video_url)) need(def.video_url, 'video_url');
       break;
     case 'sql':

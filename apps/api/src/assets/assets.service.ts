@@ -10,8 +10,19 @@ import {
   removeFromStorage,
   safeFilename,
   saveToStorage,
+  moveIntoStorage,
   sha256,
 } from './storage';
+
+interface AssetUploadMeta {
+  courseId: string;
+  filename: string;
+  mime: string;
+  path?: string;
+  kind?: AssetKind;
+  replace?: boolean;
+  uploadedById?: string;
+}
 
 export const assetUrl = (a: { id: string; filename: string }) =>
   `/api/assets/${a.id}/${encodeURIComponent(a.filename)}`;
@@ -40,16 +51,24 @@ export class AssetsService {
   }
 
   /** Faylı yaddaşa yazır və Asset sətri yaradır; eyni path varsa replace=true olmadan 409 */
-  async upload(opts: {
-    courseId: string;
-    buffer: Buffer;
-    filename: string;
-    mime: string;
-    path?: string;
-    kind?: AssetKind;
-    replace?: boolean;
-    uploadedById?: string;
-  }) {
+  async upload(opts: AssetUploadMeta & { buffer: Buffer }) {
+    const buf = opts.buffer;
+    return this.persist(opts, async (filename) => ({
+      key: await saveToStorage(opts.courseId, filename, buf),
+      sha256: sha256(buf),
+      size: buf.length,
+    }));
+  }
+
+  /** Böyük fayl (video) diskdəki müvəqqəti fayldan — yaddaşa yüklənmir */
+  async uploadFile(opts: AssetUploadMeta & { tmpPath: string }) {
+    return this.persist(opts, (filename) => moveIntoStorage(opts.courseId, filename, opts.tmpPath));
+  }
+
+  private async persist(
+    opts: AssetUploadMeta,
+    store: (filename: string) => Promise<{ key: string; sha256: string; size: number }>,
+  ) {
     const course = await this.prisma.course.findUnique({ where: { id: opts.courseId } });
     if (!course) throw notFound();
     const filename = safeFilename(opts.filename);
@@ -59,15 +78,16 @@ export class AssetsService {
       where: { courseId_path: { courseId: opts.courseId, path } },
     });
     if (existing && !opts.replace) throw conflict('ASSET_PATH_EXISTS', `Bu yol artıq var: ${path}`);
-    const storageKey = await saveToStorage(opts.courseId, filename, opts.buffer);
+    const stored = await store(filename);
+    const storageKey = stored.key;
     const data = {
       courseId: opts.courseId,
       path,
       kind,
       filename,
       mime: opts.mime || 'application/octet-stream',
-      sizeBytes: opts.buffer.length,
-      sha256: sha256(opts.buffer),
+      sizeBytes: stored.size,
+      sha256: stored.sha256,
       storageKey,
       uploadedById: opts.uploadedById ?? null,
     };

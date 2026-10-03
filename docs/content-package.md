@@ -82,6 +82,16 @@ video_url: https://youtu.be/... # istəyə bağlı
 Markdown məzmun. Şəkil: ![sxem](images/sxem.png)
 ```
 
+**Video dərs** (məs. fəslin sonunda): `video_url` YouTube/Vimeo linki və ya paketdəki fayl ola bilər (`videos/gun1.mp4`). Video varsa mətn boş qala bilər:
+
+```yaml
+type: theory
+title: 'Video dərs: Gün 1'
+video_url: videos/gun1.mp4
+```
+
+Admin paneldə: kurs redaktoru → fəslin altında **«+ Video dərs»** — fayl yüklənir (irəliləyiş faizi ilə, defolt maks. 2 GB, `MAX_VIDEO_MB`), addım fəslin sonunda yaranıb dərc olunur.
+
 YAML forması:
 
 ```yaml

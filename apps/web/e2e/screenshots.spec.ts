@@ -26,7 +26,10 @@ test('referans bölmələri', async ({ page }) => {
   ];
   for (const [name, sel] of frames)
     // referans v2-də bəzi bölmələrdə bir neçə kadr var — birincisi əsas ekrandır
-    await page.locator(sel).first().screenshot({ path: out(`${name}.ref.png`) });
+    await page
+      .locator(sel)
+      .first()
+      .screenshot({ path: out(`${name}.ref.png`) });
   for (const [name, tab] of [
     ['workspace-sql', '#t-sql'],
     ['workspace-python', '#t-py'],

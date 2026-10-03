@@ -192,7 +192,7 @@ export function PythonWorkspace({ view, py }: { view: StepViewDto; py: PythonStu
               data-testid="py-stdin"
               className="w-full resize-y rounded-lg border border-navy-line bg-navy px-3 py-2 font-mono text-[13px] text-on-dark outline-none placeholder:text-on-dark-muted focus:border-brand"
             />
-            <p className="text-xs text-on-dark-muted">{t('ws.stdinHint')}</p>
+            <p className="font-sans text-xs text-on-dark-muted">{t('ws.stdinHint')}</p>
           </div>
         ) : tab === 'stdout' ? (
           <pre>{result ? result.stdout || t('ws.noOutput') : t('ws.pythonCdnNote')}</pre>

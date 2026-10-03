@@ -13,6 +13,9 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { diskStorage } from 'multer';
 import type { Request, Response } from 'express';
 import { z } from 'zod';
 import { ASSET_KINDS } from '@dacy/shared';
@@ -21,7 +24,7 @@ import { CurrentUser, OptionalAuth, Staff, type AuthUser } from '../common/decor
 import { ZodPipe } from '../common/pipes/zod.pipe';
 import { badRequest, forbidden, notFound, unauthorized } from '../common/errors';
 import { PrismaService } from '../prisma/prisma.service';
-import { storagePath } from './storage';
+import { detectKind, storagePath } from './storage';
 import { env } from '../config/env';
 
 const uploadBody = z.object({
@@ -68,6 +71,43 @@ export class AssetsController {
       replace: !!q.replace,
       uploadedById: u.id,
     });
+  }
+
+  /** Video dərs: böyük fayl diskə axınla yazılır (MAX_VIDEO_MB), sonra kursun fayllarına köçürülür */
+  @Staff()
+  @Audit({ action: 'asset.upload', entity: 'ASSET', target: 'result', result: ['path', 'kind'] })
+  @Post('admin/courses/:id/videos')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({ destination: tmpdir() }),
+      limits: { fileSize: env.MAX_VIDEO_MB * 1024 * 1024 },
+    }),
+  )
+  async uploadVideo(
+    @Param('id') id: string,
+    @UploadedFile() file: Express.Multer.File | undefined,
+    @Body(new ZodPipe(uploadBody)) body: z.infer<typeof uploadBody>,
+    @Query(new ZodPipe(replaceQuery)) q: z.infer<typeof replaceQuery>,
+    @CurrentUser() u: AuthUser,
+  ) {
+    if (!file) throw badRequest('VALIDATION_FAILED', 'Fayl göndərilməyib');
+    try {
+      const filename = Buffer.from(file.originalname, 'latin1').toString('utf8');
+      if (detectKind(filename, file.mimetype) !== 'VIDEO')
+        throw badRequest('VALIDATION_FAILED', 'Yalnız video faylı (mp4, webm, mov, m4v)');
+      return await this.assets.uploadFile({
+        courseId: id,
+        tmpPath: file.path,
+        filename,
+        mime: file.mimetype,
+        path: body.path,
+        kind: 'VIDEO',
+        replace: !!q.replace,
+        uploadedById: u.id,
+      });
+    } finally {
+      await rm(file.path, { force: true });
+    }
   }
 
   @Staff()

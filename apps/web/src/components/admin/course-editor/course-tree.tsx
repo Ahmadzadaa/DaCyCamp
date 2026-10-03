@@ -49,6 +49,7 @@ interface Props {
   onSelect: (s: Selection) => void;
   onAddModule: () => void;
   onAddStep: (moduleId: string) => void;
+  onAddVideo: (moduleId: string) => void;
 }
 
 /** Sol panel: kurs ağacı. Fəsillər və addımlar dnd-kit ilə sürüklənir (fəsillər arası köçürmə daxil). */
@@ -60,6 +61,7 @@ export function CourseTree({
   onSelect,
   onAddModule,
   onAddStep,
+  onAddVideo,
 }: Props) {
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -245,6 +247,7 @@ export function CourseTree({
                 selected={selected}
                 onSelect={onSelect}
                 onAddStep={onAddStep}
+                onAddVideo={onAddVideo}
                 dragging={dragging}
               />
             ))}
@@ -271,6 +274,7 @@ function ModuleItem({
   selected,
   onSelect,
   onAddStep,
+  onAddVideo,
   dragging,
 }: {
   module: AdminModuleNode;
@@ -278,6 +282,7 @@ function ModuleItem({
   selected: Selection;
   onSelect: (s: Selection) => void;
   onAddStep: (moduleId: string) => void;
+  onAddVideo: (moduleId: string) => void;
   dragging: 'module' | 'step' | null;
 }) {
   const {
@@ -338,7 +343,12 @@ function ModuleItem({
           {m.steps.map((s) => (
             <StepItem key={s.id} step={s} selected={selected} onSelect={onSelect} />
           ))}
-          <StepDropZone moduleId={m.id} onAddStep={onAddStep} active={dragging === 'step'} />
+          <StepDropZone
+            moduleId={m.id}
+            onAddStep={onAddStep}
+            onAddVideo={onAddVideo}
+            active={dragging === 'step'}
+          />
         </ul>
       </SortableContext>
     </li>
@@ -403,25 +413,39 @@ function StepItem({
 function StepDropZone({
   moduleId,
   onAddStep,
+  onAddVideo,
   active,
 }: {
   moduleId: string;
   onAddStep: (moduleId: string) => void;
+  onAddVideo: (moduleId: string) => void;
   active: boolean;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: DROP + moduleId });
   return (
-    <li ref={setNodeRef}>
+    <li
+      ref={setNodeRef}
+      className={cn(
+        'flex items-center',
+        active && 'rounded-lg border border-dashed border-line',
+        isOver && 'bg-brand/10',
+      )}
+    >
       <button
         type="button"
         onClick={() => onAddStep(moduleId)}
-        className={cn(
-          'tree-item sub w-full border-0 bg-transparent text-left text-xs text-muted',
-          active && 'border border-dashed border-line',
-          isOver && 'bg-brand/10',
-        )}
+        className="tree-item sub min-w-0 flex-1 border-0 bg-transparent text-left text-xs text-muted"
       >
         {t('admin.addStep')}
+      </button>
+      {/* fəslin sonuna video dərs (böyük fayl, irəliləyiş faizi ilə) */}
+      <button
+        type="button"
+        onClick={() => onAddVideo(moduleId)}
+        className="tree-item sub w-auto shrink-0 border-0 bg-transparent text-xs text-muted"
+        data-testid={`add-video-${moduleId}`}
+      >
+        {t('admin.videoAdd')}
       </button>
     </li>
   );

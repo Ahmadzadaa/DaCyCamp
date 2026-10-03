@@ -372,6 +372,13 @@ Mənbə: `Python_Day_1/2.pptx` (nəzəri) + `Python_Day_1/2.docx` (35 tapşırı
 
 İstifadəçinin istəyi ilə «Layihələr» və «Yarışlar» hələlik görünmür («sonra baxarıq»): sidebar, header-dəki «Tətbiq et», mobil alt menyu (yerinə «Təcrübə»), tanışlıq səhifəsinin linki. `/layiheler` və `/yarislar/*` kataloqa yönləndirilir. Səhifələr və API qalır — qaytarmaq üçün `apps/web/src/lib/features.ts`-də `projects` / `contests` → `true`. Admin tərəfdə «Layihə yoxlaması» (karyera yollarının layihə addımları) dəyişməyib.
 
+## Mövzular, input() və video dərslər — 3 oktyabr 2026
+
+- **Mövzular kataloqda:** admin-in yaratdığı mövzu (məs. «R») əvvəl yalnız «Mövzu» menyusunda, kursu yoxdursa söndürülmüş görünürdü. İndi istiqamətlərin yanında rəngli çip + kurs sayı; boş mövzuda «hələ kurs yoxdur».
+- **Kurs kartı:** istiqamət ikonu kafelin solunda qalırdı — mərkəzləşdirildi.
+- **Python `input()`:** brauzerin `prompt()` pəncərəsi əvəzinə konsolun «Giriş» sekməsi (hər sətir bir çağırış, konsolda «a: 5» kimi görünür; bitəndə `EOFError` + ipucu).
+- **Video dərslər:** kurs redaktorunda hər fəslin altında «+ Video dərs» → fayl (sürükləmə, irəliləyiş faizi) → fəslin sonunda nəzəri addım (video + istəyə bağlı izah) yaranır və dərc olunur. Böyük fayllar ayrıca endpoint-ə diskə axınla yazılır (`POST /admin/courses/:id/videos`, `MAX_VIDEO_MB`, defolt 2 GB); `/api` proksisinin vaxt limiti 30 dəq. Nəzəri addım yalnız video ilə də dərc oluna bilər (mətn və ya video). Testlər: API `videos.e2e-spec.ts`, Playwright `video.spec.ts`.
+
 ## Növbəti mərhələ — digər kursların köçürülməsi (gözləyir)
 
 İstifadəçi qalan dərs və tapşırıq fayllarını göndərəcək (Python Gün 3–10, Docker, SQL, Excel və s.). Hər kurs `content/courses/<slug>/` paketi kimi yazılır (`docs/content-package.md`), `check:python` və idxal validasiyası ilə yoxlanılır. Python4Business-in növbəti günləri eyni kursa yeni fəsillər kimi əlavə olunur (`08-g3-…`). Excel tapşırıqlarının formatı fayllar gələndə seçiləcək (məs. Excel faylı + test sualları, və ya Python/pandas ilə).

@@ -15,6 +15,7 @@ import { ModuleForm } from './module-form';
 import { StepEditor } from './step-editor';
 import { AddModuleDialog } from './add-module-dialog';
 import { AddStepDialog } from './add-step-dialog';
+import { AddVideoDialog } from './add-video-dialog';
 import { CourseHeader, TAB_PARAM, parseTab, type CourseTab } from './course-header';
 import { CourseStudents } from './course-students';
 import { AssetsLibrary } from '../assets-library';
@@ -45,6 +46,7 @@ export function CourseEditor({
   const [sel, setSel] = useState<Selection>(() => parseNode(initialNode));
   const [addModuleOpen, setAddModuleOpen] = useState(false);
   const [addStepFor, setAddStepFor] = useState<string | null>(null);
+  const [addVideoFor, setAddVideoFor] = useState<string | null>(null);
 
   const selectTab = useCallback((tb: CourseTab) => {
     setTab(tb);
@@ -110,6 +112,7 @@ export function CourseEditor({
           onSelect={select}
           onAddModule={() => setAddModuleOpen(true)}
           onAddStep={(id) => setAddStepFor(id)}
+          onAddVideo={(id) => setAddVideoFor(id)}
         />
         <section className="min-w-0 p-5 md:px-7 md:py-6" aria-live="polite">
           {effective.kind === 'course' ? (
@@ -159,6 +162,20 @@ export function CourseEditor({
           onCreated={(m) => {
             setModules((ms) => [...ms, m]);
             select({ kind: 'module', id: m.id });
+          }}
+        />
+        <AddVideoDialog
+          module={modules.find((m) => m.id === addVideoFor) ?? null}
+          courseId={course.id}
+          onOpenChange={(o) => {
+            if (!o) setAddVideoFor(null);
+          }}
+          onAssetUploaded={onAssetUploaded}
+          onCreated={(moduleId, s) => {
+            setModules((ms) =>
+              ms.map((m) => (m.id === moduleId ? { ...m, steps: [...m.steps, s] } : m)),
+            );
+            select({ kind: 'step', id: s.id });
           }}
         />
         <AddStepDialog

@@ -1,5 +1,6 @@
 import { createHash, randomUUID } from 'node:crypto';
-import { copyFile, mkdir, readFile, writeFile, rm, stat } from 'node:fs/promises';
+import { createReadStream } from 'node:fs';
+import { copyFile, mkdir, readFile, rename, writeFile, rm, stat } from 'node:fs/promises';
 import { dirname, extname, join } from 'node:path';
 import type { AssetKind } from '@dacy/shared';
 import { storageDir } from '../config/env';
@@ -63,6 +64,28 @@ export async function saveToStorage(
   await mkdir(dirname(full), { recursive: true });
   await writeFile(full, buf);
   return key;
+}
+
+/** Böyük fayl (video): müvəqqəti fayldan anbara köçürür — yaddaşa yüklənmir, heş axınla hesablanır */
+export async function moveIntoStorage(
+  courseId: string,
+  filename: string,
+  tmpPath: string,
+): Promise<{ key: string; sha256: string; size: number }> {
+  const hash = createHash('sha256');
+  for await (const chunk of createReadStream(tmpPath)) hash.update(chunk as Buffer);
+  const key = `${courseId}/${randomUUID()}-${safeFilename(filename)}`;
+  const full = join(storageDir, key);
+  await mkdir(dirname(full), { recursive: true });
+  try {
+    await rename(tmpPath, full);
+  } catch {
+    // müvəqqəti qovluq başqa diskdədirsə
+    await copyFile(tmpPath, full);
+    await rm(tmpPath, { force: true });
+  }
+  const { size } = await stat(full);
+  return { key, sha256: hash.digest('hex'), size };
 }
 
 export const storagePath = (key: string) => join(storageDir, key);

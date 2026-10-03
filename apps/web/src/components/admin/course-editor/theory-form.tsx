@@ -10,7 +10,7 @@ import { Field } from '@/components/ui/field';
 import { Input, Textarea } from '@/components/ui/input';
 import { Markdown } from '@/components/app/markdown';
 import { VideoEmbed } from '@/components/app/video-embed';
-import { assetMapOf, uploadAsset } from '../upload';
+import { assetMapOf, uploadAsset, uploadVideo } from '../upload';
 
 export interface TheoryValues {
   content: string;
@@ -34,6 +34,7 @@ export function TheoryForm({
   const imgInput = useRef<HTMLInputElement>(null);
   const vidInput = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState<string | null>(null);
+  const [pct, setPct] = useState(0);
   const assetMap = assetMapOf(assets);
 
   function insertAtCursor(text: string) {
@@ -75,10 +76,12 @@ export function TheoryForm({
     e.target.value = '';
     if (!file) return;
     setBusy('vid');
+    setPct(0);
     try {
-      const a = await uploadAsset(courseId, file, 'VIDEO', {
+      const a = await uploadVideo(courseId, file, {
         path: `videos/${file.name}`,
         replace: true,
+        onProgress: setPct,
       });
       onAssetUploaded(a);
       onChange({ ...values, video_url: a.path });
@@ -113,7 +116,7 @@ export function TheoryForm({
             onClick={() => vidInput.current?.click()}
           >
             <Video className="size-4" />
-            {t('admin.uploadVideo')}
+            {busy === 'vid' ? `${pct}%` : t('admin.uploadVideo')}
           </Button>
         </div>
       </Field>

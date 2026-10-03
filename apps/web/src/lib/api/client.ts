@@ -2,7 +2,7 @@
 import { ApiError } from './errors';
 
 let refreshing: Promise<boolean> | null = null;
-async function tryRefresh(): Promise<boolean> {
+export async function tryRefresh(): Promise<boolean> {
   if (!refreshing) {
     refreshing = fetch('/api/auth/refresh', { method: 'POST', credentials: 'include' })
       .then((r) => r.ok)

@@ -50,8 +50,8 @@ const published = { published: z.boolean().default(true) };
 const theoryYaml = theoryStrict
   .omit({ content: true })
   .extend({ content: z.string().optional(), content_file: z.string().optional(), ...published })
-  .refine((v) => (v.content && v.content.trim()) || v.content_file, {
-    message: 'content və ya content_file lazımdır',
+  .refine((v) => (v.content && v.content.trim()) || v.content_file || v.video_url, {
+    message: 'content, content_file və ya video_url lazımdır',
     path: ['content'],
   });
 

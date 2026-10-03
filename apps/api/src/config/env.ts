@@ -37,6 +37,8 @@ const schema = z.object({
   CTF_PEPPER: z.string().min(8),
   STORAGE_DIR: z.string().default('./storage'),
   MAX_UPLOAD_MB: z.coerce.number().default(50),
+  // video dərslər diskə axınla yazılır (yaddaşa yüklənmir)
+  MAX_VIDEO_MB: z.coerce.number().default(2048),
   // Test/ilkin hesablar — boş buraxılsa seed hesab yaratmır (dəyərlər yalnız .env-də saxlanılır)
   SEED_ADMIN_EMAIL: optionalStr,
   SEED_ADMIN_PASSWORD: optionalStr,

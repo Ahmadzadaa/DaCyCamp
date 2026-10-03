@@ -28,7 +28,8 @@ const baseDraft = { title, xp: xp.optional(), estimated_minutes: minutes.optiona
 export const theoryStrict = z.object({
   type: z.literal('theory'),
   ...base,
-  content: md.refine((s) => s.trim().length > 0, 'Məzmun boş ola bilməz'),
+  // mətn və ya video — ikisindən biri (yoxlama: validateForPublish); video dərs addımında mətn boş ola bilər
+  content: md.default(''),
   video_url: z.string().trim().max(2000).optional(),
 });
 export const theoryDraft = z.object({

@@ -9,6 +9,8 @@ const nextConfig: NextConfig = {
   devIndicators: false,
   // DuckDB-WASM yalnız brauzerdə (dinamik import) işləyir; server bundle-ına salınmasın — webpack "critical dependency" xəbərdarlığı yox olur
   serverExternalPackages: ['@duckdb/duckdb-wasm'],
+  // /api proksisi: böyük video yükləmələri 30 saniyəlik defolt limitdə kəsilməsin
+  experimental: { proxyTimeout: 30 * 60_000 },
   // brauzer terminalı birbaşa API-nin WebSocket-inə qoşulur (Next proksisi WS ötürmür)
   env: { NEXT_PUBLIC_API_PORT: process.env.API_PORT ?? '4000' },
   async rewrites() {
