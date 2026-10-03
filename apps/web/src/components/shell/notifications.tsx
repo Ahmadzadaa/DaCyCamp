@@ -2,7 +2,16 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import * as Menu from '@radix-ui/react-dropdown-menu';
-import { Award, Bell, BookOpen, CheckCircle2, ClipboardCheck, RotateCcw } from 'lucide-react';
+import {
+  Award,
+  Bell,
+  BookOpen,
+  CheckCircle2,
+  ClipboardCheck,
+  LifeBuoy,
+  MessageCircleReply,
+  RotateCcw,
+} from 'lucide-react';
 import type { NotificationDto, NotificationKind } from '@dacy/shared';
 import { api } from '@/lib/api/client';
 import { t } from '@/lib/i18n';
@@ -15,6 +24,8 @@ const ICON: Record<NotificationKind, typeof Bell> = {
   project_returned: RotateCcw,
   new_course: BookOpen,
   reviews_pending: ClipboardCheck,
+  support_reply: MessageCircleReply,
+  support_open: LifeBuoy,
 };
 
 /** Zəng: açılanda siyahı yüklənir və hamısı «oxunmuş» sayılır */

@@ -190,3 +190,24 @@ export const levelLabelsSchema = z.object({
   ADVANCED: z.string().trim().min(1).max(30),
 });
 export type LevelLabels = z.infer<typeof levelLabelsSchema>;
+
+// ───────── Dəstək ─────────
+export const SUPPORT_STATUSES = ['OPEN', 'ANSWERED', 'CLOSED'] as const;
+export type SupportStatus = (typeof SUPPORT_STATUSES)[number];
+const supportBody = z
+  .string()
+  .trim()
+  .min(1, 'Mesaj boş ola bilməz')
+  .max(5000, 'Mesaj çox uzundur (maks. 5000 simvol)');
+export const createSupportTicketSchema = z.object({
+  subject: z.string().trim().min(3, 'Mövzu ən azı 3 simvol olmalıdır').max(150),
+  body: supportBody,
+  pageUrl: z.string().trim().max(500).optional(),
+});
+export type CreateSupportTicketInput = z.infer<typeof createSupportTicketSchema>;
+export const supportMessageSchema = z.object({ body: supportBody });
+export const supportStatusSchema = z.object({ status: z.enum(['OPEN', 'CLOSED']) });
+export const supportListQuery = z.object({
+  status: z.enum([...SUPPORT_STATUSES, 'ALL']).default('ALL'),
+  q: z.string().trim().max(100).optional(),
+});

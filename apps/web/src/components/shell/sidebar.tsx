@@ -22,7 +22,7 @@ export function Sidebar({
   isAdmin?: boolean;
   /** tələbə qabığında «Admin panel» keçidi */
   staff?: boolean;
-  counts?: Partial<Record<'reviews', number>>;
+  counts?: Partial<Record<'reviews' | 'support', number>>;
   label?: string;
 }) {
   const path = usePathname();

@@ -25,47 +25,63 @@ export class NotificationsService {
     const courseSince = new Date(Math.max(since.getTime(), user.createdAt.getTime() - 7 * DAY));
     const staff = user.role === 'ADMIN' || user.role === 'INSTRUCTOR';
 
-    const [certs, pathCerts, reviews, courses, enrolled, pending] = await Promise.all([
-      this.prisma.certificate.findMany({
-        where: { userId, issuedAt: { gte: since } },
-        orderBy: { issuedAt: 'desc' },
-        take: MAX_ITEMS,
-      }),
-      this.prisma.pathCertificate.findMany({
-        where: { userId, issuedAt: { gte: since } },
-        orderBy: { issuedAt: 'desc' },
-        take: MAX_ITEMS,
-      }),
-      this.prisma.pathItemProgress.findMany({
-        where: {
-          userId,
-          reviewedById: { not: null },
-          status: { in: ['PASSED', 'FAILED'] },
-          updatedAt: { gte: since },
-        },
-        include: { pathItem: { include: { path: true } } },
-        orderBy: { updatedAt: 'desc' },
-        take: MAX_ITEMS,
-      }),
-      this.prisma.course.findMany({
-        where: {
-          isPublished: true,
-          deletedAt: null,
-          archivedAt: null,
-          publishedAt: { gte: courseSince },
-        },
-        orderBy: { publishedAt: 'desc' },
-        take: 10,
-      }),
-      this.prisma.enrollment.findMany({ where: { userId }, select: { courseId: true } }),
-      staff
-        ? this.prisma.pathItemProgress.findMany({
-            where: { status: 'SUBMITTED' },
-            orderBy: { submittedAt: 'desc' },
-            select: { submittedAt: true, updatedAt: true },
-          })
-        : Promise.resolve([]),
-    ]);
+    const [certs, pathCerts, reviews, courses, enrolled, pending, replies, openTickets] =
+      await Promise.all([
+        this.prisma.certificate.findMany({
+          where: { userId, issuedAt: { gte: since } },
+          orderBy: { issuedAt: 'desc' },
+          take: MAX_ITEMS,
+        }),
+        this.prisma.pathCertificate.findMany({
+          where: { userId, issuedAt: { gte: since } },
+          orderBy: { issuedAt: 'desc' },
+          take: MAX_ITEMS,
+        }),
+        this.prisma.pathItemProgress.findMany({
+          where: {
+            userId,
+            reviewedById: { not: null },
+            status: { in: ['PASSED', 'FAILED'] },
+            updatedAt: { gte: since },
+          },
+          include: { pathItem: { include: { path: true } } },
+          orderBy: { updatedAt: 'desc' },
+          take: MAX_ITEMS,
+        }),
+        this.prisma.course.findMany({
+          where: {
+            isPublished: true,
+            deletedAt: null,
+            archivedAt: null,
+            publishedAt: { gte: courseSince },
+          },
+          orderBy: { publishedAt: 'desc' },
+          take: 10,
+        }),
+        this.prisma.enrollment.findMany({ where: { userId }, select: { courseId: true } }),
+        staff
+          ? this.prisma.pathItemProgress.findMany({
+              where: { status: 'SUBMITTED' },
+              orderBy: { submittedAt: 'desc' },
+              select: { submittedAt: true, updatedAt: true },
+            })
+          : Promise.resolve([]),
+        // dəstək: tələbəyə heyətin cavabları
+        this.prisma.supportMessage.findMany({
+          where: { fromStaff: true, createdAt: { gte: since }, ticket: { userId } },
+          include: { ticket: { select: { id: true, subject: true } } },
+          orderBy: { createdAt: 'desc' },
+          take: MAX_ITEMS,
+        }),
+        // dəstək: heyət üçün cavab gözləyən müraciətlər
+        staff
+          ? this.prisma.supportTicket.findMany({
+              where: { status: 'OPEN' },
+              orderBy: { lastMessageAt: 'desc' },
+              select: { lastMessageAt: true },
+            })
+          : Promise.resolve([]),
+      ]);
 
     const seen = user.notificationsSeenAt?.getTime() ?? 0;
     const items: Omit<NotificationDto, 'unread'>[] = [];
@@ -122,6 +138,24 @@ export class NotificationsService {
         at: (last.submittedAt ?? last.updatedAt).toISOString(),
       });
     }
+    for (const m of replies)
+      items.push({
+        id: `support:${m.id}`,
+        kind: 'support_reply',
+        title: 'Dəstək cavab verdi',
+        body: m.ticket.subject,
+        url: `/destek/${m.ticket.id}`,
+        at: m.createdAt.toISOString(),
+      });
+    if (openTickets.length)
+      items.push({
+        id: `support-open:${openTickets.length}:${openTickets[0]!.lastMessageAt.getTime()}`,
+        kind: 'support_open',
+        title: `${openTickets.length} dəstək müraciəti cavab gözləyir`,
+        body: null,
+        url: '/admin/destek',
+        at: openTickets[0]!.lastMessageAt.toISOString(),
+      });
     return items
       .sort((a, b) => b.at.localeCompare(a.at))
       .slice(0, MAX_ITEMS)

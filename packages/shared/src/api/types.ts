@@ -26,7 +26,13 @@ export interface PublicUser {
 }
 
 export type NotificationKind =
-  'certificate' | 'project_passed' | 'project_returned' | 'new_course' | 'reviews_pending';
+  | 'certificate'
+  | 'project_passed'
+  | 'project_returned'
+  | 'new_course'
+  | 'reviews_pending'
+  | 'support_reply'
+  | 'support_open';
 /** Zəng menyusu: mövcud məlumatdan törədilir (ayrıca cədvəl yoxdur) */
 export interface NotificationDto {
   id: string;
@@ -48,6 +54,10 @@ export interface MeSummaryDto {
   unreadNotifications: number;
   /** yalnız heyət: yoxlama gözləyən layihələr (admin sidebar sayğacı) */
   pendingReviews?: number;
+  /** yalnız heyət: cavab gözləyən dəstək müraciətləri */
+  openSupport?: number;
+  /** tələbə: baxılmamış dəstək cavabları */
+  supportUnread?: number;
 }
 
 /** Mövzu (Qeyd 5): istiqamətdən əlavə başlıq — «Python», «Excel», «Linux» */
@@ -874,4 +884,40 @@ export interface AdminRoadmapDto {
   content: import('../content/roadmap').RoadmapContent;
   skillCount: number;
   updatedAt: string;
+}
+
+// ───────── Dəstək ─────────
+export interface SupportMessageDto {
+  id: string;
+  body: string;
+  fromStaff: boolean;
+  /** heyət mesajında cavab verənin adı; tələbə mesajında tələbənin adı */
+  authorName: string | null;
+  createdAt: string;
+}
+export interface SupportTicketSummaryDto {
+  id: string;
+  subject: string;
+  status: 'OPEN' | 'ANSWERED' | 'CLOSED';
+  lastMessageAt: string;
+  createdAt: string;
+  messageCount: number;
+  /** son mesajın qısa mətni */
+  preview: string;
+  /** tələbə üçün: baxmadığı heyət cavabı var */
+  unread: boolean;
+}
+export interface SupportTicketDto extends SupportTicketSummaryDto {
+  pageUrl: string | null;
+  messages: SupportMessageDto[];
+}
+export interface AdminSupportSummaryDto extends SupportTicketSummaryDto {
+  user: { id: string; name: string; email: string };
+}
+export interface AdminSupportListDto {
+  tickets: AdminSupportSummaryDto[];
+  counts: { OPEN: number; ANSWERED: number; CLOSED: number; ALL: number };
+}
+export interface AdminSupportTicketDto extends SupportTicketDto {
+  user: { id: string; name: string; email: string };
 }

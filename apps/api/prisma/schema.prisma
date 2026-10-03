@@ -138,6 +138,8 @@ model User {
   grantedUnlocks    StepUnlock[]       @relation("StepUnlockGrantor")
   auditLogs         AuditLog[]
   roadmapChecks     RoadmapCheck[]
+  supportTickets    SupportTicket[]
+  supportMessages   SupportMessage[]
 }
 
 /// Rotating refresh tokens; only the sha256 hash is stored.
@@ -718,4 +720,43 @@ model Setting {
   key       String   @id
   value     Json
   updatedAt DateTime @updatedAt
+}
+
+// ───────── Dəstək: tələbə müraciət yazır, heyət cavablandırır ─────────
+enum SupportStatus {
+  OPEN // cavab gözləyir
+  ANSWERED // heyət cavab verib
+  CLOSED
+}
+
+model SupportTicket {
+  id            String           @id @default(cuid())
+  userId        String
+  subject       String
+  status        SupportStatus    @default(OPEN)
+  /// müraciət yazılan səhifə (istəyə bağlı) — heyətə kontekst
+  pageUrl       String?
+  lastMessageAt DateTime         @default(now())
+  /// tələbə müraciətə son baxış — oxunmamış cavab göstəricisi
+  userSeenAt    DateTime?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+  user          User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages      SupportMessage[]
+
+  @@index([status, lastMessageAt])
+  @@index([userId, lastMessageAt])
+}
+
+model SupportMessage {
+  id        String        @id @default(cuid())
+  ticketId  String
+  authorId  String?
+  fromStaff Boolean       @default(false)
+  body      String
+  createdAt DateTime      @default(now())
+  ticket    SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  author    User?         @relation(fields: [authorId], references: [id], onDelete: SetNull)
+
+  @@index([ticketId, createdAt])
 }

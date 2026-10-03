@@ -51,7 +51,7 @@ export function AdminShell({
           <Sidebar
             nav="admin"
             isAdmin={isAdmin}
-            counts={{ reviews: summary?.pendingReviews ?? 0 }}
+            counts={{ reviews: summary?.pendingReviews ?? 0, support: summary?.openSupport ?? 0 }}
             label="Admin menyu"
             footer={
               <div className="sb-user">

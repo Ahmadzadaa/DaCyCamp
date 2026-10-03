@@ -67,7 +67,12 @@ export function AppShell({
       </header>
       <div className="shell">
         <Suspense fallback={<aside className="sb" />}>
-          <Sidebar nav="student" footer={footer} staff={staff} />
+          <Sidebar
+            nav="student"
+            footer={footer}
+            staff={staff}
+            counts={{ support: summary?.supportUnread ?? 0 }}
+          />
         </Suspense>
         <main className="content" id="main">
           <div className="content-in">{children}</div>

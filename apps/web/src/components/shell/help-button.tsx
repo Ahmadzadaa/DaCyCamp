@@ -1,5 +1,8 @@
 'use client';
-import { CircleHelp } from 'lucide-react';
+import { useState } from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { CircleHelp, LifeBuoy } from 'lucide-react';
 import { t } from '@/lib/i18n';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 
@@ -12,8 +15,10 @@ const FAQ = [
 
 /** Sağ aşağıdakı dairəvi kömək düyməsi → qısa yollar və tez-tez verilən suallar */
 export function HelpButton() {
+  const path = usePathname();
+  const [open, setOpen] = useState(false);
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger className="help" aria-label={t('shell.help')} title={t('shell.help')}>
         <CircleHelp aria-hidden />
       </DialogTrigger>
@@ -46,7 +51,19 @@ export function HelpButton() {
             ))}
           </div>
         </section>
-        <p className="mt-5 text-sm text-muted">{t('shell.helpContact')}</p>
+        <div className="help-contact">
+          <p className="text-sm text-muted">{t('shell.helpContact')}</p>
+          {/* hansı səhifədən yazıldığı heyətə kontekst kimi ötürülür */}
+          <Link
+            href={`/destek${path && path !== '/destek' ? `?sehife=${encodeURIComponent(path)}` : ''}`}
+            className="b b-brand"
+            onClick={() => setOpen(false)}
+            data-testid="help-support"
+          >
+            <LifeBuoy aria-hidden />
+            {t('shell.helpWrite')}
+          </Link>
+        </div>
       </DialogContent>
     </Dialog>
   );

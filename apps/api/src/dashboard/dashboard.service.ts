@@ -71,9 +71,30 @@ export class DashboardService {
             pendingReviews: await this.prisma.pathItemProgress.count({
               where: { status: 'SUBMITTED' },
             }),
+            openSupport: await this.prisma.supportTicket.count({ where: { status: 'OPEN' } }),
           }
-        : {}),
+        : { supportUnread: await this.supportUnread(userId) }),
     };
+  }
+
+  /** tələbənin baxmadığı heyət cavabı olan müraciətlər */
+  private async supportUnread(userId: string): Promise<number> {
+    const tickets = await this.prisma.supportTicket.findMany({
+      where: { userId, status: { not: 'OPEN' } },
+      select: {
+        userSeenAt: true,
+        messages: {
+          where: { fromStaff: true },
+          orderBy: { createdAt: 'desc' },
+          take: 1,
+          select: { createdAt: true },
+        },
+      },
+    });
+    return tickets.filter((t) => {
+      const last = t.messages[0]?.createdAt;
+      return !!last && (!t.userSeenAt || last > t.userSeenAt);
+    }).length;
   }
 
   async get(userId: string): Promise<DashboardDto> {

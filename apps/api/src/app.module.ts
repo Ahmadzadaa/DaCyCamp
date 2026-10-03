@@ -26,6 +26,7 @@ import { AdminOverviewModule } from './admin-overview/admin-overview.module';
 import { HubModule } from './hub/hub.module';
 import { TopicsModule } from './topics/topics.module';
 import { RoadmapsModule } from './roadmaps/roadmaps.module';
+import { SupportModule } from './support/support.module';
 import { SettingsModule } from './settings/settings.module';
 
 @Module({
@@ -52,6 +53,7 @@ import { SettingsModule } from './settings/settings.module';
     HubModule,
     TopicsModule,
     RoadmapsModule,
+    SupportModule,
     SettingsModule,
   ],
   controllers: [HealthController],

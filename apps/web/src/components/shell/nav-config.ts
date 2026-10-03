@@ -9,6 +9,7 @@ import {
   History,
   Layers,
   LayoutDashboard,
+  LifeBuoy,
   Map,
   Route,
   ShieldCheck,
@@ -39,7 +40,7 @@ export interface NavItem {
   /** yalnız heyət (ADMIN / INSTRUCTOR) — tələbə qabığında admin panelə keçid */
   staffOnly?: boolean;
   /** sayğac (məs. yoxlama gözləyən layihələr) — qabıq doldurur */
-  countKey?: 'reviews';
+  countKey?: 'reviews' | 'support';
   /** ikon kafelinin rəngi (iOS üslubu, `--ic`) */
   tint?: string;
 }
@@ -123,6 +124,19 @@ export const STUDENT_NAV: NavSection[] = [
             },
           ]
         : []),
+    ],
+  },
+  {
+    title: 'shell.secHelp',
+    items: [
+      {
+        href: '/destek',
+        label: 'shell.support',
+        icon: LifeBuoy,
+        auth: true,
+        countKey: 'support',
+        tint: '#30B0C7',
+      },
     ],
   },
   {
@@ -242,6 +256,13 @@ export const ADMIN_NAV: NavSection[] = [
     title: 'shell.secPeople',
     items: [
       { href: '/admin/telebeler', label: 'shell.students', icon: Users, tint: '#0A84FF' },
+      {
+        href: '/admin/destek',
+        label: 'shell.support',
+        icon: LifeBuoy,
+        countKey: 'support',
+        tint: '#30B0C7',
+      },
       {
         href: '/admin/layiheler',
         label: 'shell.reviewsQueue',

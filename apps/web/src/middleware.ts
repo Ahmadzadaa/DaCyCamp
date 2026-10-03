@@ -14,6 +14,7 @@ const PROTECTED = [
   /^\/tecrube/,
   /^\/imtahanlar/,
   /^\/layiheler/,
+  /^\/destek/,
 ];
 const AUTH_PAGES = [/^\/giris/, /^\/qeydiyyat/];
 
