@@ -93,6 +93,7 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
     })),
   ];
 
+  const activeTopic = topicSlug ? topics.find((x) => x.slug === topicSlug) : undefined;
   let courses = fetched;
   if (topicSlug) courses = courses.filter((c) => hasTopic(c, topicSlug));
   if (practice) courses = courses.filter(practice.has);
@@ -191,6 +192,26 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
             {tr.title}
           </Link>
         ))}
+        {/* mövzular (admin «Mövzular» bölməsində yaradır) — hələ kursu olmayanlar da görünür */}
+        {topics.length ? <span className="chip-sep" aria-hidden /> : null}
+        {topics.map((tp) => {
+          const on = topicSlug === tp.slug;
+          const n = topicOpts.find((o) => o.key === 'movzu' && o.value === tp.slug)?.count ?? 0;
+          return (
+            <Link
+              key={`movzu-${tp.slug}`}
+              href={href(sp, { movzu: on ? undefined : tp.slug })}
+              className={cn('chip', on && 'on')}
+              style={{ ['--c' as string]: tp.color }}
+              aria-current={on ? 'true' : undefined}
+              data-testid={`topic-chip-${tp.slug}`}
+            >
+              <span className="cdot" aria-hidden />
+              {tp.title}
+              <span className="chip-n">{n}</span>
+            </Link>
+          );
+        })}
         {sp.nov && KINDS.includes(sp.nov as CourseKind) ? (
           <Link href={href(sp, { nov: undefined })} className="chip on">
             {t(`catalog.kind.${sp.nov as CourseKind}`)}
@@ -220,7 +241,14 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
         authed={!!user}
       />
 
-      {courses.length === 0 ? (
+      {courses.length === 0 && activeTopic && activeCount === 1 ? (
+        <EmptyState
+          icon={BookOpen}
+          title={t('catalog.topicEmpty', { name: activeTopic.title })}
+          description={t('catalog.topicEmptyDesc')}
+          action={<ClearFilters count={activeCount} />}
+        />
+      ) : courses.length === 0 ? (
         <EmptyState
           icon={BookOpen}
           title={activeCount ? t('catalog.emptyFiltered') : t('catalog.empty')}

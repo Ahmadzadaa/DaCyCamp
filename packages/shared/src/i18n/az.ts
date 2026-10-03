@@ -752,6 +752,8 @@ export const az = {
     empty: 'Hələ kurs yoxdur',
     emptyDesc: 'Müəllim kurs dərc edən kimi burada görünəcək.',
     emptyFiltered: 'Bu filtrə uyğun kurs tapılmadı',
+    topicEmpty: '«{name}» mövzusunda hələ kurs yoxdur',
+    topicEmptyDesc: 'Bu mövzuya kurs əlavə olunanda burada görünəcək.',
     start: 'Başla',
     continue: 'Davam et',
     enrolled: 'Yazılmısınız',

@@ -197,7 +197,8 @@ export function CatalogToolbar({
         key={`${o.key}:${o.value}`}
         className="menu-item"
         checked={on}
-        disabled={!o.count && !on}
+        // mövzular həmişə seçilə bilir (boş mövzu — «hələ kurs yoxdur»); praktika növləri yalnız varsa
+        disabled={o.key !== 'movzu' && !o.count && !on}
         // köhnə ?movzu=sql linkini də təmizləyir
         onCheckedChange={() =>
           go(
