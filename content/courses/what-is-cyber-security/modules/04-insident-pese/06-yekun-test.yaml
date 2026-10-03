@@ -1,0 +1,89 @@
+type: quiz
+title: 'Yekun test: What is Cyber Security?'
+xp: 50
+estimated_minutes: 10
+pass_score: 70
+questions:
+- text: Hər insidenti pozduğu CIA prinsipinə yerləşdir.
+  type: classify
+  buckets:
+  - name: Məxfilik
+    items:
+    - Müştəri bazası hakerlər forumunda satışa çıxarıldı
+  - name: Bütövlük
+    items:
+    - Hücumçu qiymət cədvəlində məhsulların qiymətini dəyişdi
+  - name: Əlçatanlıq
+    items:
+    - DDoS səbəbindən ödəniş xidməti 2 saat işləmədi
+  explanation: Sızma — məxfilik; icazəsiz dəyişiklik — bütövlük; xidmətin dayanması — əlçatanlıq.
+- text: «Yenilənməmiş server proqramı» — bu nədir?
+  options:
+  - Təhdid
+  - Zəiflik
+  - Nəzarət tədbiri
+  - Aktiv
+  correct:
+  - 2
+  explanation: Hücumçunun istifadə edə biləcəyi boşluq zəiflikdir. Hücumçunun özü isə təhdiddir.
+- text: Faydalı proqram kimi görünüb arxa planda hücumçuya giriş açan zərərli proqram necə adlanır?
+  options:
+  - Qurd
+  - Troyan
+  - Adware
+  - Ransomware
+  correct:
+  - 2
+  explanation: Troyan özünü faydalı proqram kimi göstərir, amma gizli zərərli funksiyası var.
+- text: Fişinq məktubunun **qırmızı bayraqları** hansılardır? (Bir neçə cavab)
+  type: multiple
+  options:
+  - 'Qəribə göndərən domeni: narpay-secure-login.com'
+  - '''24 saat ərzində bloklanacaq'' kimi təcililik'
+  - SMS kodu və kart məlumatlarının istənməsi
+  - Bankın rəsmi tətbiqindəki bildiriş
+  correct:
+  - 1
+  - 2
+  - 3
+  explanation: Qəribə domen, süni təcililik və həssas məlumat tələbi fişinqin əsas əlamətləridir. Rəsmi
+    tətbiqə özün daxil olub baxdığın bildiriş isə etibarlı kanaldır.
+- text: Başqa saytdan sızmış e-poçt və parol cütlərini NarPay-də avtomatik sınamaq hansı hücumdur?
+  options:
+  - SQL injection
+  - Credential stuffing
+  - Man-in-the-Middle
+  - DDoS
+  correct:
+  - 2
+  explanation: 'Credential stuffing eyni parolu bir neçə yerdə istifadə edənləri hədəf alır. Qoruma: unikal
+    parollar və MFA.'
+- text: Hansı birləşmə **çoxfaktorlu autentifikasiyadır**?
+  options:
+  - Parol + PIN
+  - Parol + barmaq izi
+  - İki fərqli parol
+  - Parol + gizli sualın cavabı
+  correct:
+  - 2
+  explanation: Parol (bildiyin) və barmaq izi (olduğun) fərqli növ faktorlardır.
+- text: Parolların bazada saxlanması üçün hansı üsul düzgündür?
+  options:
+  - Açıq mətn kimi
+  - Duzla (salt) və yavaş heş alqoritmi (bcrypt, Argon2) ilə heşləmək
+  - Yalnız Base64 ilə kodlaşdırmaq
+  - Hamı üçün eyni açarla şifrələyib açarı eyni serverdə saxlamaq
+  correct:
+  - 2
+  explanation: Parollar geri açılmamalıdır — duzlu, yavaş heş alqoritmləri bunun üçün nəzərdə tutulub.
+    Base64 şifrələmə deyil, sadəcə kodlaşdırmadır.
+- text: İnsidentə cavabda «Nə öyrəndik?» görüşü hansı mərhələyə aiddir?
+  options:
+  - Hazırlıq
+  - Aşkarlama və təhlil
+  - Məhdudlaşdırma və bərpa
+  - İnsidentdən sonrakı fəaliyyət
+  correct:
+  - 4
+  explanation: Dərslərin çıxarılması və planın yenilənməsi insidentdən sonrakı fəaliyyətdir — və növbəti
+    hazırlığın başlanğıcıdır.

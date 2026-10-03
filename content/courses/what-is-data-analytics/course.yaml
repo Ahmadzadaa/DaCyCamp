@@ -1,0 +1,14 @@
+# What is Data Analytics? — giriş kursu (kodsuz).
+# Hər dərs nəzəri addımdır: videonu admin paneldə dərsin «Video» sahəsinə yükləyin — mətnin üstündə görünür.
+# Məşqlər yalnız sual-cavabdır: tək seçim, çox seçim və «qruplara ayır» (classify).
+slug: what-is-data-analytics
+track: data-analytics
+title: What is Data Analytics?
+level: beginner
+description: 'Data analitikasına kodsuz, sadə dildə giriş: datadan necə sual verilir, cavab tapılır və
+  qərar çıxarılır. Analitikanın 4 növü, analiz prosesinin 6 addımı, SMART suallar və KPI-lar, data növləri,
+  datanın təmizlənməsi, əsas statistika, korrelyasiya və A/B test, düzgün qrafik seçimi, dashboard-lar
+  və data ilə hekayə. Hər dərsdən sonra real ssenarilərə əsaslanan məşqlər.'
+sequential: true
+estimated_hours: 3
+published: true

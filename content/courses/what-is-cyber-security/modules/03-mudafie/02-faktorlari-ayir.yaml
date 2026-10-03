@@ -1,0 +1,55 @@
+type: quiz
+title: 'Məşq: Faktorları ayır'
+xp: 30
+estimated_minutes: 6
+pass_score: 75
+questions:
+- text: Hər autentifikasiya vasitəsini düzgün faktor növünə yerləşdir.
+  type: classify
+  buckets:
+  - name: Bildiyin bir şey
+    items:
+    - Parol
+    - PIN kod
+    - Gizli sualın cavabı
+  - name: Sahib olduğun bir şey
+    items:
+    - Telefondakı autentifikator tətbiqi
+    - Fiziki təhlükəsizlik açarı (USB)
+    - Bank kartı
+  - name: Olduğun bir şey (biometrik)
+    items:
+    - Barmaq izi
+    - Üz tanıma
+  explanation: Yaddaşdakı məlumat — bildiyin; cihaz və əşya — sahib olduğun; bədən göstəriciləri — olduğun
+    bir şey. Güclü MFA fərqli növləri birləşdirir.
+- text: Hansı parol **ən güclüdür**?
+  options:
+  - P@ssw0rd!
+  - Nigar1995
+  - bənövşəyi-kuryer-dəniz-qatar-74
+  - qwerty123456
+  correct:
+  - 3
+  explanation: Uzun, təsadüfi sözlərdən ibarət parol ifadəsi həm brute force, həm də lüğət hücumlarına
+    qarşı ən dayanıqlıdır.
+- text: Rauf eyni parolu 6 fərqli saytda istifadə edir. **Ən böyük risk** nədir?
+  options:
+  - Parolu unutmaq
+  - Bir saytdan parol sızarsa, qalan hesablar da credential stuffing ilə ələ keçirilə bilər
+  - Saytların yavaş işləməsi
+  - Heç bir risk yoxdur, əgər parol uzundursa
+  correct:
+  - 2
+  explanation: Parol nə qədər güclü olsa da, bir sayt sızanda hücumçular həmin cütü digər saytlarda avtomatik
+    sınayır. Hər hesaba unikal parol lazımdır.
+- text: Hansı birləşmə **həqiqi MFA**-dır?
+  options:
+  - Parol + PIN kod
+  - Parol + gizli sualın cavabı
+  - Parol + telefondakı autentifikator tətbiqinin kodu
+  - İki fərqli parol
+  correct:
+  - 3
+  explanation: 'MFA fərqli növ faktorlar tələb edir: parol (bildiyin) + autentifikator tətbiqi (sahib
+    olduğun). Parol və PIN eyni növdəndir.'

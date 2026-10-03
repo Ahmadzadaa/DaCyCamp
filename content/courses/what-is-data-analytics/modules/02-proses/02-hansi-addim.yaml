@@ -1,0 +1,37 @@
+type: quiz
+title: 'Məşq: Bu hansı addımdır?'
+xp: 20
+estimated_minutes: 4
+pass_score: 100
+questions:
+- text: Ayselin «tərk edilən səbətlər» layihəsində gördüyü işləri prosesin addımlarına ayır.
+  type: classify
+  buckets:
+  - name: Soruş
+    items:
+    - Rəhbərliklə görüşüb hansı qərarın veriləcəyini dəqiqləşdirmək
+    - Uğurun hansı rəqəmlə ölçüləcəyini müəyyən etmək
+  - name: Hazırla və təmizlə
+    items:
+    - Lazım olan cədvəlləri tapıb son 3 ayın datasını çıxarmaq
+    - Dublikat hadisələri silib vaxtları bir formata salmaq
+  - name: Təhlil et
+    items:
+    - Müştərilərin hansı addımda çıxdığını hesablamaq
+    - Şəhərlər üzrə tərk edilmə faizini müqayisə etmək
+  - name: Paylaş və hərəkət et
+    items:
+    - Rəhbərliyə qrafiklə qısa təqdimat etmək
+    - Pulsuz çatdırılma həddini A/B testlə tətbiq etmək
+  explanation: Sualı aydınlaşdırmaq — soruş; datanı tapmaq və təmizləmək — hazırla/təmizlə; hesablamaq
+    və müqayisə — təhlil; təqdimat və qərar — paylaş və hərəkət et.
+- text: Təhlil zamanı Aysel görür ki, avqust ayının datası natamamdır. Nə etməlidir?
+  options:
+  - Natamam datayla davam edib nəticəni təqdim etmək
+  - «Hazırla» addımına qayıdıb çatışmayan datanı tapmaq və ya bu məhdudiyyəti açıq qeyd etmək
+  - Avqustu təxmini rəqəmlərlə özü doldurmaq və heç kimə deməmək
+  - Layihəni dayandırmaq
+  correct:
+  - 2
+  explanation: Proses düz xətt deyil — əvvəlki addıma qayıtmaq normaldır. Datanı uydurmaq isə yolverilməzdir;
+    məhdudiyyətlər açıq bildirilməlidir.

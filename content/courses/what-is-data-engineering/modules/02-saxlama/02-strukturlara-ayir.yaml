@@ -1,0 +1,34 @@
+type: quiz
+title: 'Məşq: Strukturlara ayır'
+xp: 20
+estimated_minutes: 4
+pass_score: 100
+questions:
+- text: NarMarket-in data anbarına müxtəlif data gəlir. Hər birini düzgün qrupa yerləşdir.
+  type: classify
+  buckets:
+  - name: Strukturlaşdırılmış
+    items:
+    - 'Sifarişlər cədvəli: order_id, tarix, məbləğ'
+    - Excel-də işçilərin maaş cədvəli
+  - name: Yarım-strukturlaşdırılmış
+    items:
+    - Tətbiqdən gələn JSON formatlı «səbətə əlavə et» hadisəsi
+    - XML formatında təchizatçının məhsul kataloqu
+  - name: Strukturlaşdırılmamış
+    items:
+    - Müştərinin sərbəst yazdığı rəy mətni
+    - Kuryerin çəkdiyi çatdırılma fotosu
+    - Zəng mərkəzinin səs yazısı
+  explanation: Cədvəllər sərt sxemə malikdir. JSON və XML çevik strukturludur. Mətn, foto və səsin isə
+    əvvəlcədən müəyyən modeli yoxdur.
+- text: Dünyadakı datanın təxminən nə qədəri **strukturlaşdırılmamışdır**?
+  options:
+  - 10–20%
+  - Təxminən yarısı
+  - 80–90%
+  - Demək olar ki, heç biri
+  correct:
+  - 3
+  explanation: Mətnlər, fotolar, videolar və səs yazıları datanın böyük əksəriyyətini — təxminən 80–90%-ni
+    təşkil edir.

@@ -1,0 +1,41 @@
+type: quiz
+title: 'Məşq: Doğrusunu de'
+xp: 25
+estimated_minutes: 5
+pass_score: 66
+questions:
+- text: |-
+    NarMarket-in data scientist-i Leyla müştərilərin hansı məhsulları **birlikdə** aldığını proqnozlaşdıran model qurmaq istəyir. Lakin sifariş datası 3 fərqli sistemdə, 3 fərqli formatda saxlanılır və hər dəfə əl ilə birləşdirilir.
+
+    Bu problemi kim və necə həll etməlidir?
+  options:
+  - Data analitik — yeni dashboard hazırlamalıdır
+  - Data engineer — datanı bir yerdə, vahid formatda toplayan avtomatik pipeline qurmalıdır
+  - Leyla — modeli datasız qurmağa başlamalıdır
+  - Dizayner — tətbiqin interfeysini dəyişməlidir
+  correct:
+  - 2
+  explanation: Datanın müxtəlif sistemlərdən toplanıb vahid formada əlçatan edilməsi data engineer-in
+    əsas işidir. Bundan sonra Leyla vaxtını təmizləməyə yox, modelə sərf edə bilər.
+- text: Hansı ifadə **doğrudur**?
+  options:
+  - Data engineer-lər əsasən maşın öyrənməsi modelləri qurur
+  - Data engineer-lər yalnız Excel cədvəlləri ilə işləyir
+  - Data engineer-lər datanı toplayıb saxlayır və onu analitik və data scientist-lər üçün əlçatan edir
+  - Data scientist-lər şirkətin bütün baza arxitekturasını qurur
+  correct:
+  - 3
+  explanation: 'Data engineer datanın «təchizat zəncirini» qurur: toplama, saxlama, çatdırma. Modelləri
+    isə əsasən data scientist-lər qurur.'
+- text: |-
+    NarMarket kuryerlərinin cihazları **hər 2 saniyədən bir** yer məlumatı göndərir və bu data dərhal emal olunmalıdır ki, müştəri kuryeri xəritədə görsün.
+
+    Bu, Big Data-nın ən çox hansı «V»-si ilə bağlıdır?
+  options:
+  - Volume (həcm)
+  - Variety (müxtəliflik)
+  - Velocity (sürət)
+  - Value (dəyər)
+  correct:
+  - 3
+  explanation: Datanın çox sürətlə yaranması və dərhal emal tələb etməsi Velocity-dir.

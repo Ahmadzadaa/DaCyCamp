@@ -1,0 +1,52 @@
+type: quiz
+title: 'Məşq: Hesabla'
+xp: 30
+estimated_minutes: 7
+pass_score: 80
+questions:
+- text: 'Beş sifarişin məbləğləri: **10, 20, 20, 30, 120 ₼**. Median neçədir?'
+  options:
+  - 20 ₼
+  - 30 ₼
+  - 40 ₼
+  - 10 ₼
+  correct:
+  - 1
+  explanation: Dəyərlər artıq sıralanıb; ortadakı (3-cü) dəyər 20-dir.
+- text: Eyni datada (**10, 20, 20, 30, 120 ₼**) orta (mean) neçədir?
+  options:
+  - 20 ₼
+  - 30 ₼
+  - 40 ₼
+  - 50 ₼
+  correct:
+  - 3
+  explanation: Cəm 200 ₼, say 5 → 200 ÷ 5 = 40 ₼. 120 ₼-lıq sifariş ortanı medianın iki qatına qaldırıb.
+- text: Hansı göstərici kənar dəyərlərə (outlier) **ən az** həssasdır?
+  options:
+  - Orta
+  - Median
+  - Diapazon
+  - Cəm
+  correct:
+  - 2
+  explanation: Median yalnız ortadakı dəyərdən asılıdır, ona görə bir neçə həddən artıq böyük dəyər onu
+    demək olar ki, dəyişmir.
+- text: Satış sentyabrda **50 000 ₼**, oktyabrda **60 000 ₼** olub. Artım neçə faizdir?
+  options:
+  - 10%
+  - 16.7%
+  - 20%
+  - 60%
+  correct:
+  - 3
+  explanation: (60 000 − 50 000) ÷ 50 000 × 100% = 20%.
+- text: Konversiya dərəcəsi **2%-dən 3%-ə** qalxıb. Hansı ifadə doğrudur?
+  options:
+  - Konversiya 1% artıb
+  - Konversiya 1 faiz bəndi, nisbi olaraq isə 50% artıb
+  - Konversiya 3 dəfə artıb
+  - Konversiya 150% artıb
+  correct:
+  - 2
+  explanation: Fərq 1 faiz bəndidir, nisbi artım isə (3 − 2) ÷ 2 × 100% = 50%-dir.

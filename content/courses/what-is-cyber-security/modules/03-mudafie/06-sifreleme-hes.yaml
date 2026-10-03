@@ -1,0 +1,43 @@
+type: quiz
+title: 'Məşq: Şifrələmə, yoxsa heş?'
+xp: 25
+estimated_minutes: 5
+pass_score: 66
+questions:
+- text: Hər vəziyyətdə şifrələmə, yoxsa heşləmə istifadə olunur?
+  type: classify
+  buckets:
+  - name: Şifrələmə (geri açılır)
+    items:
+    - Sayt ilə brauzer arasında HTTPS əlaqəsi
+    - Noutbukun diskini oğurluğa qarşı qorumaq
+    - Mesajlaşma tətbiqində uçdan-uca qorunan yazışmalar
+    - AES
+  - name: Heşləmə (birtərəfli)
+    items:
+    - Parolların bazada saxlanması
+    - Yüklənmiş faylın dəyişdirilmədiyini yoxlamaq
+    - SHA-256
+  explanation: Data sonradan oxunmalıdırsa — şifrələmə; yalnız müqayisə və ya yoxlama lazımdırsa — heşləmə.
+    AES şifrələmə, SHA-256 heş alqoritmidir.
+- text: Asimmetrik şifrələmədə Leylaya yalnız onun oxuya biləcəyi mesaj göndərmək üçün mesajı **hansı
+    açarla** şifrələyirik?
+  options:
+  - Öz gizli açarımızla
+  - Leylanın açıq (public) açarı ilə
+  - Leylanın gizli (private) açarı ilə
+  - Açar lazım deyil
+  correct:
+  - 2
+  explanation: Leylanın açıq açarı ilə şifrələnən mesajı yalnız onun gizli açarı aça bilər. Gizli açar
+    heç vaxt paylaşılmır.
+- text: Sayt parolları niyə açıq mətn kimi yox, **heş** kimi saxlamalıdır?
+  options:
+  - Heş daha az yer tutur
+  - Baza sızsa belə, parolların özü görünməsin
+  - Heş parolu avtomatik dəyişir
+  - Heşlər istifadəçinin parolu tez xatırlamasına kömək edir
+  correct:
+  - 2
+  explanation: Heş birtərəflidir. Sızma zamanı hücumçu parolların özünü yox, yalnız heşlərini görür —
+    xüsusilə duz və yavaş alqoritmlər istifadə edildikdə onları açmaq çox çətindir.

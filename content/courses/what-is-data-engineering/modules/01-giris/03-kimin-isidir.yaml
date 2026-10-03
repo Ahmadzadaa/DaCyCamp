@@ -1,0 +1,40 @@
+type: quiz
+title: 'Məşq: Bu kimin işidir?'
+xp: 20
+estimated_minutes: 4
+pass_score: 100
+questions:
+- text: |-
+    NarMarket-in data komandasında görüləcək işlərin siyahısı hazırlanır. Hansı tapşırıqlar **data engineer**-in məsuliyyətinə düşür, hansılar başqa rolların işidir?
+
+    Elementləri düzgün qrupa sürüşdür.
+  type: classify
+  buckets:
+  - name: Data engineer-in işi
+    items:
+    - Tətbiqdəki sifarişləri analitik bazaya avtomatik ötürən sistem qurmaq
+    - Müxtəlif mənbələrdən gələn datanı bir yerdə saxlamaq üçün baza qurmaq
+    - Datanın etibarlı saxlanmasını və əlçatan olmasını təmin etmək
+    - Gecəlik data yükləmələrinin vaxtında işləməsinə nəzarət etmək
+  - name: Data engineer-in işi deyil
+    items:
+    - Satış trendlərini göstərən dashboard dizayn etmək
+    - Endirim kampaniyasının təsirini A/B testlə yoxlamaq
+    - Gələn ayın sifariş sayını proqnozlaşdıran model qurmaq
+    - Rəhbərliyə rüblük nəticələri təqdim etmək
+  explanation: Data engineer datanı toplayır, saxlayır və əlçatan edir. Dashboard, A/B test, proqnoz modelləri
+    və təqdimatlar analitik və data scientist-lərin işidir — amma onlar data engineer-in hazırladığı datadan
+    istifadə edir.
+- text: |-
+    Səhər analitik Aysel dashboard-u yeniləyə bilmir: dünənki sifarişlərin heç biri analitik bazaya düşməyib.
+
+    Problem data iş axınının **hansı mərhələsindədir**?
+  options:
+  - Kəşf və vizuallaşdırma
+  - Toplama və saxlama
+  - Eksperiment və proqnoz
+  - Problem yoxdur — dashboard köhnə datanı göstərə bilər
+  correct:
+  - 2
+  explanation: Data bazaya ümumiyyətlə çatmayıb — deməli, zəncir ilk mərhələdə, toplama və saxlamada qırılıb.
+    Bu, data engineer-in araşdıracağı problemdir.

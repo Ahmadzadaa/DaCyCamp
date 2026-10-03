@@ -1,0 +1,46 @@
+type: quiz
+title: 'Məşq: Göl, yoxsa anbar?'
+xp: 25
+estimated_minutes: 5
+pass_score: 66
+questions:
+- text: Hər xüsusiyyət data lake-ə, yoxsa data warehouse-a aiddir?
+  type: classify
+  buckets:
+  - name: Data lake
+    items:
+    - Bütün xam datanı (log, foto, JSON) olduğu kimi saxlayır
+    - Strukturlaşdırılmamış datanı da qəbul edir
+    - Ucuz saxlama ilə çox böyük həcm
+    - Data scientist-lərin kəşfiyyat və ML işləri üçün
+  - name: Data warehouse
+    items:
+    - Yalnız təmizlənmiş və strukturlaşdırılmış data
+    - Analitik sorğular və dashboard-lar üçün optimallaşdırılıb
+    - Data yazılmazdan əvvəl sxem müəyyən olunur
+    - Biznes analitiklərinin əsas iş yeri
+  explanation: Göl — xam, hər növ, ucuz və çevik; anbar — təmiz, strukturlaşdırılmış və sürətli analitika
+    üçün.
+- text: Data lake-də **kataloq** və nizam olmasa nə baş verir?
+  options:
+  - Data avtomatik təmizlənir
+  - 'Göl «data bataqlığına» çevrilir: nə olduğu və haradan gəldiyi bilinməyən fayllar yığılır'
+  - Data warehouse-a çevrilir
+  - Heç nə — kataloq yalnız böyük şirkətlər üçündür
+  correct:
+  - 2
+  explanation: Kataloq datanın mənbəyini, sahibini və mənasını izah edir. Onsuz göl tez bir zamanda istifadəyə
+    yararsız bataqlığa çevrilir.
+- text: |-
+    NarMarket-in rəhbərliyi hər səhər satış dashboard-una baxır. Data engineer dashboard-u birbaşa tətbiqin əməliyyat bazasına qoşmaq istəmir.
+
+    Dashboard hansı mənbədən oxumalıdır və niyə?
+  options:
+  - Tətbiqin bazasından — orada data ən təzədir
+  - Data warehouse-dan — data təmizdir və ağır sorğular tətbiqi yavaşlatmır
+  - Data lake-dən — orada data ən çoxdur
+  - Analitikin kompüterindəki Excel faylından
+  correct:
+  - 2
+  explanation: 'Analitik sorğular üçün data warehouse nəzərdə tutulub: data təmizdir, sorğular sürətlidir
+    və müştərilərin istifadə etdiyi tətbiq yavaşlamır.'

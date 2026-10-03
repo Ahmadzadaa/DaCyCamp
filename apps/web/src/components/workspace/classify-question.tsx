@@ -104,7 +104,11 @@ export function ClassifyQuestion({
         }}
         onClick={(e) => {
           e.stopPropagation();
-          if (!locked) setSelected((s) => (s === i ? null : i));
+          if (locked) return;
+          // seçilmiş element varsa və qrupdakı başqa elementə toxunulursa — seçilmişi həmin qrupa qoy
+          // (mobil: dolu qrupa toxunanda çox vaxt elementin üstünə düşülür)
+          if (selected !== null && selected !== i && placed >= 0) return place(selected, placed);
+          setSelected((s) => (s === i ? null : i));
         }}
         aria-pressed={selected === i}
         className={cn(
@@ -115,9 +119,11 @@ export function ClassifyQuestion({
         )}
         data-testid={`cls-item-${qi}-${i}`}
       >
-        {ok === true ? <Check className="size-3.5 shrink-0" aria-hidden /> : null}
-        {ok === false ? <X className="size-3.5 shrink-0" aria-hidden /> : null}
-        <span>{options[i]}</span>
+        <span className="cls-txt">
+          {ok === true ? <Check className="mt-0.5 size-3.5 shrink-0" aria-hidden /> : null}
+          {ok === false ? <X className="mt-0.5 size-3.5 shrink-0" aria-hidden /> : null}
+          <span>{options[i]}</span>
+        </span>
         {ok === false && correct ? (
           <small className="cls-fix">
             {t('ws.classifyRight', { bucket: buckets[correct[i]!] ?? '' })}

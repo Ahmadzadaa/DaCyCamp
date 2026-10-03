@@ -1,0 +1,14 @@
+# What is Data Engineering? — giriş kursu (kodsuz).
+# Hər dərs nəzəri addımdır: videonu admin paneldə dərsin «Video» sahəsinə yükləyin — mətnin üstündə görünür.
+# Məşqlər yalnız sual-cavabdır: tək seçim, çox seçim və «qruplara ayır» (classify).
+slug: what-is-data-engineering
+track: data-engineering
+title: What is Data Engineering?
+level: beginner
+description: 'Data engineering-ə kodsuz, sadə dildə giriş: data haradan gəlir, harada saxlanılır, necə
+  hərəkət edir və bütün bunları kim qurur. Data iş axını, data pipeline və ETL, SQL bazaları, data warehouse
+  və data lake, data emalı, planlaşdırma, paralel hesablama və bulud. Hər dərsdən sonra real ssenarilərə
+  əsaslanan məşqlər.'
+sequential: true
+estimated_hours: 3
+published: true

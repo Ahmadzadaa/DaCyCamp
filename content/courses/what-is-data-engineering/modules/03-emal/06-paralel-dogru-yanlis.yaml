@@ -1,0 +1,40 @@
+type: quiz
+title: 'Məşq: Paralel hesablama'
+xp: 25
+estimated_minutes: 5
+pass_score: 66
+questions:
+- text: Hansı ifadə paralel hesablama haqqında **doğrudur**?
+  options:
+  - Tapşırıq bir prosessorda daha sürətli işləsin deyə sıxışdırılır
+  - Böyük tapşırıq kiçik hissələrə bölünür və bir neçə emal vahidində eyni vaxtda icra olunur
+  - Paralel hesablama yalnız kiçik datada işləyir
+  - Bütün tapşırıqları paralel etmək həmişə mümkündür
+  correct:
+  - 2
+  explanation: 'Paralel hesablamanın mahiyyəti budur: böl, eyni vaxtda icra et, nəticələri birləşdir.'
+- text: |-
+    Data engineer Murad **5 MB-lıq** kiçik faylı 100 kompüterə bölüb emal etdi. Nəticədə iş bir kompüterdəkindən də **yavaş** oldu.
+
+    Niyə?
+  options:
+  - Kompüterlər köhnə idi
+  - Bölmə, göndərmə və nəticələri birləşdirmə xərci (overhead) tapşırığın özündən çox oldu
+  - Paralel hesablama ümumiyyətlə işləmir
+  - Fayl strukturlaşdırılmamış idi
+  correct:
+  - 2
+  explanation: Kiçik tapşırıqlarda koordinasiya və ünsiyyət xərci qazancı üstələyir. Paralellik böyük
+    həcmlərdə özünü doğruldur.
+- text: Paralel hesablamanın **üstünlükləri** hansılardır? (Bir neçə cavab)
+  type: multiple
+  options:
+  - Daha çox emal gücü
+  - Yaddaşın bir neçə maşın arasında bölünməsi
+  - Maşınlar arasında heç bir ünsiyyət xərcinin olmaması
+  - İstənilən tapşırığın avtomatik sürətlənməsi
+  correct:
+  - 1
+  - 2
+  explanation: Emal gücü və bölünmüş yaddaş əsas üstünlüklərdir. Ünsiyyət xərci isə həmişə var və hər
+    tapşırıq sürətlənmir.

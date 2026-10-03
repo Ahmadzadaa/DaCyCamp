@@ -1,0 +1,44 @@
+type: quiz
+title: 'Məşq: Pipeline-ı qur'
+xp: 25
+estimated_minutes: 5
+pass_score: 66
+questions:
+- text: NarMarket-in gecəlik ETL pipeline-ında görülən işlər qarışıq düşüb. Hər tapşırığı ETL-in düzgün
+    addımına yerləşdir.
+  type: classify
+  buckets:
+  - name: Extract (çıxarma)
+    items:
+    - Mobil tətbiqin bazasından dünənki sifarişləri oxumaq
+    - Ödəniş sisteminin API-sindən əməliyyatları götürmək
+  - name: Transform (çevirmə)
+    items:
+    - 'Tarixləri vahid formata salmaq: 03.10.2026 → 2026-10-03'
+    - Eyni sifarişin iki dəfə yazılmış qeydini silmək
+    - Dollarla olan ödənişləri manata çevirmək
+  - name: Load (yükləmə)
+    items:
+    - Hazır cədvəli data warehouse-a yazmaq
+    - Təmizlənmiş datanı analitiklərin bazasına yükləmək
+  explanation: Extract — mənbədən oxumaq, Transform — təmizləmək və formatlamaq, Load — hazır datanı təyinat
+    yerinə yazmaq.
+- text: Hansı tapşırıq üçün **streaming** (real vaxt) pipeline lazımdır?
+  options:
+  - Aylıq maliyyə hesabatını hazırlamaq
+  - Keçən ilin satışlarını təhlil etmək
+  - Şübhəli kart əməliyyatını ödəniş anında bloklamaq
+  - Həftəlik ən çox satılan məhsulların siyahısı
+  correct:
+  - 3
+  explanation: Saxtakarlıq ödəniş anında aşkarlanmalıdır — bir gün sonra gec olacaq. Qalan tapşırıqlar
+    üçün batch emal kifayətdir.
+- text: '**ELT** yanaşmasında datanın çevrilməsi (Transform) harada baş verir?'
+  options:
+  - Data mənbədən çıxarılmazdan əvvəl
+  - Data warehouse-a yükləndikdən sonra, anbarın daxilində
+  - Analitikin kompüterində, Excel-də
+  - ELT-də çevirmə addımı yoxdur
+  correct:
+  - 2
+  explanation: ELT-də xam data əvvəlcə anbara yüklənir, sonra güclü bulud anbarının daxilində çevrilir.

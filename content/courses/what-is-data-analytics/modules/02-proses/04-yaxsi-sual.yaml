@@ -1,0 +1,41 @@
+type: quiz
+title: 'Məşq: Yaxşı sual, pis sual'
+xp: 25
+estimated_minutes: 5
+pass_score: 66
+questions:
+- text: Rəhbərlik analitiklərə suallar göndərib. Hansılar SMART-dır, hansılar qeyri-müəyyəndir?
+  type: classify
+  buckets:
+  - name: SMART sual
+    items:
+    - Son 3 ayda Bakıda səbəti tərk edən müştərilərin payı neçə faiz olub?
+    - Oktyabr kampaniyası orta sifariş məbləğini neçə manat artırıb?
+    - Ötən həftə ən çox geri qaytarılan 5 məhsul hansıdır?
+  - name: Qeyri-müəyyən sual
+    items:
+    - Müştərilər bizi sevirmi?
+    - Satışları necə artıraq?
+    - Tətbiqimiz yaxşıdırmı?
+  explanation: SMART suallarda konkret mövzu, ölçülə bilən göstərici və müəyyən dövr var. Qeyri-müəyyən
+    suallara rəqəmlə cavab vermək mümkün deyil.
+- text: NarMarket saytına bir gündə **20 000** ziyarət olub və **600** sifariş verilib. Konversiya dərəcəsi
+    neçədir?
+  options:
+  - 0.3%
+  - 3%
+  - 30%
+  - 33%
+  correct:
+  - 2
+  explanation: Konversiya = 600 ÷ 20 000 × 100% = 3%.
+- text: Gün ərzində ümumi gəlir **21 000 ₼**, sifariş sayı isə **600**-dür. Orta sifariş məbləği (AOV)
+    neçədir?
+  options:
+  - 21 ₼
+  - 35 ₼
+  - 60 ₼
+  - 350 ₼
+  correct:
+  - 2
+  explanation: AOV = ümumi gəlir ÷ sifariş sayı = 21 000 ÷ 600 = 35 ₼.

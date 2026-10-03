@@ -1,0 +1,43 @@
+type: quiz
+title: 'Məşq: Data növlərini ayır'
+xp: 25
+estimated_minutes: 5
+pass_score: 66
+questions:
+- text: NarMarket-in sifariş cədvəlindəki sütunları kəmiyyət və keyfiyyət datasına ayır.
+  type: classify
+  buckets:
+  - name: Kəmiyyət (rəqəmlə ölçülür)
+    items:
+    - Sifarişin məbləği (₼)
+    - Səbətdəki məhsul sayı
+    - Çatdırılma müddəti (dəqiqə)
+    - Müştərinin yaşı
+  - name: Keyfiyyət (kateqoriya / təsvir)
+    items:
+    - 'Ödəniş üsulu: kart / nağd'
+    - Müştərinin şəhəri
+    - Rəydəki şərh mətni
+    - 'Məmnunluq: aşağı / orta / yüksək'
+  explanation: Üzərində hesablama aparıla bilən rəqəmlər kəmiyyət datasıdır. Kateqoriyalar və mətnlər
+    — hətta sıralı olsa belə (aşağı/orta/yüksək) — keyfiyyət datasıdır.
+- text: Aysel çatdırılmadan razılığı öyrənmək üçün müştərilərə **özü sorğu göndərir** və cavabları toplayır.
+    Bu hansı datadır?
+  options:
+  - İkinci dərəcəli (secondary) data
+  - Birinci dərəcəli (primary) data
+  - Xarici data
+  - Strukturlaşdırılmamış data
+  correct:
+  - 2
+  explanation: Öz məqsədin üçün özün topladığın data birinci dərəcəli datadır.
+- text: Müştərilərin **telefon nömrələri** rəqəmlərdən ibarətdir. Bu hansı data növüdür?
+  options:
+  - Kəmiyyət — çünki rəqəmlərdən ibarətdir
+  - Keyfiyyət — rəqəmlər identifikator rolunu oynayır, onların ortasını hesablamaq mənasızdır
+  - Fasiləsiz kəmiyyət datası
+  - Ordinal data
+  correct:
+  - 2
+  explanation: Ortasını, cəmini hesablamaq mənasızdırsa, rəqəm görünüşlü data əslində kateqoriyadır. Telefon
+    nömrəsi, sifariş nömrəsi, poçt indeksi belədir.

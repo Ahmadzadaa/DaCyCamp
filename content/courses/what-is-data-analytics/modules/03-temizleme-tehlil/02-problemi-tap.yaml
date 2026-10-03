@@ -1,0 +1,38 @@
+type: quiz
+title: 'Məşq: Problemi tap'
+xp: 20
+estimated_minutes: 4
+pass_score: 100
+questions:
+- text: Ayselin cədvəlində müxtəlif problemlər var. Hər birini düzgün problem növünə yerləşdir.
+  type: classify
+  buckets:
+  - name: Dublikat
+    items:
+    - Eyni sifariş (№1045) cədvəldə iki dəfə var
+    - Bir müştəri eyni gündə eyni ünvanla iki dəfə qeydiyyatdan keçib
+  - name: Boş dəyər
+    items:
+    - Müştərinin telefon sütunu boşdur
+    - Sifarişin çatdırılma tarixi yazılmayıb
+  - name: Format uyğunsuzluğu
+    items:
+    - 'Şəhər sütununda: ''Bakı'', ''baku'', ''BAKI'''
+    - 'Tarixlər: ''03.10.2026'' və ''2026-10-03'''
+  - name: Kənar dəyər (outlier)
+    items:
+    - Bir sifarişin məbləği 250 000 ₼ (orta 35 ₼)
+    - Çatdırılma 900 dəqiqə çəkib (adətən 30–40)
+  explanation: Təkrarlanan qeydlər — dublikat; olmayan dəyər — boşluq; eyni şeyin fərqli yazılışı — format;
+    qeyri-adi böyük və ya kiçik dəyər — kənar dəyər.
+- text: Analitik boş dəyəri olan **bütün sətirləri** sildi və datanın 40%-i itdi. Daha yaxşı yanaşma hansıdır?
+  options:
+  - Bu yaxşıdır — boş dəyərli sətirlər həmişə silinməlidir
+  - Boşluqların səbəbini araşdırmaq; mümkün olduqda doldurmaq və ya yalnız həmin sütunun lazım olduğu
+    hesablamada nəzərə almamaq
+  - Boşluqları təsadüfi rəqəmlərlə doldurmaq
+  - Boşluqları sıfırla əvəz etmək — sıfır həmişə təhlükəsizdir
+  correct:
+  - 2
+  explanation: Kütləvi silmə nəticəni təhrif edə bilər. Səbəbi araşdırmaq və hər sütun üçün düşünülmüş
+    qərar vermək lazımdır. Sıfır isə çox vaxt «məlum deyil» yox, «heç nə» deməkdir — bu da səhvdir.

@@ -1,0 +1,58 @@
+type: quiz
+title: 'Məşq: SQL və bazalar'
+xp: 30
+estimated_minutes: 6
+pass_score: 75
+questions:
+- text: |-
+    Bu sorğu nə qaytarır?
+
+    ```sql
+    SELECT name, city
+    FROM customers
+    WHERE city = 'Gəncə';
+    ```
+  options:
+  - Bütün müştərilərin adını və şəhərini
+  - Gəncədə yaşayan müştərilərin adını və şəhərini
+  - Gəncədə verilən sifarişlərin sayını
+  - Gəncə adlı yeni cədvəl yaradır
+  correct:
+  - 2
+  explanation: SELECT hansı sütunların, FROM hansı cədvəlin, WHERE isə hansı sətirlərin seçiləcəyini göstərir.
+- text: Cədvəldə **hər sətri unikal tanıdan** sütun necə adlanır?
+  options:
+  - Foreign key
+  - Primary key
+  - Index
+  - Schema
+  correct:
+  - 2
+  explanation: Primary key (əsas açar) hər sətir üçün unikaldır, məsələn order_id. Foreign key başqa cədvəlin
+    əsas açarına istinad edir.
+- text: SQL-dən həm data engineer, həm də data analitik istifadə edir — amma fərqli məqsədlərlə. Tapşırıqları
+    qruplara ayır.
+  type: classify
+  buckets:
+  - name: Adətən data engineer
+    items:
+    - Yeni cədvəlin strukturunu (sxemini) yaratmaq
+    - Cədvəllər arasında əlaqələri (foreign key) təyin etmək
+    - Yeni data mənbəyini bazaya qoşmaq
+  - name: Adətən data analitik
+    items:
+    - Ötən ayın ən çox satılan 10 məhsulunu tapmaq
+    - Şəhərlər üzrə orta sifariş məbləğini hesablamaq
+    - Hesabat üçün datanı filtrləmək
+  explanation: Data engineer bazanın quruluşunu yaradır və datanı içəri gətirir; analitik isə hazır datanı
+    sorğulayıb suallara cavab axtarır.
+- text: '**Ulduz sxemində** (star schema) mərkəzdə hansı cədvəl dayanır?'
+  options:
+  - Ölçü cədvəli — məsələn, müştərilər
+  - Fakt cədvəli — məsələn, sifarişlər və onların məbləğləri
+  - İstifadəçilərin parol cədvəli
+  - Ulduz sxemində mərkəz olmur
+  correct:
+  - 2
+  explanation: Mərkəzdə hadisələri saxlayan fakt cədvəli, ətrafında isə təsviri məlumatları saxlayan ölçü
+    cədvəlləri (müştəri, məhsul, tarix) olur.

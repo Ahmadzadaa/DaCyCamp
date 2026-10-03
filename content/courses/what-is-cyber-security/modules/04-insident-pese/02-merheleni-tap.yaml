@@ -1,0 +1,37 @@
+type: quiz
+title: 'Məşq: Mərhələni tap'
+xp: 20
+estimated_minutes: 4
+pass_score: 100
+questions:
+- text: Hər fəaliyyəti insidentə cavabın düzgün mərhələsinə yerləşdir.
+  type: classify
+  buckets:
+  - name: Hazırlıq
+    items:
+    - İnsidentə cavab planı yazmaq və komandanı təyin etmək
+    - Ehtiyat nüsxələrin bərpasını əvvəlcədən sınaqdan keçirmək
+  - name: Aşkarlama və təhlil
+    items:
+    - Gecə 03:00-da şübhəli girişlər barədə xəbərdarlığı araşdırmaq
+    - Hücumun hansı serverlərə yayıldığını müəyyən etmək
+  - name: Məhdudlaşdırma, aradan qaldırma, bərpa
+    items:
+    - Yoluxmuş kompüteri şəbəkədən ayırmaq
+    - Zərərli proqramı silib sistemi ehtiyat nüsxədən bərpa etmək
+  - name: İnsidentdən sonrakı fəaliyyət
+    items:
+    - '''Nə öyrəndik?'' görüşü keçirib planı yeniləmək'
+    - Yekun insident hesabatını rəhbərliyə təqdim etmək
+  explanation: Plan və sınaqlar — hazırlıq; xəbərdarlıqların araşdırılması — aşkarlama; ayırmaq, təmizləmək,
+    bərpa — üçüncü mərhələ; dərslər və hesabat — insidentdən sonra.
+- text: Ransomware aşkarlanan kimi **ilk** görülməli iş hansıdır?
+  options:
+  - Fidyəni dərhal ödəmək
+  - Yoluxmuş cihazı şəbəkədən ayırmaq ki, yayılmasın
+  - Kompüteri dərhal formatlamaq
+  - Heç kimə deməyib özün həll etməyə çalışmaq
+  correct:
+  - 2
+  explanation: 'Əvvəlcə məhdudlaşdırma: yayılmanı dayandırmaq. Formatlama sübutları məhv edir, fidyə ödəmək
+    isə tövsiyə olunmur.'

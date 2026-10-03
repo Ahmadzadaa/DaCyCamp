@@ -1,0 +1,33 @@
+type: quiz
+title: 'Məşq: Nigarın günü'
+xp: 20
+estimated_minutes: 4
+pass_score: 100
+questions:
+- text: Ödəniş provayderi tarix formatını xəbərsiz dəyişdi və gecəlik pipeline dayandı. Nigarın **ilk
+    addımı** nə olmalıdır?
+  options:
+  - Dashboard-u söndürüb heç kimə xəbər verməmək
+  - Xəta jurnalını (log) araşdırıb səbəbi tapmaq, düzəltmək və pipeline-ı yenidən işə salmaq
+  - Ödəniş provayderi ilə müqaviləni ləğv etmək
+  - Bütün pipeline-ı silib sıfırdan yazmaq
+  correct:
+  - 2
+  explanation: Əvvəlcə səbəb tapılır və düzəldilir, sonra pipeline yenidən işə salınır və analitiklərə
+    məlumat verilir. Ən yaxşı halda belə dəyişikliyi tutacaq yoxlama da əlavə olunur.
+- text: Hansı işlər Nigarın — data engineer-in — gündəlik işidir, hansılar başqa rolların?
+  type: classify
+  buckets:
+  - name: Data engineer-in işi
+    items:
+    - Pipeline xətasını araşdırıb düzəltmək
+    - Data keyfiyyəti yoxlaması əlavə etmək
+    - Boş dayanan bulud klasterini söndürmək
+    - Cədvəllərin təsvirini data kataloquna yazmaq
+  - name: Başqa rolun işi
+    items:
+    - Gələn ilin satışlarını proqnozlaşdıran model qurmaq
+    - Rəhbərlik üçün rüblük dashboard-un dizaynını hazırlamaq
+    - Marketinq kampaniyasının şüarını yazmaq
+  explanation: Etibarlılıq, keyfiyyət, xərc və sənədləşdirmə data engineer-in işidir. Proqnoz modelləri
+    data scientist-in, dashboard dizaynı analitikin, şüar isə marketinqin işidir.

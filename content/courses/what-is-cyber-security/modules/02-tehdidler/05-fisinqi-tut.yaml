@@ -1,0 +1,53 @@
+type: quiz
+title: 'Məşq: Fişinqi tut'
+xp: 25
+estimated_minutes: 5
+pass_score: 66
+questions:
+- text: |-
+    Rauf işçilərə gələn məktubu təhlil edir:
+
+    > **Göndərən:** NarPay Dəstək <support@narpay-secure-login.com>
+    > **Mövzu:** TƏCİLİ! Hesabınız 24 saat ərzində bloklanacaq
+    >
+    > Hörmətli müştəri, bloklanmamaq üçün linkə keçib kart məlumatlarınızı və SMS kodu təsdiqləyin.
+    > Əlavə: hesab_yenilenmesi.zip
+
+    Elementləri ayır: hansılar fişinq əlamətidir, hansılar düzgün davranışdır?
+  type: classify
+  buckets:
+  - name: Fişinq əlaməti 🚩
+    items:
+    - 'Göndərənin domeni: narpay-secure-login.com'
+    - 'Mövzu: ''TƏCİLİ! 24 saat ərzində bloklanacaq'''
+    - '''Hörmətli müştəri'' — adınız yoxdur'
+    - 'Əlavə: hesab_yenilenmesi.zip'
+    - SMS kodunun təsdiqlənməsi tələbi
+  - name: Düzgün davranış ✅
+    items:
+    - Linkə klikləmədən rəsmi tətbiqə özün daxil olub yoxlamaq
+    - Məktubu təhlükəsizlik komandasına bildirmək
+    - Bankın rəsmi nömrəsinə özün zəng edib soruşmaq
+  explanation: 'Qəribə domen, təcililik, ümumi müraciət, gözlənilməz əlavə və SMS kod tələbi — klassik
+    fişinq əlamətləridir. Düzgün reaksiya: klikləmə, rəsmi kanalla yoxla, bildir.'
+- text: 'Özünü bank əməkdaşı kimi təqdim edən biri zəng edir: «Kartınızdan şübhəli əməliyyat var, ləğv
+    etmək üçün telefonunuza gələn kodu deyin.» Bu hansı hücumdur?'
+  options:
+  - Smishing
+  - Vishing
+  - Baiting
+  - Tailgating
+  correct:
+  - 2
+  explanation: Telefon zəngi ilə aldatma vishing (voice phishing) adlanır. Bank heç vaxt SMS kodunu soruşmur.
+- text: Ofis girişində əlində qutular olan «kuryer» kartı olan işçinin arxasınca içəri keçir. Bu hansı
+    texnikadır?
+  options:
+  - Pretexting
+  - Whaling
+  - Tailgating
+  - Smishing
+  correct:
+  - 3
+  explanation: Mühafizəli əraziyə icazəli şəxsin arxasınca keçmək tailgating adlanır. Kömək etmək istəyi
+    burada «düymə» rolunu oynayır.

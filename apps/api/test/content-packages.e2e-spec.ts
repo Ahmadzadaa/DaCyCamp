@@ -2,6 +2,7 @@ import { existsSync, readdirSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { INestApplication } from '@nestjs/common';
 import AdmZip from 'adm-zip';
+import { DEFAULT_TRACKS } from '@dacy/shared';
 import { createApp, login, resetDb, seedBasics } from './helpers';
 import { PrismaService } from '../src/prisma/prisma.service';
 import { ContentSyncService } from '../src/import-export/content-sync.service';
@@ -21,6 +22,13 @@ describe('Repo kurs paketləri (content/courses)', () => {
     ({ app, prisma } = await createApp());
     await resetDb(prisma);
     await seedBasics(prisma);
+    // real seed bütün defolt istiqamətləri yaradır (paketlər data-engineering / cyber-security-yə də aiddir)
+    for (const [i, t] of DEFAULT_TRACKS.entries())
+      await prisma.track.upsert({
+        where: { slug: t.slug },
+        update: {},
+        create: { slug: t.slug, title: t.title, color: t.color, order: i + 1, isPublished: true },
+      });
     await prisma.topic.create({ data: { slug: 'python', title: 'Python', order: 1 } });
     admin = await login(app, 'admin@test.local', 'Admin123!');
   });

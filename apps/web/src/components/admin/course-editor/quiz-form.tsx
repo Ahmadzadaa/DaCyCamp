@@ -329,7 +329,7 @@ function ClassifyEditor({
             <select
               className="sel max-w-[45%]"
               value={q.correct[oi] ?? 0}
-              aria-label={`${t('admin.itemBucket')} ${oi + 1}`}
+              aria-label={`${t('admin.item')} ${oi + 1}: ${t('admin.itemBucket')}`}
               data-testid={`q${index}-item${oi}-bucket`}
               onChange={(e) =>
                 onChange({

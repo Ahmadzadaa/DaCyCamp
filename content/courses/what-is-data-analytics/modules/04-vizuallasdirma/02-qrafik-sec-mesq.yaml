@@ -1,0 +1,37 @@
+type: quiz
+title: 'Məşq: Qrafiki seç'
+xp: 20
+estimated_minutes: 4
+pass_score: 100
+questions:
+- text: Aysel müxtəlif suallar üçün qrafik hazırlayır. Hər tapşırıq üçün ən uyğun qrafiki seç.
+  type: classify
+  buckets:
+  - name: Xətt (line)
+    items:
+    - Son 12 ayda gündəlik sifariş sayının dəyişməsi
+    - Gün ərzində saatlar üzrə sayt ziyarətlərinin dəyişməsi
+  - name: Sütun (bar)
+    items:
+    - 5 şəhər üzrə satışların müqayisəsi
+    - Kateqoriyalar üzrə geri qaytarılan məhsul sayı
+  - name: Səpələnmə (scatter)
+    items:
+    - Reklam xərci ilə satış arasındakı əlaqə
+    - Çatdırılma məsafəsi ilə müddəti arasındakı əlaqə
+  - name: Dairə (pie)
+    items:
+    - 'Ödəniş üsullarının payı: kart 70%, nağd 30%'
+    - Sifarişlərin mobil və veb arasında bölgüsü
+  explanation: Zaman → xətt; kateqoriyaların müqayisəsi → sütun; iki rəqəm arasında əlaqə → səpələnmə;
+    az sayda hissədən ibarət bütöv → dairə.
+- text: Aysel 9 məhsul kateqoriyasının satış payını göstərmək istəyir. Hansı seçim **daha yaxşıdır**?
+  options:
+  - 9 dilimli 3D dairəvi qrafik
+  - Böyükdən kiçiyə sıralanmış üfüqi sütun qrafiki
+  - Xətt qrafiki
+  - Səpələnmə qrafiki
+  correct:
+  - 2
+  explanation: Çox hissəli dairəvi qrafiki oxumaq çətindir, 3D isə təhrif edir. Sıralanmış sütunlar müqayisəni
+    asanlaşdırır.

@@ -1,0 +1,97 @@
+type: quiz
+title: 'Yekun test: What is Data Engineering?'
+xp: 50
+estimated_minutes: 10
+pass_score: 70
+questions:
+- text: Data iş axınının **birinci** mərhələsi hansıdır və ondan kim məsuldur?
+  options:
+  - Kəşf və vizuallaşdırma — data analitik
+  - Toplama və saxlama — data engineer
+  - Eksperiment və proqnoz — data scientist
+  - Hazırlama — dizayner
+  correct:
+  - 2
+  explanation: Data iş axını toplama və saxlama ilə başlayır və bu mərhələ data engineer-in məsuliyyətidir.
+- text: Tapşırıqları rollara ayır.
+  type: classify
+  buckets:
+  - name: Data engineer
+    items:
+    - Mənbələrdən datanı avtomatik toplayan pipeline qurmaq
+    - Data warehouse-da cədvəllərin sxemini dizayn etmək
+    - Gecəlik yükləmələrin xətalarını izləmək
+  - name: Data analitik / data scientist
+    items:
+    - Satışların niyə düşdüyünü təhlil etmək
+    - Müştərilərin abunəni dayandıracağını proqnozlaşdırmaq
+    - Dashboard-da həftəlik trendləri göstərmək
+  explanation: Data engineer təməli — toplama, saxlama, çatdırma sistemlərini qurur; analitik və data
+    scientist bu datadan nəticə çıxarır.
+- text: '**ETL** nə deməkdir?'
+  options:
+  - Extract, Transform, Load — çıxar, çevir, yüklə
+  - Encrypt, Transfer, Lock — şifrələ, ötür, kilidlə
+  - Explore, Test, Learn — kəşf et, yoxla, öyrən
+  - Edit, Translate, Launch — redaktə et, tərcümə et, başlat
+  correct:
+  - 1
+  explanation: ETL — datanı mənbədən çıxarmaq, təmizləyib çevirmək və təyinat yerinə yükləmək deməkdir.
+- text: Datanı növünə görə ayır.
+  type: classify
+  buckets:
+  - name: Strukturlaşdırılmış
+    items:
+    - Bank çıxarışı cədvəli
+    - İşçilərin maaş cədvəli
+  - name: Yarım-strukturlaşdırılmış
+    items:
+    - API-dən gələn JSON cavab
+    - Sensorun JSON formatlı ölçmə qeydi
+  - name: Strukturlaşdırılmamış
+    items:
+    - Reklam videosu
+    - Müştəri ilə zəngin səs yazısı
+  explanation: Cədvəllər — strukturlaşdırılmış, JSON — yarım-strukturlaşdırılmış, video və səs — strukturlaşdırılmamış
+    datadır.
+- text: 'Data scientist-lər müxtəlif növ **xam data** üzərində eksperiment etmək istəyirlər: loglar, fotolar,
+    JSON hadisələr. Bu data harada saxlanmalıdır?'
+  options:
+  - Data warehouse
+  - Data lake
+  - Tətbiqin əməliyyat bazası
+  - Analitikin Excel faylı
+  correct:
+  - 2
+  explanation: Data lake hər növ xam datanı olduğu kimi saxlayır və data scientist-lərin kəşfiyyat işləri
+    üçün nəzərdə tutulub.
+- text: Təchizatçı anbara yeni qaimə faylı yükləyən kimi emal avtomatik başlayır. Bu hansı planlaşdırma
+    üsuludur?
+  options:
+  - Əl ilə
+  - Vaxta görə
+  - Hadisəyə (sensora) görə
+  - Planlaşdırma yoxdur
+  correct:
+  - 3
+  explanation: İşə salma müəyyən hadisədən — faylın gəlməsindən asılıdır. Bu, hadisəyə görə (sensor) planlaşdırmadır.
+- text: Paralel hesablama haqqında hansı ifadə **yanlışdır**?
+  options:
+  - Tapşırıq hissələrə bölünür və eyni vaxtda icra olunur
+  - Data bir neçə maşının yaddaşında bölünə bilər
+  - Paralellik həmişə, hətta kiçik tapşırıqlarda da işi sürətləndirir
+  - Apache Spark paralel emal alətidir
+  correct:
+  - 3
+  explanation: Kiçik tapşırıqlarda bölmə və birləşdirmə xərci qazancdan çox ola bilər — paralel versiya
+    daha yavaş işləyə bilər.
+- text: Buludun on-premise serverlərə nisbətən əsas üstünlüyü hansıdır?
+  options:
+  - Data heç vaxt internetə çıxmır
+  - Resursları lazım olduğu qədər artırıb-azaltmaq və yalnız istifadəyə görə ödəmək
+  - Heç bir xərc olmaması
+  - Təhlükəsizlik barədə düşünməyə ehtiyac olmaması
+  correct:
+  - 2
+  explanation: 'Bulud çevikdir: resurslar dəqiqələr içində artırılıb azaldılır, ödəniş istifadəyə görədir.
+    Amma xərc nəzarəti və təhlükəsizlik yenə vacibdir.'

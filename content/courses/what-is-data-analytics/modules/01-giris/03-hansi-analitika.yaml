@@ -1,0 +1,38 @@
+type: quiz
+title: 'Məşq: Hansı analitikadır?'
+xp: 20
+estimated_minutes: 4
+pass_score: 100
+questions:
+- text: NarMarket-in rəhbərliyi analitiklərə müxtəlif suallar göndərib. Hər sualı analitikanın düzgün
+    növünə yerləşdir.
+  type: classify
+  buckets:
+  - name: Təsviri
+    items:
+    - Keçən ay neçə sifariş olub?
+    - Sentyabr və avqust satışlarının müqayisə qrafiki
+  - name: Diaqnostik
+    items:
+    - Satışlar niyə Gəncədə düşüb?
+    - Şikayətlərin artmasının səbəbi kuryer gecikmələridirmi?
+  - name: Proqnozlaşdırıcı
+    items:
+    - Gələn həftə neçə kuryer lazım olacaq?
+    - Hansı müştərilərin abunəni dayandırma ehtimalı yüksəkdir?
+  - name: Tövsiyəedici
+    items:
+    - Satışı artırmaq üçün hansı məhsula nə qədər endirim etməliyik?
+    - Hər kuryer üçün optimal marşrut hansıdır?
+  explanation: «Neçə», müqayisə → təsviri; «niyə», səbəb → diaqnostik; «gələn», ehtimal → proqnozlaşdırıcı;
+    «nə etməli», optimal → tövsiyəedici.
+- text: Şirkət analitikaya yeni başlayır. Adətən **hansı növdən** başlamaq məntiqlidir?
+  options:
+  - Tövsiyəedici
+  - Proqnozlaşdırıcı
+  - Təsviri
+  - Hamısına eyni anda
+  correct:
+  - 3
+  explanation: Keçmişi düzgün təsvir etmədən səbəbləri, gələcəyi və ən yaxşı hərəkəti tapmaq mümkün deyil.
+    Pilləkən təsviri analitikadan başlayır.

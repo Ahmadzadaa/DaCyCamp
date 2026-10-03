@@ -1,0 +1,37 @@
+type: quiz
+title: 'Məşq: Hücumu tanı'
+xp: 20
+estimated_minutes: 4
+pass_score: 100
+questions:
+- text: Rauf həftəlik insident hesabatını hazırlayır. Hər hadisəni düzgün hücum növünə yerləşdir.
+  type: classify
+  buckets:
+  - name: DDoS
+    items:
+    - Saniyədə milyonlarla saxta sorğu ilə sayt əlçatmaz edildi
+    - Botnet NarPay serverlərini trafiklə doldurdu
+  - name: Man-in-the-Middle
+    items:
+    - Hava limanında saxta 'Free WiFi' şəbəkəsi qurulub trafik oxundu
+    - İctimai Wi-Fi-da istifadəçi ilə sayt arasındakı məlumat ələ keçirildi
+  - name: Credential stuffing
+    items:
+    - Başqa saytdan sızan e-poçt və parollar NarPay-də sınandı
+    - Eyni parolu bir neçə saytda işlədənlərin hesablarına avtomatik giriş cəhdləri
+  - name: SQL injection
+    items:
+    - Axtarış sahəsinə xüsusi simvollar yazılıb bazadan bütün müştərilər çıxarıldı
+    - Giriş formasına SQL kodu yazılıb parolsuz daxil olundu
+  explanation: Trafiklə doldurmaq — DDoS; arada dayanıb trafiki oxumaq — MitM; sızmış parolları başqa
+    saytda sınamaq — credential stuffing; sahəyə SQL kodu yazmaq — SQL injection.
+- text: Kafedə açıq Wi-Fi-a qoşulmusan və bank tətbiqinə girmək lazımdır. **Ən təhlükəsiz** seçim hansıdır?
+  options:
+  - Açıq Wi-Fi-da daxil olmaq — kafe etibarlıdır
+  - Mobil internetdən istifadə etmək və ya etibarlı VPN qoşmaq
+  - Wi-Fi şəbəkəsinin adı kafenin adına oxşayırsa, daxil olmaq
+  - Brauzerin gizli rejimində daxil olmaq
+  correct:
+  - 2
+  explanation: Açıq şəbəkə saxta ola bilər (MitM). Mobil internet və ya VPN trafiki qoruyur. Gizli rejim
+    yalnız tarixçəni saxlamır — trafiki qorumur.

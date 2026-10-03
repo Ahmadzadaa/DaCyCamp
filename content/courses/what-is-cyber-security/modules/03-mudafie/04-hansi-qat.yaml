@@ -1,0 +1,45 @@
+type: quiz
+title: 'Məşq: Hansı qat?'
+xp: 25
+estimated_minutes: 5
+pass_score: 66
+questions:
+- text: NarPay-in təhlükəsizlik tədbirlərini növlərinə görə ayır.
+  type: classify
+  buckets:
+  - name: Texniki
+    items:
+    - Firewall
+    - Antivirus / EDR
+    - Disk şifrələməsi
+  - name: İnzibati (qayda və təlim)
+    items:
+    - İşçilər üçün fişinq təlimi
+    - Parol siyasəti sənədi
+    - Giriş hüquqlarının rüblük yoxlanması
+  - name: Fiziki
+    items:
+    - Server otağına kartla giriş
+    - Ofisdə videomüşahidə kameraları
+  explanation: Proqram və avadanlıq vasitələri — texniki; qaydalar, təlimlər və yoxlamalar — inzibati;
+    binaya və otaqlara girişin qorunması — fiziki tədbirlərdir.
+- text: '**3-2-1** ehtiyat nüsxə qaydası nədir?'
+  options:
+  - 3 gündə bir, 2 saat ərzində, 1 diskə nüsxə çıxarmaq
+  - 3 nüsxə, 2 fərqli daşıyıcıda, 1-i başqa yerdə (offsite)
+  - 3 server, 2 firewall, 1 antivirus
+  - 3 işçi, 2 parol, 1 açar
+  correct:
+  - 2
+  explanation: 3 nüsxə, 2 fərqli daşıyıcı, 1 nüsxə başqa yerdə — bir hadisə (yanğın, ransomware) bütün
+    nüsxələri məhv edə bilməsin.
+- text: Yeni marketinq təcrübəçisi yalnız kampaniya hesabatlarına baxmalıdır. Ona hansı hüquq verilməlidir?
+  options:
+  - Admin hüquqları — sonra lazım ola bilər
+  - Yalnız marketinq hesabatlarını oxumaq hüququ
+  - Bütün bazalara oxuma hüququ
+  - Heç bir hüquq — təcrübəçilər sistemə girməməlidir
+  correct:
+  - 2
+  explanation: 'Ən az imtiyaz prinsipi: hər kəs yalnız işi üçün lazım olan minimum hüquqa sahib olur.
+    Hesab ələ keçirilsə, zərər də minimal olar.'

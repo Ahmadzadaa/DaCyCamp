@@ -1,0 +1,45 @@
+type: quiz
+title: 'Məşq: Təhdid, zəiflik, yoxsa tədbir?'
+xp: 25
+estimated_minutes: 5
+pass_score: 66
+questions:
+- text: Rauf NarPay-in risk reyestrini doldurur. Hər elementi düzgün qrupa yerləşdir.
+  type: classify
+  buckets:
+  - name: Təhdid (threat)
+    items:
+    - Pul oğurlamaq istəyən kiberdələduz qrup
+    - Narazı keçmiş işçi
+  - name: Zəiflik (vulnerability)
+    items:
+    - Yenilənməmiş, köhnə server proqramı
+    - İşçilərin '123456' parolundan istifadə etməsi
+    - Şifrələnməmiş müştəri bazası
+  - name: Nəzarət tədbiri (control)
+    items:
+    - İki faktorlu autentifikasiya (2FA)
+    - Firewall
+    - Müntəzəm ehtiyat nüsxələr
+  explanation: Təhdid — zərər vura biləcək şəxs və ya hadisə; zəiflik — onların istifadə edə biləcəyi
+    boşluq; nəzarət tədbiri — riski azaldan vasitə.
+- text: NarPay kiberhücumların maliyyə nəticələrinə qarşı **sığorta polisi** alır. Bu hansı risk strategiyasıdır?
+  options:
+  - Riskin azaldılması
+  - Riskin ötürülməsi
+  - Riskdən qaçmaq
+  - Riskin qəbul edilməsi
+  correct:
+  - 2
+  explanation: Sığorta riskin maliyyə yükünü sığorta şirkətinə ötürür. Hücumun ehtimalı isə dəyişmir —
+    buna görə sığorta digər tədbirləri əvəz etmir.
+- text: Hansı vəziyyətdə risk **ən yüksəkdir**?
+  options:
+  - Ofis printerinin köhnə proqramı, internetə çıxışı yoxdur
+  - Zəif parolla qorunan və internetdən hamıya açıq admin paneli
+  - Şifrələnmiş və ehtiyat nüsxəsi olan test serveri
+  - İşçilərin istirahət otağındakı televizor
+  correct:
+  - 2
+  explanation: Ehtimal yüksəkdir (zəif parol, internetə açıq) və təsir çox böyükdür (admin hüquqları).
+    Risk = ehtimal × təsir.

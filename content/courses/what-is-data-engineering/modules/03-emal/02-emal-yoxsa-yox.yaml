@@ -1,0 +1,34 @@
+type: quiz
+title: 'Məşq: Emal, yoxsa yox?'
+xp: 20
+estimated_minutes: 4
+pass_score: 100
+questions:
+- text: Hansı işlər **data emalı** tapşırığıdır, hansılar başqa işlərdir?
+  type: classify
+  buckets:
+  - name: Data emalı tapşırığı
+    items:
+    - 'Kart nömrələrini maskalamaq: 4169 **** **** 1234'
+    - Eyni sifarişin iki dəfə yazılmış qeydini silmək
+    - Gündəlik satışları kateqoriya üzrə cəmləmək
+    - Fərqli tarix formatlarını vahid formata salmaq
+    - İki sistemdən gələn müştəri datasını birləşdirmək
+  - name: Emal deyil (başqa iş)
+    items:
+    - Yeni server almaq üçün büdcəni təsdiqləmək
+    - Kuryerlərin iş qrafikini tərtib etmək
+    - Tətbiqin düymələrinin rəngini dəyişmək
+  explanation: 'Emal datanın özü üzərində aparılan dəyişikliklərdir: təmizləmə, formatlama, cəmləmə, birləşdirmə,
+    maskalama.'
+- text: NarMarket müştəri datasını analitiklərə verməzdən əvvəl telefon nömrələrini gizlədir. Bu, emalın
+    **hansı məqsədinə** xidmət edir?
+  options:
+  - Yaddaşa qənaət
+  - Məxfilik — şəxsi məlumatların qorunması
+  - Datanın sxemə uyğunlaşdırılması
+  - Sürətin artırılması
+  correct:
+  - 2
+  explanation: Analitiklərə müştərinin telefon nömrəsi lazım deyil. Maskalama şəxsi məlumatları qoruyur
+    və qanunvericiliyə uyğunluğu təmin edir.

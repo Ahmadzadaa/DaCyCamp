@@ -1,0 +1,14 @@
+# What is Cyber Security? — giriş kursu (kodsuz).
+# Hər dərs nəzəri addımdır: videonu admin paneldə dərsin «Video» sahəsinə yükləyin — mətnin üstündə görünür.
+# Məşqlər yalnız sual-cavabdır: tək seçim, çox seçim və «qruplara ayır» (classify).
+slug: what-is-cyber-security
+track: cyber-security
+title: What is Cyber Security?
+level: beginner
+description: 'Kibertəhlükəsizliyə kodsuz, sadə dildə giriş: CIA triadası, təhdid, zəiflik və risk, hücumçular,
+  zərərli proqramlar, sosial mühəndislik və fişinq, şəbəkə və veb hücumları, parollar və MFA, müdafiə
+  qatları, şifrələmə, insidentə cavab və kibertəhlükəsizlik peşələri. Hər dərsdən sonra real ssenarilərə
+  əsaslanan məşqlər.'
+sequential: true
+estimated_hours: 3
+published: true

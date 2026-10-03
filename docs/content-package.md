@@ -111,11 +111,27 @@ title: Yoxlama testi
 pass_score: 70
 questions:
   - text: ...
-    type: single # single | multiple
+    type: single # single | multiple | classify
     options: [A, B, C, D]
     correct: [1]
     explanation: ...
 ```
+
+**`classify` — elementləri qruplara ayırmaq** (2–4 qrup, ən çox 12 element; hər qrupda ən azı bir element). Tələbə elementləri qruplara sürüşdürür (mobil: elementə, sonra qrupa toxunur). YAML-da qruplar üzrə yazılır, `options`/`correct` lazım deyil — idxal elementləri qruplardan növbə ilə qarışdırır, tələbə ekranında isə sıra əlavə olaraq qarışdırılır:
+
+```yaml
+- text: |
+    Hansı tapşırıqlar data engineer-in işidir? Elementləri düzgün qrupa sürüşdür.
+  type: classify
+  buckets:
+    - name: Data engineer-in işi
+      items: [Pipeline qurmaq, Bazanın sxemini dizayn etmək]
+    - name: Data engineer-in işi deyil
+      items: [Dashboard dizayn etmək, Proqnoz modeli qurmaq]
+  explanation: ...
+```
+
+Sual yalnız bütün elementlər düzgün qrupda olduqda düzgün sayılır; nəticədə səhv yerləşdirilmiş hər elementin altında düzgün qrup göstərilir. Path imtahanlarında (`assessment`) yalnız `single` və `multiple` dəstəklənir.
 
 ### sql
 

@@ -1,0 +1,44 @@
+type: quiz
+title: 'Məşq: Nə vaxt işə düşür?'
+xp: 25
+estimated_minutes: 5
+pass_score: 66
+questions:
+- text: NarMarket-in pipeline-larında tapşırıqlar müxtəlif üsullarla işə salınır. Hər birini düzgün qrupa
+    yerləşdir.
+  type: classify
+  buckets:
+  - name: Əl ilə
+    items:
+    - Analitik düyməni basanda hesabat yenilənir
+    - Data engineer xətanı düzəldib pipeline-ı özü yenidən başladır
+  - name: Vaxta görə
+    items:
+    - Hər gecə saat 02:00-da sifarişlər yüklənir
+    - Hər bazar ertəsi səhər həftəlik hesabat hazırlanır
+  - name: Hadisəyə görə
+    items:
+    - Anbara yeni qaimə faylı düşən kimi emal başlayır
+    - Yeni müştəri qeydiyyatdan keçən kimi onun datası CRM-ə göndərilir
+  explanation: Əl ilə — insan başladır; vaxta görə — saat və təqvimə görə; hadisəyə görə — fayl gəlməsi,
+    qeydiyyat kimi hadisə baş verəndə.
+- text: Pipeline-da «cəmləmə» tapşırığı «çıxarma» tapşırığı bitməmiş işə düşsə nə olar?
+  options:
+  - Heç nə — ardıcıllığın əhəmiyyəti yoxdur
+  - Cəmləmə köhnə və ya natamam data üzərində işləyər və dashboard səhv rəqəm göstərər
+  - Pipeline daha sürətli işləyər
+  - Data avtomatik təmizlənər
+  correct:
+  - 2
+  explanation: 'Buna görə asılılıqlar düzgün qurulmalıdır: növbəti addım yalnız əvvəlki uğurla bitəndən
+    sonra başlamalıdır.'
+- text: Hansı vəziyyətdə **batch** emal tamamilə kifayətdir?
+  options:
+  - Şübhəli kart əməliyyatını dərhal bloklamaq
+  - Müştəriyə kuryerin yerini canlı göstərmək
+  - Rəhbərlik üçün dünənki satışların gündəlik hesabatı
+  - Anbar qalığını hər satışda anlıq yeniləmək
+  correct:
+  - 3
+  explanation: Gündəlik hesabat üçün datanın gecə bir dəfə emal olunması kifayətdir. Digər hallarda nəticə
+    saniyələr içində lazımdır — bu, streaming-dir.

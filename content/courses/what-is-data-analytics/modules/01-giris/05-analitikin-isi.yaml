@@ -1,0 +1,45 @@
+type: quiz
+title: 'Məşq: Analitikin işi'
+xp: 25
+estimated_minutes: 5
+pass_score: 66
+questions:
+- text: Hansı tapşırıqlar data analitikin işidir, hansılar başqa rolların?
+  type: classify
+  buckets:
+  - name: Data analitikin işi
+    items:
+    - Satış datasında trendləri tapmaq
+    - Rəhbərlik üçün dashboard hazırlamaq
+    - «Satışlar pisdir» narahatlığını ölçülə bilən suala çevirmək
+    - Nəticələri sadə dillə təqdim etmək
+  - name: Analitikin işi deyil
+    items:
+    - Gecəlik data pipeline-ın arxitekturasını qurmaq
+    - Serverləri quraşdırmaq və qulluq etmək
+    - Mobil tətbiqin kodunu yazmaq
+  explanation: Analitik sual verir, təhlil edir, vizuallaşdırır və təqdim edir. Pipeline və serverlər
+    data engineer-in, tətbiq kodu isə proqramçının işidir.
+- text: Data analitik ilə data scientist arasındakı **əsas fərq** nədir?
+  options:
+  - Analitik yalnız Excel, data scientist yalnız Python istifadə edir
+  - Analitik əsasən mövcud datadan keçmişi və səbəbləri izah edir; data scientist daha çox proqnoz modelləri
+    qurur
+  - Data scientist-in statistikaya ehtiyacı yoxdur
+  - Heç bir fərq yoxdur — eyni peşənin iki adıdır
+  correct:
+  - 2
+  explanation: Analitik «nə baş verdi və niyə?», data scientist isə daha çox «nə baş verəcək?» sualına
+    fokuslanır. Amma sərhədlər çevikdir.
+- text: Bunlardan hansılar data analitik üçün vacib **şəxsi (soft)** bacarıqlardır? (Bir neçə cavab)
+  type: multiple
+  options:
+  - Maraq və «niyə?» sualını vermək
+  - Nəticəni sadə dillə izah etmək
+  - Tənqidi düşünmə
+  - Serverləri təmir etmək
+  correct:
+  - 1
+  - 2
+  - 3
+  explanation: Maraq, ünsiyyət və tənqidi düşünmə analitiki fərqləndirən əsas şəxsi bacarıqlardır.

@@ -386,6 +386,22 @@ Mənbə: `Python_Day_1/2.pptx` (nəzəri) + `Python_Day_1/2.docx` (35 tapşırı
 - **Giriş/qeydiyyat:** tünd panel əvəzinə yumşaq rəngli fon, rəngli ikonlar, kod kartı, üzən forma kartı — açıq və tünd rejimdə.
 - **«Yollar» → «Roadmap»:** tələbə menyusu, /yollar başlığı, tanışlıq səhifəsi; admin «Karyera xəritələri» → «Roadmap».
 
+## Üç giriş kursu, «qruplara ayır» sualı, sadə silmə təsdiqi — 3 oktyabr 2026
+
+- **Kursu silmək:** ad yazmaq tələbi götürüldü — sadə «Kursu silməyə razısınız?» (Xeyr / Bəli, sil); «Silinənlər»-dən həmişəlik silmədə də eyni. API-nin `confirm` qoruması qalır (dialoq adı özü göndərir).
+- **Yeni sual tipi `classify`** (DataCamp-dakı «Drag the items into the correct bucket» kimi): 2–4 qrup, ≤12 element; tələbə elementləri qruplara sürüşdürür, telefonda və klaviaturada — elementə, sonra qrupa toxunur. Sual yalnız hamısı düzgün qrupda olanda düzgündür; nəticədə ✓/✗ və səhv elementin altında «düzgün qrup: …». Admin test redaktorunda qruplar və hər elementin qrupu seçilir. YAML formatı — `docs/content-package.md`. Path imtahanlarında yalnız tək/çox seçim.
+- **Kurslar** (kodsuz, Azərbaycanca, uydurma NarMarket / NarPay ssenariləri ilə; hər dərsdən sonra yalnız sual-cavab məşqləri — tək seçim, çox seçim, qruplara ayır):
+
+  | Kurs                      | Paket                                      | Fəsil | Addım                  | Sual |
+  | ------------------------- | ------------------------------------------ | ----- | ---------------------- | ---- |
+  | What is Data Engineering? | `content/courses/what-is-data-engineering` | 4     | 25 (13 dərs + 12 məşq) | 38   |
+  | What is Data Analytics?   | `content/courses/what-is-data-analytics`   | 5     | 25 (14 dərs + 11 məşq) | 36   |
+  | What is Cyber Security?   | `content/courses/what-is-cyber-security`   | 4     | 24 (13 dərs + 11 məşq) | 37   |
+
+  Hər kurs yekun testlə bitir. **Video:** hər dərs nəzəri addımdır — admin paneldə dərsi açıb «Video» sahəsinə yükləyin, mətnin üstündə görünür (və ya fəslin sonuna «+ Video dərs»).
+
+- Testlər: API `quiz-classify.e2e-spec.ts` (görünüşdə cavab yoxdur, qiymətləndirmə), `content-packages.e2e-spec.ts` (bütün paketlər; test bazasında üç defolt istiqamət yaradılır), shared `classify.test.ts`; Playwright `intro-courses.spec.ts` (idxal, kataloq, sürüşdür → səhv → izah → toxunaraq düzəlt → keçdi, mobil, admin redaktoru), `admin-control.spec.ts` yeni silmə dialoqu ilə. Ekran görüntüləri: `docs/screenshots/intro-kurslar/`.
+
 ## Növbəti mərhələ — digər kursların köçürülməsi (gözləyir)
 
 İstifadəçi qalan dərs və tapşırıq fayllarını göndərəcək (Python Gün 3–10, Docker, SQL, Excel və s.). Hər kurs `content/courses/<slug>/` paketi kimi yazılır (`docs/content-package.md`), `check:python` və idxal validasiyası ilə yoxlanılır. Python4Business-in növbəti günləri eyni kursa yeni fəsillər kimi əlavə olunur (`08-g3-…`). Excel tapşırıqlarının formatı fayllar gələndə seçiləcək (məs. Excel faylı + test sualları, və ya Python/pandas ilə).

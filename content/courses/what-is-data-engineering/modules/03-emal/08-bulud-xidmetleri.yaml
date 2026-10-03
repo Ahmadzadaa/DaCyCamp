@@ -1,0 +1,47 @@
+type: quiz
+title: 'Məşq: Bulud xidmətləri'
+xp: 25
+estimated_minutes: 5
+pass_score: 66
+questions:
+- text: NarMarket-in buludda gördüyü işləri və xidmətləri düzgün xidmət növünə yerləşdir.
+  type: classify
+  buckets:
+  - name: Saxlama (storage)
+    items:
+    - Kuryer fotolarını və log fayllarını saxlamaq
+    - AWS S3
+    - Google Cloud Storage
+  - name: Hesablama (compute)
+    items:
+    - Gecəlik emal üçün 20 serveri 2 saatlığa icarəyə götürmək
+    - AWS EC2
+  - name: Verilənlər bazası (database)
+    items:
+    - Sifarişlər üçün idarə olunan PostgreSQL bazası
+    - Azure SQL Database
+  explanation: Saxlama — fayllar və data lake; hesablama — virtual serverlər və emal gücü; verilənlər
+    bazası — idarə olunan SQL bazaları.
+- text: |-
+    NarMarket-də «Qara Cümə» günü trafik 5 dəfə artır, ilin qalan günlərində isə normal olur.
+
+    Hansı yanaşma daha sərfəlidir?
+  options:
+  - Bütün il üçün 5 qat güclü öz serverlərini almaq
+  - Buludda lazım olanda resursları artırıb, sonra azaltmaq
+  - «Qara Cümə» günü saytı bağlamaq
+  - Sifarişləri bir gün sonra emal etmək
+  correct:
+  - 2
+  explanation: 'Buludun əsas üstünlüyü miqyaslanma və istifadəyə görə ödənişdir: güc yalnız lazım olan
+    gün artırılır.'
+- text: '**Multicloud** yanaşmasının əsas çatışmazlığı hansıdır?'
+  options:
+  - Bir provayderdən asılılığın artması
+  - Fərqli provayderlərin xidmətlərini birlikdə idarə etməyin mürəkkəbliyi
+  - Buludun öz serverlərindən həmişə baha olması
+  - Datanın ümumiyyətlə saxlanıla bilməməsi
+  correct:
+  - 2
+  explanation: Multicloud asılılığı azaldır, amma müxtəlif sistemləri, alətləri və təhlükəsizlik qaydalarını
+    birlikdə idarə etmək çətinləşir.

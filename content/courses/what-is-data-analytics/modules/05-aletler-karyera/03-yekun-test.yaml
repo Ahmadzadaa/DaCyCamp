@@ -1,0 +1,96 @@
+type: quiz
+title: 'Yekun test: What is Data Analytics?'
+xp: 50
+estimated_minutes: 10
+pass_score: 70
+questions:
+- text: «Hansı müştərinin gələn ay abunəni dayandıracağını təxmin et» — bu hansı analitika növüdür?
+  options:
+  - Təsviri
+  - Diaqnostik
+  - Proqnozlaşdırıcı
+  - Tövsiyəedici
+  correct:
+  - 3
+  explanation: Gələcəkdə nə baş verəcəyini təxmin etmək proqnozlaşdırıcı analitikadır.
+- text: Analiz prosesinin addımlarının **düzgün ardıcıllığı** hansıdır?
+  options:
+  - Təhlil et → Soruş → Paylaş → Təmizlə → Hazırla → Hərəkət et
+  - Soruş → Hazırla → Təmizlə → Təhlil et → Paylaş → Hərəkət et
+  - Hazırla → Təmizlə → Soruş → Paylaş → Təhlil et → Hərəkət et
+  - Paylaş → Soruş → Təhlil et → Hazırla → Təmizlə → Hərəkət et
+  correct:
+  - 2
+  explanation: Əvvəlcə sual, sonra data, təmizləmə, təhlil, nəticənin paylaşılması və qərar.
+- text: Sütunları data növlərinə ayır.
+  type: classify
+  buckets:
+  - name: Kəmiyyət
+    items:
+    - Çatdırılma müddəti (dəqiqə)
+    - Sifariş məbləği (₼)
+    - Səbətdəki məhsul sayı
+  - name: Keyfiyyət
+    items:
+    - Müştərinin rayonu
+    - Ödəniş üsulu
+    - Sifariş nömrəsi
+  explanation: Üzərində hesablama aparılan rəqəmlər kəmiyyətdir. Sifariş nömrəsi rəqəm olsa da identifikatordur
+    — ortası mənasızdır, ona görə keyfiyyət datasıdır.
+- text: 'Sifariş məbləğləri: **8, 9, 10, 11, 12, 200 ₼**. Tipik sifarişi ən yaxşı hansı göstərici təsvir
+    edir?'
+  options:
+  - Orta (≈41.7 ₼)
+  - Median (10.5 ₼)
+  - Maksimum (200 ₼)
+  - Diapazon (192 ₼)
+  correct:
+  - 2
+  explanation: 200 ₼-lıq kənar dəyər ortanı şişirdir. Median (10 və 11-in ortası, 10.5 ₼) tipik sifarişi
+    daha düzgün göstərir.
+- text: Analitik tapır ki, tətbiqdə push-bildirişləri açıq olan müştərilər daha çox sifariş verir. Hansı
+    nəticə **ən düzgündür**?
+  options:
+  - Bildirişlər sifariş sayını artırır — hamıya məcburi bildiriş göndərək
+  - Bu, korrelyasiyadır; səbəbiyyəti yoxlamaq üçün A/B test lazımdır — bəlkə aktiv müştərilər sadəcə bildirişləri
+    daha çox açır
+  - Bildirişlər sifarişləri azaldır
+  - Bu datadan heç bir nəticə çıxarmaq olmaz
+  correct:
+  - 2
+  explanation: Korrelyasiya səbəbiyyət deyil. Gizli amil (müştərinin ümumi aktivliyi) ola bilər. Təsadüfi
+    qruplarla A/B test səbəbi yoxlamağa imkan verir.
+- text: Hər tapşırıq üçün uyğun qrafiki seç.
+  type: classify
+  buckets:
+  - name: Xətt
+    items:
+    - Son 2 ildə aylıq gəlirin dəyişməsi
+  - name: Sütun
+    items:
+    - 10 kuryer üzrə çatdırılma sayının müqayisəsi
+  - name: Səpələnmə
+    items:
+    - Məhsulun qiyməti ilə satış sayı arasındakı əlaqə
+  - name: Histoqram
+    items:
+    - Sifariş məbləğlərinin paylanması
+  explanation: Zaman → xətt; müqayisə → sütun; iki rəqəm arasında əlaqə → səpələnmə; paylanma → histoqram.
+- text: Bir gündə **40 000** ziyarət və **1 000** sifariş olub. Konversiya dərəcəsi neçədir?
+  options:
+  - 0.25%
+  - 2.5%
+  - 4%
+  - 25%
+  correct:
+  - 2
+  explanation: 1 000 ÷ 40 000 × 100% = 2.5%.
+- text: Hansı sual **SMART** sualdır?
+  options:
+  - Müştərilərimiz xoşbəxtdirmi?
+  - Marketinqimiz yaxşıdırmı?
+  - Oktyabrda Sumqayıtda çatdırılmaların neçə faizi 45 dəqiqədən uzun çəkib?
+  - Biznesimizi necə böyüdək?
+  correct:
+  - 3
+  explanation: Bu sual konkretdir, ölçülə bilər, aktualdır və müəyyən dövrə aiddir.

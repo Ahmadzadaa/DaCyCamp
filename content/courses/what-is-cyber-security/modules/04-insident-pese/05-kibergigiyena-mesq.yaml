@@ -1,0 +1,33 @@
+type: quiz
+title: 'Məşq: Kibergigiyena'
+xp: 20
+estimated_minutes: 4
+pass_score: 100
+questions:
+- text: Hansı vərdişlər təhlükəsizdir, hansılar risklidir?
+  type: classify
+  buckets:
+  - name: Təhlükəsiz vərdiş ✅
+    items:
+    - Əməliyyat sistemini və tətbiqləri vaxtında yeniləmək
+    - Hər hesab üçün fərqli parol və parol meneceri
+    - Vacib hesablarda 2FA aktivləşdirmək
+    - Vacib faylların ehtiyat nüsxəsini çıxarmaq
+  - name: Riskli vərdiş 🚩
+    items:
+    - Kafedəki açıq Wi-Fi-da VPN-siz bank əməliyyatı etmək
+    - Tapılan USB fləşkanı iş kompüterinə taxmaq
+    - Tətbiqləri rəsmi mağazadan kənar saytlardan yükləmək
+    - Parolu stikerə yazıb monitora yapışdırmaq
+  explanation: Yeniləmələr, unikal parollar, MFA və ehtiyat nüsxələr müdafiəni gücləndirir. Açıq Wi-Fi,
+    tapılmış USB, qeyri-rəsmi tətbiqlər və açıq yazılmış parollar isə hücumçulara qapı açır.
+- text: Mühasib Nərmin səhvən fişinq linkinə klikləyib parolunu daxil etdiyini başa düşür. Nə etməlidir?
+  options:
+  - Heç kimə deməmək — bəlkə heç nə olmayacaq
+  - Dərhal təhlükəsizlik komandasına bildirmək və parolunu dəyişmək
+  - Kompüteri söndürüb evə getmək
+  - Bir həftə gözləyib nəticəyə baxmaq
+  correct:
+  - 2
+  explanation: 'Sürətli reaksiya zərəri kəskin azaldır: komanda hesabı bloklaya, girişləri yoxlaya və
+    hücumun yayılmasının qarşısını ala bilər.'

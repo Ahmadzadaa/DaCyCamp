@@ -1,0 +1,44 @@
+type: quiz
+title: 'Məşq: Doğru nəticə'
+xp: 25
+estimated_minutes: 5
+pass_score: 66
+questions:
+- text: Yay aylarında həm dondurma satışı, həm də dənizdə boğulma halları artır. Hansı nəticə **doğrudur**?
+  options:
+  - Dondurma boğulma riskini artırır
+  - Boğulmalar dondurma satışını artırır
+  - Hər ikisinə üçüncü amil — isti hava təsir edir; bu, səbəb-nəticə əlaqəsi deyil
+  - Bu iki göstərici arasında heç bir korrelyasiya yoxdur
+  correct:
+  - 3
+  explanation: Korrelyasiya var, amma səbəbiyyət yoxdur. Gizli üçüncü amil — isti hava hər ikisini artırır.
+- text: NarMarket yeni «Sürətli sifariş» düyməsinin satışa təsirini yoxlamaq istəyir. **Ən düzgün** üsul
+    hansıdır?
+  options:
+  - Düyməni hamıya göstərib keçən ayla müqayisə etmək
+  - 'İstifadəçiləri təsadüfi iki qrupa bölmək: birinə köhnə, digərinə yeni düyməni göstərib konversiyanı
+    müqayisə etmək'
+  - Ən sadiq 100 müştəriyə yeni düyməni göstərmək
+  - İşçilərdən hansı düyməni bəyəndiklərini soruşmaq
+  correct:
+  - 2
+  explanation: A/B testdə qruplar təsadüfi bölündüyü üçün nəticədəki fərq məhz dəyişiklikdən qaynaqlanır.
+    Keçən ayla müqayisədə isə mövsüm, kampaniya kimi başqa amillər qarışır.
+- text: Hər cüt göstərici arasındakı əlaqəni düzgün qrupa yerləşdir.
+  type: classify
+  buckets:
+  - name: Müsbət korrelyasiya
+    items:
+    - Reklam büdcəsi artdıqca sayt ziyarətləri artır
+    - Endirim faizi artdıqca satılan məhsul sayı artır
+  - name: Mənfi korrelyasiya
+    items:
+    - Çatdırılma gecikdikcə müştəri reytinqi düşür
+    - Qiymət artdıqca alınan məhsul sayı azalır
+  - name: Korrelyasiya yoxdur
+    items:
+    - Müştərinin adının uzunluğu və sifariş məbləği
+    - Kuryerin ayaqqabı ölçüsü və çatdırılma sürəti
+  explanation: Birlikdə artırsa — müsbət, biri artanda digəri azalırsa — mənfi, aralarında heç bir qanunauyğunluq
+    yoxdursa — korrelyasiya yoxdur.

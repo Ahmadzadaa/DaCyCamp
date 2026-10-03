@@ -1,0 +1,44 @@
+type: quiz
+title: 'Məşq: Hekayə və aldadıcı qrafiklər'
+xp: 25
+estimated_minutes: 5
+pass_score: 66
+questions:
+- text: Qrafikdə y oxu **0-dan yox, 95-dən** başlayır və 96 ilə 98 arasındakı fərq nəhəng görünür. Problem
+    nədir?
+  options:
+  - Problem yoxdur — qrafik daha maraqlı görünür
+  - Kəsilmiş ox kiçik fərqi şişirdərək təhrif edir
+  - Xətt qrafiki əvəzinə dairə istifadə olunmalı idi
+  - Rənglər səhv seçilib
+  correct:
+  - 2
+  explanation: Kəsilmiş ox ən çox rast gəlinən aldadıcı vizuallaşdırmalardan biridir. Sütun qrafiklərində
+    ox 0-dan başlamalıdır.
+- text: Aysel direktora 5 dəqiqəlik təqdimat hazırlayır. **Ən yaxşı** başlanğıc hansıdır?
+  options:
+  - Data mənbələrinin və təmizləmə addımlarının ətraflı təsviri
+  - 30 qrafiklik dashboard-un ekran görüntüsü
+  - 'Əsas nəticə və tövsiyə: «Gecikmələr Gəncədə satışı 18% salıb — 20 əlavə kuryer təklif edirik»'
+  - Statistik düsturların izahı
+  correct:
+  - 3
+  explanation: Rəhbərlik nəticə, təsir və qərar istəyir. Metodologiya sual verilərsə və ya əlavədə göstərilə
+    bilər.
+- text: Hansılar yaxşı dashboard təcrübəsidir, hansılar pis?
+  type: classify
+  buckets:
+  - name: Yaxşı təcrübə
+    items:
+    - Ən vacib 3–5 KPI yuxarıda
+    - Göstəricini hədəf və ya keçən dövrlə müqayisə etmək
+    - Rənglərdən ardıcıl və mənalı istifadə
+    - Auditoriyaya uyğun detallaşdırma
+  - name: Pis təcrübə
+    items:
+    - Bir səhifədə 25 qrafik
+    - Hər qrafikdə fərqli rəng sxemi
+    - 3D dairəvi qrafiklər
+    - Vahidsiz və başlıqsız rəqəmlər
+  explanation: Yaxşı dashboard az, amma vacib göstəricini kontekstlə və ardıcıl dizaynla verir. Həddən
+    artıq qrafik, qarışıq rənglər, 3D və vahidsiz rəqəmlər oxunuşu çətinləşdirir.
