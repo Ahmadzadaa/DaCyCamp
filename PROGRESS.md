@@ -402,6 +402,14 @@ Mənbə: `Python_Day_1/2.pptx` (nəzəri) + `Python_Day_1/2.docx` (35 tapşırı
 
 - Testlər: API `quiz-classify.e2e-spec.ts` (görünüşdə cavab yoxdur, qiymətləndirmə), `content-packages.e2e-spec.ts` (bütün paketlər; test bazasında üç defolt istiqamət yaradılır), shared `classify.test.ts`; Playwright `intro-courses.spec.ts` (idxal, kataloq, sürüşdür → səhv → izah → toxunaraq düzəlt → keçdi, mobil, admin redaktoru), `admin-control.spec.ts` yeni silmə dialoqu ilə. Ekran görüntüləri: `docs/screenshots/intro-kurslar/`.
 
+## Python kursları (Python_slides.zip + Python_tasks.zip, Gün 1–9) — davam edir, 3 oktyabr 2026
+
+- ✅ **Python Basics** (`content/courses/python-basics`) — köhnə Python4Business (Gün 1–2) + 6 yeni fəsil; 13 fəsil, 77 addım, 35 Python tapşırığı. Köhnə «Python4Business» kursu bazada qalıbsa, admin paneldən silin (yeni kurs onu əvəz edir).
+- ✅ **Python runtime:** pandas/matplotlib/seaborn (micropip) dəstəyi, son ifadənin Jupyter kimi göstərilməsi, `display()`, paket mesajlarının gizlədilməsi.
+- ⏳ **Python Pandas** (Gün 3–6) — generator yarımçıq: `scripts/course-gen/c5_pandas.py` (1–5-ci fəsillər yazılıb, yoxlanılmayıb).
+- ⏳ Qalan plan: Python for Data Analysis & Visualization (Gün 6–9), Python & SQL (Gün 9, sqlite3), Capstone (Gün 9 qiymətləndirilən tapşırıqlar). Datasetlər: `scripts/course-gen/py_datasets.py`.
+- ⚠️ `Python Day 7 _ File Attachment.py` faylında real görünən Gmail tətbiq parolu var — onu ləğv edin; kurslarda yalnız yer tutucular istifadə olunur.
+
 ## Növbəti mərhələ — digər kursların köçürülməsi (gözləyir)
 
 İstifadəçi qalan dərs və tapşırıq fayllarını göndərəcək (Python Gün 3–10, Docker, SQL, Excel və s.). Hər kurs `content/courses/<slug>/` paketi kimi yazılır (`docs/content-package.md`), `check:python` və idxal validasiyası ilə yoxlanılır. Python4Business-in növbəti günləri eyni kursa yeni fəsillər kimi əlavə olunur (`08-g3-…`). Excel tapşırıqlarının formatı fayllar gələndə seçiləcək (məs. Excel faylı + test sualları, və ya Python/pandas ilə).
