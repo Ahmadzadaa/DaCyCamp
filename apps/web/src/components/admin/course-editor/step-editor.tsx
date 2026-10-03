@@ -299,6 +299,7 @@ export function StepEditor({
                 text: q.text ?? '',
                 type: q.type ?? 'single',
                 options: q.options ?? [],
+                ...(q.buckets ? { buckets: q.buckets } : {}),
                 correct: q.correct ?? [],
                 explanation: q.explanation,
               })),
@@ -307,8 +308,9 @@ export function StepEditor({
               update({
                 pass_score: v.pass_score,
                 shuffle_questions: v.shuffle_questions,
-                questions: v.questions.map((q) => ({
+                questions: v.questions.map(({ buckets, ...q }) => ({
                   ...q,
+                  ...(q.type === 'classify' ? { buckets: buckets ?? [] } : {}),
                   explanation: q.explanation || undefined,
                 })),
               })

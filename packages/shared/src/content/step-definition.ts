@@ -40,19 +40,55 @@ export const theoryDraft = z.object({
 });
 
 // ── quiz ────────────────────────────────────────────────────────────────────
+/**
+ * single / multiple — variant seçimi; classify — elementləri qruplara (bucket) ayırmaq:
+ * `options` elementlərdir, `buckets` qrup adları, `correct[i]` i-ci elementin qrup indeksidir.
+ */
+export const QUIZ_QUESTION_TYPES = ['single', 'multiple', 'classify'] as const;
+export type QuizQuestionType = (typeof QUIZ_QUESTION_TYPES)[number];
+export const MAX_QUIZ_OPTIONS = 12;
+export const MAX_QUIZ_BUCKETS = 4;
+
 export const quizQuestionStrict = z
   .object({
     text: z.string().trim().min(1, 'Sual mətni boş ola bilməz').max(5000),
-    type: z.enum(['single', 'multiple']).default('single'),
+    type: z.enum(QUIZ_QUESTION_TYPES).default('single'),
     options: z
       .array(z.string().trim().min(1, 'Variant boş ola bilməz').max(1000))
       .min(2, 'Ən azı 2 variant')
-      .max(12),
+      .max(MAX_QUIZ_OPTIONS),
+    buckets: z
+      .array(z.string().trim().min(1, 'Qrup adı boş ola bilməz').max(200))
+      .max(MAX_QUIZ_BUCKETS)
+      .optional(),
     /** 0-dan sayılır (daxili forma). YAML idxalında 1-dən sayılan dəyərlər çevrilir. */
     correct: z.array(z.number().int().min(0)).min(1, 'Düzgün cavab seçilməyib'),
     explanation: z.string().max(5000).optional(),
   })
   .superRefine((q, ctx) => {
+    if (q.type === 'classify') {
+      const buckets = q.buckets ?? [];
+      if (buckets.length < 2)
+        ctx.addIssue({ code: 'custom', path: ['buckets'], message: 'Ən azı 2 qrup lazımdır' });
+      if (q.correct.length !== q.options.length)
+        ctx.addIssue({
+          code: 'custom',
+          path: ['correct'],
+          message: 'Hər element üçün düzgün qrup seçilməlidir',
+        });
+      for (const b of q.correct)
+        if (b >= buckets.length)
+          ctx.addIssue({ code: 'custom', path: ['correct'], message: `Qrup ${b} mövcud deyil` });
+      buckets.forEach((_, b) => {
+        if (!q.correct.includes(b))
+          ctx.addIssue({
+            code: 'custom',
+            path: ['buckets', b],
+            message: 'Hər qrupa ən azı bir element düşməlidir',
+          });
+      });
+      return;
+    }
     const uniq = new Set(q.correct);
     if (uniq.size !== q.correct.length)
       ctx.addIssue({ code: 'custom', path: ['correct'], message: 'Təkrar indeks' });
@@ -74,11 +110,29 @@ export const quizQuestionStrict = z
   });
 export const quizQuestionDraft = z.object({
   text: z.string().max(5000).default(''),
-  type: z.enum(['single', 'multiple']).default('single'),
-  options: z.array(z.string().max(1000)).max(12).default([]),
+  type: z.enum(QUIZ_QUESTION_TYPES).default('single'),
+  options: z.array(z.string().max(1000)).max(MAX_QUIZ_OPTIONS).default([]),
+  buckets: z.array(z.string().max(200)).max(MAX_QUIZ_BUCKETS).optional(),
   correct: z.array(z.number().int().min(0)).default([]),
   explanation: z.string().max(5000).optional(),
 });
+
+/**
+ * Bir sualın cavabını yoxlayır. single/multiple: seçilmiş indekslər dəsti düzgün dəstlə eynidir;
+ * classify: hər element düzgün qrupdadır (`given[i]` — i-ci elementin seçilmiş qrupu).
+ */
+export function isQuizAnswerCorrect(
+  type: QuizQuestionType | undefined,
+  correct: number[],
+  given: number[] | undefined,
+): boolean {
+  const g = given ?? [];
+  if (type === 'classify')
+    return correct.length > 0 && g.length === correct.length && correct.every((b, i) => g[i] === b);
+  const want = [...new Set(correct)].sort((a, b) => a - b);
+  const got = [...new Set(g)].sort((a, b) => a - b);
+  return want.length === got.length && want.every((v, k) => v === got[k]);
+}
 export const quizStrict = z.object({
   type: z.literal('quiz'),
   ...base,

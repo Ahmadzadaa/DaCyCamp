@@ -47,7 +47,12 @@ test.beforeAll(async ({ baseURL }) => {
   await ad.post('/api/auth/login', { data: { email: ADMIN.email, password: ADMIN.password } });
   for (const status of ['', '?status=deleted']) {
     const list = await (await ad.get(`/api/admin/courses${status}`)).json();
-    for (const c of list.courses as Array<{ id: string; slug: string; title: string; status: string }>) {
+    for (const c of list.courses as Array<{
+      id: string;
+      slug: string;
+      title: string;
+      status: string;
+    }>) {
       if (!c.slug.startsWith(COPY)) continue;
       const q = `confirm=${encodeURIComponent(c.title)}`;
       if (c.status !== 'deleted') await ad.delete(`/api/admin/courses/${c.id}?${q}`);
@@ -75,7 +80,15 @@ test('kurslar siyahısı: status tabları, sətir əməliyyatları; "Kopyala" v�
   await expect(row.getByRole('button', { name: 'Sil' })).toBeVisible();
 
   await page.getByTestId(`more-${SRC}`).click();
-  for (const item of ['Redaktə et', 'Dərcdən çıxar', 'Arxivlə', 'Kopyala', 'Önizlə', 'Tələbələr', 'Sil'])
+  for (const item of [
+    'Redaktə et',
+    'Dərcdən çıxar',
+    'Arxivlə',
+    'Kopyala',
+    'Önizlə',
+    'Tələbələr',
+    'Sil',
+  ])
     await expect(page.getByRole('menuitem', { name: item })).toBeVisible();
   await shot(page, '01-kurslar-menyu');
   await page.getByRole('menuitem', { name: 'Kopyala' }).click();
@@ -100,7 +113,9 @@ test('kurslar siyahısı: status tabları, sətir əməliyyatları; "Kopyala" v�
   expect((await student.post(`/api/courses/${COPY}/enroll`)).status()).toBe(201);
 });
 
-test('arxivlə: kataloqdan gizlənir, yazılmış tələbə davam edir; "Geri qaytar"', async ({ page }) => {
+test('arxivlə: kataloqdan gizlənir, yazılmış tələbə davam edir; "Geri qaytar"', async ({
+  page,
+}) => {
   await login(page, ADMIN);
   await page.goto('/admin/kurslar');
   await page.getByTestId(`more-${COPY}`).click();
@@ -172,7 +187,9 @@ test('fayllar: faylı eyni yolda dəyişdir; müəllim sahələri', async ({ pag
   await expect(btn).toBeVisible({ timeout: 60_000 });
   const chooser = page.waitForEvent('filechooser');
   await btn.click();
-  await (await chooser).setFiles({
+  await (
+    await chooser
+  ).setFiles({
     name: 'numune.csv',
     mimeType: 'text/csv',
     buffer: Buffer.from('id,ad,deyer\n1,yeni A,11\n'),
@@ -186,25 +203,28 @@ test('fayllar: faylı eyni yolda dəyişdir; müəllim sahələri', async ({ pag
   await page.getByRole('button', { name: 'Yadda saxla' }).click();
   await expect(toast(page, 'Kurs yadda saxlanıldı')).toBeVisible();
   const c = await (await page.request.get(`/api/admin/courses/${COPY}`)).json();
-  expect(c).toMatchObject({ instructorName: 'Aysel Məmmədova', instructorTitle: 'Baş data analitik' });
+  expect(c).toMatchObject({
+    instructorName: 'Aysel Məmmədova',
+    instructorTitle: 'Baş data analitik',
+  });
   await shot(page, '05-redaktor');
 });
 
-test('təhlükəsiz silmə: say, ad təsdiqi, Silinənlər, bərpa, həmişəlik silmə', async ({ page }) => {
+test('silmə: sadə «razısınız?» təsdiqi, Silinənlər, bərpa, həmişəlik silmə', async ({ page }) => {
   await login(page, ADMIN);
   await page.goto(`/admin/kurslar/${COPY}`);
   await page.getByRole('button', { name: 'Sil', exact: true }).click();
-  const dlg = page.getByTestId('course-delete-dialog');
-  await expect(dlg.getByTestId('stat-enrollments')).toContainText('1');
-  await expect(dlg.getByTestId('stat-modules')).not.toContainText('…');
-  const del = page.getByRole('dialog').getByRole('button', { name: 'Sil' });
-  await expect(del).toBeDisabled();
-  await page.getByRole('dialog').getByLabel('Təsdiq üçün kursun adını yazın').fill('səhv ad');
-  await expect(del).toBeDisabled();
+  const dlg = page.getByRole('dialog');
+  await expect(dlg.getByRole('heading', { name: 'Kursu silməyə razısınız?' })).toBeVisible();
+  await expect(dlg).toContainText(copyTitle);
+  // ad yazmaq tələb olunmur; «Xeyr» heç nə etmir
+  await expect(dlg.getByRole('textbox')).toHaveCount(0);
+  await dlg.getByRole('button', { name: 'Xeyr' }).click();
+  await expect(dlg).toHaveCount(0);
+  expect((await student.get(`/api/courses/${COPY}`)).status()).toBe(200);
+  await page.getByRole('button', { name: 'Sil', exact: true }).click();
   await shot(page, '06-silme-dialoq');
-  await page.getByRole('dialog').getByLabel('Təsdiq üçün kursun adını yazın').fill(copyTitle);
-  await expect(del).toBeEnabled();
-  await del.click();
+  await page.getByRole('dialog').getByRole('button', { name: 'Bəli, sil' }).click();
   await expect(page).toHaveURL(/\/admin\/kurslar$/);
   const tst = toast(page, 'Kurs silindi');
   await expect(tst).toBeVisible();
@@ -219,8 +239,7 @@ test('təhlükəsiz silmə: say, ad təsdiqi, Silinənlər, bərpa, həmişəlik
   // siyahıdan yenidən sil → Silinənlər → həmişəlik sil
   await page.goto('/admin/kurslar');
   await page.getByTestId(`course-row-${COPY}`).getByRole('button', { name: 'Sil' }).click();
-  await page.getByRole('dialog').getByLabel('Təsdiq üçün kursun adını yazın').fill(copyTitle);
-  await page.getByRole('dialog').getByRole('button', { name: 'Sil' }).click();
+  await page.getByRole('dialog').getByRole('button', { name: 'Bəli, sil' }).click();
   await expect(toast(page, 'Kurs silindi')).toBeVisible();
   await page.getByTestId('tab-deleted').click();
   const trashRow = page.getByTestId(`course-row-${COPY}`);
@@ -230,10 +249,10 @@ test('təhlükəsiz silmə: say, ad təsdiqi, Silinənlər, bərpa, həmişəlik
   await shot(page, '07-silinenler');
 
   await trashRow.getByRole('button', { name: 'Həmişəlik sil' }).click();
-  const pdel = page.getByRole('dialog').getByRole('button', { name: 'Həmişəlik sil' });
-  await expect(pdel).toBeDisabled();
-  await page.getByRole('dialog').getByLabel('Təsdiq üçün kursun adını yazın').fill(copyTitle);
-  await pdel.click();
+  await expect(
+    page.getByRole('dialog').getByRole('heading', { name: 'Kursu həmişəlik silməyə razısınız?' }),
+  ).toBeVisible();
+  await page.getByRole('dialog').getByRole('button', { name: 'Bəli, həmişəlik sil' }).click();
   await expect(toast(page, 'Kurs həmişəlik silindi')).toBeVisible();
   await expect(page.getByTestId(`course-row-${COPY}`)).toHaveCount(0);
   expect((await page.request.get(`/api/admin/courses/${COPY}`)).status()).toBe(404);

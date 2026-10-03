@@ -10,10 +10,14 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Markdown } from '@/components/app/markdown';
 import { useAfterComplete } from './use-complete';
+import { ClassifyQuestion } from './classify-question';
 
 export function QuizView({ view, quiz }: { view: StepViewDto; quiz: QuizStudentView }) {
   const after = useAfterComplete(view.course.slug);
-  const [answers, setAnswers] = useState<number[][]>(() => quiz.questions.map(() => []));
+  // classify: hər element üçün qrup (-1 = yerləşdirilməyib); digərləri: seçilmiş variantlar
+  const emptyAnswers = () =>
+    quiz.questions.map((qq) => (qq.type === 'classify' ? qq.options.map(() => -1) : []));
+  const [answers, setAnswers] = useState<number[][]>(emptyAnswers);
   const [result, setResult] = useState<QuizResultDto | null>(null);
   const [busy, setBusy] = useState(false);
   const q = view.preview ? '?preview=1' : '';
@@ -32,7 +36,9 @@ export function QuizView({ view, quiz }: { view: StepViewDto; quiz: QuizStudentV
       return next;
     });
   }
-  const allAnswered = answers.every((a) => a.length > 0);
+  const allAnswered = answers.every((a, i) =>
+    quiz.questions[i]?.type === 'classify' ? a.every((b) => b >= 0) : a.length > 0,
+  );
 
   async function submit() {
     setBusy(true);
@@ -93,36 +99,55 @@ export function QuizView({ view, quiz }: { view: StepViewDto; quiz: QuizStudentV
                 <Markdown content={question.text} assetMap={view.assets} dark />
               </div>
               <p className="text-xs text-on-dark-muted">
-                {multiple ? t('ws.selectMany') : t('ws.selectOne')}
+                {question.type === 'classify'
+                  ? t('ws.classifyHint')
+                  : multiple
+                    ? t('ws.selectMany')
+                    : t('ws.selectOne')}
               </p>
-              {question.options.map((opt, oi) => {
-                const sel = answers[qi]!.includes(oi);
-                const isCorrect = r?.correctIndices.includes(oi);
-                return (
-                  <label
-                    key={oi}
-                    className={cn(
-                      'opt-row',
-                      sel && 'sel',
-                      r && isCorrect && 'correct',
-                      r && sel && !isCorrect && 'wrong',
-                    )}
-                  >
-                    <input
-                      type={multiple ? 'checkbox' : 'radio'}
-                      name={`q${qi}`}
-                      checked={sel}
-                      onChange={() => toggle(qi, oi, multiple)}
-                      disabled={!!result}
-                      className="accent-[var(--brand)]"
-                    />
-                    <span>{opt}</span>
-                    {r && isCorrect ? (
-                      <span className="ml-auto text-xs font-semibold text-ok">✓</span>
-                    ) : null}
-                  </label>
-                );
-              })}
+              {question.type === 'classify' ? (
+                <ClassifyQuestion
+                  qi={qi}
+                  text={question.text}
+                  options={question.options}
+                  buckets={question.buckets ?? []}
+                  value={answers[qi]!}
+                  onChange={(next) =>
+                    setAnswers((prev) => prev.map((a, k) => (k === qi ? next : a)))
+                  }
+                  correct={r?.correctIndices}
+                  disabled={busy}
+                />
+              ) : (
+                question.options.map((opt, oi) => {
+                  const sel = answers[qi]!.includes(oi);
+                  const isCorrect = r?.correctIndices.includes(oi);
+                  return (
+                    <label
+                      key={oi}
+                      className={cn(
+                        'opt-row',
+                        sel && 'sel',
+                        r && isCorrect && 'correct',
+                        r && sel && !isCorrect && 'wrong',
+                      )}
+                    >
+                      <input
+                        type={multiple ? 'checkbox' : 'radio'}
+                        name={`q${qi}`}
+                        checked={sel}
+                        onChange={() => toggle(qi, oi, multiple)}
+                        disabled={!!result}
+                        className="accent-[var(--brand)]"
+                      />
+                      <span>{opt}</span>
+                      {r && isCorrect ? (
+                        <span className="ml-auto text-xs font-semibold text-ok">✓</span>
+                      ) : null}
+                    </label>
+                  );
+                })
+              )}
               {r ? (
                 <div className="mt-3 text-sm">
                   <span
@@ -155,7 +180,7 @@ export function QuizView({ view, quiz }: { view: StepViewDto; quiz: QuizStudentV
                   variant="run"
                   onClick={() => {
                     setResult(null);
-                    setAnswers(quiz.questions.map(() => []));
+                    setAnswers(emptyAnswers());
                   }}
                 >
                   {t('ws.tryAgain')}

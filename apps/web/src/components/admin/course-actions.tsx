@@ -3,18 +3,12 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { AlertTriangle, Archive, Check, Copy, Trash2 } from 'lucide-react';
-import {
-  COURSE_TRASH_DAYS,
-  type AdminCourseDto,
-  type AdminCourseStatsDto,
-  type CourseStatus,
-} from '@dacy/shared';
+import { COURSE_TRASH_DAYS, type AdminCourseDto, type CourseStatus } from '@dacy/shared';
 import { api } from '@/lib/api/client';
 import { errorMessage } from '@/lib/errors-i18n';
 import { t } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Dialog, DialogClose, DialogContent } from '@/components/ui/dialog';
 
 type CourseRef = Pick<AdminCourseDto, 'id' | 'slug' | 'title' | 'isPublished' | 'status'>;
@@ -139,8 +133,9 @@ export function useCourseActions(onChange?: (c: AdminCourseDto | null) => void) 
 }
 
 /**
- * Təhlükəsiz silmə dialoqu: tələbə / fəsil / addım sayı; tələbə yazılıbsa kursun adı dəqiq yazılmayınca
- * "Sil" deaktivdir (eyni qayda backend-də də yoxlanır). mode="purge" — "Silinənlər"-dən həmişəlik silmə.
+ * Sadə silmə təsdiqi: «Kursu silməyə razısınız?» → Xeyr / Bəli, sil. mode="purge" — "Silinənlər"-dən
+ * həmişəlik silmə. Backend tələbəli kurs üçün `confirm` = kursun adı istəyir (skriptlə təsadüfi silmənin
+ * qarşısını alır) — dialoq təsdiqlənəndə adı özü göndərir.
  */
 export function CourseDeleteDialog({
   course,
@@ -153,34 +148,23 @@ export function CourseDeleteDialog({
   mode: 'soft' | 'purge';
   open: boolean;
   onOpenChange: (o: boolean) => void;
-  onConfirm: (c: CourseRef, typed: string) => Promise<void>;
+  onConfirm: (c: CourseRef, confirm: string) => Promise<void>;
 }) {
-  const [stats, setStats] = useState<AdminCourseStatsDto | null>(null);
-  const [typed, setTyped] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!open || !course) return;
-    setTyped('');
-    setError(null);
-    setStats(null);
-    api<AdminCourseStatsDto>(`/admin/courses/${course.id}/stats`)
-      .then(setStats)
-      .catch((e) => setError(errorMessage(e)));
-  }, [open, course]);
+    if (open) setError(null);
+  }, [open]);
 
   if (!course) return null;
-  const needsName = (stats?.enrollments ?? 0) > 0;
-  const nameOk = !needsName || typed.trim() === course.title.trim();
-  const blockedByPath = mode === 'purge' && (stats?.pathItems ?? 0) > 0;
 
   async function go() {
     if (!course) return;
     setBusy(true);
     setError(null);
     try {
-      await onConfirm(course, typed.trim());
+      await onConfirm(course, course.title.trim());
       onOpenChange(false);
     } catch (e) {
       setError(errorMessage(e));
@@ -194,53 +178,15 @@ export function CourseDeleteDialog({
       <DialogContent
         icon={<AlertTriangle />}
         tone="danger"
-        className="max-w-[480px]"
-        title={
-          mode === 'purge'
-            ? t('courseAdmin.purgeTitle', { title: course.title })
-            : t('courseAdmin.deleteTitle', { title: course.title })
-        }
+        className="max-w-[440px]"
+        title={mode === 'purge' ? t('courseAdmin.purgeTitle') : t('courseAdmin.deleteTitle')}
         description={
           mode === 'purge'
-            ? t('courseAdmin.purgeDesc')
-            : t('courseAdmin.deleteDesc', { days: COURSE_TRASH_DAYS })
+            ? t('courseAdmin.purgeDesc', { title: course.title })
+            : t('courseAdmin.deleteDesc', { title: course.title, days: COURSE_TRASH_DAYS })
         }
       >
-        <div className="flex flex-col gap-5" data-testid="course-delete-dialog">
-          <div className="dlg-stats" aria-busy={!stats}>
-            {(
-              [
-                ['enrollments', 'statStudents'],
-                ['modules', 'statModules'],
-                ['steps', 'statSteps'],
-              ] as const
-            ).map(([k, label]) => (
-              <div key={k} data-testid={`stat-${k}`}>
-                <b>{stats ? stats[k] : '…'}</b>
-                <span>{t(`courseAdmin.${label}`)}</span>
-              </div>
-            ))}
-          </div>
-          {blockedByPath ? (
-            <p role="alert" className="dlg-alert">
-              {t('courseAdmin.inPaths', { n: stats?.pathItems ?? 0 })}
-            </p>
-          ) : null}
-          {needsName ? (
-            <label className="fld">
-              <span className="lbl">{t('courseAdmin.typeTitle')}</span>
-              <Input
-                value={typed}
-                onChange={(e) => setTyped(e.target.value)}
-                placeholder={course.title}
-                autoComplete="off"
-                aria-describedby="del-hint"
-              />
-              <span id="del-hint" className="text-xs text-muted">
-                {t('courseAdmin.typeTitleHint')}
-              </span>
-            </label>
-          ) : null}
+        <div className="flex flex-col gap-4" data-testid="course-delete-dialog">
           {error ? (
             <div role="alert" className="dlg-alert">
               {error}
@@ -249,18 +195,12 @@ export function CourseDeleteDialog({
           <div className="flex flex-wrap justify-end gap-2">
             <DialogClose asChild>
               <Button type="button" variant="ghost">
-                {t('common.cancel')}
+                {t('common.no')}
               </Button>
             </DialogClose>
-            <Button
-              type="button"
-              variant="dangerSolid"
-              disabled={!stats || !nameOk || blockedByPath}
-              loading={busy}
-              onClick={go}
-            >
+            <Button type="button" variant="dangerSolid" loading={busy} onClick={go}>
               <Trash2 className="size-4" />
-              {mode === 'purge' ? t('courseAdmin.purge') : t('courseAdmin.delete')}
+              {mode === 'purge' ? t('courseAdmin.yesPurge') : t('courseAdmin.yesDelete')}
             </Button>
           </div>
         </div>

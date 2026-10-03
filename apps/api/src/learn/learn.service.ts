@@ -7,6 +7,7 @@ import {
   type CtfAnswerResultDto,
   type HintResultDto,
   type PythonSubmissionInput,
+  isQuizAnswerCorrect,
   type QuizConfig,
   type QuizResultDto,
   type QuizSecret,
@@ -305,10 +306,11 @@ export class LearnService {
     const total = cfg.questions.length;
     if (total === 0) throw badRequest('VALIDATION_FAILED', 'Testdə sual yoxdur');
     let correctCount = 0;
-    const perQuestion = cfg.questions.map((_, i) => {
-      const correct = [...(sec.questions[i]?.correct ?? [])].sort((a, b) => a - b);
-      const given = [...new Set(answers[i] ?? [])].sort((a, b) => a - b);
-      const ok = correct.length === given.length && correct.every((v, k) => v === given[k]);
+    const perQuestion = cfg.questions.map((q, i) => {
+      const raw = sec.questions[i]?.correct ?? [];
+      // classify: hər elementin qrupu (sıra vacibdir); single/multiple: düzgün variantlar dəsti
+      const correct = q.type === 'classify' ? raw : [...raw].sort((a, b) => a - b);
+      const ok = isQuizAnswerCorrect(q.type, raw, answers[i]);
       if (ok) correctCount++;
       return {
         correct: ok,

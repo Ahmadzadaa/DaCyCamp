@@ -168,13 +168,23 @@ export function PathItemForm({
       {input.type === 'assessment' ? (
         <div className="md:col-span-2">
           <QuizForm
+            allowClassify={false}
             values={{
               pass_score: input.config.pass_score,
               shuffle_questions: false,
               questions: input.config.questions as QuizValues['questions'],
             }}
             onChange={(v) =>
-              patch({ config: { pass_score: v.pass_score, questions: v.questions } })
+              patch({
+                config: {
+                  pass_score: v.pass_score,
+                  // allowClassify={false} — imtahanda yalnız variant sualları
+                  questions: v.questions.map(({ buckets: _b, ...q }) => ({
+                    ...q,
+                    type: q.type === 'classify' ? 'single' : q.type,
+                  })),
+                },
+              })
             }
           />
         </div>

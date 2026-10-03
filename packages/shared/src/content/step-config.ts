@@ -12,6 +12,7 @@ import {
   zodIssues,
   type Issue,
   type StepDefinition,
+  type QuizQuestionType,
   type StepDefinitionDraft,
 } from './step-definition';
 
@@ -24,7 +25,13 @@ export interface TheoryConfig {
 export interface QuizConfig {
   pass_score: number;
   shuffle_questions: boolean;
-  questions: Array<{ text: string; type: 'single' | 'multiple'; options: string[] }>;
+  questions: Array<{
+    text: string;
+    type: QuizQuestionType;
+    options: string[];
+    /** yalnız classify */
+    buckets?: string[];
+  }>;
 }
 export interface QuizSecret {
   questions: Array<{ correct: number[]; explanation?: string }>;
@@ -137,6 +144,7 @@ export function splitStep(def: StepDefinitionDraft | StepDefinition): SplitResul
             text: q.text ?? '',
             type: q.type ?? 'single',
             options: q.options ?? [],
+            ...(q.type === 'classify' ? { buckets: q.buckets ?? [] } : {}),
           })),
         },
         secret: {
@@ -274,6 +282,7 @@ export function mergeStep(
           text: q.text,
           type: q.type,
           options: q.options,
+          ...(q.type === 'classify' ? { buckets: q.buckets ?? [] } : {}),
           correct: ss[i]?.correct ?? [],
           ...(ss[i]?.explanation ? { explanation: ss[i]!.explanation } : {}),
         })),
@@ -362,7 +371,7 @@ export type TheoryStudentView = { kind: 'theory'; content: string; video_url?: s
 export type QuizStudentView = {
   kind: 'quiz';
   pass_score: number;
-  questions: Array<{ text: string; type: 'single' | 'multiple'; options: string[] }>;
+  questions: QuizConfig['questions'];
 };
 export type SqlStudentView = {
   kind: 'sql';
@@ -454,6 +463,7 @@ export function toStudentView(
           text: q.text,
           type: q.type,
           options: q.options,
+          ...(q.type === 'classify' ? { buckets: q.buckets ?? [] } : {}),
         })),
       };
     case 'SQL':

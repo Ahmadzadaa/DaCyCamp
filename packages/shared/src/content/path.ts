@@ -31,14 +31,24 @@ export const projectConfigSchema = z.object({
 });
 export type ProjectConfig = z.infer<typeof projectConfigSchema>;
 
+/** İmtahan sualları yalnız variant seçimidir (classify — yalnız kurs testlərində) */
+const ASSESSMENT_QUESTION_TYPES = ['single', 'multiple'] as const;
+const assessmentQuestionDraft = quizQuestionDraft
+  .omit({ buckets: true })
+  .extend({ type: z.enum(ASSESSMENT_QUESTION_TYPES).default('single') });
+const assessmentQuestionStrict = quizQuestionStrict.refine((q) => q.type !== 'classify', {
+  path: ['type'],
+  message: 'İmtahanda yalnız tək və çox cavablı suallar ola bilər',
+});
+
 /** Qaralama: suallar boş ola bilər; dərcdə strict yoxlanır */
 export const assessmentDraftSchema = z.object({
   pass_score: z.number().int().min(0).max(100).default(DEFAULT_PASS_SCORE),
-  questions: z.array(quizQuestionDraft).max(100).default([]),
+  questions: z.array(assessmentQuestionDraft).max(100).default([]),
 });
 export const assessmentStrictSchema = z.object({
   pass_score: z.number().int().min(0).max(100).default(DEFAULT_PASS_SCORE),
-  questions: z.array(quizQuestionStrict).min(1, 'Ən azı bir sual lazımdır').max(100),
+  questions: z.array(assessmentQuestionStrict).min(1, 'Ən azı bir sual lazımdır').max(100),
 });
 export type AssessmentDraft = z.infer<typeof assessmentDraftSchema>;
 
@@ -99,7 +109,7 @@ const yamlItemBase = {
   xp: z.number().int().min(0).optional(),
 };
 /** YAML-da test `correct` 1-dən sayılır (kurs paketindəki kimi) */
-const yamlQuestion = quizQuestionDraft.extend({
+const yamlQuestion = assessmentQuestionDraft.extend({
   correct: z.array(z.number().int().min(1)).default([]),
 });
 export const pathYamlItemSchema = z.union([

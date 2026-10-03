@@ -3,11 +3,15 @@ import { SLUG_RE } from '../keys';
 import { LEVEL_SLUGS, type Level, type StepType } from '../enums';
 import {
   ctfStrict,
+  MAX_QUIZ_BUCKETS,
+  MAX_QUIZ_OPTIONS,
   pythonStrict,
   quizStrict,
   sqlStrict,
   terminalStrict,
   theoryStrict,
+  type QuizDef,
+  type QuizQuestion,
   type StepDefinition,
 } from './step-definition';
 
@@ -17,7 +21,7 @@ import {
  *   ├── course.yaml
  *   ├── datasets/ images/ files/ checks/ videos/   (fayllar, yol olduğu kimi saxlanılır)
  *   └── modules/NN-key/module.yaml + NN-key.yaml | NN-key.md
- * Quiz-də `correct` YAML-da 1-dən sayılır (1 = A); daxildə 0-dan saxlanılır.
+ * Quiz-də `correct` YAML-da 1-dən sayılır (1 = A); daxildə 0-dan saxlanılır. classify sualları qruplar üzrə yazılır.
  */
 
 const slug = z.string().regex(SLUG_RE, 'slug yalnız a-z, 0-9 və tire');
@@ -56,22 +60,64 @@ const theoryYaml = theoryStrict
   });
 
 /** quiz: correct 1-dən sayılır */
-const quizYaml = quizStrict.omit({ questions: true }).extend({
-  ...published,
-  questions: z
+const choiceQuestionYaml = z.object({
+  text: z.string().trim().min(1),
+  type: z.enum(['single', 'multiple']).default('single'),
+  options: z.array(z.string().trim().min(1)).min(2).max(MAX_QUIZ_OPTIONS),
+  correct: z.array(z.number().int().min(1, 'correct 1-dən sayılır (1 = birinci variant)')).min(1),
+  explanation: z.string().optional(),
+});
+/**
+ * classify YAML-da qruplar üzrə yazılır (oxunaqlı):
+ *   buckets:
+ *     - name: Data engineering tapşırıqları
+ *       items: [Pipeline qurmaq, ...]
+ *     - name: Data engineering-ə aid deyil
+ *       items: [...]
+ * Daxildə: options = elementlər (qruplar növbə ilə qarışdırılır), correct[i] = qrup indeksi.
+ */
+const classifyQuestionYaml = z.object({
+  text: z.string().trim().min(1),
+  type: z.literal('classify'),
+  buckets: z
     .array(
       z.object({
-        text: z.string().trim().min(1),
-        type: z.enum(['single', 'multiple']).default('single'),
-        options: z.array(z.string().trim().min(1)).min(2).max(12),
-        correct: z
-          .array(z.number().int().min(1, 'correct 1-dən sayılır (1 = birinci variant)'))
-          .min(1),
-        explanation: z.string().optional(),
+        name: z.string().trim().min(1).max(200),
+        items: z.array(z.string().trim().min(1).max(1000)).min(1),
       }),
     )
-    .min(1),
+    .min(2)
+    .max(MAX_QUIZ_BUCKETS),
+  explanation: z.string().optional(),
 });
+type ClassifyQuestionYaml = z.infer<typeof classifyQuestionYaml>;
+
+const quizYaml = quizStrict.omit({ questions: true }).extend({
+  ...published,
+  questions: z.array(z.union([classifyQuestionYaml, choiceQuestionYaml])).min(1),
+});
+
+/** Qrupları növbə ilə birləşdirir (A1, B1, A2, B2, …) — saxlanılan sıra cavabı göstərməsin */
+function classifyFromYaml(q: ClassifyQuestionYaml): QuizQuestion {
+  const options: string[] = [];
+  const correct: number[] = [];
+  const longest = Math.max(...q.buckets.map((b) => b.items.length));
+  for (let k = 0; k < longest; k++)
+    q.buckets.forEach((b, bi) => {
+      const item = b.items[k];
+      if (item === undefined) return;
+      options.push(item);
+      correct.push(bi);
+    });
+  return {
+    text: q.text,
+    type: 'classify',
+    options,
+    buckets: q.buckets.map((b) => b.name),
+    correct,
+    ...(q.explanation ? { explanation: q.explanation } : {}),
+  };
+}
 
 export const stepYamlSchema = z.discriminatedUnion('type', [
   theoryYaml as unknown as typeof theoryStrict,
@@ -94,10 +140,16 @@ export const levelToYaml = (l: Level): CourseYaml['level'] =>
 export function yamlStepToDefinition(y: StepYaml): StepDefinition {
   const { published: _p, ...rest } = y as Record<string, unknown> & { published?: boolean };
   if (y.type === 'quiz') {
-    const q = rest as z.infer<typeof quizStrict>;
+    const q = rest as Omit<QuizDef, 'questions'> & {
+      questions: Array<ClassifyQuestionYaml | z.infer<typeof choiceQuestionYaml>>;
+    };
     return {
       ...q,
-      questions: q.questions.map((qq) => ({ ...qq, correct: qq.correct.map((c) => c - 1) })),
+      questions: q.questions.map((qq) =>
+        qq.type === 'classify'
+          ? classifyFromYaml(qq)
+          : { ...qq, correct: qq.correct.map((c) => c - 1) },
+      ),
     };
   }
   if (y.type === 'theory') {
@@ -114,7 +166,19 @@ export function definitionToYamlStep(
 ): Record<string, unknown> {
   const base: Record<string, unknown> = { ...def };
   if (def.type === 'quiz')
-    base.questions = def.questions.map((q) => ({ ...q, correct: q.correct.map((c) => c + 1) }));
+    base.questions = def.questions.map((q) =>
+      q.type === 'classify'
+        ? {
+            text: q.text,
+            type: q.type,
+            buckets: (q.buckets ?? []).map((name, b) => ({
+              name,
+              items: q.options.filter((_, i) => q.correct[i] === b),
+            })),
+            ...(q.explanation ? { explanation: q.explanation } : {}),
+          }
+        : (({ buckets: _b, ...rest }) => ({ ...rest, correct: q.correct.map((c) => c + 1) }))(q),
+    );
   if (def.type === 'ctf') base.tasks = def.tasks.map(({ answer: _a, ...t }) => t);
   if (!isPublished) base.published = false;
   for (const k of Object.keys(base))
