@@ -1,0 +1,244 @@
+title: Incidents and careers
+description: Incident response, careers in cyber security, everyday cyber hygiene and the final test.
+steps:
+  insidente-cavab:
+    title: Incident response
+    content: |
+      Even the best defense is sometimes breached. The difference is whether the company is **prepared** for it. An **incident** is an event that violates security or threatens to: ransomware, a data breach, an account takeover.
+
+      ## The stages of incident response
+
+      The classic model (NIST) has four stages:
+
+      | # | Stage | What's done |
+      | --- | --- | --- |
+      | 1 | **Preparation** | A response plan, a team and roles, tools, training, tested backups |
+      | 2 | **Detection and analysis** | Investigating alerts, confirming the incident, determining its scope and impact |
+      | 3 | **Containment, eradication and recovery** | Stopping the spread, removing the malware and the ways in, restoring systems |
+      | 4 | **Post-incident activity** | A "What did we learn?" meeting, a report, updating the plan and the controls |
+
+      ## A ransomware night at NarPay 🌙
+
+      **Preparation (months earlier):** NarPay has an incident plan, backups are kept according to the 3-2-1 rule, and a restore test is run every month.
+
+      **03:12 — Detection.** The SIEM raises an alert: thousands of files per minute are being changed on the accounting server. Rauf, the analyst on duty, investigates: the files are being encrypted, and there's a ransom demand on the screen. The incident is confirmed, and the team is woken up.
+
+      **03:20 — Containment.** The infected server and the computers in the same segment are **disconnected from the network**, and the password of the compromised account is changed. The spread stops. Evidence (logs, a memory image) is preserved, not deleted.
+
+      **Eradication and recovery.** The investigation shows that the intrusion started with a file containing macros in a phishing email sent to an employee. The malware is removed, the vulnerability is closed and the server is restored **from a backup**. The ransom isn't paid. At 11:00, accounting is working again.
+
+      **After the incident.** A week later, a "What did we learn?" meeting: blocking files with macros in email, extra phishing training for the accounting department and improved alert rules. A report is presented to management, and the notifications required by law are made.
+
+      ## Golden rules
+
+      - **Don't panic — follow the plan.** A plan buys you time to think in a crisis.
+      - **Contain first.** Disconnect the infected device from the network — but don't destroy the evidence (don't format the device right away).
+      - **Document.** When, what was seen, who did what.
+      - **Communicate.** Management, the legal department and, when necessary, customers and regulators must be informed in time.
+      - **Every incident is a lesson.** The same mistake shouldn't happen twice.
+
+      ## Quick summary
+
+      - The stages: preparation → detection and analysis → containment, eradication, recovery → post-incident activity.
+      - Preparation begins long before an incident happens.
+      - First stop the spread and preserve the evidence, then clean up and recover, and finally learn the lessons.
+  merheleni-tap:
+    title: 'Practice: Find the stage'
+    questions:
+      - text: Place each activity in the correct stage of incident response.
+        buckets:
+          - name: Preparation
+            items:
+              - Writing an incident response plan and assigning the team
+              - Testing backup restores in advance
+          - name: Detection and analysis
+            items:
+              - Investigating an alert about suspicious logins at 03:00
+              - Determining which servers the attack has spread to
+          - name: Containment, eradication, recovery
+            items:
+              - Disconnecting an infected computer from the network
+              - Removing the malware and restoring the system from a backup
+          - name: Post-incident activity
+            items:
+              - "Holding a 'What did we learn?' meeting and updating the plan"
+              - Presenting the final incident report to management
+        explanation: Plans and tests — preparation; investigating alerts — detection; disconnecting, cleaning and restoring — the third stage; lessons and the report — after the incident.
+      - text: What should be done **first** as soon as ransomware is detected?
+        options:
+          - Pay the ransom immediately
+          - Disconnect the infected device from the network so it doesn't spread
+          - Format the computer immediately
+          - Try to deal with it yourself without telling anyone
+        explanation: 'Containment comes first: stopping the spread. Formatting destroys the evidence, and paying the ransom isn''t recommended.'
+  pese:
+    title: Careers in cyber security
+    content: |
+      Cyber security is one of the fastest-growing fields in the world, and the demand for qualified professionals exceeds the supply. The field is broad — everyone can find a direction that suits their interests.
+
+      ## Teams: blue, red and purple
+
+      - 🔵 **Blue team** — the defenders: they monitor, detect and respond.
+      - 🔴 **Red team** — ethical hackers who play the attacker with permission: they find vulnerabilities before real attackers do.
+      - 🟣 **Purple team** — the two working together: what the red team finds immediately strengthens the blue team's defense.
+
+      ## The main careers
+
+      | Career | What they do |
+      | --- | --- |
+      | **SOC analyst** | Monitors and investigates alerts (L1 → L2 → L3); many people enter the field here |
+      | **Incident responder** | Containment, eradication and recovery during and after an attack |
+      | **Penetration tester** (pentester) | Tries to break into systems with permission and reports the vulnerabilities |
+      | **Security engineer** | Builds defense systems such as firewalls, EDR and SIEM |
+      | **Threat hunter** | Searches for hidden attackers that haven't triggered any alerts yet |
+      | **Digital forensics specialist** | Collects evidence and reconstructs how an attack happened |
+      | **GRC specialist** | Governance, risk and compliance: policies, audits, standards (ISO 27001, PCI DSS) |
+      | **AppSec / DevSecOps** | Makes sure software is written securely |
+      | **Cloud security specialist** | Protects AWS, Azure and Google Cloud environments |
+
+      ## Which skills do you need?
+
+      1. **Networking** — how TCP/IP, DNS and HTTP work.
+      2. **Operating systems** — Linux and Windows; the command line.
+      3. **Scripting** — Python, Bash: automating repetitive work.
+      4. **Security fundamentals** — what we've covered in this course, and going deeper.
+      5. **Personal skills** — curiosity, analytical thinking, staying calm under stress, writing clear reports.
+
+      **Certifications** (from beginner to advanced): CompTIA Security+ → CEH, CySA+ → OSCP (hands-on pentesting) → CISSP (for experienced professionals).
+
+      ## How to practice 🧩
+
+      - **CTF competitions** (Capture The Flag) — finding "flags" in legal challenges; DaCy has CTF exercises too.
+      - **A home lab** — setting up virtual machines on your own computer to try out attacks and defenses.
+      - **Training platforms** — legal, deliberately vulnerable systems built for practice.
+
+      ## Ethics and the law ⚖️
+
+      The main thing that separates an ethical hacker from a criminal is **written permission**. Testing a system without permission is illegal, even if it's "just out of curiosity": the criminal laws of most countries, including Azerbaijan, set out penalties for unauthorized access to computer systems. Always practice only on your own systems, in a lab or within an authorized scope.
+
+      ## Quick summary
+
+      - The blue team defends, the red team attacks with permission, and the purple team is the collaboration between them.
+      - Many professionals start out as SOC analysts.
+      - The basics: networking, Linux, scripting; practice with CTFs and labs; the golden rule — only with permission.
+  kibergigiyena:
+    title: Everyday cyber hygiene
+    content: |
+      Like brushing your teeth, cyber security has everyday habits. Most attacks succeed not through sophisticated techniques but by exploiting simple mistakes. Rauf teaches employees these **10 rules**:
+
+      ## Rauf's 10 rules ✅
+
+      1. **Update.** Update your operating system, browser and apps on time — turn on automatic updates.
+      2. **Unique passwords + a password manager.** A different, long password for every account.
+      3. **Turn on MFA** — especially for email, banking and social media.
+      4. **Think before you click.** Be suspicious of urgent, frightening or "too good to be true" offers; check the link through an official channel.
+      5. **Download software only from official sources**: the App Store, Google Play, the vendor's website.
+      6. **Back up.** Keep copies of important files in at least two places.
+      7. **Be careful on open Wi-Fi.** Use mobile data or a VPN for banking.
+      8. **Lock your screen.** When you step away from your computer — `Win + L` or `Ctrl + Cmd + Q`.
+      9. **Share less.** Your date of birth, home address and photos of tickets on social media are ready-made information for attackers.
+      10. **Report anything suspicious.** If you clicked by mistake, don't be embarrassed — report it immediately. Speed reduces the damage.
+
+      ## Found USB drives and other traps
+
+      - Never plug a **USB drive** you found into a computer — it's a classic "baiting" attack.
+      - Don't **write your password on a sticky note** and stick it on your monitor.
+      - Check **app permissions**: a flashlight app doesn't need access to your contacts.
+      - Watch out for **QR codes**, too: a fake QR code can take you to a phishing website.
+
+      > 💬 "Security is a process, not a product." What protects you isn't a program installed once, but habits repeated every day.
+
+      ## Quick summary
+
+      - Updates, unique passwords, MFA and backups are the foundational habits.
+      - Think before you click, use official sources and share less.
+      - Report anything suspicious immediately.
+  kibergigiyena-mesq:
+    title: 'Practice: Cyber hygiene'
+    questions:
+      - text: Which habits are safe, and which are risky?
+        buckets:
+          - name: Safe habit ✅
+            items:
+              - Updating the operating system and apps on time
+              - A different password for every account, plus a password manager
+              - Turning on 2FA for important accounts
+              - Backing up important files
+          - name: Risky habit 🚩
+            items:
+              - "Banking on a café's open Wi-Fi without a VPN"
+              - Plugging a USB drive you found into your work computer
+              - Downloading apps from websites outside the official store
+              - Writing your password on a sticky note and sticking it on your monitor
+        explanation: Updates, unique passwords, MFA and backups strengthen your defense. Open Wi-Fi, found USB drives, unofficial apps and passwords written in plain sight open the door to attackers.
+      - text: Narmin, an accountant, realizes she clicked a phishing link by mistake and entered her password. What should she do?
+        options:
+          - Tell no one — maybe nothing will happen
+          - Report it to the security team immediately and change her password
+          - Turn off the computer and go home
+          - Wait a week and see what happens
+        explanation: 'A quick reaction sharply reduces the damage: the team can block the account, check the logins and stop the attack from spreading.'
+  yekun-test:
+    title: 'Final test: What is Cyber Security?'
+    questions:
+      - text: Place each incident under the CIA principle it violates.
+        buckets:
+          - name: Confidentiality
+            items:
+              - The customer database was put up for sale on a hacker forum
+          - name: Integrity
+            items:
+              - An attacker changed the prices of products in the price list
+          - name: Availability
+            items:
+              - The payment service was down for 2 hours because of a DDoS attack
+        explanation: A leak — confidentiality; an unauthorized change — integrity; a service going down — availability.
+      - text: '"Unpatched server software" — what is this?'
+        options:
+          - A threat
+          - A vulnerability
+          - A control
+          - An asset
+        explanation: A gap that an attacker could take advantage of is a vulnerability. The attacker themselves is the threat.
+      - text: What is malware called that looks like useful software but gives an attacker access in the background?
+        options:
+          - Worm
+          - Trojan
+          - Adware
+          - Ransomware
+        explanation: A trojan presents itself as useful software but has a hidden malicious function.
+      - text: What are the **red flags** of a phishing email? (Select all that apply)
+        options:
+          - 'A strange sender domain: narpay-secure-login.com'
+          - "Urgency such as 'will be blocked within 24 hours'"
+          - A request for the SMS code and card details
+          - "A notification in the bank's official app"
+        explanation: A strange domain, artificial urgency and a request for sensitive information are the main signs of phishing. A notification you see after logging in to the official app yourself comes through a trusted channel.
+      - text: Which attack is it when email and password pairs leaked from another website are automatically tried on NarPay?
+        options:
+          - SQL injection
+          - Credential stuffing
+          - Man-in-the-Middle
+          - DDoS
+        explanation: 'Credential stuffing targets people who reuse the same password in several places. Protection: unique passwords and MFA.'
+      - text: Which combination is **multi-factor authentication**?
+        options:
+          - A password + a PIN
+          - A password + a fingerprint
+          - Two different passwords
+          - A password + the answer to a security question
+        explanation: A password (something you know) and a fingerprint (something you are) are factors of different types.
+      - text: Which method is correct for storing passwords in a database?
+        options:
+          - As plain text
+          - Hashing them with a salt and a slow hash algorithm (bcrypt, Argon2)
+          - Just encoding them with Base64
+          - Encrypting them all with the same key and keeping the key on the same server
+        explanation: "Passwords shouldn't be reversible — salted, slow hash algorithms are designed for this. Base64 isn't encryption, just encoding."
+      - text: In incident response, which stage does the "What did we learn?" meeting belong to?
+        options:
+          - Preparation
+          - Detection and analysis
+          - Containment and recovery
+          - Post-incident activity
+        explanation: Learning the lessons and updating the plan are post-incident activity — and the start of the next round of preparation.

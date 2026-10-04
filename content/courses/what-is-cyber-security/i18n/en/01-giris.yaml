@@ -1,0 +1,187 @@
+title: Introduction to cyber security
+description: What cyber security is, the CIA triad, assets, threats, vulnerabilities and risk.
+steps:
+  xos-geldin:
+    title: 'Welcome to the course: why cyber security?'
+    content: |
+      Your bank account, email, photos, work documents, even the camera in your home — all of it is digital now. And anything digital can be attacked. **Cyber security** is the set of technologies, processes and habits that protect systems, networks, devices and data from digital attacks, unauthorized access and damage.
+
+      ## Why does it matter so much?
+
+      - **Cybercrime is a huge business** — it causes trillions of dollars in damage worldwide every year.
+      - **Attacks are automated** — every day, bots scan the internet for millions of weak passwords and unpatched servers. "I'm not an interesting target" doesn't hold up.
+      - **The human factor** — in most data breaches, a human error or a deceived person plays a role: a click on a phishing link, a weak password, a file sent to the wrong person.
+      - **The consequences affect real life** — hospitals brought to a halt, ports shut down, savings stolen.
+
+      > 🛡️ Cyber security isn't just the IT department's job. Every employee and every user is part of the line of defense.
+
+      ## Throughout the course: NarPay and Rauf, a SOC analyst 💳
+
+      **NarPay** is a fictional digital wallet and payments app: 2 million users, card payments, money transfers and shopping at NarMarket. A company like this is a very attractive target for cybercriminals. Throughout the course, we'll analyze real-world scenarios together with **Rauf**, who works in NarPay's security operations center (SOC).
+
+      ## What you'll learn in this course
+
+      | Chapter | Topic |
+      | --- | --- |
+      | 1. Introduction | The CIA triad; assets, threats, vulnerabilities, risk |
+      | 2. Threats | Attackers, malware, social engineering, network and web attacks |
+      | 3. Defense | Passwords and MFA, layers of defense, encryption and hashing |
+      | 4. Incidents and careers | Incident response, careers, everyday cyber hygiene, the final test |
+
+      ## How you'll learn
+
+      1. **Lesson** — a video and a short text.
+      2. **Practice** — real-world scenarios: choose the right answer and sort items into groups.
+      3. If you make a mistake, read the explanation and try again.
+
+      > ⚖️ **Ethics rule:** the attack techniques you learn in this course are for defense. Accessing or testing someone else's system without permission is punishable by law.
+  cia-triadasi:
+    title: The CIA triad
+    content: |
+      Cyber security rests on three goals. From their initials, they're called the **CIA triad** (no relation to the intelligence agency 🙂).
+
+      ## C — Confidentiality
+
+      Information should be visible **only to those who are authorized**.
+
+      - **Examples of a breach:** customers' card details leaking onto the internet; an employee looking at a colleague's salary without permission.
+      - **Protections:** encryption, access rights management, strong authentication.
+
+      ## I — Integrity
+
+      Information must be **accurate and complete** and must not be **changed** without authorization.
+
+      - **Examples of a breach:** an attacker changing a transfer amount from 100 AZN to 10,000 AZN; a virus corrupting the numbers in an accounting spreadsheet.
+      - **Protections:** hash checks, digital signatures, change logs, versioning.
+
+      ## A — Availability
+
+      Information and systems must be **working** for authorized users **when they're needed**.
+
+      - **Examples of a breach:** the NarPay app not opening for 3 hours because of a DDoS attack; ransomware encrypting files; a fire in the server room.
+      - **Protections:** backups, standby servers, DDoS protection, a disaster recovery plan.
+
+      ## In one table
+
+      | Principle | Question | What it protects at NarPay |
+      | --- | --- | --- |
+      | **Confidentiality** | Who can see it? | Card numbers, personal information |
+      | **Integrity** | Has it been changed? | Transfer amounts, balances |
+      | **Availability** | Does it work when needed? | The app and the payment service, 24/7 |
+
+      ## Balance
+
+      The three principles sometimes conflict with each other. For example, if you add 5 confirmation steps to every transaction to increase confidentiality, availability and convenience suffer. A security professional's job is to find a **balance that matches the risk**.
+
+      ## Three more concepts
+
+      - **Authentication** — "Who are you?" Verifying identity: a password, a fingerprint.
+      - **Authorization** — "What are you allowed to do?" Checking permissions.
+      - **Non-repudiation** — the person who performed an action can't later say "I didn't do it": digital signatures, log records.
+
+      ## Quick summary
+
+      - Confidentiality — only authorized people can see it; integrity — the data isn't altered; availability — the system works when it's needed.
+      - Every attack violates at least one of these three principles.
+      - Security is a balance, matched to the risk, between the three principles and convenience.
+  cia-ni-tap:
+    title: 'Practice: Find the CIA principle'
+    questions:
+      - text: These incidents happened at NarPay. Which principle of the CIA triad does each one violate **the most**?
+        buckets:
+          - name: Confidentiality
+            items:
+              - "Customers' card details leaked onto the internet"
+              - "An employee looked at a colleague's salary details without permission"
+          - name: Integrity
+            items:
+              - An attacker changed a transfer amount from 100 AZN to 10,000 AZN
+              - A virus corrupted the numbers in an accounting spreadsheet
+          - name: Availability
+            items:
+              - The NarPay app didn't open for 3 hours because of a DDoS attack
+              - A fire in the server room brought the systems down
+              - Ransomware encrypted the files, and no one can open them
+        explanation: A leak or unauthorized viewing — confidentiality; data being altered or corrupted — integrity; a system or data that can't be used — availability.
+      - text: Which measure mainly protects **integrity**?
+        options:
+          - Keeping a backup of the server in another city
+          - "Checking a file's hash value to make sure it hasn't been changed"
+          - Posting a security guard at the office entrance
+          - Adding DDoS protection to the website
+        explanation: 'A hash value is a file''s "fingerprint": if a single character changes, the hash changes completely. Backups and DDoS protection protect availability.'
+  esas-anlayislar:
+    title: Assets, threats, vulnerabilities and risk
+    content: |
+      Security professionals can't protect everything at once. To decide where to spend their time and money, they use a few key concepts.
+
+      ## A house analogy 🏠
+
+      | Concept | Meaning | At home | At NarPay |
+      | --- | --- | --- | --- |
+      | **Asset** | Something valuable that must be protected | The house and the things in it | The customer database, the money transfer system |
+      | **Threat** | A person or event that could cause harm | A burglar, a fire | Cyber fraudsters, a disgruntled employee, a flood |
+      | **Vulnerability** | A gap a threat could take advantage of | A window left open | An unpatched server, a weak password |
+      | **Exploit** | A way of taking advantage of a vulnerability | Climbing in through the window | Code that takes advantage of a bug in old software |
+      | **Risk** | The likelihood and impact of harm | Likelihood of a burglary × the value of the loss | Likelihood of a breach × fines and lost trust |
+      | **Control** | A measure that reduces risk | A lock, an alarm, insurance | 2FA, a firewall, backups |
+
+      ## How is risk assessed?
+
+      In its simplest form:
+
+      > **Risk = Likelihood × Impact**
+
+      - An admin panel exposed to the internet and protected by a weak password: likelihood **high**, impact **very high** → a critical risk that must be fixed immediately.
+      - Old software on the office printer: medium likelihood, low impact → can be scheduled for later.
+
+      Without a threat, a vulnerability does no harm; without a vulnerability, a threat doesn't succeed. Risk is **where they meet**. We usually can't eliminate threats (there will always be fraudsters), but we can reduce **vulnerabilities**.
+
+      ## 4 strategies for dealing with risk
+
+      | Strategy | Meaning | NarPay example |
+      | --- | --- | --- |
+      | **Mitigate** | Reduce the likelihood or impact with controls | Rolling out 2FA for all employees |
+      | **Transfer** | Shift the financial burden of the risk to someone else | Buying cyber insurance |
+      | **Avoid** | Give up the risky activity | Not storing card details at all |
+      | **Accept** | Live with the risk if it's small | Leaving the printer's minor vulnerability as it is for now |
+
+      ## Quick summary
+
+      - Asset — the value being protected; threat — the source of harm; vulnerability — the gap; risk — likelihood × impact.
+      - We often can't change threats, but we can reduce vulnerabilities.
+      - Responses to risk: mitigate, transfer, avoid, accept.
+  tehdid-zeiflik:
+    title: 'Practice: Threat, vulnerability or control?'
+    questions:
+      - text: "Rauf is filling in NarPay's risk register. Place each item in the correct group."
+        buckets:
+          - name: Threat
+            items:
+              - A group of cyber fraudsters who want to steal money
+              - A disgruntled former employee
+          - name: Vulnerability
+            items:
+              - Old, unpatched server software
+              - "Employees using the password '123456'"
+              - An unencrypted customer database
+          - name: Control
+            items:
+              - Two-factor authentication (2FA)
+              - A firewall
+              - Regular backups
+        explanation: A threat is a person or event that could cause harm; a vulnerability is a gap they could take advantage of; a control is a measure that reduces risk.
+      - text: NarPay buys an **insurance policy** against the financial consequences of cyberattacks. Which risk strategy is this?
+        options:
+          - Mitigating the risk
+          - Transferring the risk
+          - Avoiding the risk
+          - Accepting the risk
+        explanation: "Insurance transfers the financial burden of the risk to the insurance company. The likelihood of an attack doesn't change — that's why insurance doesn't replace other measures."
+      - text: In which situation is the risk **highest**?
+        options:
+          - "Old software on the office printer, which has no internet access"
+          - An admin panel protected by a weak password and open to everyone on the internet
+          - An encrypted test server with backups
+          - "The TV in the employees' break room"
+        explanation: The likelihood is high (a weak password, exposed to the internet) and the impact is very large (admin rights). Risk = likelihood × impact.

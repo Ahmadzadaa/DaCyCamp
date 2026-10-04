@@ -1,0 +1,270 @@
+title: Defense
+description: Passwords and MFA, layers of defense, encryption and hashing.
+steps:
+  parol-mfa:
+    title: Passwords and multi-factor authentication
+    content: |
+      Logging in to your accounts is the key to your digital home. A large share of attacks begin with that key being stolen or guessed.
+
+      ## What makes a password strong?
+
+      - **Length matters more than complexity.** The 8-character `P@ssw0rd!` is cracked quickly: it's short, and it's already in attackers' dictionaries. A long **passphrase** made of 4–5 random words is both strong and easy to remember.
+      - **Uniqueness** — a separate password for every account. If one website is breached, the others stay safe (this protects against credential stuffing).
+      - **Avoid personal information** — your name, date of birth or favorite team are easy to find.
+
+      | Password | Rating |
+      | --- | --- |
+      | `123456`, `qwerty` | ❌ Cracked in seconds |
+      | `Nigar1995` | ❌ A name and a year — easy to find on social media |
+      | `P@ssw0rd!` | ❌ Has symbols, but it's a well-known pattern |
+      | `purple-courier-ocean-train-74` | ✅ Long, random and memorable |
+
+      ## Password managers 🔑
+
+      It's impossible to remember dozens of long, unique passwords — and you don't need to. A **password manager** (Bitwarden, 1Password, KeePass and others) stores all your passwords in an encrypted vault, generates strong passwords and fills them in automatically. You only need to remember **one** strong master password.
+
+      ## Multi-factor authentication (MFA)
+
+      Even if a password is stolen, the most effective way to protect an account is **MFA**: confirming your identity with two or more factors of **different types**.
+
+      | Factor | What it is | Examples |
+      | --- | --- | --- |
+      | **Something you know** | Information in your memory | A password, a PIN, the answer to a security question |
+      | **Something you have** | A physical object or device | An authenticator app on your phone, an SMS code, a physical security key, a bank card |
+      | **Something you are** | A biometric trait | A fingerprint, face recognition, your voice |
+
+      > ⚠️ A password + a PIN is **not MFA** — both are "something you know". The factors must be of different types.
+
+      **Which second factor is stronger?** An SMS code is much better than nothing, but it can be intercepted through fraudulent SIM card swaps (SIM swapping) and phishing. **Authenticator apps** are stronger, and **physical security keys** and **passkeys** are the most phishing-resistant option.
+
+      ## Passkeys — a passwordless future
+
+      A **passkey** is a cryptographic key stored on your device in place of a password. You confirm with your fingerprint or face; the key never leaves the device and works only for the genuine website — a fake phishing site can't use it.
+
+      ## Quick summary
+
+      - A strong password is long and unique; a passphrase is a good choice.
+      - A password manager makes it easy to manage unique passwords.
+      - MFA combines factors of different types: something you know, something you have, something you are.
+  faktorlari-ayir:
+    title: 'Practice: Sort the factors'
+    questions:
+      - text: Place each authentication method under the correct type of factor.
+        buckets:
+          - name: Something you know
+            items:
+              - A password
+              - A PIN code
+              - The answer to a security question
+          - name: Something you have
+            items:
+              - An authenticator app on your phone
+              - A physical security key (USB)
+              - A bank card
+          - name: Something you are (biometric)
+            items:
+              - A fingerprint
+              - Face recognition
+        explanation: Information in your memory — something you know; a device or object — something you have; traits of your body — something you are. Strong MFA combines different types.
+      - text: Which password is the **strongest**?
+        options:
+          - P@ssw0rd!
+          - Nigar1995
+          - purple-courier-ocean-train-74
+          - qwerty123456
+        explanation: A passphrase made of long, random words is the most resistant to both brute-force and dictionary attacks.
+      - text: Rauf uses the same password on 6 different websites. What is the **biggest risk**?
+        options:
+          - Forgetting the password
+          - If the password leaks from one website, the other accounts can also be taken over through credential stuffing
+          - The websites running slowly
+          - There's no risk at all if the password is long
+        explanation: However strong the password is, when one website is breached, attackers automatically try the same pair on other websites. Every account needs a unique password.
+      - text: Which combination is **true MFA**?
+        options:
+          - A password + a PIN code
+          - A password + the answer to a security question
+          - A password + a code from the authenticator app on your phone
+          - Two different passwords
+        explanation: 'MFA requires factors of different types: a password (something you know) + an authenticator app (something you have). A password and a PIN are the same type.'
+  mudafie-qatlari:
+    title: Layers of defense (defense in depth)
+    content: |
+      No defense is 100% reliable. That's why security is built in **layers**: if one layer is breached, the next one stops the attack. This approach is called **defense in depth**.
+
+      ## A castle analogy 🏰
+
+      Picture a medieval castle: a moat, high walls, sentries at the gate, guards inside, and the treasure in a locked room. If the enemy crosses the moat, the wall stops them; if they get over the wall, the sentries do.
+
+      ## Three types of controls
+
+      **Technical controls:**
+
+      - **Firewall** — filters the traffic coming into and going out of the network according to rules.
+      - **IDS/IPS** — systems that detect and block suspicious network activity.
+      - **Antivirus / EDR** — detects malware and suspicious behavior on devices.
+      - **Updates** (patching) — close known vulnerabilities. One of the simplest but most effective measures.
+      - **Encryption** — makes data unreadable even if it's stolen.
+      - **Logs and monitoring (SIEM)** — collects the records of all systems in one place and highlights anomalies.
+
+      **Administrative controls (rules and people):**
+
+      - security policies and password rules;
+      - phishing and security training for employees;
+      - regular reviews of access rights;
+      - an incident response plan.
+
+      **Physical controls:**
+
+      - card access to the server room, locks;
+      - video surveillance cameras, security guards;
+      - fire suppression and an uninterruptible power supply.
+
+      ## Key principles
+
+      - **Least privilege** — everyone should have only the minimum rights they need for their job. A marketing intern doesn't need access to the payments database.
+      - **Network segmentation** — dividing the network into parts: office computers shouldn't be on the same network as the payment servers. If one part is infected, the attack doesn't spread.
+      - **Zero trust** — "never trust, always verify": being inside the network doesn't automatically mean being trusted; every access is verified.
+
+      ## Backups: the 3-2-1 rule 💾
+
+      - **3** copies of the data (the original + 2 backups),
+      - on **2** different types of media (for example, a disk and the cloud),
+      - **1** copy in another location (offsite) — ideally disconnected from the network, where ransomware can't reach it.
+
+      And most importantly: **test restoring regularly**. An untested backup is a hope, not a plan.
+
+      ## Quick summary
+
+      - Defense in depth: several layers of defense that complement each other.
+      - There are three types of controls: technical, administrative and physical.
+      - Key principles: least privilege, segmentation, zero trust, 3-2-1 backups.
+  hansi-qat:
+    title: 'Practice: Which layer?'
+    questions:
+      - text: "Sort NarPay's security measures by type."
+        buckets:
+          - name: Technical
+            items:
+              - Firewall
+              - Antivirus / EDR
+              - Disk encryption
+          - name: Administrative (rules and training)
+            items:
+              - Phishing training for employees
+              - A password policy document
+              - Quarterly reviews of access rights
+          - name: Physical
+            items:
+              - Card access to the server room
+              - Video surveillance cameras in the office
+        explanation: Software and hardware tools — technical; rules, training and reviews — administrative; protecting access to the building and rooms — physical.
+      - text: What is the **3-2-1** backup rule?
+        options:
+          - Back up every 3 days, within 2 hours, to 1 disk
+          - 3 copies, on 2 different types of media, with 1 in another location (offsite)
+          - 3 servers, 2 firewalls, 1 antivirus
+          - 3 employees, 2 passwords, 1 key
+        explanation: 3 copies, 2 different types of media and 1 copy in another location — so that a single event (a fire, ransomware) can't destroy every copy.
+      - text: A new marketing intern only needs to view campaign reports. Which rights should they be given?
+        options:
+          - Admin rights — they might be needed later
+          - Read access to marketing reports only
+          - Read access to all databases
+          - No rights at all — interns shouldn't log in to the system
+        explanation: 'The principle of least privilege: everyone gets only the minimum rights they need for their job. If the account is taken over, the damage is minimal too.'
+  sifreleme:
+    title: Encryption and hashing
+    content: |
+      If data stays unreadable even after it's stolen, the attacker is left holding a worthless pile of characters. Two different technologies make this possible: **encryption** and **hashing**.
+
+      ## Encryption
+
+      **Encryption** means turning readable data (**plaintext**) into an unreadable form (**ciphertext**) using a key. Whoever has the right key can turn it back (decrypt it).
+
+      ```text
+      "Transfer: 250 AZN"  ──(key)──►  "x9#Lq2!vR7pZ"  ──(key)──►  "Transfer: 250 AZN"
+      ```
+
+      ### Symmetric encryption
+
+      The **same key** is used to encrypt and decrypt. The most widely used algorithm is **AES**.
+
+      - ✅ Very fast, ideal for large amounts of data.
+      - ❌ The problem: how do you get the key to the other side safely?
+
+      ### Asymmetric encryption
+
+      Two keys: the **public key** is given to everyone, while the **private key** stays only with its owner. A message encrypted with the public key can only be decrypted with the matching private key. Algorithms: **RSA**, **ECC**.
+
+      > 📬 **An analogy:** the public key is the slot in a mailbox — anyone can drop a letter in. The private key is the key to the mailbox — only its owner can take the letters out.
+
+      To send Leyla a secret message, you encrypt it with **Leyla's public key** — only Leyla can decrypt it with her private key.
+
+      ### HTTPS — both together
+
+      When you see the 🔒 icon in your browser, the **TLS** protocol is at work: first, a temporary key is agreed on securely using asymmetric encryption, then the data is transferred with fast symmetric encryption.
+
+      ### In transit and at rest
+
+      - **In transit** — data moving across a network: HTTPS, VPNs, end-to-end encryption in messaging apps.
+      - **At rest** — data on a disk: laptop disk encryption, database encryption. If a laptop is stolen, the data stays unreadable.
+
+      ## Hashing
+
+      A **hash function** creates a fixed-length "fingerprint" from data of any length. For example, **SHA-256**.
+
+      - **It's one-way** — it's impossible to get the original data back from a hash. There's no key.
+      - The same input always gives **the same hash**.
+      - If one character of the input changes, the hash changes **completely**.
+
+      ### Where is it used?
+
+      - **Storing passwords** — a website stores the hash of your password, not the password itself. When you log in, the hash of the password you type is calculated and compared. Even if the database leaks, the passwords aren't visible in plain text. Special slow algorithms (bcrypt, Argon2) that add a random **salt** to every password are used for this.
+      - **Checking integrity** — by comparing the hash of a file you downloaded with the hash on the official website, you make sure the file hasn't been altered.
+
+      ## Encryption vs. hashing
+
+      | | Encryption | Hashing |
+      | --- | --- | --- |
+      | **Reversible** | Yes (with the key) | No |
+      | **Key** | Yes | No |
+      | **Purpose** | Confidentiality | Integrity, storing passwords |
+      | **Example** | AES, RSA | SHA-256, bcrypt |
+
+      ## Quick summary
+
+      - Encryption makes data unreadable with a key and can be reversed; symmetric — one key, asymmetric — a public and a private key.
+      - HTTPS combines both types; data should be encrypted both in transit and at rest.
+      - Hashing is one-way: it's used for storing passwords and checking integrity.
+  sifreleme-hes:
+    title: 'Practice: Encryption or hashing?'
+    questions:
+      - text: Is encryption or hashing used in each situation?
+        buckets:
+          - name: Encryption (reversible)
+            items:
+              - The HTTPS connection between a website and a browser
+              - Protecting a laptop's disk against theft
+              - End-to-end protected conversations in a messaging app
+              - AES
+          - name: Hashing (one-way)
+            items:
+              - Storing passwords in a database
+              - "Checking that a downloaded file hasn't been altered"
+              - SHA-256
+        explanation: If the data needs to be read later — encryption; if only a comparison or check is needed — hashing. AES is an encryption algorithm, and SHA-256 is a hash algorithm.
+      - text: In asymmetric encryption, **which key** do we use to encrypt a message so that only Leyla can read it?
+        options:
+          - Our own private key
+          - "Leyla's public key"
+          - "Leyla's private key"
+          - No key is needed
+        explanation: "A message encrypted with Leyla's public key can only be decrypted with her private key. A private key is never shared."
+      - text: Why should websites store passwords as **hashes** rather than as plain text?
+        options:
+          - Hashes take up less space
+          - So that the passwords themselves aren't visible even if the database leaks
+          - A hash changes the password automatically
+          - Hashes help users remember their passwords faster
+        explanation: A hash is one-way. In a breach, the attacker sees only the hashes, not the passwords themselves — and cracking them is very hard, especially when salts and slow algorithms are used.

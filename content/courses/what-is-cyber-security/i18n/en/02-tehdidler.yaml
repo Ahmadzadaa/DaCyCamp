@@ -1,0 +1,311 @@
+title: Threats and attacks
+description: Attackers, malware, social engineering and phishing, network and web attacks.
+steps:
+  hucumcular:
+    title: Who are the attackers?
+    content: |
+      To build a defense, you first need to know who is attacking and what they want. In cyber security, attackers are called **threat actors**.
+
+      ## The main threat actors
+
+      | Actor | Motivation | Example |
+      | --- | --- | --- |
+      | **Cybercriminals** | Money | Ransomware, card theft, phishing |
+      | **Hacktivists** | Ideology, political protest | Defacing websites with slogans, DDoS |
+      | **State-sponsored groups** (APT) | Espionage, sabotage | Long-term covert attacks, critical infrastructure |
+      | **Insiders** | Revenge, money or carelessness | A disgruntled employee taking data; an employee sending a file by mistake |
+      | **Script kiddies** | Curiosity, fame | Unskilled attacks with ready-made tools |
+      | **Competitors** | Industrial espionage | Stealing confidential information |
+
+      An **APT** (Advanced Persistent Threat) is a group with large resources that can stay hidden inside a target for months.
+
+      > ⚠️ Don't forget **insiders**: threats don't always come from outside. A careless employee can sometimes do more damage than the most skilled hacker — for example, by sending the customer database to the wrong address.
+
+      ## Hat colors 🎩
+
+      - **White hat** — ethical hackers who test systems **with permission**; they find vulnerabilities and report them to the owner.
+      - **Black hat** — those who attack without permission, to cause harm or for profit.
+      - **Grey hat** — those who test without permission but don't intend to cause harm. Even with good intentions, testing without permission is **illegal**.
+
+      ## How is an attack built?
+
+      Attacks usually unfold in stages. The well-known **Cyber Kill Chain** model:
+
+      1. **Reconnaissance** — gathering information about the target: employees' names, the email format, the technologies in use.
+      2. **Weaponization** — preparing a malicious file or link.
+      3. **Delivery** — email, a fake website, a USB drive.
+      4. **Exploitation** — taking advantage of a vulnerability to run code.
+      5. **Installation** — gaining a persistent foothold in the system.
+      6. **Command and control** (C2) — controlling the infected system remotely.
+      7. **Actions on objectives** — stealing data, encrypting it, destroying the system.
+
+      The good news for defenders: breaking **any link** in the chain stops the attack. For example, phishing training breaks the "delivery" stage, and updates break the "exploitation" stage.
+
+      ## Quick summary
+
+      - Threat actors: cybercriminals, hacktivists, state-sponsored groups, insiders, script kiddies, competitors.
+      - An ethical (white hat) hacker tests only with permission.
+      - An attack unfolds in stages; it can be stopped at any stage.
+  malware:
+    title: Malware
+    content: |
+      **Malware** (malicious software) is software created to damage a device, steal data or take unauthorized control of a system. The types differ in how they work and what they aim to do.
+
+      ## The main types
+
+      | Type | How it works | Example |
+      | --- | --- | --- |
+      | **Virus** | Attaches itself to another file, runs when the user opens the file, and spreads | An infected Word document |
+      | **Worm** | Spreads by itself across the network without any action from the user | WannaCry, which infected hundreds of thousands of computers worldwide in 2017 |
+      | **Trojan** | Looks like useful software but does malicious work in the background | A "free game cheat", cracked software |
+      | **Ransomware** | Encrypts files and demands a ransom for the key | All of a company's servers being encrypted |
+      | **Spyware** | Secretly monitors and collects information | An app on a phone that reads messages |
+      | **Keylogger** | Records every key that's pressed | Stealing passwords and card numbers |
+      | **Adware** | Forces ads onto the screen | Pop-up windows that keep opening in the browser |
+      | **Rootkit** | Hides deep inside the system and evades detection | Malware that hides from antivirus software |
+      | **Botnet** | A network of infected devices controlled together remotely | DDoS attacks with thousands of devices, spam |
+
+      ## More about ransomware 🔒
+
+      Ransomware is one of the most dangerous threats to companies today. Modern groups often use **double extortion**: they encrypt the files and also steal the data in advance, saying "if you don't pay, we'll publish it on the internet."
+
+      Paying the ransom isn't recommended: there's no guarantee the files will be returned, the payment funds criminals, and it makes the company a target again. The best defense is **tested backups** and preventing the attack in the first place.
+
+      ## How does malware get in?
+
+      - **Email attachments** — "invoice.zip", "salary_table.xlsm";
+      - **Cracked and unofficial software** — a "free" Photoshop, games;
+      - **USB drives found lying around**;
+      - **Malicious ads and fake websites**;
+      - **Unpatched software** — known vulnerabilities are exploited.
+
+      ## The main defenses
+
+      - **Update** the operating system and software on time;
+      - Use antivirus / EDR;
+      - Download software only from **official sources**;
+      - Don't open unexpected attachments;
+      - Make **backups** regularly and test restoring them.
+
+      ## Quick summary
+
+      - A virus attaches to a file, a worm spreads by itself, a trojan looks useful and ransomware demands a ransom.
+      - Spyware and keyloggers collect information secretly; a botnet is an army of infected devices.
+      - The main defenses: updates, official sources, caution and backups.
+  malware-tani:
+    title: 'Practice: Identify the malware'
+    questions:
+      - text: 'None of the files on NarPay''s accounting computer will open, and there''s a message on the screen: "Your files have been encrypted. Pay in cryptocurrency within 72 hours to get the key." What is this?'
+        options:
+          - Adware
+          - Ransomware
+          - Spyware
+          - Worm
+        explanation: Malware that encrypts files and demands a ransom is ransomware.
+      - text: An employee downloads a "free game cheat" program from the internet. The program works, but in the background it gives the attacker remote access to the computer. What is this?
+        options:
+          - Virus
+          - Trojan
+          - Adware
+          - Botnet
+        explanation: Software that looks useful but secretly does malicious work is a trojan — like the Trojan horse.
+      - text: Malware spreads by itself from one computer on the network to another **without anyone opening anything**. What is this?
+        options:
+          - Worm
+          - Virus
+          - Keylogger
+          - Rootkit
+        explanation: A worm spreads by itself across the network without any action from the user. A virus, on the other hand, runs when an infected file is opened.
+      - text: A program records every key pressed on the keyboard and sends it to the attacker — passwords included. What is this?
+        options:
+          - Ransomware
+          - Adware
+          - Keylogger
+          - Worm
+        explanation: The type of spyware that records keystrokes is called a keylogger.
+      - text: Thousands of infected cameras and routers send requests to the NarPay website at the same time, making it unavailable. What is this network of devices called?
+        options:
+          - Botnet
+          - Rootkit
+          - Trojan
+          - Firewall
+        explanation: A network of infected devices controlled together remotely is called a botnet, and it's often used in DDoS attacks.
+  sosial-muhendislik:
+    title: Social engineering and phishing
+    content: |
+      There's an easier way than breaking down the strongest door — convincing someone to **open it for you**. **Social engineering** is a type of attack that targets human psychology, not technology.
+
+      ## Psychological "buttons"
+
+      Attackers take advantage of people's natural reactions:
+
+      - **Urgency** — "If you don't confirm within 24 hours, your account will be blocked!"
+      - **Authority** — "I'm the CEO. Make this transfer right now."
+      - **Fear** — "A suspicious transaction was made from your account."
+      - **Curiosity** — "Company salary list.xlsx"
+      - **Greed** — "You've won an iPhone, just pay the delivery fee."
+      - **The urge to help** — "I'm a courier and my hands are full — could you hold the door?"
+
+      ## Types of attack
+
+      | Type | How |
+      | --- | --- |
+      | **Phishing** | Mass fake emails in the name of a bank, a courier company or a well-known brand |
+      | **Spear phishing** | A convincing message tailored to a specific person, addressing them by name |
+      | **Whaling** | Phishing that targets senior executives |
+      | **Smishing** | Phishing by SMS: "Your parcel is delayed, follow the link" |
+      | **Vishing** | A phone call: "We're calling from the bank, tell us the SMS code" |
+      | **Pretexting** | An invented scenario: "I'm from the IT department, I need to check your password" |
+      | **Baiting** | A USB drive labeled "Salaries 2026" in front of the office |
+      | **Tailgating** | Following an employee with an access card into a secured building |
+
+      ## How to recognize a phishing email 🚩
+
+      > **From:** NarPay Support <support@narpay-secure-login.com>
+      > **Subject:** URGENT! Your account will be blocked within 24 hours
+      >
+      > Dear customer,
+      > suspicious activity has been detected on your account. To avoid being blocked, follow the link below and confirm your card details and the SMS code.
+      > **[Confirm account]**
+      > Attachment: account_update.zip
+
+      Red flags:
+
+      1. **The sender's domain** isn't official: `narpay-secure-login.com` (the official one would be `narpay.az`).
+      2. **Urgency and fear** — "24 hours", "will be blocked".
+      3. **A generic greeting** — "Dear customer", without your name.
+      4. **Hovering over the link** shows a different address.
+      5. **An unexpected attachment** — `.zip`, `.exe`, a `.xlsm`/`.docm` with macros.
+      6. **A request for sensitive information** — no bank asks for card details or an SMS code by email.
+      7. Sometimes **spelling and grammar mistakes**.
+
+      ## What should you do?
+
+      - Don't click the link, and don't open the attachment.
+      - Check the information through an **official channel**: log in to the app yourself, or call the number on the back of your bank card yourself.
+      - **Report** the suspicious email **to the security team** — it may have reached others too.
+      - If you've already clicked, don't be embarrassed — report it immediately and change your password. A quick reaction sharply reduces the damage.
+
+      ## Quick summary
+
+      - Social engineering exploits human psychology: urgency, authority, fear, curiosity, greed.
+      - Types: phishing, spear phishing, smishing, vishing, pretexting, baiting, tailgating.
+      - Red flags: a strange domain, urgency, a generic greeting, a disguised link, an unexpected attachment, a request for sensitive information.
+  fisinqi-tut:
+    title: 'Practice: Catch the phishing'
+    questions:
+      - text: |-
+          Rauf is analyzing an email that employees received:
+
+          > **From:** NarPay Support <support@narpay-secure-login.com>
+          > **Subject:** URGENT! Your account will be blocked within 24 hours
+          >
+          > Dear customer, to avoid being blocked, follow the link and confirm your card details and the SMS code.
+          > Attachment: account_update.zip
+
+          Sort the items: which are signs of phishing, and which are the right way to respond?
+        buckets:
+          - name: Sign of phishing 🚩
+            items:
+              - "The sender's domain: narpay-secure-login.com"
+              - "The subject: 'URGENT! Will be blocked within 24 hours'"
+              - "'Dear customer' — without your name"
+              - 'The attachment: account_update.zip'
+              - A request to confirm the SMS code
+          - name: The right response ✅
+            items:
+              - Checking by logging in to the official app yourself, without clicking the link
+              - Reporting the email to the security team
+              - "Calling the bank's official number yourself to ask"
+        explanation: 'A strange domain, urgency, a generic greeting, an unexpected attachment and a request for the SMS code are classic signs of phishing. The right response: don''t click, check through an official channel and report it.'
+      - text: 'Someone posing as a bank employee calls: "There''s a suspicious transaction on your card. To cancel it, tell me the code that was just sent to your phone." What kind of attack is this?'
+        options:
+          - Smishing
+          - Vishing
+          - Baiting
+          - Tailgating
+        explanation: Deception through a phone call is called vishing (voice phishing). A bank never asks for an SMS code.
+      - text: At the office entrance, a "courier" carrying boxes walks in behind an employee who has an access card. Which technique is this?
+        options:
+          - Pretexting
+          - Whaling
+          - Tailgating
+          - Smishing
+        explanation: Following an authorized person into a secured area is called tailgating. Here, the urge to help plays the role of the "button".
+  sebeke-veb:
+    title: Network and web attacks
+    content: |
+      Some attacks target systems, networks and web applications directly rather than people.
+
+      ## DoS and DDoS
+
+      **DoS** (Denial of Service) means flooding a service with so many requests that it becomes unavailable. **DDoS** (Distributed DoS) is the same attack carried out from thousands of devices at once (often a **botnet**). The goal isn't to steal data but to disrupt **availability**.
+
+      🛡️ Defense: DDoS protection services, traffic filtering, spare resources.
+
+      ## Man-in-the-Middle (MitM)
+
+      The attacker gets between the user and the website and reads or alters the traffic. The classic scenario: a fake network called **"Free_Airport_WiFi"** at an airport — all the traffic of anyone who connects passes through the attacker's device.
+
+      🛡️ Defense: HTTPS (the padlock in the browser), a VPN, and not doing sensitive things on open Wi-Fi networks you don't know.
+
+      ## Password attacks
+
+      - **Brute force** — trying every possible combination. Short passwords are cracked in minutes.
+      - **Dictionary attack** — trying the most popular passwords and words: `123456`, `password`, `qwerty`.
+      - **Credential stuffing** — automatically trying email and password pairs **leaked** from another website on other websites. People who reuse the same password in several places are the target.
+
+      🛡️ Defense: long, unique passwords, MFA, limiting login attempts.
+
+      ## SQL injection
+
+      If a web application adds what a user types directly into a database query without checking it, an attacker can type **SQL code** into an input field and change the meaning of the query: logging in without a password, dumping the entire customer database, deleting data.
+
+      🛡️ Defense: parameterized queries (user data is never executed as code), validating input data.
+
+      ## Cross-site scripting (XSS)
+
+      The attacker plants malicious **JavaScript** on a website (for example, in a comment field), and the code runs in the browsers of other users who open the page — it can steal their sessions.
+
+      🛡️ Defense: converting user data into a safe form before showing it on the page (escaping).
+
+      ## Zero-day and supply chain attacks
+
+      - **Zero-day** — a vulnerability that the vendor doesn't know about yet and that has no patch. Defense: layers of defense, monitoring for abnormal behavior.
+      - **Supply chain attack** — compromising a supplier of software or services that the target uses. In 2020, malicious code was planted in an update of the SolarWinds software, and thousands of organizations were infected.
+
+      ## Quick summary
+
+      - DDoS disrupts availability; MitM intercepts traffic.
+      - Brute force, dictionary attacks and credential stuffing target passwords.
+      - SQL injection and XSS exploit web applications that don't validate user data.
+      - Zero-day and supply chain attacks show why layers of defense matter.
+  hucumu-tani:
+    title: 'Practice: Identify the attack'
+    questions:
+      - text: "Rauf is preparing the weekly incident report. Place each incident under the correct type of attack."
+        buckets:
+          - name: DDoS
+            items:
+              - The website was made unavailable with millions of fake requests per second
+              - "A botnet flooded NarPay's servers with traffic"
+          - name: Man-in-the-Middle
+            items:
+              - "A fake 'Free WiFi' network was set up at an airport and the traffic was read"
+              - Data between a user and a website was intercepted on public Wi-Fi
+          - name: Credential stuffing
+            items:
+              - Emails and passwords leaked from another website were tried on NarPay
+              - Automated login attempts on the accounts of people who reuse the same password on several websites
+          - name: SQL injection
+            items:
+              - Special characters typed into the search field dumped every customer from the database
+              - SQL code typed into the login form allowed logging in without a password
+        explanation: Flooding with traffic — DDoS; sitting in the middle and reading traffic — MitM; trying leaked passwords on another website — credential stuffing; typing SQL code into a field — SQL injection.
+      - text: "You're connected to a café's open Wi-Fi and need to log in to your banking app. What's the **safest** option?"
+        options:
+          - Logging in over the open Wi-Fi — the café is trustworthy
+          - Using mobile data or connecting to a trusted VPN
+          - "Logging in if the Wi-Fi network's name looks like the café's name"
+          - "Logging in using the browser's incognito mode"
+        explanation: "An open network could be fake (MitM). Mobile data or a VPN protects your traffic. Incognito mode only stops history from being saved — it doesn't protect traffic."
