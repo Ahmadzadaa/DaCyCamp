@@ -20,6 +20,12 @@ test('qonaq: «/» tanışlıq səhifəsi → Qeydiyyat / Daxil ol', async ({ pa
   await page.goto('/');
   await page.getByTestId('landing-login').click();
   await expect(page).toHaveURL(/\/giris$/, { timeout: 30_000 });
+  // giriş/qeydiyyatdan «Sayta qayıt» → yenidən tanışlıq səhifəsi
+  await page.getByRole('link', { name: 'Sayta qayıt' }).click();
+  await expect(page).toHaveURL(/\/$/);
+  await expect(
+    page.getByRole('heading', { level: 1, name: /real tapşırıqlarla öyrənin/ }),
+  ).toBeVisible();
 });
 
 test('mobil: header-də Daxil ol / Qeydiyyat görünür, üfüqi sürüşmə yoxdur', async ({ page }) => {

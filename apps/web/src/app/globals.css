@@ -4340,17 +4340,22 @@
     }
   }
 
+  /* sol panel həmişə ekrana sığır: yapışqan, hündürlük = ekran; boşluqlar və şriftlər hündürlüyə görə kiçilir */
   .auth-aside {
+    position: sticky;
+    top: 0;
+    height: 100dvh;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    gap: 36px;
-    padding: 40px clamp(32px, 5vw, 72px);
+    gap: clamp(16px, 3.5vh, 36px);
+    padding: clamp(20px, 4.5vh, 40px) clamp(32px, 5vw, 72px);
     color: var(--ink);
+    overflow: hidden;
   }
   .auth-pitch h2 {
-    margin-top: 18px;
-    font-size: clamp(30px, 3.1vw, 44px);
+    margin-top: clamp(10px, 2vh, 18px);
+    font-size: clamp(26px, min(3.1vw, 5.2vh), 44px);
     letter-spacing: -0.028em;
     line-height: 1.08;
     color: var(--ink);
@@ -4365,11 +4370,11 @@
   }
   .auth-pitch ul {
     list-style: none;
-    margin: 28px 0 0;
+    margin: clamp(14px, 3vh, 28px) 0 0;
     padding: 0;
     display: flex;
     flex-direction: column;
-    gap: 14px;
+    gap: clamp(8px, 1.6vh, 14px);
   }
   .auth-pitch li {
     display: flex;
@@ -4476,14 +4481,56 @@
   }
 
   .auth-main {
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 40px 24px;
+    padding: 80px 24px 40px;
   }
+  /* desktop: yalnız «Sayta qayıt» (sağ yuxarı küncdə); mobil: loqo + düymə bir sətirdə */
   .auth-top {
+    position: absolute;
+    top: 24px;
+    right: clamp(16px, 3vw, 40px);
+    display: flex;
+    align-items: center;
+  }
+  .auth-logo-m {
     display: none;
+  }
+  .auth-back {
+    background: color-mix(in srgb, var(--card) 80%, transparent);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+  }
+  /* alçaq ekran: əvvəl kod kartı kiçilir, sonra gizlənir — mətn və siyahı həmişə görünür */
+  @media (max-height: 860px) {
+    .auth-preview pre {
+      padding: 10px 16px 8px;
+      font-size: 12px;
+      line-height: 1.6;
+    }
+    .ap-ok {
+      margin: 0 12px 12px;
+      padding: 8px 10px;
+    }
+  }
+  @media (max-height: 760px) {
+    .auth-preview {
+      display: none;
+    }
+    .auth-aside {
+      justify-content: flex-start;
+    }
+    .auth-pitch {
+      margin-block: auto;
+    }
+  }
+  @media (max-height: 560px) {
+    .auth-pitch p {
+      display: none;
+    }
   }
   .auth-card {
     width: 100%;
@@ -4521,12 +4568,15 @@
       padding: 24px 16px 40px;
     }
     .auth-top {
-      display: flex;
+      position: static;
+      justify-content: space-between;
+      gap: 12px;
       width: 100%;
       max-width: 440px;
       margin-bottom: 28px;
     }
     .auth-logo-m {
+      display: flex;
       color: var(--ink);
     }
     .auth-card {

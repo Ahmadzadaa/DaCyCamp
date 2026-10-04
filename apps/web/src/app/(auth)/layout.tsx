@@ -1,4 +1,5 @@
-import { Award, Check, CodeXml, Route, SquareTerminal } from 'lucide-react';
+import Link from 'next/link';
+import { ArrowLeft, Award, Check, CodeXml, Route, SquareTerminal } from 'lucide-react';
 import { Logo } from '@/components/app/logo';
 import { t } from '@/lib/i18n';
 
@@ -11,7 +12,8 @@ const FEATS = [
 
 /**
  * Giriş / qeydiyyat: yumşaq rəngli fon (açıq və tünd rejimdə), solda təqdimat + kod kartı,
- * sağda üzən forma kartı. Mobil — yalnız forma.
+ * sağda üzən forma kartı. Mobil — yalnız forma. «Sayta qayıt» qonağı tanışlıq səhifəsinə (/) aparır.
+ * Sol panel ekran hündürlüyünə sığır: alçaq ekranlarda sıxılır, kod kartı gizlənir (globals.css).
  */
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -67,6 +69,10 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       <main className="auth-main">
         <div className="auth-top">
           <Logo text={t('shell.brand')} href="/" className="auth-logo-m" />
+          <Link href="/" className="b b-ghost b-sm auth-back">
+            <ArrowLeft aria-hidden />
+            {t('auth.backToSite')}
+          </Link>
         </div>
         <div className="auth-card">{children}</div>
       </main>

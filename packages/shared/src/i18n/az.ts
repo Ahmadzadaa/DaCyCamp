@@ -702,6 +702,7 @@ export const az = {
     feat4: 'QR kodla yoxlanılan sertifikatlar',
     showPassword: 'Şifrəni göstər',
     hidePassword: 'Şifrəni gizlət',
+    backToSite: 'Sayta qayıt',
   },
   catalog: {
     heroTitle: 'Kurslar',
