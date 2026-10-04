@@ -1,0 +1,61 @@
+type: python
+title: 'Parametrli sorğu: SQL injection-dan qorun'
+xp: 40
+estimated_minutes: 10
+instructions: |
+  Axtarış funksiyası yaz: istifadəçi kateqoriya və maksimum qiymət daxil edir. Dəyərləri sorğuya **parametr** kimi ötür — f-string ilə yox.
+tasks:
+- 'axtar(con, kateqoriya, max_qiymet) funksiyası: həmin kateqoriyada qiyməti max_qiymet-dən çox olmayan
+  məhsulların adlarını (əlifba sırası) qaytarsın.'
+- 'Yer tutucu ? istifadə et: cur.execute(sql, (kateqoriya, max_qiymet)).'
+- 'Hücum cəhdi: axtar(con, "Sports'' OR ''1''=''1", 10000) boş siyahı qaytarmalıdır → hucum.'
+starter_code: |
+  import sqlite3
+
+  con = sqlite3.connect(":memory:")
+  con.execute("CREATE TABLE mehsullar (ad TEXT, kateqoriya TEXT, qiymet REAL)")
+  con.executemany("INSERT INTO mehsullar VALUES (?, ?, ?)", [
+      ("iPhone 15", "Electronics", 2399), ("AirPods Pro 2", "Electronics", 599),
+      ("Nike Air Force 1", "Sports", 249), ("Yoga Mat Pro", "Sports", 59),
+      ("Puma RS-X", "Sports", 199),
+  ])
+
+
+  def axtar(con, kateqoriya, max_qiymet):
+      ...
+
+
+  print(axtar(con, "Sports", 200))
+  hucum = ...
+solution: |
+  import sqlite3
+
+  con = sqlite3.connect(":memory:")
+  con.execute("CREATE TABLE mehsullar (ad TEXT, kateqoriya TEXT, qiymet REAL)")
+  con.executemany("INSERT INTO mehsullar VALUES (?, ?, ?)", [
+      ("iPhone 15", "Electronics", 2399), ("AirPods Pro 2", "Electronics", 599),
+      ("Nike Air Force 1", "Sports", 249), ("Yoga Mat Pro", "Sports", 59),
+      ("Puma RS-X", "Sports", 199),
+  ])
+
+
+  def axtar(con, kateqoriya, max_qiymet):
+      cur = con.execute(
+          "SELECT ad FROM mehsullar WHERE kateqoriya = ? AND qiymet <= ? ORDER BY ad",
+          (kateqoriya, max_qiymet),
+      )
+      return [r[0] for r in cur.fetchall()]
+
+
+  print(axtar(con, "Sports", 200))
+  hucum = axtar(con, "Sports' OR '1'='1", 10000)
+tests: |
+  assert axtar(con, "Sports", 200) == ["Puma RS-X", "Yoga Mat Pro"], f"axtar(con, 'Sports', 200) ['Puma RS-X', 'Yoga Mat Pro'] olmalıdır, səndə: {axtar(con, 'Sports', 200)!r}"
+  assert axtar(con, "Electronics", 3000) == ["AirPods Pro 2", "iPhone 15"], "Electronics, 3000 — iki məhsul (əlifba sırası)"
+  assert hucum == [], f"Hücum cəhdi boş siyahı qaytarmalıdır — parametr istifadə et, f-string yox. Səndə: {hucum!r}"
+  _src = dacy.code.split("def axtar")[1].split("print(")[0]
+  assert "?" in _src and "f\"" not in _src and "f'" not in _src and ".format(" not in _src, "Sorğuda ? yer tutucularından istifadə et, f-string/format yox"
+hints:
+- 'SQL: "SELECT ad FROM mehsullar WHERE kateqoriya = ? AND qiymet <= ? ORDER BY ad"'
+- con.execute(sql, (kateqoriya, max_qiymet)) — dəyərlər tuple-da
+- '[r[0] for r in cur.fetchall()]'

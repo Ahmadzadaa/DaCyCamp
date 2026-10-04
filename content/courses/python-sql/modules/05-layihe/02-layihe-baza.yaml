@@ -1,0 +1,86 @@
+type: python
+title: 'Layihə: bazanı qur və suallara cavab ver'
+xp: 70
+estimated_minutes: 15
+instructions: |
+  sifarisler.csv-dən üç cədvəlli baza qur və biznes suallarına SQL JOIN ilə cavab ver.
+tasks:
+- musteriler (CustomerID, CustomerName, CustomerSegment, Country, City) və mehsullar (ProductID, ProductName,
+  Category) cədvəllərini drop_duplicates ilə qur; sifarisler cədvəlinə yalnız OrderID, OrderDate, ShipDate,
+  ShipMode, CustomerID, ProductID, Sales, Quantity, Discount, Profit sütunlarını yaz.
+- Ölkələr üzrə mənfəət (Country, menfeet — 2 onluq), azalan → olke (JOIN musteriler).
+- Kateqoriyalar üzrə satış və mənfəət (Category, satis, menfeet — 2 onluq) → kateqoriya (JOIN mehsullar).
+- Ən çox satış (Sales cəmi) gətirən müştərinin adı → top_musteri.
+dataset: datasets/sifarisler.csv
+starter_code: |
+  import sqlite3
+  import pandas as pd
+
+  o = pd.read_csv("sifarisler.csv")
+  con = sqlite3.connect(":memory:")
+
+  # cədvəlləri qur
+
+  olke = ...
+  kateqoriya = ...
+  top_musteri = ...
+
+  print(top_musteri)
+  olke
+solution: |
+  import sqlite3
+  import pandas as pd
+
+  o = pd.read_csv("sifarisler.csv")
+  con = sqlite3.connect(":memory:")
+
+  o[["CustomerID", "CustomerName", "CustomerSegment", "Country", "City"]].drop_duplicates().to_sql("musteriler", con, index=False)
+  o[["ProductID", "ProductName", "Category"]].drop_duplicates().to_sql("mehsullar", con, index=False)
+  o[["OrderID", "OrderDate", "ShipDate", "ShipMode", "CustomerID", "ProductID",
+     "Sales", "Quantity", "Discount", "Profit"]].to_sql("sifarisler", con, index=False)
+
+  olke = pd.read_sql_query("""
+      SELECT m.Country, ROUND(SUM(s.Profit), 2) AS menfeet
+      FROM sifarisler s JOIN musteriler m ON m.CustomerID = s.CustomerID
+      GROUP BY m.Country
+      ORDER BY menfeet DESC
+  """, con)
+  kateqoriya = pd.read_sql_query("""
+      SELECT p.Category, ROUND(SUM(s.Sales), 2) AS satis, ROUND(SUM(s.Profit), 2) AS menfeet
+      FROM sifarisler s JOIN mehsullar p ON p.ProductID = s.ProductID
+      GROUP BY p.Category
+  """, con)
+  top_musteri = pd.read_sql_query("""
+      SELECT m.CustomerName, SUM(s.Sales) AS satis
+      FROM sifarisler s JOIN musteriler m ON m.CustomerID = s.CustomerID
+      GROUP BY m.CustomerID
+      ORDER BY satis DESC
+      LIMIT 1
+  """, con)["CustomerName"][0]
+
+  print(top_musteri)
+  olke
+tests: |
+  import pandas as _pd
+  import numpy as _np
+
+  _o = _pd.read_csv("sifarisler.csv")
+  _mc = [r[1] for r in con.execute("PRAGMA table_info(musteriler)").fetchall()]
+  _pc = [r[1] for r in con.execute("PRAGMA table_info(mehsullar)").fetchall()]
+  _sc = [r[1] for r in con.execute("PRAGMA table_info(sifarisler)").fetchall()]
+  assert _mc == ["CustomerID", "CustomerName", "CustomerSegment", "Country", "City"], f"musteriler sütunları düzgün deyil: {_mc}"
+  assert _pc == ["ProductID", "ProductName", "Category"], f"mehsullar sütunları düzgün deyil: {_pc}"
+  assert "CustomerName" not in _sc and "Country" not in _sc and "ProductName" not in _sc, "sifarisler cədvəlində müştəri/məhsul adları təkrarlanmamalıdır (normallaşdırma)"
+  assert con.execute("SELECT COUNT(*) FROM musteriler").fetchone()[0] == _o["CustomerID"].nunique(), "Hər müştəri musteriler-də bir dəfə olmalıdır (drop_duplicates)"
+  _c = _o.groupby("Country")["Profit"].sum().sort_values(ascending=False).round(2)
+  assert list(olke["Country"]) == list(_c.index) and _np.allclose(olke["menfeet"], _c.values), f"olke: {_c.to_dict()}"
+  _k = _o.groupby("Category")[["Sales", "Profit"]].sum().round(2)
+  _kk = kateqoriya.set_index("Category").sort_index()
+  assert _np.allclose(_kk["satis"], _k["Sales"]) and _np.allclose(_kk["menfeet"], _k["Profit"]), "kateqoriya satış/mənfəət düzgün deyil"
+  _t = _o.groupby(["CustomerID", "CustomerName"])["Sales"].sum().idxmax()[1]
+  assert top_musteri == _t, f"top_musteri {_t!r} olmalıdır"
+hints:
+- o[["CustomerID", "CustomerName", "CustomerSegment", "Country", "City"]].drop_duplicates().to_sql("musteriler",
+  con, index=False)
+- FROM sifarisler s JOIN musteriler m ON m.CustomerID = s.CustomerID GROUP BY m.Country
+- 'Top müştəri: GROUP BY m.CustomerID ORDER BY satis DESC LIMIT 1'

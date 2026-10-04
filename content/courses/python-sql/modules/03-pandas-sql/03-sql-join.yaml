@@ -1,0 +1,65 @@
+type: python
+title: SQL JOIN və pd.merge
+xp: 40
+estimated_minutes: 10
+instructions: |
+  Müştərilər və sifarişlər cədvəllərini bazaya yaz və SQL JOIN ilə birləşdir.
+tasks:
+- musteriler.csv → "musteriler", sifarisler_qisa.csv → "sifarisler" cədvəlləri.
+- 'SQL INNER JOIN: hər müştərinin adı və ümumi xərci (Ad, xerc), xərcə görə azalan → xerc_sql.'
+- SQL LEFT JOIN ilə sifarişi olmayan müştərilərin adları (əlifba sırası) → sifarissiz.
+dataset:
+- datasets/musteriler.csv
+- datasets/sifarisler_qisa.csv
+starter_code: |
+  import sqlite3
+  import pandas as pd
+
+  con = sqlite3.connect(":memory:")
+  pd.read_csv("musteriler.csv").to_sql("musteriler", con, index=False)
+  pd.read_csv("sifarisler_qisa.csv").to_sql("sifarisler", con, index=False)
+
+  xerc_sql = ...
+  sifarissiz = ...
+
+  print(sifarissiz)
+  xerc_sql
+solution: |
+  import sqlite3
+  import pandas as pd
+
+  con = sqlite3.connect(":memory:")
+  pd.read_csv("musteriler.csv").to_sql("musteriler", con, index=False)
+  pd.read_csv("sifarisler_qisa.csv").to_sql("sifarisler", con, index=False)
+
+  xerc_sql = pd.read_sql_query("""
+      SELECT m.Ad, SUM(s.Məbləğ) AS xerc
+      FROM sifarisler s
+      JOIN musteriler m ON m.MüştəriID = s.MüştəriID
+      GROUP BY m.Ad
+      ORDER BY xerc DESC
+  """, con)
+  sifarissiz = pd.read_sql_query("""
+      SELECT m.Ad
+      FROM musteriler m
+      LEFT JOIN sifarisler s ON s.MüştəriID = m.MüştəriID
+      WHERE s.SifarişID IS NULL
+      ORDER BY m.Ad
+  """, con)["Ad"].tolist()
+
+  print(sifarissiz)
+  xerc_sql
+tests: |
+  import pandas as _pd
+  import numpy as _np
+
+  _m = _pd.read_csv("musteriler.csv"); _o = _pd.read_csv("sifarisler_qisa.csv")
+  _x = _pd.merge(_o, _m, on="MüştəriID").groupby("Ad")["Məbləğ"].sum().sort_values(ascending=False)
+  assert isinstance(xerc_sql, _pd.DataFrame) and list(xerc_sql.columns) == ["Ad", "xerc"], "xerc_sql sütunları: Ad, xerc"
+  assert list(xerc_sql["xerc"]) == list(_x.values) and set(xerc_sql["Ad"]) == set(_x.index), f"xerc_sql düzgün deyil: {_x.to_dict()}"
+  assert sifarissiz == ["Nigar", "Rauf", "Tural"], f"sifarissiz ['Nigar', 'Rauf', 'Tural'] olmalıdır, səndə: {sifarissiz!r}"
+  assert "JOIN" in dacy.code.upper(), "SQL JOIN istifadə et"
+hints:
+- FROM sifarisler s JOIN musteriler m ON m.MüştəriID = s.MüştəriID GROUP BY m.Ad ORDER BY xerc DESC
+- 'LEFT JOIN-də sifarişi olmayanların s.SifarişID-si NULL olur: WHERE s.SifarişID IS NULL'
+- pd.read_sql_query(sql, con)["Ad"].tolist()

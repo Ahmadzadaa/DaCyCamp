@@ -30,6 +30,7 @@ describe('Repo kurs paketləri (content/courses)', () => {
         create: { slug: t.slug, title: t.title, color: t.color, order: i + 1, isPublished: true },
       });
     await prisma.topic.create({ data: { slug: 'python', title: 'Python', order: 1 } });
+    await prisma.topic.create({ data: { slug: 'sql', title: 'SQL', order: 2 } });
     admin = await login(app, 'admin@test.local', 'Admin123!');
   });
   afterAll(() => app.close());

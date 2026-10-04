@@ -1,0 +1,15 @@
+# Python & SQL — Python4Business Gün 9: Python-dan verilənlər bazasına qoşulma və SQL sorğuları.
+# Praktika brauzerdə işləyən sqlite3 ilə; MySQL/PostgreSQL bağlantısı nəzəri hissədədir.
+slug: python-sql
+track: data-analytics
+title: 'Python & SQL: Working with Databases'
+level: intermediate
+description: 'Python-dan verilənlər bazası ilə işləmək: bağlantı, kursor, sorğular, parametrli sorğular
+  və SQL injection-dan qorunma, pandas ilə to_sql və read_sql, JOIN, GROUP BY, HAVING və tarix funksiyaları.
+  Praktika brauzerdə işləyən SQLite bazası üzərində, sonda mini data bazası layihəsi.'
+sequential: true
+estimated_hours: 6
+published: true
+topics:
+- python
+- sql

@@ -1,0 +1,40 @@
+type: quiz
+title: 'Test: pandas və SQL'
+xp: 25
+estimated_minutes: 5
+pass_score: 66
+questions:
+- text: 'SQL ifadəsinin pandas qarşılığı:'
+  type: classify
+  buckets:
+  - name: df[şərt]
+    items:
+    - WHERE Region = 'Bakı'
+  - name: groupby(...).sum()
+    items:
+    - GROUP BY Region + SUM(...)
+  - name: sort_values(ascending=False)
+    items:
+    - ORDER BY gelir DESC
+  - name: head(5)
+    items:
+    - LIMIT 5
+  explanation: SQL və pandas eyni əməliyyatları fərqli sintaksislə edir.
+- text: '`df.to_sql("t", con, if_exists="append")` nə edir?'
+  options:
+  - Cədvəli silir
+  - Sətirləri mövcud cədvəlin sonuna əlavə edir
+  - Xəta verir
+  - Cədvəli əvəz edir
+  correct:
+  - 2
+  explanation: append — əlavə, replace — əvəz, fail — xəta.
+- text: Milyon sətirlik bazadan yalnız Bakı satışlarının cəmi lazımdır. Ən yaxşı yol?
+  options:
+  - Hamısını pandas-a çəkib filtrləmək
+  - WHERE və SUM-u SQL sorğusunda etmək
+  - CSV-yə ixrac edib Excel-də hesablamaq
+  - Hər sətri ayrıca fetchone ilə oxumaq
+  correct:
+  - 2
+  explanation: Filtr və aqreqasiyanı bazada etmək sürətli və qənaətlidir.

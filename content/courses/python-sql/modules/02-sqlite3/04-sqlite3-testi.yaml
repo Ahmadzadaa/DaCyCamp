@@ -1,0 +1,37 @@
+type: quiz
+title: 'Test: sqlite3 və təhlükəsizlik'
+xp: 25
+estimated_minutes: 5
+pass_score: 66
+questions:
+- text: INSERT-dən sonra `commit()` unudulsa (fayl bazasında) nə olur?
+  options:
+  - Heç nə
+  - Dəyişikliklər yadda saxlanmaya bilər
+  - Xəta verir
+  - Cədvəl silinir
+  correct:
+  - 2
+  explanation: commit dəyişiklikləri bazaya yazır.
+- text: Hansı yazılış təhlükəsizdir?
+  type: classify
+  buckets:
+  - name: Təhlükəsiz ✅
+    items:
+    - cur.execute("... WHERE seher = ?", (seher,))
+    - cur.executemany("INSERT ... VALUES (?, ?)", siyahi)
+  - name: Təhlükəli 🚩
+    items:
+    - cur.execute(f"... WHERE seher = '{seher}'")
+    - cur.execute("... WHERE ad = '" + ad + "'")
+  explanation: Parametrlər sürücü tərəfindən təhlükəsiz ötürülür; sətir birləşdirmə SQL injection-a yol
+    açır.
+- text: '`fetchone()` nə qaytarır?'
+  options:
+  - Bütün sətirləri
+  - Növbəti bir sətri (tuple) və ya None
+  - Sətir sayını
+  - Sütun adlarını
+  correct:
+  - 2
+  explanation: fetchone — bir sətir.

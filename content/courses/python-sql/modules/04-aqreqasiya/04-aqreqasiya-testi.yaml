@@ -1,0 +1,36 @@
+type: quiz
+title: 'Test: GROUP BY və HAVING'
+xp: 25
+estimated_minutes: 5
+pass_score: 66
+questions:
+- text: 'WHERE və HAVING fərqi:'
+  options:
+  - Fərq yoxdur
+  - WHERE sətirləri qruplaşdırmadan əvvəl, HAVING qrupları sonra filtrləyir
+  - HAVING yalnız JOIN-də işləyir
+  - WHERE yalnız rəqəmlərlə işləyir
+  correct:
+  - 2
+  explanation: Aqreqatla filtr — HAVING.
+- text: 'Sorğunun icra sırası düzgün olan variant:'
+  options:
+  - SELECT → FROM → WHERE → GROUP BY
+  - FROM → WHERE → GROUP BY → HAVING → SELECT → ORDER BY → LIMIT
+  - FROM → GROUP BY → WHERE → SELECT
+  - WHERE → FROM → SELECT → HAVING
+  correct:
+  - 2
+  explanation: Buna görə WHERE-də SUM istifadə olunmur.
+- text: Hər şərt harada yazılmalıdır?
+  type: classify
+  buckets:
+  - name: WHERE
+    items:
+    - Region = 'Bakı'
+    - strftime('%Y', Date) = '2024'
+  - name: HAVING
+    items:
+    - SUM("Total Revenue") > 150000
+    - COUNT(*) >= 10
+  explanation: Sətir şərtləri WHERE-də, aqreqat şərtləri HAVING-də.

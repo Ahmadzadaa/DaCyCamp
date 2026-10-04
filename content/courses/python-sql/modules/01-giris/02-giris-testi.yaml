@@ -1,0 +1,41 @@
+type: quiz
+title: 'Test: bağlantı'
+xp: 25
+estimated_minutes: 5
+pass_score: 66
+questions:
+- text: 'Addımları sıraya düz: hansı bağlantı mərhələsinə aiddir?'
+  type: classify
+  buckets:
+  - name: Hazırlıq
+    items:
+    - import sqlite3
+    - con = sqlite3.connect(...)
+  - name: İş
+    items:
+    - cur = con.cursor()
+    - cur.execute("SELECT ...")
+    - cur.fetchall()
+  - name: Bitmə
+    items:
+    - con.commit() (dəyişiklik olubsa)
+    - con.close()
+  explanation: Əvvəl sürücü və bağlantı, sonra kursor, icra və nəticə, sonda yadda saxlama və bağlama.
+- text: PostgreSQL-ə qoşulmaq üçün hansı paket istifadə olunur?
+  options:
+  - mysql-connector-python
+  - psycopg2
+  - sqlite3
+  - openpyxl
+  correct:
+  - 2
+  explanation: psycopg2/psycopg — PostgreSQL sürücüsü.
+- text: Bazanın parolu harada saxlanmalıdır?
+  options:
+  - Kodda dəyişən kimi
+  - Mühit dəyişənində və ya gizli konfiqurasiyada
+  - Notebook-un ilk hüceyrəsində
+  - SQL sorğusunun şərhində
+  correct:
+  - 2
+  explanation: Parol heç vaxt koda yazılmır.

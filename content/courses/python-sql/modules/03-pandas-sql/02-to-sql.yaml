@@ -1,0 +1,65 @@
+type: python
+title: CSV-ni bazaya yaz və SQL ilə sorğula
+xp: 40
+estimated_minutes: 10
+instructions: |
+  satislar.csv-ni SQLite bazasına köçür və regionlar üzrə gəliri SQL ilə hesabla, sonra nəticəni pandas ilə müqayisə et.
+tasks:
+- con = sqlite3.connect(":memory:"); df-i "satislar" cədvəli kimi yaz (to_sql, index=False).
+- SQL ilə regionlar üzrə gəlir (Region, gelir), gəlirə görə azalan → sql_netice (read_sql_query).
+- Eyni nəticəni pandas ilə hesabla və iki nəticənin eyni olub-olmadığını yoxla → eynidir (True/False).
+- Bakı regionunun əməliyyat sayını parametrli sorğu ilə tap (params=("Bakı",)) → baki_say.
+dataset: datasets/satislar.csv
+starter_code: |
+  import sqlite3
+  import pandas as pd
+
+  df = pd.read_csv("satislar.csv")
+  con = ...
+
+  sql_netice = ...
+  eynidir = ...
+  baki_say = ...
+
+  print(eynidir, baki_say)
+  sql_netice
+solution: |
+  import sqlite3
+  import pandas as pd
+
+  df = pd.read_csv("satislar.csv")
+  con = sqlite3.connect(":memory:")
+  df.to_sql("satislar", con, index=False)
+
+  sql_netice = pd.read_sql_query("""
+      SELECT Region, SUM("Total Revenue") AS gelir
+      FROM satislar
+      GROUP BY Region
+      ORDER BY gelir DESC
+  """, con)
+  pd_netice = df.groupby("Region")["Total Revenue"].sum().sort_values(ascending=False)
+  eynidir = bool(list(sql_netice["Region"]) == list(pd_netice.index)
+                 and ((sql_netice["gelir"].values - pd_netice.values) ** 2).sum() < 1e-6)
+  baki_say = pd.read_sql_query("SELECT COUNT(*) AS n FROM satislar WHERE Region = ?", con,
+                               params=("Bakı",))["n"][0]
+
+  print(eynidir, baki_say)
+  sql_netice
+tests: |
+  import pandas as _pd
+  import numpy as _np
+
+  _s = _pd.read_csv("satislar.csv")
+  _n = con.execute("SELECT COUNT(*) FROM satislar").fetchone()[0]
+  assert _n == len(_s), f"satislar cədvəlində {len(_s)} sətir olmalıdır (to_sql)"
+  _g = _s.groupby("Region")["Total Revenue"].sum().sort_values(ascending=False)
+  assert isinstance(sql_netice, _pd.DataFrame) and list(sql_netice.columns) == ["Region", "gelir"], "sql_netice sütunları: Region, gelir"
+  assert list(sql_netice["Region"]) == list(_g.index) and _np.allclose(sql_netice["gelir"], _g.values), "sql_netice regionlar üzrə gəlir, azalan sırada olmalıdır"
+  assert eynidir is True, "eynidir True olmalıdır"
+  assert baki_say == (_s["Region"] == "Bakı").sum(), f"baki_say {(_s['Region'] == 'Bakı').sum()} olmalıdır"
+  assert "params=" in dacy.code and "read_sql_query(" in dacy.code, "read_sql_query və params istifadə et"
+hints:
+- df.to_sql("satislar", con, index=False)
+- 'SQL-də boşluqlu sütun qoşa dırnaqda: SUM("Total Revenue") AS gelir ... GROUP BY Region ORDER BY gelir
+  DESC'
+- pd.read_sql_query("SELECT COUNT(*) AS n FROM satislar WHERE Region = ?", con, params=("Bakı",))["n"][0]

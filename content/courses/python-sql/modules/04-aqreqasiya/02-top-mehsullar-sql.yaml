@@ -1,0 +1,67 @@
+type: python
+title: Top məhsullar və kateqoriya xülasəsi
+xp: 40
+estimated_minutes: 10
+instructions: |
+  SQL sorğuları ilə əsas xülasələr.
+tasks:
+- 'Satılan ədədə görə top 5 məhsul: Product Name AS mehsul, SUM("Units Sold") AS eded → top5 (DataFrame,
+  LIMIT 5).'
+- 'Kateqoriyalar üzrə: kateqoriya, emeliyyat (COUNT), eded (SUM Units Sold), orta_cek (ROUND(AVG, 2)),
+  ədədə görə azalan → kateqoriya.'
+dataset: datasets/satislar.csv
+starter_code: |
+  import sqlite3
+  import pandas as pd
+
+  con = sqlite3.connect(":memory:")
+  pd.read_csv("satislar.csv").to_sql("satislar", con, index=False)
+
+  top5 = ...
+  kateqoriya = ...
+
+  print(top5)
+  kateqoriya
+solution: |
+  import sqlite3
+  import pandas as pd
+
+  con = sqlite3.connect(":memory:")
+  pd.read_csv("satislar.csv").to_sql("satislar", con, index=False)
+
+  top5 = pd.read_sql_query("""
+      SELECT "Product Name" AS mehsul, SUM("Units Sold") AS eded
+      FROM satislar
+      GROUP BY "Product Name"
+      ORDER BY eded DESC
+      LIMIT 5
+  """, con)
+  kateqoriya = pd.read_sql_query("""
+      SELECT "Product Category" AS kateqoriya,
+             COUNT(*) AS emeliyyat,
+             SUM("Units Sold") AS eded,
+             ROUND(AVG("Total Revenue"), 2) AS orta_cek
+      FROM satislar
+      GROUP BY "Product Category"
+      ORDER BY eded DESC
+  """, con)
+
+  print(top5)
+  kateqoriya
+tests: |
+  import pandas as _pd
+  import numpy as _np
+
+  _s = _pd.read_csv("satislar.csv")
+  _t = _s.groupby("Product Name")["Units Sold"].sum().sort_values(ascending=False).head(5)
+  assert isinstance(top5, _pd.DataFrame) and list(top5.columns) == ["mehsul", "eded"] and len(top5) == 5, "top5 — mehsul, eded sütunları, 5 sətir"
+  assert list(top5["eded"]) == list(_t.values), f"top5 ədədləri: {list(_t.values)}"
+  _k = _s.groupby("Product Category").agg(emeliyyat=("Units Sold", "size"), eded=("Units Sold", "sum"), orta_cek=("Total Revenue", "mean")).sort_values("eded", ascending=False)
+  assert isinstance(kateqoriya, _pd.DataFrame) and list(kateqoriya.columns) == ["kateqoriya", "emeliyyat", "eded", "orta_cek"], "kateqoriya sütunları: kateqoriya, emeliyyat, eded, orta_cek"
+  assert list(kateqoriya["kateqoriya"]) == list(_k.index) and list(kateqoriya["emeliyyat"]) == list(_k["emeliyyat"]), "kateqoriyalar ədədə görə azalan sırada olmalıdır"
+  assert _np.allclose(kateqoriya["orta_cek"], _k["orta_cek"].round(2), atol=0.011), "orta_cek = ROUND(AVG(\"Total Revenue\"), 2)"
+hints:
+- SELECT "Product Name" AS mehsul, SUM("Units Sold") AS eded FROM satislar GROUP BY "Product Name" ORDER
+  BY eded DESC LIMIT 5
+- COUNT(*) AS emeliyyat, SUM("Units Sold") AS eded, ROUND(AVG("Total Revenue"), 2) AS orta_cek
+- pd.read_sql_query(sql, con)

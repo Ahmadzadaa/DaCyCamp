@@ -1,0 +1,2 @@
+title: 'pandas və SQL: to_sql, read_sql, JOIN'
+description: DataFrame-i bazaya yazmaq, SQL nəticəsini DataFrame kimi oxumaq, SQL JOIN və pd.merge müqayisəsi.

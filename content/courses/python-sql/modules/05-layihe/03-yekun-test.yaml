@@ -1,0 +1,75 @@
+type: quiz
+title: 'Yekun test: Python & SQL'
+xp: 50
+estimated_minutes: 9
+pass_score: 70
+questions:
+- text: Python ilə gələn sqlite3 hansı bazaya qoşulur?
+  options:
+  - MySQL
+  - SQLite (fayl və ya yaddaş)
+  - Oracle
+  - Hamısına
+  correct:
+  - 2
+  explanation: sqlite3 — SQLite sürücüsü.
+- text: İstifadəçinin yazdığı şəhər adını sorğuya necə ötürmək lazımdır?
+  options:
+  - f-string ilə
+  - 'Parametr kimi: execute("... = ?", (seher,))'
+  - Sətir birləşdirmə ilə
+  - eval() ilə
+  correct:
+  - 2
+  explanation: Parametrlər SQL injection-dan qoruyur.
+- text: '`pd.read_sql_query(sql, con)` nə qaytarır?'
+  options:
+  - Tuple-lar siyahısı
+  - DataFrame
+  - Kursor
+  - JSON
+  correct:
+  - 2
+  explanation: Nəticə birbaşa DataFrame olur.
+- text: Hər əməliyyat harada daha səmərəlidir?
+  type: classify
+  buckets:
+  - name: Bazada (SQL)
+    items:
+    - Milyon sətirdən filtr və cəm
+    - İki böyük cədvəlin JOIN-i
+  - name: pandas-da
+    items:
+    - Kiçik nəticə üzərində qrafik çəkmək
+    - Mürəkkəb mətn təmizləmə (regex)
+  explanation: Ağır filtr/aqreqasiya bazada, vizuallaşdırma və çevik emal pandas-da.
+- text: Aqreqat şərti (SUM > 1000) harada yazılır?
+  options:
+  - WHERE
+  - HAVING
+  - ORDER BY
+  - FROM
+  correct:
+  - 2
+  explanation: Qruplaşdırmadan sonrakı filtr — HAVING.
+- text: 'Normallaşdırmanın faydası:'
+  options:
+  - Sorğular JOIN-siz olur
+  - Təkrarlanan məlumat bir yerdə saxlanılır, yenilənməsi asandır
+  - Cədvəl sayı azalır
+  - Parol lazım olmur
+  correct:
+  - 2
+  explanation: Təkrar data ayrıca cədvəldə.
+- text: Hansılar Python verilənlər bazası sürücüləridir? (Bir neçə cavab)
+  type: multiple
+  options:
+  - psycopg2
+  - mysql-connector-python
+  - seaborn
+  - pyodbc
+  correct:
+  - 1
+  - 2
+  - 4
+  explanation: seaborn qrafik kitabxanasıdır.

@@ -1,0 +1,62 @@
+type: python
+title: Cədvəl yarat, doldur, sorğula
+xp: 40
+estimated_minutes: 10
+instructions: |
+  Yaddaşda baza yarat və TechNar-ın bir neçə məhsulunu əlavə et.
+tasks:
+- sqlite3.connect(":memory:") → con; cur = con.cursor().
+- 'mehsullar cədvəli: id INTEGER PRIMARY KEY, ad TEXT, kateqoriya TEXT, qiymet REAL.'
+- mehsul_siyahisi-ni executemany ilə əlavə et və commit et.
+- Cədvəldəki sətirlərin sayı (SELECT COUNT(*)) → say; Electronics məhsullarının adları qiymətə görə azalan
+  → elektronika (list).
+starter_code: |
+  import sqlite3
+
+  mehsul_siyahisi = [
+      ("iPhone 15", "Electronics", 2399), ("AirPods Pro 2", "Electronics", 599),
+      ("Nike Air Force 1", "Sports", 249), ("Yoga Mat Pro", "Sports", 59),
+      ("Dyson V15", "Home Appliances", 1499), ("Zara Basic T-Shirt", "Clothing", 39),
+  ]
+
+  con = ...
+  cur = ...
+
+  say = ...
+  elektronika = ...
+  print(say, elektronika)
+solution: |
+  import sqlite3
+
+  mehsul_siyahisi = [
+      ("iPhone 15", "Electronics", 2399), ("AirPods Pro 2", "Electronics", 599),
+      ("Nike Air Force 1", "Sports", 249), ("Yoga Mat Pro", "Sports", 59),
+      ("Dyson V15", "Home Appliances", 1499), ("Zara Basic T-Shirt", "Clothing", 39),
+  ]
+
+  con = sqlite3.connect(":memory:")
+  cur = con.cursor()
+  cur.execute("CREATE TABLE mehsullar (id INTEGER PRIMARY KEY, ad TEXT, kateqoriya TEXT, qiymet REAL)")
+  cur.executemany("INSERT INTO mehsullar (ad, kateqoriya, qiymet) VALUES (?, ?, ?)", mehsul_siyahisi)
+  con.commit()
+
+  say = cur.execute("SELECT COUNT(*) FROM mehsullar").fetchone()[0]
+  rows = cur.execute(
+      "SELECT ad FROM mehsullar WHERE kateqoriya = 'Electronics' ORDER BY qiymet DESC"
+  ).fetchall()
+  elektronika = [r[0] for r in rows]
+  print(say, elektronika)
+tests: |
+  import sqlite3 as _sq
+  assert isinstance(con, _sq.Connection), "con = sqlite3.connect(':memory:')"
+  _cols = [r[1] for r in con.execute("PRAGMA table_info(mehsullar)").fetchall()]
+  assert _cols == ["id", "ad", "kateqoriya", "qiymet"], f"mehsullar cədvəlinin sütunları: id, ad, kateqoriya, qiymet. Səndə: {_cols}"
+  assert con.execute("SELECT COUNT(*) FROM mehsullar").fetchone()[0] == 6, "6 məhsul əlavə olunmalıdır (executemany)"
+  assert say == 6, f"say 6 olmalıdır, sənin nəticən: {say!r}"
+  assert elektronika == ["iPhone 15", "AirPods Pro 2"], f"elektronika ['iPhone 15', 'AirPods Pro 2'] olmalıdır, sənin nəticən: {elektronika!r}"
+  assert "executemany(" in dacy.code, "executemany istifadə et"
+hints:
+- cur.execute("CREATE TABLE mehsullar (id INTEGER PRIMARY KEY, ad TEXT, kateqoriya TEXT, qiymet REAL)")
+- cur.executemany("INSERT INTO mehsullar (ad, kateqoriya, qiymet) VALUES (?, ?, ?)", mehsul_siyahisi);
+  con.commit()
+- say = cur.execute("SELECT COUNT(*) FROM mehsullar").fetchone()[0]

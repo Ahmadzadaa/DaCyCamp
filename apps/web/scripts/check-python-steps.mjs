@@ -112,7 +112,9 @@ async function run(dir, code, tests, datasets) {
     await py.runPythonAsync(tests, { globals: ns });
     return { passed: true, error: null };
   } catch (e) {
-    return { passed: false, error: lastLine(e) };
+    const error = lastLine(e);
+    // loadPackagesFromImports şəbəkə xətasını atmır, sadəcə import sonra yıxılır (məs. sqlite3)
+    return { passed: false, error, skip: /loading-packages\.html/.test(error) ? error : undefined };
   } finally {
     py.runPython('_dacy_unwatch()');
     py.runPython(FLUSH);

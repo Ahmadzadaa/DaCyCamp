@@ -1,0 +1,2 @@
+title: 'sqlite3: cədvəl, əlavə və sorğu'
+description: CREATE TABLE, INSERT və executemany, SELECT, fetchall/fetchone, commit və parametrli sorğular.

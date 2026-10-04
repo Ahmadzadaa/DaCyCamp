@@ -1,0 +1,67 @@
+type: python
+title: HAVING və aylıq təhlil
+xp: 40
+estimated_minutes: 10
+instructions: |
+  Bakının güclü satıcıları və 2024-ün aylıq gəliri — SQL ilə.
+tasks:
+- 'Bakıda gəliri 150 000 ₼-dan çox olan satıcılar: "Sales Employee" AS satici, SUM gəlir AS gelir (2 onluq),
+  gəlirə görə azalan → guclu (WHERE + HAVING).'
+- '2024-ün aylar üzrə gəliri: strftime("%Y-%m", Date) AS ay, ROUND(SUM, 2) AS gelir, aya görə artan →
+  ayliq_2024.'
+dataset: datasets/satislar.csv
+starter_code: |
+  import sqlite3
+  import pandas as pd
+
+  con = sqlite3.connect(":memory:")
+  pd.read_csv("satislar.csv").to_sql("satislar", con, index=False)
+
+  guclu = ...
+  ayliq_2024 = ...
+
+  print(guclu)
+  ayliq_2024
+solution: |
+  import sqlite3
+  import pandas as pd
+
+  con = sqlite3.connect(":memory:")
+  pd.read_csv("satislar.csv").to_sql("satislar", con, index=False)
+
+  guclu = pd.read_sql_query("""
+      SELECT "Sales Employee" AS satici, ROUND(SUM("Total Revenue"), 2) AS gelir
+      FROM satislar
+      WHERE Region = 'Bakı'
+      GROUP BY "Sales Employee"
+      HAVING SUM("Total Revenue") > 150000
+      ORDER BY gelir DESC
+  """, con)
+  ayliq_2024 = pd.read_sql_query("""
+      SELECT strftime('%Y-%m', Date) AS ay, ROUND(SUM("Total Revenue"), 2) AS gelir
+      FROM satislar
+      WHERE strftime('%Y', Date) = '2024'
+      GROUP BY ay
+      ORDER BY ay
+  """, con)
+
+  print(guclu)
+  ayliq_2024
+tests: |
+  import pandas as _pd
+  import numpy as _np
+
+  _s = _pd.read_csv("satislar.csv")
+  _g = _s[_s["Region"] == "Bakı"].groupby("Sales Employee")["Total Revenue"].sum()
+  _g = _g[_g > 150000].sort_values(ascending=False).round(2)
+  assert isinstance(guclu, _pd.DataFrame) and list(guclu.columns) == ["satici", "gelir"], "guclu sütunları: satici, gelir"
+  assert list(guclu["satici"]) == list(_g.index) and _np.allclose(guclu["gelir"], _g.values), f"guclu: {_g.to_dict()}"
+  _y = _s[_s["Date"].str[:4] == "2024"].groupby(_s["Date"].str[:7])["Total Revenue"].sum().round(2)
+  assert isinstance(ayliq_2024, _pd.DataFrame) and list(ayliq_2024["ay"]) == list(_y.index), "ayliq_2024 — 2024-ün 12 ayı, artan sırada"
+  assert _np.allclose(ayliq_2024["gelir"], _y.values), "ayliq_2024 gəlirləri düzgün deyil"
+  assert "HAVING" in dacy.code.upper() and "STRFTIME" in dacy.code.upper(), "HAVING və strftime istifadə et"
+hints:
+- WHERE Region = 'Bakı' GROUP BY "Sales Employee" HAVING SUM("Total Revenue") > 150000 ORDER BY gelir
+  DESC
+- strftime('%Y-%m', Date) AS ay ... WHERE strftime('%Y', Date) = '2024' GROUP BY ay ORDER BY ay
+- ROUND(SUM("Total Revenue"), 2) AS gelir
