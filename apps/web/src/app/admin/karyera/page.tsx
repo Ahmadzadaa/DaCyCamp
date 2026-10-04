@@ -4,7 +4,9 @@ import { apiFetch } from '@/lib/api/server';
 import { t } from '@/lib/i18n';
 import { RoadmapsManager } from '@/components/admin/roadmaps-manager';
 
-export const metadata: Metadata = { title: `${t('roadmap.adminTitle')} · ${t('app.admin')}` };
+export function generateMetadata(): Metadata {
+  return { title: `${t('roadmap.adminTitle')} · ${t('app.admin')}` };
+}
 export const dynamic = 'force-dynamic';
 
 export default async function RoadmapsAdminPage() {

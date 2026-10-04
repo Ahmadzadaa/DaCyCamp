@@ -7,7 +7,9 @@ import { AdminSupportTicket } from '@/components/support/admin-ticket';
 import { apiTry } from '@/lib/api/server';
 import { t } from '@/lib/i18n';
 
-export const metadata: Metadata = { title: t('support.adminTitle') };
+export function generateMetadata(): Metadata {
+  return { title: t('support.adminTitle') };
+}
 
 export default async function AdminSupportTicketPage({
   params,

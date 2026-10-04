@@ -19,7 +19,9 @@ import {
   type TopicOpt,
 } from '@/components/app/catalog-controls';
 
-export const metadata: Metadata = { title: t('nav.courses') };
+export function generateMetadata(): Metadata {
+  return { title: t('nav.courses') };
+}
 
 type SP = {
   istiqamet?: string;

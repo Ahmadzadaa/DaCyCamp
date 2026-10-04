@@ -3,6 +3,7 @@ import { X } from 'lucide-react';
 import type { StepViewDto } from '@dacy/shared';
 import { Logo } from '@/components/app/logo';
 import { t } from '@/lib/i18n';
+import { fmtNum } from '@/lib/utils';
 
 export function WorkspaceTop({ view }: { view: StepViewDto }) {
   const courseUrl = `/kurs/${view.course.slug}`;
@@ -23,7 +24,7 @@ export function WorkspaceTop({ view }: { view: StepViewDto }) {
         >
           <i style={{ width: `${view.coursePercent}%` }} />
         </div>
-        <span className="xp">{view.userXp.toLocaleString('az-AZ')} XP</span>
+        <span className="xp">{fmtNum(view.userXp)} XP</span>
         <Link
           href={courseUrl}
           className="rounded-md p-1 text-on-dark-muted hover:text-on-dark"

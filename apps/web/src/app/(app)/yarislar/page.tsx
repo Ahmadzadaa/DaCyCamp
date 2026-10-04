@@ -8,7 +8,9 @@ import { EmptyState } from '@/components/app/empty-state';
 import { HeroArt } from '@/components/app/hero-art';
 import { TrackTile } from '@/components/app/track-icon';
 
-export const metadata: Metadata = { title: t('hub.contestsTitle') };
+export function generateMetadata(): Metadata {
+  return { title: t('hub.contestsTitle') };
+}
 
 export default async function ContestsPage() {
   const list = (await apiTry<ContestDto[]>('/contests')) ?? [];

@@ -13,7 +13,7 @@ const NAV = [
 export function HeaderNav() {
   const path = usePathname();
   return (
-    <nav className="hidden md:flex" aria-label="Əsas naviqasiya">
+    <nav className="hidden md:flex" aria-label={t('shell.mainNav')}>
       {NAV.map((n) => (
         <Link
           key={n.href}

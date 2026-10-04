@@ -4,7 +4,9 @@ import { getCurrentUser } from '@/lib/api/server';
 import { t } from '@/lib/i18n';
 import { AuditLog } from '@/components/admin/audit-log';
 
-export const metadata: Metadata = { title: `${t('audit.title')} · ${t('app.admin')}` };
+export function generateMetadata(): Metadata {
+  return { title: `${t('audit.title')} · ${t('app.admin')}` };
+}
 
 /** Fəaliyyət tarixçəsi — yalnız ADMIN (API də 403 qaytarır) */
 export default async function AuditPage() {

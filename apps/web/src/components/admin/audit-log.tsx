@@ -6,7 +6,7 @@ import { History } from 'lucide-react';
 import { az, type AuditLogDto, type AuditPageDto } from '@dacy/shared';
 import { api } from '@/lib/api/client';
 import { errorMessage } from '@/lib/errors-i18n';
-import { t } from '@/lib/i18n';
+import { t, type TKey } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
 import { Select } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -18,8 +18,8 @@ const FILTERS = Object.keys(az.audit.filter) as Array<keyof typeof az.audit.filt
 
 /** "course.purge.auto" → "kurs avtomatik həmişəlik silindi" (lüğətdə yoxdursa kodun özü) */
 function actionLabel(action: string): string {
-  const key = action.replace(/\./g, '_') as keyof typeof az.audit.actions;
-  return az.audit.actions[key] ?? action;
+  const key = action.replace(/\./g, '_');
+  return key in az.audit.actions ? t(`audit.actions.${key}` as TKey) : action;
 }
 
 function detailText(d: AuditLogDto['details'], title: string | null): string | null {

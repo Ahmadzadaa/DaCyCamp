@@ -11,12 +11,14 @@ import './ios.css';
 import { Providers } from './providers';
 import { LevelLabelsProvider } from '@/components/level-labels';
 import { getLevelLabels } from '@/lib/level-labels';
-import { t } from '@/lib/i18n';
+import { getLocale, t } from '@/lib/i18n';
 
-export const metadata: Metadata = {
-  title: { default: t('app.name'), template: `%s · ${t('app.name')}` },
-  description: t('app.tagline'),
-};
+export function generateMetadata(): Metadata {
+  return {
+    title: { default: t('app.name'), template: `%s · ${t('app.name')}` },
+    description: t('app.tagline'),
+  };
+}
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
@@ -31,7 +33,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const levels = await getLevelLabels();
   return (
     // data-ui="ios" — təsdiqlənmiş dizayn v3 (ios.css bu atributa bağlıdır)
-    <html lang="az" data-ui="ios" suppressHydrationWarning>
+    <html lang={getLocale()} data-ui="ios" suppressHydrationWarning>
       <body>
         <Providers>
           <LevelLabelsProvider labels={levels}>{children}</LevelLabelsProvider>

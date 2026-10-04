@@ -10,7 +10,9 @@ import { EmptyState } from '@/components/app/empty-state';
 import { HeroArt } from '@/components/app/hero-art';
 import { fmtAgo } from '@/components/admin/format';
 
-export const metadata: Metadata = { title: t('hub.projectsTitle') };
+export function generateMetadata(): Metadata {
+  return { title: t('hub.projectsTitle') };
+}
 
 type Item = ProjectsDto['items'][number];
 const COLS: Array<{ key: 'todo' | 'review' | 'returned' | 'done'; label: TKey; tone: string }> = [

@@ -8,7 +8,9 @@ import { TrackBadge } from '@/components/app/track-badge';
 import { StatusBadge } from '@/components/admin/status-badge';
 import { PageHeader } from '@/components/admin/page-header';
 
-export const metadata: Metadata = { title: `${t('admin.pathsTitle')} · ${t('app.admin')}` };
+export function generateMetadata(): Metadata {
+  return { title: `${t('admin.pathsTitle')} · ${t('app.admin')}` };
+}
 export const dynamic = 'force-dynamic';
 
 export default async function AdminPathsPage() {

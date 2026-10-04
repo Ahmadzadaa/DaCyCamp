@@ -118,8 +118,9 @@ export function CourseHeader({
           {stats ? (
             <p className="mt-1 text-sm text-muted" data-testid="course-stats">
               {t('courseAdmin.studentsCount', { n: stats.enrollments })} · {t('common.completed')}:{' '}
-              {stats.completed} · {stats.modules} {t('courseAdmin.statModules')} · {stats.steps}{' '}
-              {t('courseAdmin.statSteps')}
+              {stats.completed} · {stats.modules}{' '}
+              {t('courseAdmin.statModules', { n: stats.modules })} · {stats.steps}{' '}
+              {t('courseAdmin.statSteps', { n: stats.steps })}
             </p>
           ) : null}
         </div>

@@ -141,12 +141,12 @@ export function UserDetail({
           <div>
             <BookOpen aria-hidden />
             <b>{u.enrollmentCount}</b>
-            <span>{t('users.statCourses')}</span>
+            <span>{t('users.statCourses', { n: u.enrollmentCount })}</span>
           </div>
           <div>
             <Award aria-hidden />
             <b>{u.certificateCount}</b>
-            <span>{t('users.statCerts')}</span>
+            <span>{t('users.statCerts', { n: u.certificateCount })}</span>
           </div>
         </div>
       </header>

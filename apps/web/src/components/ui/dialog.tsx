@@ -1,4 +1,5 @@
 'use client';
+import { t } from '@/lib/i18n';
 import * as React from 'react';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { X } from 'lucide-react';
@@ -42,7 +43,7 @@ export function DialogContent({
           </DialogPrimitive.Description>
         ) : null}
         <div className="mt-5">{children}</div>
-        <DialogPrimitive.Close className="dlg-x" aria-label="Bağla">
+        <DialogPrimitive.Close className="dlg-x" aria-label={t('common.close')}>
           <X className="size-4" />
         </DialogPrimitive.Close>
       </DialogPrimitive.Content>

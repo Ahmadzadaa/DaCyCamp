@@ -23,14 +23,13 @@ export function RightPlaceholder({ view }: { view: StepViewDto }) {
           <span className="on">{file}</span>
           {v.dataset.map((d) => (
             <span key={d.path}>
-              {d.filename}
-              {v.kind === 'sql' ? ' (cədvəl)' : ''}
+              {v.kind === 'sql' ? t('ws.tableTab', { name: d.filename }) : d.filename}
             </span>
           ))}
         </div>
         <CodeLines
           code={v.starter_code}
-          fallback={v.kind === 'sql' ? '-- Sorğunuzu bura yazın' : '# Kodunuzu bura yazın'}
+          fallback={v.kind === 'sql' ? t('ws.sqlPlaceholder') : t('ws.pyPlaceholder')}
         />
         <div className="console">
           <div className="ch">

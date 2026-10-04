@@ -4499,6 +4499,20 @@
   .auth-logo-m {
     display: none;
   }
+  /* dil düyməsi: mobil başlıqda yer azdır — ikon gizlənir, yalnız «AZ/EN» */
+  @media (max-width: 640px) {
+    .top-actions .lang-switch {
+      padding-inline: 10px;
+    }
+    .top-actions .lang-switch svg {
+      display: none;
+    }
+  }
+  .auth-acts {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
   .auth-back {
     background: color-mix(in srgb, var(--card) 80%, transparent);
     -webkit-backdrop-filter: blur(12px);
@@ -4578,6 +4592,27 @@
     .auth-logo-m {
       display: flex;
       color: var(--ink);
+    }
+    /* loqo + «AZ/EN» + «Sayta qayıt» 390px-ə sığsın */
+    .auth-acts {
+      gap: 6px;
+    }
+    .auth-acts .lang-switch {
+      padding-inline: 10px;
+    }
+    .auth-acts .lang-switch svg {
+      display: none;
+    }
+  }
+  /* çox dar ekran (<380px): «Sayta qayıt» yalnız ox — mətn ekran oxuyucu üçün qalır */
+  @media (max-width: 379px) {
+    .auth-back-label {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
     }
     .auth-card {
       padding: 30px 22px 26px;

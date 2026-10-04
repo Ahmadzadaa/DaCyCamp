@@ -5,7 +5,9 @@ import { apiFetch, getCurrentUser } from '@/lib/api/server';
 import { t } from '@/lib/i18n';
 import { Onboarding } from '@/components/path/onboarding';
 
-export const metadata: Metadata = { title: t('paths.onboardingTitle') };
+export function generateMetadata(): Metadata {
+  return { title: t('paths.onboardingTitle') };
+}
 
 export default async function OnboardingPage() {
   const user = await getCurrentUser();

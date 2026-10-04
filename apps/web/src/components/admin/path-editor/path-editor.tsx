@@ -76,7 +76,7 @@ function SortableRow({
       <button
         type="button"
         className="cursor-grab text-muted"
-        aria-label="Sürüklə"
+        aria-label={t('admin.dragHandle')}
         {...attributes}
         {...listeners}
       >
@@ -88,7 +88,7 @@ function SortableRow({
         onClick={onSelect}
       >
         <span className="ntype shrink-0">{TYPE_LABEL[item.type]()}</span>
-        <span className="truncate font-medium">{item.title || '(başlıqsız)'}</span>
+        <span className="truncate font-medium">{item.title || t('common.untitled')}</span>
         {item.isOptional ? (
           <span className="shrink-0 text-xs text-muted">· {t('paths.optional')}</span>
         ) : null}
@@ -328,7 +328,7 @@ export function PathEditor({
           <>
             <div className="mb-3 flex items-center gap-2">
               <span className="ntype">{TYPE_LABEL[selected.type]()}</span>
-              <h2 className="text-lg">{selected.title || '(başlıqsız)'}</h2>
+              <h2 className="text-lg">{selected.title || t('common.untitled')}</h2>
               <button
                 type="button"
                 className="ml-auto text-xs text-muted hover:underline"

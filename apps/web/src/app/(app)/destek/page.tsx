@@ -11,7 +11,9 @@ import { SupportStatusBadge } from '@/components/support/status-badge';
 import { apiFetch, getCurrentUser } from '@/lib/api/server';
 import { t } from '@/lib/i18n';
 
-export const metadata: Metadata = { title: t('support.title') };
+export function generateMetadata(): Metadata {
+  return { title: t('support.title') };
+}
 
 /** Dəstək: yeni müraciət + tələbənin müraciətləri. ?sehife= — kömək düyməsindən gələndə hansı səhifədən yazılıb */
 export default async function SupportPage({

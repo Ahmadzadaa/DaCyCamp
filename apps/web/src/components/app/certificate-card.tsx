@@ -44,11 +44,11 @@ export function CertificateCard({ cert }: { cert: CertificateDto }) {
                 <span className="text-sm text-muted">{t('cert.title')}</span>
               </div>
             </div>
-            <p className="mt-10 text-muted">Bu sertifikat təsdiq edir ki,</p>
+            <p className="mt-10 text-muted">{t('cert.certifies')}</p>
             <h1 className="mt-1 text-3xl font-bold md:text-4xl" data-testid="cert-name">
               {cert.studentName}
             </h1>
-            <p className="mt-6 text-muted">aşağıdakı {t('cert.completedCourse')}:</p>
+            <p className="mt-6 text-muted">{t('cert.completedBelow')}</p>
             <h2 className="mt-1 text-xl md:text-2xl">{cert.courseTitle}</h2>
             <div className="mt-3">
               <TrackBadge color={cert.trackColor}>{cert.trackTitle}</TrackBadge>

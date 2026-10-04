@@ -5,7 +5,9 @@ import { t } from '@/lib/i18n';
 import { LabsTable } from '@/components/admin/labs-table';
 import { PageHeader } from '@/components/admin/page-header';
 
-export const metadata: Metadata = { title: `${t('admin.labs')} · ${t('app.admin')}` };
+export function generateMetadata(): Metadata {
+  return { title: `${t('admin.labs')} · ${t('app.admin')}` };
+}
 export const dynamic = 'force-dynamic';
 
 export default async function LabsPage() {

@@ -12,7 +12,9 @@ import { t } from '@/lib/i18n';
 import { CoursesTable } from '@/components/admin/courses-table';
 import { ActivityFeed } from '@/components/admin/activity-feed';
 
-export const metadata: Metadata = { title: `${t('admin.courses')} · ${t('app.admin')}` };
+export function generateMetadata(): Metadata {
+  return { title: `${t('admin.courses')} · ${t('app.admin')}` };
+}
 
 const STATUSES: CourseStatus[] = ['published', 'draft', 'archived', 'deleted'];
 

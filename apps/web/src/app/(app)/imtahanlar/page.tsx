@@ -10,7 +10,9 @@ import { EmptyState } from '@/components/app/empty-state';
 import { HeroArt } from '@/components/app/hero-art';
 import { ProgressRing } from '@/components/app/progress-ring';
 
-export const metadata: Metadata = { title: t('hub.examsTitle') };
+export function generateMetadata(): Metadata {
+  return { title: t('hub.examsTitle') };
+}
 
 export default async function ExamsPage() {
   const d = await apiTry<ExamsDto>('/me/exams');

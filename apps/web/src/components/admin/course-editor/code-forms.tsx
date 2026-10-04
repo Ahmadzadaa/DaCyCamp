@@ -124,7 +124,7 @@ export function SqlForm({
           value={def.check ?? 'result_match'}
           onChange={(check) => onChange({ check })}
           options={[
-            { value: 'result_match', label: 'result_match (sıra vacib)' },
+            { value: 'result_match', label: t('admin.checkOrdered') },
             { value: 'result_match_unordered', label: 'result_match_unordered' },
           ]}
           label={t('admin.checkMode')}
@@ -323,7 +323,9 @@ export function CtfForm({
           onAssetUploaded={ctx.onAssetUploaded}
         />
       </Field>
-      <Field label={`${t('admin.dockerImage')} (${t('common.optional')}, Mərhələ 3)`}>
+      <Field
+        label={`${t('admin.dockerImage')} (${t('common.optional')}, ${t('admin.phase', { n: 3 })})`}
+      >
         <Input
           value={def.docker_image ?? ''}
           onChange={(e) => onChange({ docker_image: e.target.value || undefined })}

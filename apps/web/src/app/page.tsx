@@ -6,7 +6,9 @@ import { t } from '@/lib/i18n';
 import { Landing } from '@/components/landing/landing';
 import { getLevelLabels } from '@/lib/level-labels';
 
-export const metadata: Metadata = { title: { absolute: t('landing.metaTitle') } };
+export function generateMetadata(): Metadata {
+  return { title: { absolute: t('landing.metaTitle') } };
+}
 
 /** Qonaq → tanışlıq səhifəsi; daxil olmuş tələbə → panel, heyət → admin panel */
 export default async function Home() {

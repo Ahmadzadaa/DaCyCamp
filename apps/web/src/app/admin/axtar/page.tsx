@@ -9,7 +9,9 @@ import { EmptyState } from '@/components/app/empty-state';
 import { TrackBadge } from '@/components/app/track-badge';
 import { CourseStatusBadge } from '@/components/admin/course-actions';
 
-export const metadata: Metadata = { title: `${t('adminSearch.title')} · ${t('app.admin')}` };
+export function generateMetadata(): Metadata {
+  return { title: `${t('adminSearch.title')} · ${t('app.admin')}` };
+}
 
 export default async function AdminSearchPage({
   searchParams,

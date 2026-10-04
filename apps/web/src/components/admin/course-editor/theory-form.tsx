@@ -100,7 +100,7 @@ export function TheoryForm({
           <Input
             value={values.video_url}
             onChange={(e) => onChange({ ...values, video_url: e.target.value })}
-            placeholder="https://youtu.be/… və ya videos/fayl.mp4"
+            placeholder={t('admin.videoUrlPh')}
           />
           <input
             ref={vidInput}

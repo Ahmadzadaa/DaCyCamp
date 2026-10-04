@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { History } from 'lucide-react';
 import { az, type AuditLogDto, type AuditPageDto } from '@dacy/shared';
 import { apiTry } from '@/lib/api/server';
-import { t } from '@/lib/i18n';
+import { getLocale, t, type TKey } from '@/lib/i18n';
 import { initials } from '@/lib/utils';
 import { fmtWhen } from './format';
 
@@ -17,12 +17,12 @@ function colorFor(seed: string) {
 export function auditSentence(it: AuditLogDto): string {
   let key = it.action.replace(/\./g, '_');
   if (key === 'course_archive' && it.details?.archived === false) key = 'course_unarchive';
-  const sentences = az.audit.sentence as Record<string, string>;
   const title =
     it.entityTitle ?? (typeof it.details?.stepTitle === 'string' ? it.details.stepTitle : '');
-  if (sentences[key] && title) return sentences[key]!.replace('{title}', title);
-  const label = (az.audit.actions as Record<string, string>)[key] ?? it.action;
-  return title ? `${label} — «${title}»` : label;
+  // açarın mövcudluğu az-dan yoxlanılır (en eyni quruluşdadır), mətn isə cari dildə
+  if (key in az.audit.sentence && title) return t(`audit.sentence.${key}` as TKey, { title });
+  const label = key in az.audit.actions ? t(`audit.actions.${key}` as TKey) : it.action;
+  return title ? `${label} — ${getLocale() === 'en' ? `“${title}”` : `«${title}»`}` : label;
 }
 
 /** Son admin əməliyyatları (kim · nə · nə vaxt) — Kurslar və Ümumi baxış səhifələrində */

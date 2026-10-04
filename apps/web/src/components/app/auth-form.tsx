@@ -10,10 +10,12 @@ import {
   type LoginInput,
   type PublicUser,
   type RegisterInput,
+  isLocale,
 } from '@dacy/shared';
 import { api } from '@/lib/api/client';
 import { errorMessage } from '@/lib/errors-i18n';
 import { t } from '@/lib/i18n';
+import { syncLocaleAfterLogin } from '@/components/app/language-switcher';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Field } from '@/components/ui/field';
@@ -47,7 +49,10 @@ export function AuthForm({ mode, next }: { mode: 'login' | 'register'; next?: st
             : isLogin
               ? '/panel'
               : '/baslangic';
-      router.push(target);
+      // dil seçimi: cihazdakı seçim ↔ profil; dil dəyişibsə tam yükləmə (bütün mətnlər yeni dildə)
+      if (syncLocaleAfterLogin(isLocale(me.locale) ? me.locale : undefined))
+        window.location.assign(target);
+      else router.push(target);
       router.refresh();
     } catch (e) {
       setError(errorMessage(e));

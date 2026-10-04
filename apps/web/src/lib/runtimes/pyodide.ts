@@ -44,7 +44,7 @@ function loadScript(src: string) {
     s.async = true;
     s.dataset.pyodide = src;
     s.onload = () => resolve();
-    s.onerror = () => reject(new Error(`Pyodide yüklənmədi: ${src}`));
+    s.onerror = () => reject(new Error(t('ws.pyodideFailed', { src })));
     document.head.appendChild(s);
   });
 }
@@ -54,7 +54,7 @@ export const LOCAL_PYODIDE_URL = '/pyodide/';
 
 async function loadFrom(url: string): Promise<PyodideLike> {
   await loadScript(`${url}pyodide.js`);
-  if (!window.loadPyodide) throw new Error('loadPyodide tapılmadı');
+  if (!window.loadPyodide) throw new Error(t('ws.pyodideFailed', { src: 'loadPyodide' }));
   return window.loadPyodide({ indexURL: url });
 }
 
@@ -97,13 +97,13 @@ export const PY_TIME_LIMIT_S = 10;
  */
 const WATCHDOG = `
 import sys as _sys, time as _time
-def _dacy_watch(limit):
+def _dacy_watch(limit, msg=None):
     end = _time.monotonic() + limit
     n = [0]
     def local(frame, event, arg):
         n[0] += 1
         if n[0] % 2000 == 0 and _time.monotonic() > end:
-            raise TimeoutError(f"Kod {limit:g} saniyədən çox işlədi — sonsuz dövr ola bilər")
+            raise TimeoutError(msg or f"Kod {limit:g} saniyədən çox işlədi — sonsuz dövr ola bilər")
         return local
     def glob(frame, event, arg):
         return local if frame.f_code.co_filename == "<exec>" else None
@@ -252,14 +252,17 @@ export async function runPython(
   for (const d of opts.datasets ?? []) {
     if (!d.url) continue;
     const res = await fetch(d.url, { credentials: 'include' });
-    if (!res.ok) throw new Error(`Dataset yüklənmədi: ${d.filename}`);
+    if (!res.ok) throw new Error(t('ws.datasetFailed', { name: d.filename }));
     py.FS.writeFile(d.filename, new Uint8Array(await res.arrayBuffer()));
   }
   const t0 = performance.now();
   const all = `${code}\n${opts.tests ?? ''}`;
   const ns = (py.globals.get('dict') as () => { set(k: string, v: unknown): void })();
   py.runPython(WATCHDOG);
-  const watch = () => py.runPython(`_dacy_watch(${PY_TIME_LIMIT_S})`);
+  const watch = () =>
+    py.runPython(
+      `_dacy_watch(${PY_TIME_LIMIT_S}, ${JSON.stringify(t('ws.timeout', { s: PY_TIME_LIMIT_S }))})`,
+    );
   let error: string | null = null;
   let errorLine: number | null = null;
   let passed: boolean | null = null;

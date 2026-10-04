@@ -43,18 +43,18 @@ export default async function PathPage({ params, searchParams }: Props) {
           <div className="lp-facts">
             <div>
               <b>{path.courseCount}</b>
-              <span>{t('paths.factsCourses')}</span>
+              <span>{t('paths.factsCourses', { n: path.courseCount })}</span>
             </div>
             {path.projectCount ? (
               <div>
                 <b>{path.projectCount}</b>
-                <span>{t('paths.factsProjects')}</span>
+                <span>{t('paths.factsProjects', { n: path.projectCount })}</span>
               </div>
             ) : null}
             {path.assessmentCount ? (
               <div>
                 <b>{path.assessmentCount}</b>
-                <span>{t('paths.factsExams')}</span>
+                <span>{t('paths.factsExams', { n: path.assessmentCount })}</span>
               </div>
             ) : null}
             {path.estimatedHours ? (

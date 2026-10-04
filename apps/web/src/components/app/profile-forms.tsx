@@ -4,10 +4,11 @@ import { useRouter } from 'next/navigation';
 import { useTheme } from 'next-themes';
 import { toast } from 'sonner';
 import { KeyRound, Monitor, Moon, Palette, Sun, Target, UserRound } from 'lucide-react';
-import type { PublicUser } from '@dacy/shared';
+import type { Locale, PublicUser } from '@dacy/shared';
 import { api } from '@/lib/api/client';
 import { errorMessage } from '@/lib/errors-i18n';
-import { t } from '@/lib/i18n';
+import { getLocale, t } from '@/lib/i18n';
+import { setLocale } from '@/components/app/language-switcher';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input, Select } from '@/components/ui/input';
@@ -187,9 +188,14 @@ export function ProfileForms({ user }: { user: PublicUser }) {
             </button>
           ))}
         </div>
-        <Field label={t('common.language')} hint="İngilis dili sonrakı mərhələdə">
-          <Select value="az" disabled>
-            <option value="az">Azərbaycan dili</option>
+        <Field label={t('common.language')} hint={t('common.languageHint')}>
+          <Select
+            value={getLocale()}
+            onChange={(e) => setLocale(e.target.value as Locale, true)}
+            data-testid="profile-language"
+          >
+            <option value="az">{t('common.languageAz')}</option>
+            <option value="en">{t('common.languageEn')}</option>
           </Select>
         </Field>
       </section>

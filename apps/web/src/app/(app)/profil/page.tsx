@@ -9,7 +9,9 @@ import { fmtNum, initials } from '@/lib/utils';
 import { fmtDate } from '@/components/admin/format';
 import { ProfileForms } from '@/components/app/profile-forms';
 
-export const metadata: Metadata = { title: t('nav.profile') };
+export function generateMetadata(): Metadata {
+  return { title: t('nav.profile') };
+}
 
 export default async function ProfilePage() {
   const user = await getCurrentUser();

@@ -11,7 +11,9 @@ import { apiFetch, getCurrentUser } from '@/lib/api/server';
 import { t } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 
-export const metadata: Metadata = { title: t('nav.certificates') };
+export function generateMetadata(): Metadata {
+  return { title: t('nav.certificates') };
+}
 
 export default async function CertificatesPage() {
   const user = await getCurrentUser();
@@ -24,7 +26,7 @@ export default async function CertificatesPage() {
           <div className="hero-k">
             <h1>{t('cert.myTitle')}</h1>
             <span className="badge badge-mint">
-              {items.length} {t('cert.countUnit')}
+              {items.length} {t('cert.countUnit', { n: items.length })}
             </span>
           </div>
           <p>{t('cert.heroText')}</p>

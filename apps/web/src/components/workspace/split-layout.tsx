@@ -1,4 +1,5 @@
 'use client';
+import { t } from '@/lib/i18n';
 import { Fragment, useEffect, useRef, useState } from 'react';
 import {
   Group,
@@ -62,7 +63,7 @@ export function SplitLayout({ left, right }: { left: React.ReactNode; right: Rea
       <Panel id="left" defaultSize="40%" minSize={300} className="min-h-0 min-w-0">
         {left}
       </Panel>
-      <Separator className="gutter" aria-label="Panellərin enini dəyişin" />
+      <Separator className="gutter" aria-label={t('ws.resizePanels')} />
       <Panel id="right" minSize={360} className="min-h-0 min-w-0">
         {right}
       </Panel>

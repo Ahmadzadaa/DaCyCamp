@@ -324,7 +324,7 @@ function TrackRow({
       <TrackBadge color={tr.color}>{tr.title}</TrackBadge>
       <span className="font-mono text-xs text-muted">{tr.slug}</span>
       <span className="text-xs text-muted">
-        {t('common.modules', { n: 0 }).replace('0 fəsil', `${tr.courseCount ?? 0} kurs`)}
+        {t('admin.coursesCount', { n: tr.courseCount ?? 0 })}
       </span>
       <span className="flex-1" />
       <label className="flex items-center gap-2 text-xs text-muted">

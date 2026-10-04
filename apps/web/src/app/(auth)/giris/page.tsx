@@ -2,7 +2,9 @@ import type { Metadata } from 'next';
 import { AuthForm } from '@/components/app/auth-form';
 import { t } from '@/lib/i18n';
 
-export const metadata: Metadata = { title: t('nav.login') };
+export function generateMetadata(): Metadata {
+  return { title: t('nav.login') };
+}
 
 export default async function LoginPage({
   searchParams,

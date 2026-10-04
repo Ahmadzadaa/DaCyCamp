@@ -1,4 +1,5 @@
-import { Module } from '@nestjs/common';
+import { type MiddlewareConsumer, Module, type NestModule } from '@nestjs/common';
+import { localeMiddleware } from './common/i18n/request-locale';
 import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { UserThrottlerGuard } from './common/guards/user-throttler.guard';
@@ -64,4 +65,9 @@ import { SettingsModule } from './settings/settings.module';
     { provide: APP_GUARD, useClass: RolesGuard },
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  /** hər sorğu öz dilində (dacy_locale cookie-si) — bildirişlər, SQL yoxlaması, PDF sertifikat */
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(localeMiddleware).forRoutes('*');
+  }
+}

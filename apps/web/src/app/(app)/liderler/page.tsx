@@ -8,7 +8,9 @@ import { cn, fmtNum } from '@/lib/utils';
 import { EmptyState } from '@/components/app/empty-state';
 import { HeroArt } from '@/components/app/hero-art';
 
-export const metadata: Metadata = { title: t('hub.lbTitle') };
+export function generateMetadata(): Metadata {
+  return { title: t('hub.lbTitle') };
+}
 
 const PERIODS: Array<{ key: LeaderboardPeriod; label: TKey }> = [
   { key: 'week', label: 'hub.lbWeek' },

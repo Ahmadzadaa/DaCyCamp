@@ -24,6 +24,7 @@ import { AssetsService } from '../assets/assets.service';
 import { SqlCheckService } from '../sql-check/sql-check.service';
 import { hashAnswer } from '../content/ctf-hash';
 import { badRequest, conflict, forbidden, notFound, unprocessable } from '../common/errors';
+import { tr } from '../common/i18n/request-locale';
 
 const TYPE_INDEX_GROUP: Record<StepType, StepType[]> = {
   THEORY: ['THEORY'],
@@ -394,10 +395,13 @@ export class LearnService {
     const message = passed
       ? undefined
       : reason === 'columns'
-        ? `Gözlənilən sütunlar: ${expected.columns.join(', ')} (sizdə: ${input.columns.join(', ') || '—'})`
+        ? tr('sqlCheck.columns', {
+            expected: expected.columns.join(', '),
+            actual: input.columns.join(', ') || '—',
+          })
         : reason === 'row_count'
-          ? `Gözlənilən sətir sayı: ${expected.row_count}, sizdə: ${input.row_count}`
-          : 'Sütunlar və sətir sayı düzgündür, amma dəyərlər fərqlidir';
+          ? tr('sqlCheck.rowCount', { expected: expected.row_count, actual: input.row_count })
+          : tr('sqlCheck.values');
     if (preview)
       return {
         passed,

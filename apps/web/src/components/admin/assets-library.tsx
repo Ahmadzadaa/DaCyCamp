@@ -5,7 +5,7 @@ import { RefreshCw, Trash2, Upload } from 'lucide-react';
 import type { AdminCourseDto, AssetDto, AssetKind } from '@dacy/shared';
 import { api } from '@/lib/api/client';
 import { errorMessage } from '@/lib/errors-i18n';
-import { t } from '@/lib/i18n';
+import { t, type TKey } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
 import { Select } from '@/components/ui/input';
 import { Field } from '@/components/ui/field';
@@ -14,13 +14,15 @@ import { uploadAsset, upsertAsset } from './upload';
 import { fmtDate } from './format';
 import { PageHeader } from '@/components/admin/page-header';
 
-const FOLDERS: Array<{ dir: string; kind: AssetKind; label: string }> = [
-  { dir: 'datasets', kind: 'DATASET', label: 'datasets/ (csv, parquet, sql)' },
+// label — lüğət açarı (dil dəyişəndə render zamanı oxunur) və ya sabit qovluq adı
+const FOLDERS: Array<{ dir: string; kind: AssetKind; label: TKey | `${string}/` }> = [
+  { dir: 'datasets', kind: 'DATASET', label: 'admin.folderDatasets' },
   { dir: 'images', kind: 'IMAGE', label: 'images/' },
-  { dir: 'files', kind: 'ATTACHMENT', label: 'files/ (əlavə fayllar)' },
+  { dir: 'files', kind: 'ATTACHMENT', label: 'admin.folderFiles' },
   { dir: 'videos', kind: 'VIDEO', label: 'videos/' },
-  { dir: 'checks', kind: 'CHECK_SCRIPT', label: 'checks/ (yoxlama skriptləri, tələbəyə verilmir)' },
+  { dir: 'checks', kind: 'CHECK_SCRIPT', label: 'admin.folderChecks' },
 ];
+const folderLabel = (l: TKey | `${string}/`) => (l.endsWith('/') ? l : t(l as TKey));
 
 export function AssetsLibrary({
   courses,
@@ -143,7 +145,7 @@ export function AssetsLibrary({
           >
             {FOLDERS.map((f) => (
               <option key={f.dir} value={f.dir}>
-                {f.label}
+                {folderLabel(f.label)}
               </option>
             ))}
           </Select>

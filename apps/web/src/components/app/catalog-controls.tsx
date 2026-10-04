@@ -225,7 +225,7 @@ export function CatalogToolbar({
   return (
     <div className={cn('tb', pending && 'opacity-70')}>
       <span className="cnt" aria-live="polite">
-        <b>{count}</b> {t('catalog.countUnit')}
+        <b>{count}</b> {t('catalog.countUnit', { n: count })}
       </span>
       <label className="srch">
         <Search aria-hidden className="size-[18px] shrink-0" />

@@ -421,3 +421,14 @@ Mənbə: `Python_Day_1/2.pptx` (nəzəri) + `Python_Day_1/2.docx` (35 tapşırı
 - ✅ «Sayta qayıt» düyməsi (sağ yuxarı; mobil — loqo ilə bir sətirdə) qonağı tanışlıq səhifəsinə (`/`) aparır; e2e: `landing.spec.ts`.
 - ✅ Sol təqdimat paneli ekran hündürlüyünə sığır (yapışqan, `100dvh`): alçaq ekranlarda boşluq/şriftlər kiçilir, 760px-dən aşağı kod kartı gizlənir — tam ekran olmayan pəncərədə də aşağı hissə kəsilmir. 1000×560 … 1920×1080 və 390×844-də yoxlanılıb.
 - ✅ Tanışlıq səhifəsi: tam kurs kartları (təsvir, «Başla») əvəzinə «Kurs kataloqu bir baxışda» — istiqamət üzrə kurs adları, səviyyə və ümumi saat (hər istiqamətdən 5 ad, qalanı «+ daha N kurs»); məzmun qeydiyyatdan sonra. e2e: `landing.spec.ts`.
+
+## İngilis dili (interfeys) — 4 oktyabr 2026
+
+- ✅ Defolt azərbaycan dili; başlıqda (tələbə, admin, tanışlıq, giriş səhifələri) **AZ/EN** düyməsi, Profildə dil seçimi. Seçim cookie + profil (`User.locale`) — yeni cihazda girişdən sonra tətbiq olunur.
+- ✅ `en.ts` — bütün lüğətin (≈1 700 sətir) tam tərcüməsi, `Dictionary` tipində (əskik açar = tip xətası); ingilis dilində tək/cəm forması (`{n|course|courses}`), apostroflar vahid (’), sitatlar “…”.
+- ✅ Dil sorğu başına: server komponentləri və client komponentlərin SSR-i Next-in sorğu yaddaşından cookie-ni oxuyur (paralel sorğular qarışmır), brauzer `<html lang>`-dan — hidrasiya xətasız. 34 səhifənin statik metadata-sı `generateMetadata()`-ya keçirildi.
+- ✅ Koddakı sabit azərbaycanca mətnlər lüğətə köçürüldü (Python xəta izahları, kod nümunələri, yükləmə mesajları, sertifikat, aria-label-lər); fəaliyyət tarixçəsi, səviyyə adları (en-də lüğətdən, redaktor saxlanmış dəyərlə), rəqəm formatı (2,340), tarixlər.
+- ✅ API: `dacy_locale`-ə görə bildirişlər, SQL yoxlama mesajları və **PDF sertifikat** ingiliscə; xəta kodları web-də lüğətdən.
+- ✅ Testlər: shared (açar/parametr/tək-cəm/az hərfi yoxlaması), API `i18n.e2e-spec.ts`, Playwright `e2e/i18n.spec.ts` (qonaq keçidi; profil → yeni cihazda giriş). Bütün API (122) və web (61) testləri keçir. İngiliscə tarama: interfeysdə azərbaycanca mətn qalmayıb (yalnız bazadakı məzmun).
+- ℹ️ Kurs məzmunu (dərslər, kurs təsvirləri, Roadmap xəritələri) tərcümə edilmir — müəllimin yazdığı dildə qalır.
+

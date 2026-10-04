@@ -1,5 +1,6 @@
 import PDFDocument from 'pdfkit';
 import QRCode from 'qrcode';
+import { tr } from '../common/i18n/request-locale';
 
 export interface CertificatePdfInput {
   kind: 'course' | 'path';
@@ -22,23 +23,11 @@ const FONT_BOLD = require.resolve('dejavu-fonts-ttf/ttf/DejaVuSans-Bold.ttf');
 const NAVY = '#13233f';
 const MUTED = '#5b6b8a';
 const BRAND = '#2bd4a4';
-const AZ_MONTHS = [
-  'yanvar',
-  'fevral',
-  'mart',
-  'aprel',
-  'may',
-  'iyun',
-  'iyul',
-  'avqust',
-  'sentyabr',
-  'oktyabr',
-  'noyabr',
-  'dekabr',
-];
 
-export function formatAzDate(d: Date) {
-  return `${d.getDate()} ${AZ_MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+/** «4 oktyabr 2026» / «4 October 2026» — sorğunun dilində */
+export function formatCertDate(d: Date) {
+  const months = tr('dates.monthsFull').split(',');
+  return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
 }
 
 /** A4 landşaft sertifikat — sol zolaq istiqamət rəngində, sağ altda QR (ictimai yoxlama linki) */
@@ -47,7 +36,7 @@ export async function renderCertificatePdf(c: CertificatePdfInput): Promise<Buff
     size: 'A4',
     layout: 'landscape',
     margin: 0,
-    info: { Title: `DaCy Academy sertifikatı — ${c.serial}`, Author: 'DaCy Academy' },
+    info: { Title: tr('certPdf.docTitle', { serial: c.serial }), Author: 'DaCy Academy' },
   });
   const chunks: Buffer[] = [];
   doc.on('data', (b: Buffer) => chunks.push(b));
@@ -72,10 +61,10 @@ export async function renderCertificatePdf(c: CertificatePdfInput): Promise<Buff
     .font('Sans')
     .fontSize(11)
     .fillColor(MUTED)
-    .text(c.kind === 'path' ? 'Karyera yolu sertifikatı' : 'Tamamlama sertifikatı', 136, 93);
+    .text(c.kind === 'path' ? tr('certPdf.kindPath') : tr('certPdf.kindCourse'), 136, 93);
 
   // əsas mətn
-  doc.font('Sans').fontSize(14).fillColor(MUTED).text('Bu sertifikat təsdiq edir ki,', 90, 160);
+  doc.font('Sans').fontSize(14).fillColor(MUTED).text(tr('certPdf.certifies'), 90, 160);
   doc
     .font('SansB')
     .fontSize(36)
@@ -85,13 +74,7 @@ export async function renderCertificatePdf(c: CertificatePdfInput): Promise<Buff
     .font('Sans')
     .fontSize(14)
     .fillColor(MUTED)
-    .text(
-      c.kind === 'path'
-        ? 'aşağıdakı karyera yolunu uğurla tamamladı:'
-        : 'aşağıdakı kursu uğurla tamamladı:',
-      90,
-      245,
-    );
+    .text(c.kind === 'path' ? tr('certPdf.completedPath') : tr('certPdf.completedCourse'), 90, 245);
   doc
     .font('SansB')
     .fontSize(24)
@@ -102,9 +85,11 @@ export async function renderCertificatePdf(c: CertificatePdfInput): Promise<Buff
 
   // meta
   const meta = [
-    `Verilmə tarixi: ${formatAzDate(c.issuedAt)}`,
-    `Seriya nömrəsi: ${c.serial}`,
-    [c.hours ? `${c.hours} saat` : null, `${c.xp} XP`].filter(Boolean).join(' · '),
+    tr('certPdf.issued', { date: formatCertDate(c.issuedAt) }),
+    tr('certPdf.serial', { serial: c.serial }),
+    [c.hours ? tr('certPdf.hours', { n: c.hours }) : null, `${c.xp} XP`]
+      .filter(Boolean)
+      .join(' · '),
   ];
   doc.font('Sans').fontSize(11).fillColor(MUTED);
   meta.forEach((line, i) => doc.text(line, 90, H - 128 + i * 18));
@@ -112,7 +97,7 @@ export async function renderCertificatePdf(c: CertificatePdfInput): Promise<Buff
     .font('Sans')
     .fontSize(9)
     .fillColor(MUTED)
-    .text('DaCy Academy · təlim platforması', 90, H - 62);
+    .text(tr('certPdf.footer'), 90, H - 62);
 
   // QR + yoxlama linki
   const png = await QRCode.toBuffer(c.verifyUrl, {
@@ -126,7 +111,7 @@ export async function renderCertificatePdf(c: CertificatePdfInput): Promise<Buff
     .font('Sans')
     .fontSize(8)
     .fillColor(MUTED)
-    .text('Yoxlama üçün skan edin', W - 258, H - 110, { width: 176, align: 'center' });
+    .text(tr('certPdf.scan'), W - 258, H - 110, { width: 176, align: 'center' });
   doc
     .font('Sans')
     .fontSize(7)
@@ -141,7 +126,7 @@ export async function renderCertificatePdf(c: CertificatePdfInput): Promise<Buff
       .fontSize(64)
       .fillColor('#e5484d')
       .opacity(0.45)
-      .text('LƏĞV EDİLİB', 0, H / 2 - 40, { width: W, align: 'center' });
+      .text(tr('certPdf.revoked'), 0, H / 2 - 40, { width: W, align: 'center' });
     doc.restore();
   }
 

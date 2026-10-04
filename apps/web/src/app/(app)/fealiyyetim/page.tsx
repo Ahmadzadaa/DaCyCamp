@@ -21,7 +21,9 @@ import { cn, fmtNum } from '@/lib/utils';
 import { HeroArt } from '@/components/app/hero-art';
 import { fmtAgo, fmtDate } from '@/components/admin/format';
 
-export const metadata: Metadata = { title: t('hub.activityTitle') };
+export function generateMetadata(): Metadata {
+  return { title: t('hub.activityTitle') };
+}
 
 const REASON_ICON: Record<string, typeof Zap> = {
   STEP_COMPLETED: BookCheck,
@@ -101,7 +103,7 @@ export default async function ActivityPage() {
               <k.icon aria-hidden />
             </span>
             <b>{fmtNum(k.value)}</b>
-            <span className="kpi-l">{t(k.label)}</span>
+            <span className="kpi-l">{t(k.label, { n: k.value })}</span>
           </div>
         ))}
       </div>

@@ -9,7 +9,9 @@ import { cn, firstName, fmtNum } from '@/lib/utils';
 import { HeroArt } from '@/components/app/hero-art';
 import { stepLucide } from '@/components/app/step-icon';
 
-export const metadata: Metadata = { title: t('nav.dashboard') };
+export function generateMetadata(): Metadata {
+  return { title: t('nav.dashboard') };
+}
 
 export default async function DashboardPage() {
   const d = await apiTry<DashboardDto>('/me/dashboard');
@@ -149,17 +151,17 @@ export default async function DashboardPage() {
             <div className="stat">
               <Flame aria-hidden />
               <b>{d.streakDays}</b>
-              <span>{t('dash.streak')}</span>
+              <span>{t('dash.streak', { n: d.streakDays })}</span>
             </div>
             <div className="stat">
               <Check aria-hidden />
               <b>{fmtNum(d.stepsCompleted)}</b>
-              <span>{t('dash.tasksDone')}</span>
+              <span>{t('dash.tasksDone', { n: d.stepsCompleted })}</span>
             </div>
             <div className="stat">
               <Award aria-hidden />
               <b>{d.certificates}</b>
-              <span>{t('dash.certificates')}</span>
+              <span>{t('dash.certificates', { n: d.certificates })}</span>
             </div>
           </div>
 

@@ -1,3 +1,4 @@
+import { t } from '@/lib/i18n';
 import type { AssetDto, AssetKind } from '@dacy/shared';
 import { ApiError, api, tryRefresh } from '@/lib/api/client';
 
@@ -49,7 +50,7 @@ export async function uploadVideo(
       if (e.lengthComputable) opts.onProgress?.(Math.round((e.loaded / e.total) * 100));
     };
     xhr.onload = () => resolve({ status: xhr.status, body: xhr.responseText });
-    xhr.onerror = () => reject(new ApiError(0, 'NETWORK', 'Şəbəkə xətası — yükləmə dayandı'));
+    xhr.onerror = () => reject(new ApiError(0, 'NETWORK', t('admin.uploadNetwork')));
     xhr.send(fd);
   });
   if (res.status === 401 && retry && (await tryRefresh()))
@@ -63,11 +64,8 @@ export async function uploadVideo(
   })();
   if (res.status >= 400) {
     const e = (data ?? {}) as { code?: string; message?: string };
-    const msg =
-      res.status === 413
-        ? 'Video çox böyükdür — maksimum ölçünü .env-də MAX_VIDEO_MB ilə artırın'
-        : e.message;
-    throw new ApiError(res.status, e.code ?? 'HTTP_ERROR', msg ?? 'Yükləmə alınmadı');
+    const msg = res.status === 413 ? t('admin.uploadTooBig') : e.message;
+    throw new ApiError(res.status, e.code ?? 'HTTP_ERROR', msg ?? t('admin.uploadFailed'));
   }
   return data as AssetDto;
 }

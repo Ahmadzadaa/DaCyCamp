@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { Home } from 'lucide-react';
 import type { MeSummaryDto, PublicUser } from '@dacy/shared';
 import { t } from '@/lib/i18n';
+import { LanguageSwitcher } from '@/components/app/language-switcher';
 import { initials } from '@/lib/utils';
 import { Logo } from '@/components/app/logo';
 import { UserMenu } from '@/components/app/user-menu';
@@ -28,7 +29,7 @@ export function AdminShell({
   return (
     <div className="app admin">
       <a href="#main" className="skip">
-        Məzmuna keç
+        {t('common.skipToContent')}
       </a>
       <header className="top">
         <div className="top-brand">
@@ -38,6 +39,7 @@ export function AdminShell({
           <SearchBox action="/admin/axtar" placeholder={t('shell.adminSearch')} />
         </Suspense>
         <div className="top-actions">
+          <LanguageSwitcher persist />
           <Link href="/kurslar" className="b b-ghost b-sm max-md:hidden">
             <Home aria-hidden />
             {t('shell.goToSite')}

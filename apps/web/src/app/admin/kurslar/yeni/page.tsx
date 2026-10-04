@@ -5,7 +5,9 @@ import { t } from '@/lib/i18n';
 import { NewCourseForm } from '@/components/admin/new-course-form';
 import { PageHeader } from '@/components/admin/page-header';
 
-export const metadata: Metadata = { title: `${t('admin.newCourse')} · ${t('app.admin')}` };
+export function generateMetadata(): Metadata {
+  return { title: `${t('admin.newCourse')} · ${t('app.admin')}` };
+}
 
 export default async function NewCoursePage() {
   const tracks = await apiFetch<TrackDto[]>('/admin/tracks');

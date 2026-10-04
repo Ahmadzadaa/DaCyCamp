@@ -12,7 +12,9 @@ import { PathCard } from '@/components/app/path-card';
 import { TrackTile } from '@/components/app/track-icon';
 import { RoadmapView } from '@/components/app/roadmap-view';
 
-export const metadata: Metadata = { title: t('roadmap.heroTitle') };
+export function generateMetadata(): Metadata {
+  return { title: t('roadmap.heroTitle') };
+}
 
 /**
  * Karyera yolları: peşə tabları → səviyyə nərdivanı (Intern → Senior) → bacarıqlar.

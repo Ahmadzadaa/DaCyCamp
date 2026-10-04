@@ -9,7 +9,9 @@ import { SupportThread } from '@/components/support/support-thread';
 import { apiTry, getCurrentUser } from '@/lib/api/server';
 import { t } from '@/lib/i18n';
 
-export const metadata: Metadata = { title: t('support.title') };
+export function generateMetadata(): Metadata {
+  return { title: t('support.title') };
+}
 
 export default async function SupportTicketPage({ params }: { params: Promise<{ id: string }> }) {
   const user = await getCurrentUser();

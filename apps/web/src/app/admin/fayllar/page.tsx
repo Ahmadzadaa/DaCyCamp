@@ -3,7 +3,9 @@ import type { AdminCourseListDto } from '@dacy/shared';
 import { apiFetch } from '@/lib/api/server';
 import { t } from '@/lib/i18n';
 import { AssetsLibrary } from '@/components/admin/assets-library';
-export const metadata: Metadata = { title: `${t('admin.files')} · ${t('app.admin')}` };
+export function generateMetadata(): Metadata {
+  return { title: `${t('admin.files')} · ${t('app.admin')}` };
+}
 export default async function FilesPage({
   searchParams,
 }: {

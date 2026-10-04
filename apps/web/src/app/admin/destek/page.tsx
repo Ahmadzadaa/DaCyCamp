@@ -10,7 +10,9 @@ import { apiFetch } from '@/lib/api/server';
 import { t } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 
-export const metadata: Metadata = { title: t('support.adminTitle') };
+export function generateMetadata(): Metadata {
+  return { title: t('support.adminTitle') };
+}
 
 const TABS = ['OPEN', 'ANSWERED', 'CLOSED', 'ALL'] as const;
 type Tab = (typeof TABS)[number];

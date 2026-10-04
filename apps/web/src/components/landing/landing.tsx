@@ -21,6 +21,7 @@ import { fmtHours, fmtNum } from '@/lib/utils';
 import { Logo } from '@/components/app/logo';
 import { PathCard } from '@/components/app/path-card';
 import { TrackTile } from '@/components/app/track-icon';
+import { LanguageSwitcher } from '@/components/app/language-switcher';
 
 const FEATURES: Array<{ icon: typeof Database; title: TKey; text: TKey; c: string }> = [
   { icon: Database, title: 'landing.feat.sqlTitle', text: 'landing.feat.sqlText', c: '#6C7CF0' },
@@ -77,7 +78,7 @@ export function Landing({
   return (
     <div className="ld">
       <a href="#main" className="skip">
-        Məzmuna keç
+        {t('common.skipToContent')}
       </a>
       <header className="ld-top">
         <div className="ld-in ld-top-in">
@@ -89,6 +90,7 @@ export function Landing({
             <a href="#sual-cavab">{t('landing.navFaq')}</a>
           </nav>
           <div className="ld-auth">
+            <LanguageSwitcher />
             <Link href="/giris" className="b b-ghost b-sm" data-testid="landing-login">
               {t('landing.login')}
             </Link>
@@ -121,15 +123,15 @@ export function Landing({
               {courses.length ? (
                 <dl className="ld-stats">
                   <div>
-                    <dt>{t('landing.statCourses')}</dt>
+                    <dt>{t('landing.statCourses', { n: courses.length })}</dt>
                     <dd>{fmtNum(courses.length)}</dd>
                   </div>
                   <div>
-                    <dt>{t('landing.statTasks')}</dt>
+                    <dt>{t('landing.statTasks', { n: tasks })}</dt>
                     <dd>{fmtNum(tasks)}</dd>
                   </div>
                   <div>
-                    <dt>{t('landing.statTracks')}</dt>
+                    <dt>{t('landing.statTracks', { n: tracks.length })}</dt>
                     <dd>{fmtNum(tracks.length)}</dd>
                   </div>
                 </dl>
@@ -393,8 +395,10 @@ function CodePreview() {
           <code>
             <span className="k">SELECT</span> region, <span className="f">SUM</span>(amount){' '}
             <span className="k">AS</span> total{'\n'}
-            <span className="k">FROM</span> satislar{'\n'}
-            <span className="k">WHERE</span> il = <span className="n">2026</span>
+            <span className="k">FROM</span> {t('landing.previewTable')}
+            {'\n'}
+            <span className="k">WHERE</span> {t('landing.previewYear')} ={' '}
+            <span className="n">2026</span>
             {'\n'}
             <span className="k">GROUP BY</span> region{'\n'}
             <span className="k">ORDER BY</span> total <span className="k">DESC</span>;
@@ -409,15 +413,15 @@ function CodePreview() {
           </thead>
           <tbody>
             <tr>
-              <td>Bakı</td>
+              <td>{t('landing.previewCity1')}</td>
               <td>184 250</td>
             </tr>
             <tr>
-              <td>Gəncə</td>
+              <td>{t('landing.previewCity2')}</td>
               <td>62 870</td>
             </tr>
             <tr>
-              <td>Sumqayıt</td>
+              <td>{t('landing.previewCity3')}</td>
               <td>41 300</td>
             </tr>
           </tbody>

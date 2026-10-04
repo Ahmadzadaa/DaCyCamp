@@ -14,6 +14,7 @@ import { SqlWorkspace } from '@/components/workspace/sql-workspace';
 import { PythonWorkspace } from '@/components/workspace/python-workspace';
 import { CtfWorkspace } from '@/components/workspace/ctf-workspace';
 import { TerminalWorkspace } from '@/components/workspace/terminal-workspace';
+import { t } from '@/lib/i18n';
 
 type Props = {
   params: Promise<{ slug: string; moduleKey: string; stepKey: string }>;
@@ -22,7 +23,7 @@ type Props = {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  return { title: `Dərs · ${slug}` };
+  return { title: t('ws.lessonMeta', { slug }) };
 }
 
 const isInt = (s: string) => /^\d+$/.test(s);

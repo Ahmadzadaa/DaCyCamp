@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import type { NotificationDto } from '@dacy/shared';
 import { PrismaService } from '../prisma/prisma.service';
+import { tr } from '../common/i18n/request-locale';
 
 const DAY = 86_400_000;
 const WINDOW_DAYS = 30;
@@ -89,7 +90,7 @@ export class NotificationsService {
       items.push({
         id: `cert:${c.id}`,
         kind: 'certificate',
-        title: 'Sertifikat qazandınız',
+        title: tr('notif.certificate'),
         body: (c.snapshot as Snap).courseTitle ?? null,
         url: `/sertifikat/${c.id}`,
         at: c.issuedAt.toISOString(),
@@ -98,7 +99,7 @@ export class NotificationsService {
       items.push({
         id: `pcert:${c.id}`,
         kind: 'certificate',
-        title: 'Karyera yolu sertifikatı',
+        title: tr('notif.pathCertificate'),
         body: (c.snapshot as Snap).pathTitle ?? null,
         url: `/sertifikat/${c.id}`,
         at: c.issuedAt.toISOString(),
@@ -108,7 +109,7 @@ export class NotificationsService {
       items.push({
         id: `review:${r.id}:${r.updatedAt.getTime()}`,
         kind: passed ? 'project_passed' : 'project_returned',
-        title: passed ? 'Layihə qəbul edildi' : 'Layihə düzəliş üçün qaytarıldı',
+        title: passed ? tr('notif.projectPassed') : tr('notif.projectReturned'),
         body: r.pathItem.title ?? r.pathItem.path.title,
         url: `/yol/${r.pathItem.path.slug}/${r.pathItem.key}`,
         at: r.updatedAt.toISOString(),
@@ -121,7 +122,7 @@ export class NotificationsService {
       items.push({
         id: `course:${c.id}`,
         kind: 'new_course',
-        title: 'Yeni kurs',
+        title: tr('notif.newCourse'),
         body: c.title,
         url: `/kurs/${c.slug}`,
         at: c.publishedAt.toISOString(),
@@ -132,7 +133,7 @@ export class NotificationsService {
       items.push({
         id: `pending:${pending.length}`,
         kind: 'reviews_pending',
-        title: `${pending.length} layihə yoxlama gözləyir`,
+        title: tr('notif.reviewsPending', { n: pending.length }),
         body: null,
         url: '/admin/layiheler',
         at: (last.submittedAt ?? last.updatedAt).toISOString(),
@@ -142,7 +143,7 @@ export class NotificationsService {
       items.push({
         id: `support:${m.id}`,
         kind: 'support_reply',
-        title: 'Dəstək cavab verdi',
+        title: tr('notif.supportReply'),
         body: m.ticket.subject,
         url: `/destek/${m.ticket.id}`,
         at: m.createdAt.toISOString(),
@@ -151,7 +152,7 @@ export class NotificationsService {
       items.push({
         id: `support-open:${openTickets.length}:${openTickets[0]!.lastMessageAt.getTime()}`,
         kind: 'support_open',
-        title: `${openTickets.length} dəstək müraciəti cavab gözləyir`,
+        title: tr('notif.supportOpen', { n: openTickets.length }),
         body: null,
         url: '/admin/destek',
         at: openTickets[0]!.lastMessageAt.toISOString(),

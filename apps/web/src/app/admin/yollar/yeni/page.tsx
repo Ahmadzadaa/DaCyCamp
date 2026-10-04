@@ -5,7 +5,9 @@ import { t } from '@/lib/i18n';
 import { PathForm } from '@/components/admin/path-editor/path-form';
 import { PageHeader } from '@/components/admin/page-header';
 
-export const metadata: Metadata = { title: `${t('admin.newPath')} · ${t('app.admin')}` };
+export function generateMetadata(): Metadata {
+  return { title: `${t('admin.newPath')} · ${t('app.admin')}` };
+}
 
 export default async function NewPathPage() {
   const tracks = await apiFetch<TrackDto[]>('/admin/tracks');

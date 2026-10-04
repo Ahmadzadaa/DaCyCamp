@@ -4,15 +4,17 @@ import { apiFetch } from '@/lib/api/server';
 import { t } from '@/lib/i18n';
 import { TopicsManager } from '@/components/admin/topics-manager';
 import { LevelLabelsCard } from '@/components/admin/level-labels-card';
-import { getLevelLabels } from '@/lib/level-labels';
+import { getStoredLevelLabels } from '@/lib/level-labels';
 
-export const metadata: Metadata = { title: `${t('topics.title')} · ${t('app.admin')}` };
+export function generateMetadata(): Metadata {
+  return { title: `${t('topics.title')} · ${t('app.admin')}` };
+}
 export const dynamic = 'force-dynamic';
 
 export default async function TopicsPage() {
   const [topics, levels] = await Promise.all([
     apiFetch<TopicDto[]>('/admin/topics'),
-    getLevelLabels(),
+    getStoredLevelLabels(),
   ]);
   return (
     <div className="flex flex-col gap-8">

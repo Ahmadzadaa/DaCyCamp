@@ -273,6 +273,11 @@ export const az = {
     footerLearn: 'Öyrən',
     footerAccount: 'Hesab',
     rights: '© {year} DaCy Academy',
+    previewTable: 'satislar',
+    previewYear: 'il',
+    previewCity1: 'Bakı',
+    previewCity2: 'Gəncə',
+    previewCity3: 'Sumqayıt',
   },
   users: {
     title: 'İstifadəçilər',
@@ -568,6 +573,7 @@ export const az = {
   dates: {
     // qısa ay adları — Intl 'az' lokalı olmayan brauzerlərdə də düzgün görünsün
     months: 'yan,fev,mar,apr,may,iyn,iyl,avq,sen,okt,noy,dek',
+    monthsFull: 'yanvar,fevral,mart,aprel,may,iyun,iyul,avqust,sentyabr,oktyabr,noyabr,dekabr',
   },
   common: {
     unpublished: 'Dərcdən çıxarıldı',
@@ -659,6 +665,12 @@ export const az = {
     estimatedHours: 'Təxmini müddət (saat)',
     cover: 'Üz şəkli',
     noResults: 'Nəticə tapılmadı',
+    skipToContent: 'Məzmuna keç',
+    untitled: '(başlıqsız)',
+    languageAz: 'Azərbaycan dili',
+    languageEn: 'İngilis dili',
+    languageHint: 'Saytın interfeys dili. Kursların məzmunu müəllimin yazdığı dildə qalır.',
+    languageSwitch: 'Dili dəyiş',
   },
   level: { BEGINNER: 'Başlanğıc', INTERMEDIATE: 'Orta', ADVANCED: 'Çətin' },
   role: { STUDENT: 'Tələbə', INSTRUCTOR: 'Müəllim', ADMIN: 'Admin' },
@@ -708,6 +720,10 @@ export const az = {
     showPassword: 'Şifrəni göstər',
     hidePassword: 'Şifrəni gizlət',
     backToSite: 'Sayta qayıt',
+    previewFile: 'satislar.csv',
+    previewComment: '# şəhərlər üzrə ümumi satış',
+    previewCity: 'seher',
+    previewAmount: 'mebleg',
   },
   catalog: {
     heroTitle: 'Kurslar',
@@ -848,7 +864,8 @@ export const az = {
     stdinHint:
       'Kod input() çağıranda dəyərlər bu siyahıdan növbə ilə götürülür (Jupyter-də klaviaturadan yazdığın kimi).',
     stdinEof: 'input() üçün dəyər qalmadı. Dəyərləri «Giriş» sekməsində hər sətirdə bir yazın.',
-    pkgFailed: 'Python paketi yüklənmədi ({pkgs}). İnternet bağlantısını yoxlayın və yenidən cəhd edin. ({err})',
+    pkgFailed:
+      'Python paketi yüklənmədi ({pkgs}). İnternet bağlantısını yoxlayın və yenidən cəhd edin. ({err})',
     chart: 'Qrafik',
     questions: 'Suallar',
     terminal: 'Terminal',
@@ -917,6 +934,13 @@ export const az = {
     stderr: 'Xəta',
     submitted: 'Göndərildi',
     pythonCdnNote: 'pandas/numpy ilk dəfə internetdən yüklənir, bir neçə saniyə çəkə bilər.',
+    sqlPlaceholder: '-- Sorğunuzu bura yazın',
+    pyPlaceholder: '# Kodunuzu bura yazın',
+    resizePanels: 'Panellərin enini dəyişin',
+    lessonMeta: 'Dərs · {slug}',
+    datasetFailed: 'Dataset yüklənmədi: {name}',
+    pyodideFailed: 'Python mühiti yüklənmədi: {src}',
+    timeout: 'Kod {s} saniyədən çox işlədi — sonsuz dövr ola bilər',
   },
   cert: {
     title: 'Tamamlama sertifikatı',
@@ -950,6 +974,8 @@ export const az = {
     kindPath: 'Karyera yolu sertifikatı',
     view: 'Bax',
     emptyCta: 'Kurslara bax',
+    certifies: 'Bu sertifikat təsdiq edir ki,',
+    completedBelow: 'aşağıdakı kursunu uğurla tamamladı:',
   },
   paths: {
     title: 'Roadmap',
@@ -1355,6 +1381,14 @@ export const az = {
     deleteModuleDesc: 'Fəsil və içindəki {n} addım silinəcək.',
     shuffle: 'Sualların sırası qarışdırılsın',
     questionsEmpty: 'Hələ sual yoxdur. «Sual əlavə et» düyməsi ilə başlayın.',
+    uploadNetwork: 'Şəbəkə xətası — yükləmə dayandı',
+    uploadTooBig: 'Video çox böyükdür — maksimum ölçünü .env-də MAX_VIDEO_MB ilə artırın',
+    uploadFailed: 'Yükləmə alınmadı',
+    videoUrlPh: 'https://youtu.be/… və ya videos/fayl.mp4',
+    checkOrdered: 'result_match (sıra vacib)',
+    folderDatasets: 'datasets/ (csv, parquet, sql)',
+    folderFiles: 'files/ (əlavə fayllar)',
+    folderChecks: 'checks/ (yoxlama skriptləri, tələbəyə verilmir)',
   },
   courseAdmin: {
     status: {
@@ -1663,6 +1697,64 @@ export const az = {
     reopened: 'Müraciət yenidən açıldı',
     student: 'Tələbə',
     openProfile: 'Tələbənin səhifəsi',
+  },
+  pyErr: {
+    nameNamed:
+      '«{name}» adlı dəyişən və ya funksiya tapılmadı. Ona əvvəlcə dəyər verin (məs. {name} = ...) və ya adın düzgün yazıldığını yoxlayın — böyük/kiçik hərf fərqlidir.',
+    name: 'Dəyişən və ya funksiya tapılmadı — əvvəlcə ona dəyər verin və adını yoxlayın.',
+    syntax:
+      'Sintaksis xətası: mötərizələri, dırnaqları və bloklardan əvvəl iki nöqtəni (:) yoxlayın. Word və ya slayddan köçürülmüş əyri dırnaqlar (“ ”) da bu xətanı verir.',
+    indentation:
+      'Girinti xətası: bir blokdakı sətirlər eyni sayda boşluqla başlamalıdır (adətən 4 boşluq). if, for, def-dən sonrakı sətirlər içəridən yazılır.',
+    tab: 'Tab və boşluq qarışıb — girintini yalnız boşluqlarla (4 boşluq) yazın.',
+    type: 'Tip uyğunsuzluğu: məsələn, sətirlə ədədi toplamaq olmaz ("5" + 3). Lazım olsa int(), float() və ya str() ilə çevirin. Funksiyaya düzgün sayda arqument verdiyinizi də yoxlayın.',
+    value: 'Dəyər uyğun deyil: məsələn, int("abc") — rəqəm olmayan mətni ədədə çevirmək olmur.',
+    zeroDivision: 'Sıfıra bölmək olmaz — bölənin 0 olmadığını yoxlayın.',
+    index:
+      'Siyahıda belə indeks yoxdur: indekslər 0-dan başlayır, sonuncu element len(siyahı) - 1-dir.',
+    key: 'Dictionary-də belə açar yoxdur — açarın adını yoxlayın və ya .get(açar) istifadə edin.',
+    attribute:
+      'Bu obyektin belə metodu və ya atributu yoxdur — adını yoxlayın (məs. siyahıda .add() yox, .append() var).',
+    moduleNotFound: 'Belə modul tapılmadı — import sətrində adı yoxlayın.',
+    fileNotFound:
+      'Fayl tapılmadı — adını yoxlayın. Tapşırığa əlavə olunmuş fayllar (redaktorun üstündəki adlar) iş qovluğundadır: pd.read_csv("satislar.csv").',
+    unboundLocal:
+      'Dəyişən funksiyanın içində dəyər alınmadan istifadə olunub — əvvəlcə ona dəyər verin.',
+    recursion: 'Funksiya özünü dayanmadan çağırır — dayanma şərtini (base case) yoxlayın.',
+    testFailed: 'Test keçmədi',
+    testsNameMissing:
+      'Testlər «{name}» adlı dəyişəni və ya funksiyanı tapmadı — onu kodunda tapşırıqdakı adla təyin et.',
+    inFunction: ' («{fn}» funksiyasında)',
+    frame: 'script.py, sətir {line}{where}',
+  },
+  notif: {
+    certificate: 'Sertifikat qazandınız',
+    pathCertificate: 'Karyera yolu sertifikatı',
+    projectPassed: 'Layihə qəbul edildi',
+    projectReturned: 'Layihə düzəliş üçün qaytarıldı',
+    newCourse: 'Yeni kurs',
+    reviewsPending: '{n} layihə yoxlama gözləyir',
+    supportReply: 'Dəstək cavab verdi',
+    supportOpen: '{n} dəstək müraciəti cavab gözləyir',
+  },
+  sqlCheck: {
+    columns: 'Gözlənilən sütunlar: {expected} (sizdə: {actual})',
+    rowCount: 'Gözlənilən sətir sayı: {expected}, sizdə: {actual}',
+    values: 'Sütunlar və sətir sayı düzgündür, amma dəyərlər fərqlidir',
+  },
+  certPdf: {
+    docTitle: 'DaCy Academy sertifikatı — {serial}',
+    kindCourse: 'Tamamlama sertifikatı',
+    kindPath: 'Karyera yolu sertifikatı',
+    certifies: 'Bu sertifikat təsdiq edir ki,',
+    completedCourse: 'aşağıdakı kursu uğurla tamamladı:',
+    completedPath: 'aşağıdakı karyera yolunu uğurla tamamladı:',
+    issued: 'Verilmə tarixi: {date}',
+    serial: 'Seriya nömrəsi: {serial}',
+    hours: '{n} saat',
+    footer: 'DaCy Academy · təlim platforması',
+    scan: 'Yoxlama üçün skan edin',
+    revoked: 'LƏĞV EDİLİB',
   },
 };
 

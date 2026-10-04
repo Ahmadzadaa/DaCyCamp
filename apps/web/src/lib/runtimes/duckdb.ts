@@ -1,4 +1,5 @@
 'use client';
+import { t } from '@/lib/i18n';
 import * as duckdb from '@duckdb/duckdb-wasm';
 import {
   arrowToResult,
@@ -57,7 +58,7 @@ export async function openSession(datasets: AttachmentView[]): Promise<SqlSessio
   for (const d of datasets) {
     if (!d.url) continue;
     const res = await fetch(d.url, { credentials: 'include' });
-    if (!res.ok) throw new Error(`Dataset yüklənmədi: ${d.filename} (${res.status})`);
+    if (!res.ok) throw new Error(`${t('ws.datasetFailed', { name: d.filename })} (${res.status})`);
     const buf = new Uint8Array(await res.arrayBuffer());
     await db.registerFileBuffer(d.filename, buf);
     const table = tableNameFromPath(d.path);

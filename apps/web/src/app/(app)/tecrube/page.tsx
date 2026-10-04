@@ -9,7 +9,9 @@ import { EmptyState } from '@/components/app/empty-state';
 import { HeroArt } from '@/components/app/hero-art';
 import { PracticeList } from '@/components/hub/practice-list';
 
-export const metadata: Metadata = { title: t('hub.practiceTitle') };
+export function generateMetadata(): Metadata {
+  return { title: t('hub.practiceTitle') };
+}
 
 export default async function PracticePage() {
   const d = await apiTry<PracticeDto>('/me/practice');

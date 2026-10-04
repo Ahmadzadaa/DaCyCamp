@@ -18,7 +18,9 @@ import { t, tList } from '@/lib/i18n';
 import { fmtNum } from '@/lib/utils';
 import { ActivityFeed } from '@/components/admin/activity-feed';
 
-export const metadata: Metadata = { title: `${t('adminHome.title')} · ${t('app.admin')}` };
+export function generateMetadata(): Metadata {
+  return { title: `${t('adminHome.title')} · ${t('app.admin')}` };
+}
 
 export default async function AdminHome() {
   const o = await apiFetch<AdminOverviewDto>('/admin/overview');

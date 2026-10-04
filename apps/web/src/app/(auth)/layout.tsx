@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { ArrowLeft, Award, Check, CodeXml, Route, SquareTerminal } from 'lucide-react';
 import { Logo } from '@/components/app/logo';
+import { LanguageSwitcher } from '@/components/app/language-switcher';
 import { t } from '@/lib/i18n';
 
 const FEATS = [
@@ -52,11 +53,13 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
             <code>
               <span className="k">import</span> pandas <span className="k">as</span> pd{'\n'}
               df = pd.<span className="f">read_csv</span>(
-              <span className="s">&quot;satislar.csv&quot;</span>){'\n'}
-              <span className="c"># şəhərlər üzrə ümumi satış</span>
+              <span className="s">&quot;{t('auth.previewFile')}&quot;</span>){'\n'}
+              <span className="c">{t('auth.previewComment')}</span>
               {'\n'}
-              df.<span className="f">groupby</span>(<span className="s">&quot;seher&quot;</span>)[
-              <span className="s">&quot;mebleg&quot;</span>].<span className="f">sum</span>()
+              df.<span className="f">groupby</span>(
+              <span className="s">&quot;{t('auth.previewCity')}&quot;</span>)[
+              <span className="s">&quot;{t('auth.previewAmount')}&quot;</span>].
+              <span className="f">sum</span>()
             </code>
           </pre>
           <div className="ap-ok">
@@ -69,10 +72,13 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       <main className="auth-main">
         <div className="auth-top">
           <Logo text={t('shell.brand')} href="/" className="auth-logo-m" />
-          <Link href="/" className="b b-ghost b-sm auth-back">
-            <ArrowLeft aria-hidden />
-            {t('auth.backToSite')}
-          </Link>
+          <div className="auth-acts">
+            <LanguageSwitcher className="auth-back" />
+            <Link href="/" className="b b-ghost b-sm auth-back">
+              <ArrowLeft aria-hidden />
+              <span className="auth-back-label">{t('auth.backToSite')}</span>
+            </Link>
+          </div>
         </div>
         <div className="auth-card">{children}</div>
       </main>

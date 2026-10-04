@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { ShieldCheck } from 'lucide-react';
 import type { MeSummaryDto, PublicUser } from '@dacy/shared';
 import { t } from '@/lib/i18n';
+import { LanguageSwitcher } from '@/components/app/language-switcher';
 import { Logo } from '@/components/app/logo';
 import { UserMenu } from '@/components/app/user-menu';
 import { Sidebar } from './sidebar';
@@ -31,7 +32,7 @@ export function AppShell({
   return (
     <div className="app">
       <a href="#main" className="skip">
-        Məzmuna keç
+        {t('common.skipToContent')}
       </a>
       <header className="top">
         <div className="top-brand">
@@ -42,6 +43,7 @@ export function AppShell({
           <SearchBox />
         </Suspense>
         <div className="top-actions">
+          <LanguageSwitcher persist={!!user} />
           {user ? (
             <>
               {staff ? (

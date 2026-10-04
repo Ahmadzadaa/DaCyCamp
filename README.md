@@ -143,6 +143,16 @@ Yalnız **ADMIN** (backend-də yoxlanır): `/admin/kurslar` — status tabları 
 - Tələbələr tabı: faiz, son aktivlik, kilidli addımı əl ilə aç, irəliləyişi sıfırla, kursdan çıxar (geri qaytarmaq olur).
 - Fəaliyyət tarixçəsi: `/admin/tarixce` — kim, nəyi, nə vaxt dəyişib.
 
+## Dillər (az / en)
+
+Defolt dil — **azərbaycan dili**. Başlıqdakı **AZ/EN** düyməsi (və Profil → «Görünüş və dil») bütün interfeysi ingilis dilinə keçirir.
+
+- Seçim `dacy_locale` cookie-sində saxlanılır (1 il); daxil olmuş istifadəçidə profilə də yazılır və başqa cihazda girişdən sonra tətbiq olunur.
+- Mətnlər: `packages/shared/src/i18n/az.ts` (əsas) və `en.ts` (`Dictionary` tipində — açar əskik olsa tip yoxlaması keçmir). **Yeni mətn əlavə edəndə hər iki fayla yazın**; `pnpm --filter @dacy/shared test` açarları, parametrləri və ingiliscə mətndə azərbaycan hərfi qalmamasını yoxlayır.
+- İngilis dilində tək/cəm: `'{n} {n|course|courses}'` (n = 1 → tək). Azərbaycan dilində lazım deyil.
+- Web: `t()` dili özü müəyyən edir (server — sorğunun cookie-si, brauzer — `<html lang>`); səhifə başlıqları `generateMetadata()` ilə. API: `tr()` (`apps/api/src/common/i18n/request-locale.ts`) — bildirişlər, SQL yoxlama mesajları, PDF sertifikat.
+- Kursların məzmunu (dərslər, təsvirlər, Roadmap xəritələri) müəllimin yazdığı dildə qalır — tərcümə edilmir.
+
 ## Kurs paketi (ZIP)
 
 Müəllim kursu `course.yaml` + `modules/NN-fesil/NN-addim.(md|yaml)` + `datasets/ files/ images/ checks/` quruluşunda ZIP kimi hazırlayıb `/admin/idxal`-da yükləyir: **Yoxla** (heç nə yazılmır, səhv/xəbərdarlıq siyahısı) → **Tətbiq et** (bir tranzaksiyada; mövcud kurs `slug` + açarlar üzrə yenilənir, tələbə irəliləyişi qorunur, paketdə olmayan addımlar dərcdən çıxarılır). Kurs redaktorundakı **ZIP ixrac** eyni formatda paket verir (CTF cavabları yalnız heş). Formatın tam təsviri: `docs/content-package.md` (test `correct` sahəsi 1-dən sayılır).
