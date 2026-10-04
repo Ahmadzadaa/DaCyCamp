@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma, type Roadmap, type Track } from '@prisma/client';
 import {
+  buildRoadmapI18n,
+  ROADMAPS_EN,
   roadmapContentSchema,
   type AdminRoadmapDto,
   type RoadmapContent,
@@ -12,6 +14,8 @@ import { PrismaService } from '../prisma/prisma.service';
 import { badRequest, conflict, notFound } from '../common/errors';
 
 type Row = Roadmap & { track: Track | null };
+
+const jsonOrNull = (v: object | null) => (v ? (v as Prisma.InputJsonValue) : Prisma.JsonNull);
 
 /** content JSON-u bazadan oxuyanda da yoxlayırıq: pozulmuşsa 500 yox, boş xəritə */
 function contentOf(r: Roadmap): RoadmapContent {
@@ -163,6 +167,7 @@ export class RoadmapsService {
         isPublished: dto.isPublished,
         order: (max._max.order ?? 0) + 1,
         content: dto.content as unknown as Prisma.InputJsonValue,
+        i18n: jsonOrNull(buildRoadmapI18n(dto)),
       },
       include: { track: true },
     });
@@ -177,6 +182,9 @@ export class RoadmapsService {
       (await this.prisma.roadmap.findUnique({ where: { slug: dto.slug } }))
     )
       throw conflict('SLUG_TAKEN');
+    // ilkin xəritənin tərcüməsi stabil id-lərlə yenidən qurulur; qalanında köhnəlmiş hissəni
+    // Prisma uzantısı özü atır (pruneTranslation)
+    const i18n = buildRoadmapI18n({ ...dto, slug: ROADMAPS_EN[dto.slug] ? dto.slug : cur.slug });
     const r = await this.prisma.roadmap.update({
       where: { id },
       data: {
@@ -187,6 +195,7 @@ export class RoadmapsService {
         trackId: await this.trackId(dto.track),
         isPublished: dto.isPublished,
         content: dto.content as unknown as Prisma.InputJsonValue,
+        ...(i18n ? { i18n: i18n as Prisma.InputJsonValue } : {}),
       },
       include: { track: true },
     });

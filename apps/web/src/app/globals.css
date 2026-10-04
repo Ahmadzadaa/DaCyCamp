@@ -2986,6 +2986,23 @@
   .fld > .lbl {
     font-weight: 600;
   }
+  /* admin formalarında İngiliscə variant (i18n.en) */
+  .en-fields {
+    border: 1px dashed var(--line);
+    border-radius: var(--r-input);
+    padding: 12px 14px 14px;
+    min-width: 0;
+  }
+  .en-fields > legend {
+    padding: 0 6px;
+    font-weight: 700;
+    font-size: 0.88rem;
+  }
+  .en-fields-hint {
+    margin: 0 0 10px;
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
   .inp {
     background: var(--card);
     border: 1px solid var(--line);

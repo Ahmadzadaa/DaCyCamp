@@ -6,10 +6,15 @@ import { env } from '../src/config/env';
 import { Prisma, PrismaClient } from '@prisma/client';
 import { hash } from '@node-rs/argon2';
 import {
+  buildRoadmapI18n,
+  canonicalJson,
   DEFAULT_ROADMAPS,
   DEFAULT_TRACKS,
+  roadmapContentSchema,
   splitAssessment,
   splitStep,
+  type AssessmentDraft,
+  type RoadmapContent,
   type StepDefinition,
 } from '@dacy/shared';
 import { hashAnswer } from '../src/content/ctf-hash';
@@ -149,6 +154,117 @@ const steps: Array<{ key: string; def: StepDefinition }> = [
   },
 ];
 
+/** Nümunə addımların İngiliscə variantı — eyni quruluş (variantların sayı, düzgün cavablar eyni) */
+const stepsEn: Record<string, StepDefinition> = {
+  nezeri: {
+    type: 'theory',
+    title: 'Sample theory step',
+    xp: 10,
+    content: [
+      '# Sample theory text — can be deleted',
+      '',
+      'This step only demonstrates the **format**. The instructor uploads real lesson content from the admin panel or as a ZIP package.',
+      '',
+      '## Markdown support',
+      '',
+      '- Lists, **bold** and *italic* text',
+      '- Code: `SELECT 1`',
+      '- Images: `![name](images/file.png)` (from the course files)',
+      '',
+      '```sql',
+      '-- a code block example',
+      'SELECT * FROM numune;',
+      '```',
+      '',
+      'The student completes the step with the **"Got it, continue"** button below.',
+    ].join('\n'),
+  },
+  test: {
+    type: 'quiz',
+    title: 'Sample quiz',
+    xp: 30,
+    pass_score: 70,
+    shuffle_questions: false,
+    questions: [
+      {
+        text: 'Sample question: which option is correct?',
+        type: 'single',
+        options: ['Option A (correct)', 'Option B', 'Option C'],
+        correct: [0],
+        explanation: 'A sample explanation — shown after the student answers.',
+      },
+      {
+        text: 'Sample multiple-answer question: select the correct ones.',
+        type: 'multiple',
+        options: ['Correct 1', 'Wrong', 'Correct 2'],
+        correct: [0, 2],
+        explanation: 'More than one option can be selected.',
+      },
+    ],
+  },
+  sql: {
+    type: 'sql',
+    title: 'Sample SQL exercise',
+    xp: 50,
+    instructions:
+      'Sample instructions — can be deleted.\n\nSelect all rows from the `numune` table.',
+    dataset: 'datasets/numune.csv',
+    starter_code: 'SELECT ',
+    solution: 'SELECT * FROM numune',
+    check: 'result_match',
+    hints: ['Sample hint: `SELECT *` returns all columns.'],
+    tasks: ['Sample item 1', 'Sample item 2'],
+    hint_penalty_xp: 10,
+  },
+  python: {
+    type: 'python',
+    title: 'Sample Python exercise',
+    xp: 50,
+    instructions: 'Sample instructions — can be deleted.\n\nAssign `1` to the variable `x`.',
+    starter_code: '# Write your code here\n',
+    solution: 'x = 1',
+    tests: "assert 'x' in globals(), 'x is not defined'\nassert x == 1",
+    hints: ['Sample hint'],
+    tasks: ['Sample item'],
+    hint_penalty_xp: 10,
+  },
+  terminal: {
+    type: 'terminal',
+    title: 'Sample terminal lab',
+    xp: 100,
+    instructions:
+      'Sample instructions — can be deleted.\n\nYou are working in the container as the `student` user. Create a `done.txt` file in your home directory:\n\n```sh\ntouch ~/done.txt\n```\n\nThen press the "Check" button (or type `check` in the terminal).',
+    docker_image: 'dacy/numune-lab:latest',
+    time_limit_minutes: 30,
+    check_script: 'checks/numune.sh',
+    hints: ['Sample hint: the `touch` command creates an empty file.'],
+    tasks: ['Create the ~/done.txt file', 'Confirm with "Check"'],
+    hint_penalty_xp: 0,
+    network: false,
+  },
+  ctf: {
+    type: 'ctf',
+    title: 'Sample CTF room',
+    xp: 150,
+    instructions:
+      'Sample instructions — can be deleted. Download the attachment and find the flag.',
+    attachments: ['files/numune.txt'],
+    hint_penalty_xp: 10,
+    tasks: [
+      {
+        key: 't1',
+        question: 'Sample question: what is the flag written in the file?',
+        answer: 'DACY{numune}',
+        hint: 'Sample hint: open the file.',
+        points: 150,
+        case_sensitive: false,
+      },
+    ],
+  },
+};
+
+const json = (v: unknown) => v as Prisma.InputJsonValue;
+
 const assets: Array<{ path: string; filename: string; mime: string; content: string }> = [
   {
     path: 'datasets/numune.csv',
@@ -216,7 +332,14 @@ async function main() {
     'Nümunə Tələbə',
     'STUDENT',
   );
-  // nümunə kurs
+  // nümunə kurs (İngiliscə tərcümə hər dəfə yenilənir — nümunə məzmun platformaya aiddir)
+  const courseI18n = {
+    en: {
+      title: 'SAMPLE — can be deleted',
+      description:
+        "This course only demonstrates the platform's format: one example of each step type. Real courses are uploaded from the admin panel or as a ZIP.",
+    },
+  };
   const track = await prisma.track.findUniqueOrThrow({ where: { slug: 'data-analytics' } });
   const course = await prisma.course.upsert({
     where: { slug: COURSE_SLUG },
@@ -233,8 +356,9 @@ async function main() {
       isPublished: true,
       publishedAt: new Date(),
       createdById: admin?.id ?? null,
+      i18n: json(courseI18n),
     },
-    update: {},
+    update: { i18n: json(courseI18n) },
   });
   // test tələbəsi nümunə kursa yazılır (tələbə tərəfini dərhal yoxlamaq üçün)
   if (student)
@@ -269,6 +393,9 @@ async function main() {
     else await prisma.asset.create({ data });
   }
   // fəsil
+  const moduleI18n = {
+    en: { title: 'Sample chapter', description: 'One example of each step type' },
+  };
   const mod = await prisma.module.upsert({
     where: { courseId_key: { courseId: course.id, key: 'numune-fesil' } },
     create: {
@@ -278,12 +405,18 @@ async function main() {
       description: 'Hər addım tipindən bir nümunə',
       order: 1,
       isPublished: true,
+      i18n: json(moduleI18n),
     },
-    update: {},
+    update: { i18n: json(moduleI18n) },
   });
   // addımlar
   for (const [i, s] of steps.entries()) {
     const split = splitStep(s.def);
+    const en = splitStep(stepsEn[s.key]!);
+    const tr = {
+      i18n: json({ en: { title: en.title, config: en.config } }),
+      secretI18n: en.secret ? json({ en: en.secret }) : Prisma.JsonNull,
+    };
     // nümunə kurs platformaya aiddir: məzmun yenilənibsə addımı da yenilə (SQL-in hesablanmış `expected` heşi qorunur)
     const prev = await prisma.step.findUnique({
       where: { moduleId_key: { moduleId: mod.id, key: s.key } },
@@ -306,6 +439,7 @@ async function main() {
         isPublished: true,
         config: split.config as unknown as Prisma.InputJsonValue,
         secret: secret ? (secret as unknown as Prisma.InputJsonValue) : Prisma.JsonNull,
+        ...tr,
       },
       update: {
         title: split.title,
@@ -313,9 +447,12 @@ async function main() {
         isPublished: true,
         config: split.config as unknown as Prisma.InputJsonValue,
         secret: secret ? (secret as unknown as Prisma.InputJsonValue) : Prisma.JsonNull,
+        ...tr,
       },
     });
     for (const t of split.ctfTasks) {
+      const te = en.ctfTasks.find((x) => x.key === t.key);
+      const taskI18n = json({ en: { question: te?.question, hint: te?.hint } });
       await prisma.ctfTask.upsert({
         where: { stepId_key: { stepId: step.id, key: t.key } },
         create: {
@@ -327,8 +464,9 @@ async function main() {
           points: t.points,
           caseSensitive: t.caseSensitive,
           answerHash: hashAnswer(t.answer!, t.caseSensitive),
+          i18n: taskI18n,
         },
-        update: {},
+        update: { i18n: taskI18n },
       });
     }
   }
@@ -345,10 +483,19 @@ async function main() {
     sequential: true,
     isPublished: true,
   };
+  const pathI18n = json({
+    en: {
+      title: 'SAMPLE PATH — can be deleted',
+      description:
+        'This path only demonstrates the format: course → stage exam → project → final. Upload real paths from the admin panel or with path.yaml.',
+      targetAudience: 'Sample: people trying out the platform',
+      skills: ['Sample skill 1', 'Sample skill 2'],
+    },
+  });
   const samplePath = await prisma.learningPath.upsert({
     where: { slug: 'numune-yol' },
-    create: { ...pathMeta, slug: 'numune-yol', trackId: pathTrack.id, order: 1 },
-    update: { ...pathMeta },
+    create: { ...pathMeta, slug: 'numune-yol', trackId: pathTrack.id, order: 1, i18n: pathI18n },
+    update: { ...pathMeta, i18n: pathI18n },
   });
   const assessment = splitAssessment({
     pass_score: 50,
@@ -362,6 +509,19 @@ async function main() {
       },
     ],
   });
+  const assessmentEnDef: AssessmentDraft = {
+    pass_score: 50,
+    questions: [
+      {
+        text: 'Sample exam question: which option is correct?',
+        type: 'single',
+        options: ['The correct option', 'A wrong option'],
+        correct: [0],
+        explanation: 'A sample explanation.',
+      },
+    ],
+  };
+  const assessmentEn = splitAssessment(assessmentEnDef);
   const pathItems: Array<{
     key: string;
     type: 'COURSE' | 'ASSESSMENT' | 'PROJECT' | 'MILESTONE';
@@ -371,6 +531,7 @@ async function main() {
     secret?: object;
     xp: number;
     hours?: number;
+    en?: { title?: string; config?: object; secret?: object };
   }> = [
     { key: COURSE_SLUG, type: 'COURSE', courseId: course.id, xp: 0 },
     {
@@ -381,6 +542,11 @@ async function main() {
       secret: assessment.secret,
       xp: 50,
       hours: 0.5,
+      en: {
+        title: 'Sample stage exam',
+        config: assessmentEn.config,
+        secret: assessmentEn.secret,
+      },
     },
     {
       key: 'numune-layihe',
@@ -396,6 +562,14 @@ async function main() {
       },
       xp: 100,
       hours: 1,
+      en: {
+        title: 'Sample project',
+        config: {
+          instructions:
+            'Sample project instructions — can be deleted.\n\nSubmit a file (or a link); the instructor reviews and accepts it from the admin panel.',
+          deliverables: ['A sample file (any format)', 'A short note'],
+        },
+      },
     },
     {
       key: 'final',
@@ -406,6 +580,13 @@ async function main() {
         description: 'Bütün addımlar bitəndə yol sertifikatı verilir.',
       },
       xp: 0,
+      en: {
+        title: 'Final and certificate',
+        config: {
+          certificate_title: 'Sample path certificate',
+          description: 'The path certificate is issued when all steps are complete.',
+        },
+      },
     },
   ];
   for (const [i, it] of pathItems.entries()) {
@@ -426,6 +607,8 @@ async function main() {
       xp: it.xp,
       estimatedHours: it.hours ?? null,
       order: i + 1,
+      i18n: it.en ? json({ en: { title: it.en.title, config: it.en.config } }) : Prisma.JsonNull,
+      secretI18n: it.en?.secret ? json({ en: it.en.secret }) : Prisma.JsonNull,
     };
     await prisma.pathItem.upsert({
       where: { pathId_key: { pathId: samplePath.id, key: it.key } },
@@ -434,9 +617,21 @@ async function main() {
     });
   }
 
-  // karyera xəritələri — yalnız yoxdursa yaradılır (admin redaktələri heç vaxt üzərinə yazılmır)
+  // karyera xəritələri — yalnız yoxdursa yaradılır (admin redaktələri heç vaxt üzərinə yazılmır).
+  // İngiliscə tərcümə isə hər dəfə CARİ məzmuna görə yenilənir: admin dəyişdirdiyi mətn AZ qalır.
   for (const [i, r] of DEFAULT_ROADMAPS.entries()) {
-    if (await prisma.roadmap.findUnique({ where: { slug: r.slug } })) continue;
+    const existing = await prisma.roadmap.findUnique({ where: { slug: r.slug } });
+    if (existing) {
+      const content = roadmapContentSchema.safeParse(existing.content);
+      if (!content.success) continue;
+      const i18n = buildRoadmapI18n({ ...existing, content: content.data });
+      if (canonicalJson(i18n) !== canonicalJson(existing.i18n ?? null))
+        await prisma.roadmap.update({
+          where: { id: existing.id },
+          data: { i18n: i18n ? json(i18n) : Prisma.JsonNull },
+        });
+      continue;
+    }
     const track = r.track
       ? await prisma.track.findUnique({ where: { slug: r.track }, select: { id: true } })
       : null;
@@ -450,6 +645,7 @@ async function main() {
         order: i + 1,
         isPublished: true,
         content: r.content as unknown as Prisma.InputJsonValue,
+        i18n: json(buildRoadmapI18n({ ...r, content: r.content as RoadmapContent })),
       },
     });
   }

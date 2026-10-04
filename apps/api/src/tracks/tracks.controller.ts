@@ -13,6 +13,7 @@ import { ZodPipe } from '../common/pipes/zod.pipe';
 import { AdminOnly, Public, Staff } from '../common/decorators';
 import { conflict, notFound } from '../common/errors';
 import { reorderInTx } from '../common/utils/reorder';
+import { enOf, enToI18n } from '../common/i18n/en-text';
 import type { Track } from '@prisma/client';
 
 export const toTrackDto = (t: Track & { _count?: { courses: number } }): TrackDto => ({
@@ -25,6 +26,7 @@ export const toTrackDto = (t: Track & { _count?: { courses: number } }): TrackDt
   order: t.order,
   isPublished: t.isPublished,
   courseCount: t._count?.courses,
+  en: enOf(t.i18n),
 });
 
 @Controller()
@@ -63,8 +65,9 @@ export class TracksController {
     const exists = await this.prisma.track.findUnique({ where: { slug: dto.slug } });
     if (exists) throw conflict('SLUG_TAKEN');
     const max = await this.prisma.track.aggregate({ _max: { order: true } });
+    const { en, ...rest } = dto;
     const t = await this.prisma.track.create({
-      data: { ...dto, order: (max._max.order ?? 0) + 1 },
+      data: { ...rest, i18n: enToI18n(en), order: (max._max.order ?? 0) + 1 },
     });
     return toTrackDto(t);
   }
@@ -88,7 +91,11 @@ export class TracksController {
       const other = await this.prisma.track.findFirst({ where: { slug: dto.slug, NOT: { id } } });
       if (other) throw conflict('SLUG_TAKEN');
     }
-    const t = await this.prisma.track.update({ where: { id }, data: dto }).catch(() => null);
+    const { en, ...rest } = dto;
+    const i18n = enToI18n(en);
+    const t = await this.prisma.track
+      .update({ where: { id }, data: { ...rest, ...(i18n !== undefined ? { i18n } : {}) } })
+      .catch(() => null);
     if (!t) throw notFound();
     return toTrackDto(t);
   }

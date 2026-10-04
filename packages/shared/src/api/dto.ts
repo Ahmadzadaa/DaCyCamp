@@ -62,12 +62,22 @@ export type UpdateUserInput = z.infer<typeof updateUserSchema>;
 
 // content
 export const reorderSchema = z.object({ ids: z.array(idSchema).min(1).max(500) });
+/** Admin formasındakı İngiliscə variant (bazada `i18n.en`); boş sahə — tərcümə yoxdur (AZ göstərilir) */
+export const enTextSchema = z
+  .object({
+    title: z.string().trim().max(200).optional(),
+    description: z.string().trim().max(2000).optional(),
+  })
+  .nullable()
+  .optional();
+export type EnTextInput = z.infer<typeof enTextSchema>;
 export const createTrackSchema = z.object({
   slug: slugSchema,
   title: titleSchema,
   color: colorSchema,
   icon: z.string().trim().max(60).optional(),
   description: z.string().trim().max(2000).optional(),
+  en: enTextSchema,
 });
 export const updateTrackSchema = createTrackSchema
   .partial()
@@ -79,6 +89,7 @@ export const createTopicSchema = z.object({
   color: colorSchema.default('#6C7CF0'),
   description: z.string().trim().max(1000).nullable().optional(),
   isPublished: z.boolean().optional(),
+  en: enTextSchema,
 });
 export const updateTopicSchema = createTopicSchema.partial();
 export type CreateTopicInput = z.infer<typeof createTopicSchema>;

@@ -1,5 +1,6 @@
 import { INestApplication } from '@nestjs/common';
 import AdmZip from 'adm-zip';
+import { DEFAULT_ROADMAPS } from '@dacy/shared';
 import { createApp, login, resetDb, seedBasics } from './helpers';
 import { PrismaService } from '../src/prisma/prisma.service';
 import { ContentSyncService } from '../src/import-export/content-sync.service';
@@ -217,5 +218,96 @@ describe('Məzmun tərcüməsi (i18n/en)', () => {
     const flag = EN_MODULE.replace('answer: dacy{1}', 'answer: dacy{2}');
     const v2 = await admin.post('/admin/import/validate').attach('file', pkg(flag), 'p.zip');
     expect(v2.body.ok).toBe(false);
+  });
+
+  it('admin AZ mətni dəyişəndə həmin sahənin köhnə EN tərcüməsi atılır, sync onu qaytarmır', async () => {
+    const step = await prisma.step.findFirstOrThrow({
+      where: { key: 'test', module: { course: { slug } } },
+    });
+    const def = (await admin.get(`/admin/steps/${step.id}`)).body.definition;
+    // admin birinci sualın variantlarının yerini dəyişir (düzgün cavab da dəyişir)
+    def.questions[0].options = ['Xeyr', 'Bəli'];
+    def.questions[0].correct = [0];
+    expect((await admin.put(`/admin/steps/${step.id}`).send(def)).status).toBe(200);
+    const view = async () =>
+      JSON.stringify((await en.get(`/learn/courses/${slug}/steps/giris/test`)).body);
+    const check = async () => {
+      const json = await view();
+      expect(json).toContain('Which is true?'); // sualın mətni dəyişməyib — EN qalır
+      expect(json).toContain('Xeyr'); // variantlar dəyişib — AZ mənbə göstərilir
+      expect(json).not.toContain('"Yes"'); // köhnə EN variantlar yeni cavab açarına yapışmır
+      expect(json).toContain('Carrot'); // ikinci sual toxunulmaz
+    };
+    await check();
+    // API yenidən açılanda paketin tərcüməsi dəyişdirilmiş sahəyə qayıtmır
+    await app.get(ContentSyncService)['pkg'].applyTranslations(pkg());
+    await check();
+    // qiymətləndirmə yeni cavab açarı ilə gedir (EN-də də)
+    const fresh = await prisma.step.findUniqueOrThrow({ where: { id: step.id } });
+    const answers = (fresh.secret as { questions: Array<{ correct: unknown }> }).questions.map(
+      (q) => q.correct,
+    );
+    expect((answers[0] as number[])[0]).toBe(0);
+    const r = await en.post(`/learn/steps/${step.id}/submit`).send({ kind: 'quiz', answers });
+    expect(r.body.passed).toBe(true);
+  });
+
+  it('karyera xəritəsi: en-də ingiliscə; admin dəyişdirdiyi bacarıq AZ qalır', async () => {
+    const src = DEFAULT_ROADMAPS[0]!;
+    const body = { ...src, isPublished: true };
+    const created = await admin.post('/admin/roadmaps').send(body);
+    expect(created.status).toBe(201);
+    const get = async (a: Agent) => (await a.get(`/roadmaps/${src.slug}`)).body;
+    const e1 = await get(en);
+    expect(e1.tagline).toBe('From data to business decisions: Excel, SQL, BI and statistics');
+    expect(e1.content.levels[0].groups[0].skills[0].title).toBe('Core formulas');
+    expect(JSON.stringify(e1)).not.toMatch(/[əğıöüçşƏĞİÖÜÇŞ]/);
+    expect((await get(az)).tagline).toBe(src.tagline);
+    // admin bir bacarığın adını dəyişir və qrupun əvvəlinə yeni bacarıq əlavə edir
+    const edited = JSON.parse(JSON.stringify(body));
+    edited.content.levels[0].groups[0].skills[0].title = 'Excel formulları';
+    edited.content.levels[0].groups[0].skills.unshift({ id: 'yeni', title: 'Yeni', core: true });
+    expect((await admin.put(`/admin/roadmaps/${created.body.id}`).send(edited)).status).toBe(200);
+    const skills = (await get(en)).content.levels[0].groups[0].skills;
+    expect(skills.map((x: { title: string }) => x.title).slice(0, 3)).toEqual([
+      'Yeni',
+      'Excel formulları',
+      'XLOOKUP / VLOOKUP',
+    ]);
+    expect(skills[2].desc).toBe('joining tables on a key');
+    // admin həmişə mənbəni görür
+    const adm = (await admin.get(`/admin/roadmaps/${created.body.id}`)).body;
+    expect(adm.tagline).toBe(src.tagline);
+  });
+
+  it('mövzu və istiqamət: admin formasındakı İngiliscə variant; AZ dəyişəndə köhnə EN atılır', async () => {
+    const c = await admin.post('/admin/topics').send({
+      slug: 'python',
+      title: 'Python',
+      description: 'Python üzrə qısa dərslər',
+      en: { description: 'Short Python lessons' },
+    });
+    expect(c.status).toBe(201);
+    expect(c.body.en).toEqual({ description: 'Short Python lessons' });
+    const topic = async (a: Agent) =>
+      (
+        (await a.get('/topics')).body as Array<{ slug: string; description: string; en?: unknown }>
+      ).find((x) => x.slug === 'python')!;
+    expect((await topic(en)).description).toBe('Short Python lessons');
+    expect((await topic(az)).description).toBe('Python üzrə qısa dərslər');
+    expect((await topic(en)).en).toBeUndefined(); // tələbəyə xam tərcümə getmir
+    // admin yalnız AZ təsviri dəyişir (EN göndərmir) — köhnə EN təsvir atılır
+    await admin.patch(`/admin/topics/${c.body.id}`).send({ description: 'Yeni təsvir' });
+    expect((await topic(en)).description).toBe('Yeni təsvir');
+    const tr = (await admin.get('/admin/tracks')).body[0];
+    const u = await admin
+      .patch(`/admin/tracks/${tr.id}`)
+      .send({
+        description: 'Datanı təhlil edənlər üçün',
+        en: { description: 'For data analysts' },
+      });
+    expect(u.body.en.description).toBe('For data analysts');
+    const tracks = (await en.get('/tracks')).body as Array<{ slug: string; description: string }>;
+    expect(tracks.find((x) => x.slug === tr.slug)!.description).toBe('For data analysts');
   });
 });

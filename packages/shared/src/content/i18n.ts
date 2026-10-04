@@ -26,6 +26,44 @@ export function mergeTranslation(base: unknown, tr: unknown): unknown {
   return tr;
 }
 
+/** Açarları sıralanmış JSON — jsonb açar sırasını dəyişdiyi üçün müqayisə bununla aparılır */
+export function canonicalJson(v: unknown): string {
+  return JSON.stringify(v, (_k, x: unknown) =>
+    isPlain(x)
+      ? Object.fromEntries(
+          Object.keys(x)
+            .sort()
+            .map((k) => [k, x[k]]),
+        )
+      : x,
+  );
+}
+
+/**
+ * Mənbə dəyişəndə köhnəlmiş tərcüməni atır: tərcümənin hər yarpağı yalnız tərcümə etdiyi mənbə
+ * yarpağı (eyni yolda) dəyişməyibsə qalır. Admin AZ mətni redaktə edəndə köhnə EN mətn yeni mənaya
+ * yapışmasın — məs. sualların sırası dəyişəndə EN sual başqa sualın cavab açarına düşməsin.
+ * Qaytarır: qalan tərcümə (boş obyekt ola bilər) və ya undefined (tamamilə köhnəlib).
+ */
+export function pruneTranslation(before: unknown, after: unknown, tr: unknown): unknown {
+  if (tr === undefined || tr === null) return tr;
+  if (canonicalJson(before ?? null) === canonicalJson(after ?? null)) return tr;
+  if (isPlain(tr)) {
+    if (!isPlain(before) || !isPlain(after)) return undefined;
+    const out: Obj = {};
+    for (const [k, v] of Object.entries(tr)) {
+      const p = pruneTranslation(before[k], after[k], v);
+      if (p !== undefined) out[k] = p;
+    }
+    return out;
+  }
+  if (Array.isArray(tr) && tr.length && tr.every(isPlain)) {
+    if (!Array.isArray(before) || !Array.isArray(after)) return undefined;
+    return tr.map((x, i) => pruneTranslation(before[i], after[i], x) ?? {});
+  }
+  return undefined;
+}
+
 /** Tərcümə dilləri (mənbə — az) */
 export const CONTENT_LOCALES = ['en'] as const;
 export type ContentLocale = (typeof CONTENT_LOCALES)[number];

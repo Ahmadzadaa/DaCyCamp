@@ -13,6 +13,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { ZodPipe } from '../common/pipes/zod.pipe';
 import { Public, Staff } from '../common/decorators';
 import { badRequest, conflict, notFound } from '../common/errors';
+import { enOf, enToI18n } from '../common/i18n/en-text';
 
 export const toTopicDto = (t: Topic & { _count?: { courses: number } }): TopicDto => ({
   id: t.id,
@@ -23,6 +24,7 @@ export const toTopicDto = (t: Topic & { _count?: { courses: number } }): TopicDt
   order: t.order,
   isPublished: t.isPublished,
   courseCount: t._count?.courses,
+  en: enOf(t.i18n),
 });
 
 /** Mövzular (Qeyd 5): kataloq üçün ictimai siyahı + admin CRUD və sıralama */
@@ -62,8 +64,9 @@ export class TopicsController {
     if (await this.prisma.topic.findUnique({ where: { slug: dto.slug } }))
       throw conflict('SLUG_TAKEN');
     const max = await this.prisma.topic.aggregate({ _max: { order: true } });
+    const { en, ...rest } = dto;
     const t = await this.prisma.topic.create({
-      data: { ...dto, order: (max._max.order ?? 0) + 1 },
+      data: { ...rest, i18n: enToI18n(en), order: (max._max.order ?? 0) + 1 },
     });
     return toTopicDto({ ...t, _count: { courses: 0 } });
   }
@@ -94,10 +97,12 @@ export class TopicsController {
       const other = await this.prisma.topic.findFirst({ where: { slug: dto.slug, NOT: { id } } });
       if (other) throw conflict('SLUG_TAKEN');
     }
+    const { en, ...rest } = dto;
+    const i18n = enToI18n(en);
     const t = await this.prisma.topic
       .update({
         where: { id },
-        data: dto,
+        data: { ...rest, ...(i18n !== undefined ? { i18n } : {}) },
         include: { _count: { select: { courses: { where: { deletedAt: null } } } } },
       })
       .catch(() => null);

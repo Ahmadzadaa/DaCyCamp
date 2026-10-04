@@ -1271,6 +1271,11 @@ export const en: Dictionary = {
     deleteCourse: 'Delete course',
     hasProgress: 'Students have progress in this item. Deleting it will delete their progress too.',
     reorderSaved: 'Order saved',
+    enSection: 'English version',
+    enSectionHint:
+      'Shown when the site is in English. If left empty, the Azerbaijani text is shown.',
+    enTitle: 'Title (English)',
+    enDescription: 'Description (English)',
     courseTree: 'Course outline',
     selectNode: 'Select a chapter or step on the left',
     courseSettings: 'Course settings',

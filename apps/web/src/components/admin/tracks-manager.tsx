@@ -31,15 +31,24 @@ import { Switch } from '@/components/ui/switch';
 import { TrackBadge } from '@/components/app/track-badge';
 import { ConfirmDialog } from './confirm-dialog';
 import { useAdmin } from './admin-context';
+import { EnFields, enDraftOf, enPayload, type EnDraft } from './en-fields';
 import { PageHeader } from '@/components/admin/page-header';
 
-type Draft = { title: string; slug: string; color: string; icon: string; description: string };
+type Draft = {
+  title: string;
+  slug: string;
+  color: string;
+  icon: string;
+  description: string;
+  en: EnDraft;
+};
 const emptyDraft = (): Draft => ({
   title: '',
   slug: '',
   color: '#6C7CF0',
   icon: '',
   description: '',
+  en: enDraftOf(null),
 });
 
 export function TracksManager({ initial }: { initial: TrackDto[] }) {
@@ -91,6 +100,7 @@ export function TracksManager({ initial }: { initial: TrackDto[] }) {
       color: editing.draft.color.toUpperCase(),
       icon: editing.draft.icon.trim() || undefined,
       description: editing.draft.description.trim() || undefined,
+      en: enPayload(editing.draft.en),
     };
     const parsed = createTrackSchema.safeParse(body);
     if (!parsed.success) {
@@ -160,6 +170,7 @@ export function TracksManager({ initial }: { initial: TrackDto[] }) {
                         color: tr.color,
                         icon: tr.icon ?? '',
                         description: tr.description ?? '',
+                        en: enDraftOf(tr.en),
                       },
                     })
                   }
@@ -245,6 +256,11 @@ export function TracksManager({ initial }: { initial: TrackDto[] }) {
                   rows={2}
                 />
               </Field>
+              <EnFields
+                value={d.en}
+                onChange={(en) => setEditing({ ...editing, draft: { ...d, en } })}
+                descriptionMax={2000}
+              />
               <div className="md:col-span-2">
                 <TrackBadge color={/^#[0-9a-fA-F]{6}$/.test(d.color) ? d.color : '#6C7CF0'}>
                   {d.title || t('common.track')}

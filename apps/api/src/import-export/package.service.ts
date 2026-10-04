@@ -12,6 +12,7 @@ import {
   parseFileName,
   splitFrontMatter,
   splitStep,
+  pruneTranslation,
   stepYamlSchema,
   validateForPublish,
   yamlStepToDefinition,
@@ -880,58 +881,97 @@ export class PackageService {
           : v;
     const same = (a: unknown, b: unknown) =>
       JSON.stringify(canon(a ?? null)) === JSON.stringify(canon(b ?? null));
+    type Obj = Record<string, unknown>;
+    /**
+     * Paketin tərcüməsi yalnız bazadakı AZ mətni paketdəki ilə eyni qalan sahələrə tətbiq olunur:
+     * admin panelində dəyişdirilmiş AZ mətnin üstünə köhnə EN mətn qayıtmasın.
+     */
+    const fit = (pkgAz: Obj, dbAz: Obj, i18n: { en: object } | null | undefined) => {
+      if (!i18n) return null;
+      const en: Obj = {};
+      for (const [k, v] of Object.entries(i18n.en)) {
+        const p = pruneTranslation(pkgAz[k], dbAz[k], v);
+        if (p !== undefined) en[k] = p;
+      }
+      return { en };
+    };
+    const fitSecret = (pkgAz: unknown, dbAz: unknown, i18n: { en: unknown } | null | undefined) => {
+      if (!i18n) return null;
+      const en = pruneTranslation(pkgAz, dbAz, i18n.en);
+      return en === undefined ? null : { en };
+    };
     let n = 0;
     const course = await this.prisma.course.findUniqueOrThrow({
       where: { id: courseId },
       select: {
+        title: true,
+        description: true,
         i18n: true,
         modules: {
           select: {
             id: true,
             key: true,
+            title: true,
+            description: true,
             i18n: true,
             steps: {
               select: {
                 id: true,
                 key: true,
+                title: true,
+                config: true,
+                secret: true,
                 i18n: true,
                 secretI18n: true,
-                ctfTasks: { select: { id: true, key: true, i18n: true } },
+                ctfTasks: {
+                  select: { id: true, key: true, question: true, hint: true, i18n: true },
+                },
               },
             },
           },
         },
       },
     });
-    if (!same(course.i18n, plan.courseI18n)) {
+    const c = plan.course;
+    const courseWant = c ? fit(c, course, plan.courseI18n) : plan.courseI18n;
+    if (!same(course.i18n, courseWant)) {
       await this.prisma.course.update({
         where: { id: courseId },
-        data: { i18n: jsonOrNull(plan.courseI18n) },
+        data: { i18n: jsonOrNull(courseWant) },
       });
       n++;
     }
     for (const m of plan.modules) {
       const row = course.modules.find((x) => x.key === m.key);
       if (!row) continue;
-      if (!same(row.i18n, m.i18n)) {
+      const moduleWant = fit(m as unknown as Obj, row, m.i18n);
+      if (!same(row.i18n, moduleWant)) {
         await this.prisma.module.update({
           where: { id: row.id },
-          data: { i18n: jsonOrNull(m.i18n) },
+          data: { i18n: jsonOrNull(moduleWant) },
         });
         n++;
       }
       for (const s of m.steps) {
         const st = row.steps.find((x) => x.key === s.key);
         if (!st) continue;
-        if (!same(st.i18n, s.tr?.i18n) || !same(st.secretI18n, s.tr?.secretI18n)) {
+        const az = splitStep(s.def);
+        const stepWant = fit(
+          { title: az.title, config: az.config },
+          st as unknown as Obj,
+          s.tr?.i18n,
+        );
+        const secretWant = fitSecret(az.secret, st.secret, s.tr?.secretI18n);
+        if (!same(st.i18n, stepWant) || !same(st.secretI18n, secretWant)) {
           await this.prisma.step.update({
             where: { id: st.id },
-            data: { i18n: jsonOrNull(s.tr?.i18n), secretI18n: jsonOrNull(s.tr?.secretI18n) },
+            data: { i18n: jsonOrNull(stepWant), secretI18n: jsonOrNull(secretWant) },
           });
           n++;
         }
         for (const t of st.ctfTasks) {
-          const want = s.tr?.ctf.get(t.key);
+          const src = az.ctfTasks.find((x) => x.key === t.key);
+          const want = src ? fit(src as unknown as Obj, t, s.tr?.ctf.get(t.key)) : null;
           if (same(t.i18n, want)) continue;
           await this.prisma.ctfTask.update({
             where: { id: t.id },

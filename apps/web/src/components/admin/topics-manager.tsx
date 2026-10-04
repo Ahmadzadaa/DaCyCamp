@@ -30,10 +30,17 @@ import { Input, Textarea } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { EmptyState } from '@/components/app/empty-state';
 import { ConfirmDialog } from './confirm-dialog';
+import { EnFields, enDraftOf, enPayload, type EnDraft } from './en-fields';
 import { PageHeader } from './page-header';
 
-type Draft = { title: string; slug: string; color: string; description: string };
-const emptyDraft = (): Draft => ({ title: '', slug: '', color: '#6C7CF0', description: '' });
+type Draft = { title: string; slug: string; color: string; description: string; en: EnDraft };
+const emptyDraft = (): Draft => ({
+  title: '',
+  slug: '',
+  color: '#6C7CF0',
+  description: '',
+  en: enDraftOf(null),
+});
 const SWATCHES = [
   '#6C7CF0',
   '#F0A93E',
@@ -96,6 +103,7 @@ export function TopicsManager({ initial }: { initial: TopicDto[] }) {
       slug: editing.draft.slug.trim(),
       color: editing.draft.color.toUpperCase(),
       description: editing.draft.description.trim() || null,
+      en: enPayload(editing.draft.en),
     });
     if (!parsed.success) {
       toast.error(parsed.error.issues[0]?.message ?? t('errors.VALIDATION_FAILED'));
@@ -183,6 +191,7 @@ export function TopicsManager({ initial }: { initial: TopicDto[] }) {
                           slug: tp.slug,
                           color: tp.color,
                           description: tp.description ?? '',
+                          en: enDraftOf(tp.en),
                         },
                       })
                     }
@@ -254,6 +263,7 @@ export function TopicsManager({ initial }: { initial: TopicDto[] }) {
                   maxLength={1000}
                 />
               </Field>
+              <EnFields value={d.en} onChange={(en) => set({ en })} />
               <div className="flex justify-end gap-2 md:col-span-2">
                 <DialogClose asChild>
                   <Button type="button" variant="ghost">

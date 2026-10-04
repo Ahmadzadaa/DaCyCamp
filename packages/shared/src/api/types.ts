@@ -70,6 +70,8 @@ export interface TopicDto {
   order: number;
   isPublished: boolean;
   courseCount?: number;
+  /** yalnız admin: İngiliscə variant */
+  en?: { title?: string; description?: string } | null;
 }
 export type TopicRefDto = Pick<TopicDto, 'id' | 'slug' | 'title' | 'color'>;
 
@@ -83,6 +85,8 @@ export interface TrackDto {
   order: number;
   isPublished: boolean;
   courseCount?: number;
+  /** yalnız admin: İngiliscə variant */
+  en?: { title?: string; description?: string } | null;
 }
 
 export interface CourseCardDto {
