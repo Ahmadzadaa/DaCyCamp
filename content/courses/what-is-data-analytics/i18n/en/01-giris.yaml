@@ -1,0 +1,221 @@
+title: Introduction to data analytics
+description: What data analytics is, the 4 types of analytics and the role of a data analyst.
+steps:
+  xos-geldin:
+    title: 'Welcome to the course: making decisions with data'
+    content: |
+      Thousands of decisions are made every day: which product to put on sale, where to open a new store, how many couriers to hire. These decisions are based either on **guesswork and gut feeling** or on **data**. The field that makes the second approach possible is **data analytics**.
+
+      ## What is data analytics?
+
+      **Data analytics** is the process of inspecting, cleaning and analyzing data to draw **useful conclusions for decision-making**. An analyst looks for answers to questions in the data:
+
+      - What happened?
+      - Why did it happen?
+      - What will happen next?
+      - What should we do?
+
+      ## Gut feeling vs. data
+
+      NarMarket's director thinks: "Sales have dropped, so our prices must be too high — let's offer a discount." Analyst Aysel looks at the data instead and sees that sales dropped only in **Ganja**, and that in the very same week the delivery time there rose from 35 to 70 minutes. The problem isn't the price — it's **delivery**. A discount would have lost money without solving the problem.
+
+      That is exactly what data-driven decision making is: testing ideas against data.
+
+      ## Analytics is everywhere
+
+      - **Streaming services** recommend new films based on what you've watched.
+      - **Banks** spot fraudulent transactions by unusual behavior.
+      - **Football clubs** analyze players' running distance and passes.
+      - **Hospitals** forecast which days will need more doctors.
+
+      ## Throughout the course: NarMarket and analyst Aysel 🍎
+
+      Throughout the course we'll work alongside **Aysel**, the analyst at **NarMarket**, a fictional online grocery store. 50,000 orders a day, 3 cities, 400 couriers — and new questions every day.
+
+      | Chapter | Topic |
+      | --- | --- |
+      | 1. Introduction | The 4 types of analytics, who a data analyst is |
+      | 2. The process | The 6 steps of analysis, SMART questions and KPIs, data sources and types |
+      | 3. Cleaning and analysis | Dirty data, basic statistics, correlation and A/B tests |
+      | 4. Visualization | The right chart, dashboards, storytelling with data |
+      | 5. Tools and careers | The toolkit, a complete project example, final test |
+
+      ## How you'll learn
+
+      1. **Lesson** — a video and a short text.
+      2. **Practice** — questions: choose the right answer or drag items into the right group.
+      3. If you get it wrong, read the explanation and try again.
+
+      > 💡 No coding required. This course teaches a way of thinking — the tools come later.
+  analitika-novleri:
+    title: The 4 types of analytics
+    content: |
+      Analytical questions fall into four types depending on their complexity and the value they bring. Think of them as a staircase: each step builds on the one before.
+
+      ## 1. Descriptive analytics — "What happened?"
+
+      Describes the past with numbers: totals, averages, comparisons.
+
+      - "How many orders were there in September?" — 1,480,000.
+      - "Which category sold the most?" — fruit and vegetables.
+
+      Most reports and dashboards are descriptive analytics.
+
+      ## 2. Diagnostic analytics — "Why did it happen?"
+
+      Looks for causes: breaks the data down, compares, looks for relationships.
+
+      - "Why did sales drop?" → they dropped only in Ganja → delivery took twice as long that week → the opening of a new warehouse was delayed.
+
+      ## 3. Predictive analytics — "What will happen?"
+
+      Estimates the future based on patterns in past data.
+
+      - "How many orders do we expect in Novruz week?"
+      - "Which customers might leave us next month?"
+
+      ## 4. Prescriptive analytics — "What should we do?"
+
+      Recommends the best course of action — often using optimization and simulation.
+
+      - "How many couriers should we assign to each warehouse in Novruz week so there are no delays and costs stay at a minimum?"
+      - "What is the shortest route for each courier?"
+
+      ## In one table
+
+      | Type | Question | NarMarket example | Difficulty |
+      | --- | --- | --- | --- |
+      | Descriptive | What happened? | Last month's sales report | ⭐ |
+      | Diagnostic | Why did it happen? | Why sales dropped in Ganja | ⭐⭐ |
+      | Predictive | What will happen? | Order forecast for the holiday week | ⭐⭐⭐ |
+      | Prescriptive | What should we do? | Optimal allocation of couriers | ⭐⭐⭐⭐ |
+
+      > 💡 **How to tell them apart?** Look at the key words in the question: "how many", "how much" → descriptive; "why", "cause" → diagnostic; "next", "expected", "likely" → predictive; "what should we do", "best", "optimal" → prescriptive.
+
+      Companies usually start with descriptive analytics and climb to higher steps as their data and experience grow. But the higher steps are impossible without the lower ones: if you can't describe the past correctly, you can't predict the future either.
+
+      ## Quick summary
+
+      - Descriptive — what happened; diagnostic — why; predictive — what will happen; prescriptive — what to do.
+      - Each type builds on the previous one and brings more value, but also more complexity.
+  hansi-analitika:
+    title: 'Practice: Which type of analytics is it?'
+    questions:
+      - text: NarMarket's management has sent the analysts various questions. Place each question under the correct type of analytics.
+        buckets:
+          - name: Descriptive
+            items:
+              - How many orders were there last month?
+              - A chart comparing September and August sales
+          - name: Diagnostic
+            items:
+              - Why did sales drop in Ganja?
+              - Are courier delays the cause of the rise in complaints?
+          - name: Predictive
+            items:
+              - How many couriers will we need next week?
+              - Which customers are most likely to cancel their subscription?
+          - name: Prescriptive
+            items:
+              - How much of a discount should we give on which product to increase sales?
+              - What is the optimal route for each courier?
+        explanation: '"How many", comparisons → descriptive; "why", causes → diagnostic; "next", likelihood → predictive; "what should we do", optimal → prescriptive.'
+      - text: A company is just getting started with analytics. **Which type** does it usually make sense to start with?
+        options:
+          - Prescriptive
+          - Predictive
+          - Descriptive
+          - All of them at once
+        explanation: Without describing the past correctly, you can't find causes, predict the future or choose the best action. The staircase starts with descriptive analytics.
+  data-analitik-kimdir:
+    title: Who is a data analyst?
+    content: |
+      A **data analyst** is a specialist who turns business questions into data questions, finds the answers in data and presents them in a way people can understand.
+
+      ## What does an analyst do?
+
+      1. **Clarifies the question** — turns a vague concern like "sales are bad" into a measurable question.
+      2. **Collects the data** — from databases, spreadsheets and surveys.
+      3. **Cleans the data** — duplicates, blanks, wrong formats.
+      4. **Analyzes it** — comparisons, trends, segments, relationships.
+      5. **Visualizes it** — charts and dashboards.
+      6. **Presents and recommends** — "what we found and what we should do".
+
+      ## A day in Aysel's life
+
+      - **09:30** — notices an unexpected drop on the sales dashboard.
+      - **10:00** — uses SQL to break the data down by city and category: the drop is only in Ganja, in fruit and vegetables.
+      - **12:00** — talks to the warehouse team: a supplier has been late for 3 days.
+      - **14:00** — estimates the value of the lost sales.
+      - **16:00** — prepares 3 slides for management: the problem, its impact and a proposal — a backup supplier.
+
+      ## Roles on a data team
+
+      | Role | Key question | Work |
+      | --- | --- | --- |
+      | **Data analyst** | What happened and why? | Reports, dashboards, analysis, recommendations |
+      | **Data scientist** | What will happen? | Forecasting models, machine learning, experiments |
+      | **Data engineer** | Does the data arrive reliably and on time? | Pipelines, databases, infrastructure |
+      | **BI developer** | Can everyone find the number they need on their own? | BI systems, company-wide dashboards |
+
+      These boundaries vary from company to company: in a small company, one person may do all of it.
+
+      ## Skills
+
+      **Technical (hard skills):**
+
+      - **Excel / Google Sheets** — formulas, pivot tables;
+      - **SQL** — pulling data out of databases;
+      - **BI tools** — Power BI, Tableau, Looker Studio;
+      - **Statistics** — mean, median, distribution, correlation;
+      - **Python or R** — for more complex analyses.
+
+      **Personal (soft skills):**
+
+      - **Curiosity** — asking "why?" again and again;
+      - **Critical thinking** — not trusting numbers blindly;
+      - **Communication** — explaining results to non-technical people in plain language;
+      - **Business sense** — how the company makes money and which numbers really matter.
+
+      > 💬 What makes a good analyst isn't just the tools — it's asking the right questions and telling the results as a story.
+
+      ## Where do they work?
+
+      In almost every field: banking and finance, retail and e-commerce, telecommunications, healthcare, logistics, marketing, sports and government.
+
+      ## Quick summary
+
+      - An analyst asks questions, collects and cleans data, analyzes it, visualizes it and makes recommendations.
+      - An analyst explains the past and its causes; a data scientist models the future; a data engineer delivers the data.
+      - Curiosity, critical thinking and communication matter as much as technical skills.
+  analitikin-isi:
+    title: "Practice: The analyst's job"
+    questions:
+      - text: Which tasks belong to a data analyst, and which belong to other roles?
+        buckets:
+          - name: The data analyst's job
+            items:
+              - Finding trends in sales data
+              - Building a dashboard for management
+              - Turning the concern "sales are bad" into a measurable question
+              - Presenting results in plain language
+          - name: Not the analyst's job
+            items:
+              - Designing the architecture of the nightly data pipeline
+              - Setting up and maintaining servers
+              - Writing the code for the mobile app
+        explanation: An analyst asks questions, analyzes, visualizes and presents. Pipelines and servers are a data engineer's job, and app code is a software developer's.
+      - text: What is the **main difference** between a data analyst and a data scientist?
+        options:
+          - An analyst uses only Excel; a data scientist uses only Python
+          - An analyst mainly explains the past and its causes from existing data; a data scientist builds more forecasting models
+          - A data scientist doesn't need statistics
+          - There's no difference — they're two names for the same job
+        explanation: An analyst focuses on "what happened and why?", while a data scientist focuses more on "what will happen?". But the boundaries are flexible.
+      - text: Which of these are important **personal (soft)** skills for a data analyst? (Select all that apply)
+        options:
+          - Curiosity and asking "why?"
+          - Explaining results in plain language
+          - Critical thinking
+          - Repairing servers
+        explanation: Curiosity, communication and critical thinking are the key personal skills that set an analyst apart.

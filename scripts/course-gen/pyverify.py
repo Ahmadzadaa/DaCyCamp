@@ -3,7 +3,8 @@ CPython-da (Pyodide ilə eyni paket versiyaları) kurs paketlərinin Python add�
 solution + tests KEÇMƏLİ, starter_code + tests KEÇMƏMƏLİDİR. Brauzer runtime-ı (pyodide.ts) kimi:
 datasetlər iş qovluğuna yazılır, `dacy` obyekti, son ifadənin göstərilməsi, matplotlib AGG, plt.show — no-op.
 
-İstifadə: pyenv/bin/python gen/pyverify.py <kurs qovluğu> [fayl filtri]
+İstifadə: pyenv/bin/python gen/pyverify.py <kurs qovluğu> [fayl filtri] [--en]
+  --en — ingiliscə tərcümə (i18n/en) mənbənin üzərinə birləşdirilib yoxlanılır
 """
 import ast
 import contextlib
@@ -78,8 +79,13 @@ def run(course_dir, code, tests, datasets, tmp):
 
 
 def main():
-    course = os.path.abspath(sys.argv[1])
-    filt = sys.argv[2] if len(sys.argv) > 2 else ''
+    args = [a for a in sys.argv[1:] if a != '--en']
+    use_en = '--en' in sys.argv
+    course = os.path.abspath(args[0])
+    filt = args[1] if len(args) > 1 else ''
+    if use_en:
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        from i18n_tools import load_en, merge, step_key
     bad = n = 0
     for m in sorted(os.listdir(os.path.join(course, 'modules'))):
         md = os.path.join(course, 'modules', m)
@@ -89,6 +95,14 @@ def main():
             d = yaml.safe_load(open(os.path.join(md, f)))
             if d.get('type') != 'python':
                 continue
+            if use_en:
+                en = ((load_en(course, m) or {}).get('steps') or {}).get(step_key(f))
+                if not en:
+                    print(f'✗ {m}/{f} — tərcümə yoxdur')
+                    bad += 1
+                    n += 1
+                    continue
+                d = merge(d, en)
             n += 1
             ds = d.get('dataset') or []
             ds = [ds] if isinstance(ds, str) else ds

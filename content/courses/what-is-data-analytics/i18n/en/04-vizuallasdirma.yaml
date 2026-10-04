@@ -1,0 +1,196 @@
+title: Visualization and data storytelling
+description: Choosing the right chart, dashboards and telling stories with data.
+steps:
+  qrafik-sec:
+    title: Choose the right chart
+    content: |
+      A good chart says at a glance what a table can't say in 10 minutes. A bad chart makes even correct data hard to understand. Choosing a chart starts with the **question**: what do you want to show?
+
+      ## The main chart types
+
+      | Chart | Used for | NarMarket example |
+      | --- | --- | --- |
+      | 📈 **Line** | Change over time, trends | Daily orders over the last 12 months |
+      | 📊 **Bar** | Comparing categories | Sales across 5 cities |
+      | 🥧 **Pie** | Parts of a whole (2–4 parts) | Share of payment methods: card 70%, cash 30% |
+      | ⚬ **Scatter** | The relationship between two numeric measures | Delivery distance and delivery time |
+      | ▥ **Histogram** | The distribution of one measure | The range where order amounts are concentrated |
+      | 🗺️ **Map** | Geographic differences | Average delivery time by district |
+      | 🔢 **KPI card** | One important number | "Today: 48,210 orders, +4% vs yesterday" |
+      | 📋 **Table** | When exact values are needed | A list of the 10 best-selling products |
+
+      ## Simple questions for choosing
+
+      - Am I showing change over time? → **line**
+      - Am I comparing categories? → **bar** (horizontal bars if there are many categories)
+      - Am I showing how a whole splits into parts, and are there only a few parts? → **pie** (otherwise bar)
+      - Am I looking for a relationship between two numbers? → **scatter**
+      - How are the values distributed? → **histogram**
+
+      ## The most common mistakes
+
+      - **8–10 slices in a pie chart** — the eye can't compare small angles; a bar chart is better.
+      - **A pie instead of bars or a line for time** — the trend disappears.
+      - **3D effects** — make the parts in front look bigger and distort the data.
+      - **Too many colors** — when every bar is a different color, what matters gets lost. One highlight color is enough.
+      - **Axes without titles or units** — "What is this: AZN or units?"
+
+      > 💡 **A good title states the conclusion:** instead of "Sales", write "Sales in Ganja fell 18% in October".
+
+      ## Quick summary
+
+      - Choose the chart from the question: time → line, comparison → bar, parts → pie, relationship → scatter, distribution → histogram.
+      - Use pie charts only for a few parts; avoid 3D and excess colors.
+      - The title should state the conclusion, and axes need units.
+  qrafik-sec-mesq:
+    title: 'Practice: Choose the chart'
+    questions:
+      - text: Aysel is preparing charts for different questions. Choose the most suitable chart for each task.
+        buckets:
+          - name: Line
+            items:
+              - How daily orders changed over the last 12 months
+              - How website visits change hour by hour during the day
+          - name: Bar
+            items:
+              - Comparing sales across 5 cities
+              - Number of returned products by category
+          - name: Scatter
+            items:
+              - The relationship between ad spend and sales
+              - The relationship between delivery distance and delivery time
+          - name: Pie
+            items:
+              - 'Share of payment methods: card 70%, cash 30%'
+              - How orders split between mobile and web
+        explanation: Time → line; comparing categories → bar; the relationship between two numbers → scatter; a whole made of a few parts → pie.
+      - text: Aysel wants to show the sales share of 9 product categories. Which option is **better**?
+        options:
+          - A 3D pie chart with 9 slices
+          - A horizontal bar chart sorted from largest to smallest
+          - A line chart
+          - A scatter plot
+        explanation: A pie chart with many parts is hard to read, and 3D distorts it. Sorted bars make comparison easy.
+  dashboard:
+    title: Dashboards and BI tools
+    content: |
+      A **dashboard** is an interactive panel that brings the most important measures together on one screen and is updated regularly. Think of a car's instrument panel: while on the road, the driver sees speed, fuel and warnings at a glance.
+
+      ## Reports vs. dashboards
+
+      | | Report | Dashboard |
+      | --- | --- | --- |
+      | **Format** | Document, presentation | Interactive panel |
+      | **Updates** | One-off or periodic | Automatic, often daily or live |
+      | **Purpose** | An in-depth answer to a specific question | Constantly monitoring the situation |
+
+      ## Principles of a good dashboard
+
+      1. **Know your audience** — the director needs 5 key KPIs, while the warehouse manager needs the hourly flow of orders.
+      2. **The 5-second rule** — the most important information should be visible within 5 seconds.
+      3. **Few but important** — 3–5 key KPIs at the top, details below.
+      4. **Give context** — "48,210 orders" on its own says little. "+4% vs yesterday, −2% vs target" says a lot.
+      5. **Consistent design** — the same color should mean the same thing everywhere: green — good, red — attention.
+      6. **Filters** — users should be able to pick a city, date or category and dig deeper themselves.
+
+      ## NarMarket's director dashboard
+
+      ```text
+      ┌────────────┬────────────┬────────────┬────────────┐
+      │ Orders     │ Revenue    │ Avg. order │ Delays     │
+      │ 48 210 ↑4% │ 1.69M ₼ ↑6%│ 35.1 ₼ ↑2% │ 7.8% ↑1.2pp│
+      ├────────────┴────────────┴────────────┴────────────┤
+      │ Daily orders (last 30 days) — line chart          │
+      ├─────────────────────────┬─────────────────────────┤
+      │ Sales by city           │ Sales by category       │
+      │ (bar)                   │ (bar)                   │
+      └─────────────────────────┴─────────────────────────┘
+      ```
+
+      ## BI tools
+
+      - **Excel / Google Sheets** — for small datasets and quick analysis; pivot tables and charts.
+      - **Power BI** (Microsoft) — one of the most widely used BI tools in companies.
+      - **Tableau** — powerful visualization capabilities.
+      - **Looker Studio** (Google) — free and easy to integrate with Google services.
+
+      These tools usually connect to a data warehouse and refresh automatically from tables prepared by data engineers. That's the idea behind **self-service BI**: anyone can find the number they need without asking an analyst.
+
+      ## Quick summary
+
+      - A dashboard brings important measures together on one screen and updates automatically.
+      - Principles: audience, the 5-second rule, few but important KPIs, context, consistent design, filters.
+      - The main tools: Excel/Sheets, Power BI, Tableau, Looker Studio.
+  hekaye:
+    title: Telling stories with data
+    content: |
+      Even the most accurate analysis is worthless if the audience doesn't understand it and no decision is made. **Data storytelling** is the skill of turning numbers into a story that moves people to act.
+
+      ## The structure of the story
+
+      1. **Context** — what's the situation? "Ganja is NarMarket's second-largest market."
+      2. **Conflict (the discovery)** — what changed? "In October, sales there fell 18%; there's no competitor, and prices are the same."
+      3. **Cause** — why? "Because the opening of the new warehouse was delayed, delivery time rose from 35 to 70 minutes, and ratings dropped sharply on late orders."
+      4. **Resolution (the recommendation)** — what should we do? "20 extra couriers for Ganja until the warehouse opens — 9,000 AZN a month. The lost sales are about 60,000 AZN a month."
+
+      ## Know your audience
+
+      | Audience | What they want |
+      | --- | --- |
+      | **Director** | The conclusion, the impact (AZN) and the decision — in 3 minutes |
+      | **Operations manager** | Where, when, how much — the details |
+      | **Fellow analyst** | Methodology, data sources, limitations |
+
+      > 💡 **The "So what?" test:** after every slide, ask yourself: "What does this number tell the audience, and what do I expect from them?" If there's no answer, the slide isn't needed.
+
+      When presenting to management, **start with the key conclusion and recommendation**, and save the details for later.
+
+      ## Misleading charts 🚩
+
+      A chart can mislead, intentionally or not:
+
+      - **Truncated axis** — the y-axis starts at 95 instead of 0, so the small difference between 96 and 98 looks huge.
+      - **Cherry-picking** — showing only the period that fits: "sales have grown over the last 3 days" (while they've fallen over the last 3 months).
+      - **3D pie charts** — the slices in front look bigger.
+      - **Two axes with different scales** — two lines seem to grow "at the same rate" when the scales are actually different.
+      - **A number without context** — "complaints have doubled" (from 10 to 20, out of 50,000 orders).
+
+      An analyst's responsibility is to present data **honestly**, even when the result isn't the one people expected.
+
+      ## Quick summary
+
+      - The story: context → discovery → cause → recommendation.
+      - Adapt to your audience; with management, start with the conclusion and the recommendation.
+      - Avoid truncated axes, cherry-picked data, 3D and numbers without context — present data honestly.
+  hekaye-mesq:
+    title: 'Practice: Stories and misleading charts'
+    questions:
+      - text: In a chart, the y-axis starts at **95 instead of 0**, and the difference between 96 and 98 looks huge. What's the problem?
+        options:
+          - There's no problem — the chart looks more interesting
+          - The truncated axis exaggerates a small difference and distorts it
+          - A pie should have been used instead of a line chart
+          - The colors were chosen badly
+        explanation: A truncated axis is one of the most common misleading visualizations. In bar charts, the axis must start at 0.
+      - text: Aysel is preparing a 5-minute presentation for the director. What is the **best** way to start?
+        options:
+          - A detailed description of the data sources and cleaning steps
+          - A screenshot of a dashboard with 30 charts
+          - 'The key conclusion and recommendation: "Delays have cut sales in Ganja by 18% — we propose 20 extra couriers"'
+          - An explanation of the statistical formulas
+        explanation: Management wants the conclusion, the impact and the decision. The methodology can be shown if asked, or in an appendix.
+      - text: Which of these are good dashboard practices, and which are bad?
+        buckets:
+          - name: Good practice
+            items:
+              - The 3–5 most important KPIs at the top
+              - Comparing a measure with the target or the previous period
+              - Using colors consistently and meaningfully
+              - A level of detail that suits the audience
+          - name: Bad practice
+            items:
+              - 25 charts on one page
+              - A different color scheme in every chart
+              - 3D pie charts
+              - Numbers without units or titles
+        explanation: A good dashboard shows a few important measures with context and consistent design. Too many charts, mixed colors, 3D and numbers without units make it hard to read.

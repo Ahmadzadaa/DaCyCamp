@@ -1,0 +1,244 @@
+title: Cleaning and analyzing data
+description: Dirty data, basic statistics, correlation and A/B testing.
+steps:
+  cirkli-data:
+    title: Dirty data and cleaning
+    content: |
+      There's a famous rule in analytics: **"Garbage in, garbage out."** Even the most perfect chart leads to the wrong decision if it's built on bad data. That's why analysts spend a large part of their time — sometimes more than half — cleaning data.
+
+      ## The most common problems
+
+      | Problem | Example | What to do |
+      | --- | --- | --- |
+      | **Duplicates** | The same order #1045 is recorded twice | Remove the repeats; check why they were duplicated |
+      | **Missing values** | A customer's phone number or delivery date is missing | Investigate the cause; fill in a sensible value or exclude that row from the analysis |
+      | **Inconsistent formats** | "Baku", "baku", "BAKU"; `03.10.2026` and `2026-10-03` | Standardize to one format |
+      | **Outliers** | The average order is 35 AZN, but one order is 250,000 AZN | Fix it if it's an error; analyze it separately if it's real |
+      | **Wrong type** | The amount is stored as text: "42,50 AZN" | Convert it to a number |
+      | **Typos** | "Gnaja", "Sumgayt" | Map them to the correct value |
+      | **Irrelevant data** | Test orders, employees' trial accounts | Exclude them from the analysis |
+
+      ## Before and after
+
+      | order | city | amount | date |
+      | --- | --- | --- | --- |
+      | 1045 | baku | 42,50 AZN | 03.10.2026 |
+      | 1045 | baku | 42,50 AZN | 03.10.2026 |
+      | 1046 | Gnaja | 18.20 | 2026-10-03 |
+      | 1047 | BAKU | 250000 | 2026-10-03 |
+      | 1048 | Sumgait | | 2026-10-04 |
+
+      What does Aysel do?
+
+      1. Deletes the **duplicate** of 1045.
+      2. Puts the cities into **one standard form**: Baku, Ganja.
+      3. Converts the amount into a **number**: 42.50.
+      4. Investigates 1047: the cashier typed 250000 instead of 250.00 → **fixes it**.
+      5. The amount for 1048 is **missing**: she finds it in the payment system and fills it in; if she couldn't find it, she would exclude this order from amount calculations and note it.
+
+      ## Be careful with missing values
+
+      Deleting every row with a blank is the easiest option, but it's dangerous: a large part of the data can be lost and the result can be **skewed**. For example, if phone numbers are missing only for long-standing customers, deleting them would turn the analysis into an analysis of new customers only.
+
+      > 📋 **Golden rule:** keep a record of what you do while cleaning. Someone else (or you, a month later) must be able to reproduce the result.
+
+      ## Quick summary
+
+      - Bad data means bad decisions — cleaning is one of the most important parts of analysis.
+      - The main problems: duplicates, missing values, inconsistent formats, outliers and wrong types.
+      - Investigate the cause of each problem and document the changes you make.
+  problemi-tap:
+    title: 'Practice: Find the problem'
+    questions:
+      - text: Aysel's table has several problems. Place each one under the correct type of problem.
+        buckets:
+          - name: Duplicate
+            items:
+              - The same order (#1045) appears twice in the table
+              - A customer signed up twice on the same day with the same address
+          - name: Missing value
+            items:
+              - The customer's phone column is empty
+              - The order's delivery date wasn't recorded
+          - name: Inconsistent format
+            items:
+              - "In the city column: 'Baku', 'baku', 'BAKU'"
+              - "Dates: '03.10.2026' and '2026-10-03'"
+          - name: Outlier
+            items:
+              - One order amount is 250,000 AZN (the average is 35 AZN)
+              - A delivery took 900 minutes (usually 30–40)
+        explanation: Repeated records — duplicate; a value that isn't there — missing; the same thing written differently — format; an unusually large or small value — outlier.
+      - text: An analyst deleted **every row** with a missing value and lost 40% of the data. What's a better approach?
+        options:
+          - This is fine — rows with missing values should always be deleted
+          - Investigate why the values are missing; fill them in where possible, or leave them out only in calculations that need that column
+          - Fill the blanks with random numbers
+          - Replace the blanks with zero — zero is always safe
+        explanation: Mass deletion can skew the result. You need to investigate the cause and make a considered decision for each column. And zero usually means "nothing", not "unknown" — so that's wrong too.
+  esas-statistika:
+    title: Basic statistics
+    content: |
+      One of an analyst's everyday tools is summarizing data with a few numbers. You don't need advanced math for this, but it's important to know what each measure shows — and what it hides.
+
+      ## Measures of central tendency
+
+      The amounts (AZN) of 7 NarMarket orders in one day: **12, 15, 18, 20, 25, 30, 400**
+
+      | Measure | How it's calculated | Result |
+      | --- | --- | --- |
+      | **Mean** | Sum of all values ÷ count | 520 ÷ 7 ≈ **74.3 AZN** |
+      | **Median** | The middle value of the sorted data | **20 AZN** |
+      | **Mode** | The most frequent value | None in this data |
+
+      One corporate order (400 AZN) pushed the mean up to 74 AZN, even though 6 of the 7 orders are under 30 AZN. **The median is less sensitive to outliers** and shows the "typical" order more accurately.
+
+      > 💼 For the same reason, the median is more accurate when talking about salaries: a few very high salaries inflate the mean.
+
+      When the count is even, the median is the average of the two middle values: 10, 20, 30, 40 → (20 + 30) ÷ 2 = 25.
+
+      The **mode** is especially useful for categorical data: "Which payment method is chosen most often?" — card.
+
+      ## Measures of spread
+
+      Even when the averages are the same, the data can be very different:
+
+      - Delivery at warehouse A: 29, 30, 31 minutes
+      - Delivery at warehouse B: 10, 30, 50 minutes
+
+      Both have an average of 30 minutes, but at B customers don't know when their order will arrive.
+
+      - **Range** = maximum − minimum: 2 minutes at A, 40 minutes at B.
+      - **Standard deviation** shows how far, on average, the values are from the mean. If it's small, the data is stable; if it's large, the data is spread out.
+
+      ## Percentages and change
+
+      **Percentage change** = (new − old) ÷ old × 100%
+
+      Sales were 50,000 AZN in September and 60,000 AZN in October → (60,000 − 50,000) ÷ 50,000 × 100% = **+20%**.
+
+      > ⚠️ **Percent and percentage points are different.** If conversion rose from 2% to 3%, that's an increase of **1 percentage point**, but the relative increase is **50%**. State clearly in reports which one you mean.
+
+      ## Quick summary
+
+      - The mean takes every value into account, but outliers distort it; the median is more robust.
+      - The mode is the most frequent value — useful for categories.
+      - Range and standard deviation show how spread out the data is.
+      - Percentage change = (new − old) ÷ old × 100%.
+  hesabla:
+    title: 'Practice: Calculate'
+    questions:
+      - text: 'The amounts of five orders: **10, 20, 20, 30, 120 AZN**. What is the median?'
+        options:
+          - 20 AZN
+          - 30 AZN
+          - 40 AZN
+          - 10 AZN
+        explanation: The values are already sorted; the middle (3rd) value is 20.
+      - text: For the same data (**10, 20, 20, 30, 120 AZN**), what is the mean?
+        options:
+          - 20 AZN
+          - 30 AZN
+          - 40 AZN
+          - 50 AZN
+        explanation: The sum is 200 AZN and the count is 5 → 200 ÷ 5 = 40 AZN. The 120 AZN order pushed the mean to twice the median.
+      - text: Which measure is the **least** sensitive to outliers?
+        options:
+          - Mean
+          - Median
+          - Range
+          - Sum
+        explanation: The median depends only on the middle value, so a few extremely large values barely change it.
+      - text: Sales were **50,000 AZN** in September and **60,000 AZN** in October. What is the percentage increase?
+        options:
+          - 10%
+          - 16.7%
+          - 20%
+          - 60%
+        explanation: (60,000 − 50,000) ÷ 50,000 × 100% = 20%.
+      - text: The conversion rate rose from **2% to 3%**. Which statement is true?
+        options:
+          - Conversion increased by 1%
+          - Conversion increased by 1 percentage point, or by 50% in relative terms
+          - Conversion tripled
+          - Conversion increased by 150%
+        explanation: The difference is 1 percentage point, and the relative increase is (3 − 2) ÷ 2 × 100% = 50%.
+  korrelyasiya-ab:
+    title: Correlation, causation and A/B testing
+    content: |
+      One of the questions analysts ask most often is: "Are these two things related?" And more importantly: "Does one **cause** the other?"
+
+      ## Correlation
+
+      **Correlation** shows how two measures change together and is measured between −1 and +1:
+
+      | Type | Meaning | Example |
+      | --- | --- | --- |
+      | **Positive** (0 to +1) | When one goes up, so does the other | Ad budget ↑ → website visits ↑ |
+      | **Negative** (0 to −1) | When one goes up, the other goes down | Delivery delay ↑ → customer rating ↓ |
+      | **None** (~0) | There's no relationship between them | A courier's shoe size and delivery speed |
+
+      ## Correlation is not causation ⚠️
+
+      In the summer months, both **ice cream sales** and **drownings at sea** go up. That doesn't mean ice cream causes drowning. Both are driven by a **third factor** — hot weather: people buy more ice cream and also swim in the sea more.
+
+      Hidden factors like this are called **confounding variables**. At NarMarket: "Customers who spend a lot of time in the app spend more money" — perhaps both are caused by the customer having a big family and doing a big weekly shop.
+
+      ## How can you prove causation? A/B testing
+
+      An **A/B test** is the most reliable way to test a cause-and-effect relationship:
+
+      1. Users are split **randomly** into two groups.
+      2. **Group A** (the control group) sees the old version; **group B** sees the new version.
+      3. Everything else is the same.
+      4. After a set period, the key measure (for example, conversion) is compared.
+
+      Because the groups were split randomly, the only systematic difference between them is the change — so any difference in the results comes from it.
+
+      > 🧪 **NarMarket:** the "Order" button is changed from green to orange. Over 2 weeks, 50,000 users: A (green) — 3.0% conversion, B (orange) — 3.4%. If the difference is large and stable enough, the orange button is rolled out.
+
+      **Note:** if the groups are too small or the test is too short, the difference may be due to chance. That's why the size and duration of a test are planned in advance and the result is checked for **statistical significance**.
+
+      ## Segmentation, trends and seasonality
+
+      - **Segmentation** — splitting data into groups: city, age, new/returning customers. The overall average often hides differences between groups.
+      - **Trend** — the long-term direction: orders grow by 3% a month on average.
+      - **Seasonality** — a recurring periodic change: orders rise before Novruz and New Year, and some categories drop in summer. Comparing October with December can be misleading — compare with the same period last year.
+
+      ## Quick summary
+
+      - Correlation is two measures changing together: positive, negative or none.
+      - Correlation is not causation — there may be a hidden third factor.
+      - To test causation, use an A/B test: random groups, one change, compare the results.
+  dogru-netice:
+    title: 'Practice: The right conclusion'
+    questions:
+      - text: In the summer months, both ice cream sales and drownings at sea go up. Which conclusion is **correct**?
+        options:
+          - Ice cream increases the risk of drowning
+          - Drownings increase ice cream sales
+          - Both are driven by a third factor — hot weather; this isn't a cause-and-effect relationship
+          - There's no correlation at all between these two measures
+        explanation: There is a correlation, but no causation. A hidden third factor — hot weather — increases both.
+      - text: NarMarket wants to test the effect of a new "Quick order" button on sales. What is the **most correct** method?
+        options:
+          - Show the button to everyone and compare with last month
+          - 'Split users randomly into two groups: show one the old button and the other the new one, then compare conversion'
+          - Show the new button to the 100 most loyal customers
+          - Ask employees which button they like
+        explanation: In an A/B test, the groups are split randomly, so any difference in the results comes from the change itself. Comparing with last month mixes in other factors such as the season or campaigns.
+      - text: Place the relationship between each pair of measures into the correct group.
+        buckets:
+          - name: Positive correlation
+            items:
+              - As the ad budget grows, website visits grow
+              - As the discount percentage grows, the number of products sold grows
+          - name: Negative correlation
+            items:
+              - As deliveries get later, customer ratings drop
+              - As the price goes up, the number of products bought goes down
+          - name: No correlation
+            items:
+              - The length of the customer's name and the order amount
+              - A courier's shoe size and delivery speed
+        explanation: If they rise together — positive; if one rises while the other falls — negative; if there's no pattern at all between them — no correlation.

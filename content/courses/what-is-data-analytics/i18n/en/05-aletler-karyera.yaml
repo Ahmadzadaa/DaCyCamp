@@ -1,0 +1,188 @@
+title: Tools and careers
+description: The analyst's toolkit, a complete project example and the final test.
+steps:
+  alet-desti:
+    title: "The data analyst's toolkit"
+    content: |
+      Tools change; the way of thinking stays. But to get started, you need to know certain tools.
+
+      ## The main tools
+
+      | Tool | Used for | When |
+      | --- | --- | --- |
+      | **Excel / Google Sheets** | Formulas, pivot tables, charts | Small and medium datasets, quick analysis |
+      | **SQL** | Pulling data out of databases, filtering, joining | Almost every day |
+      | **Power BI / Tableau / Looker Studio** | Dashboards and interactive reports | Ongoing monitoring, for management |
+      | **Python (pandas) or R** | Large datasets, automation, statistics | When Excel isn't enough |
+      | **Statistics** | Mean, median, distribution, tests | To check how reliable a result is |
+
+      ## A learning path 🧭
+
+      1. **Excel** — formulas (SUM, AVERAGE, IF, VLOOKUP/XLOOKUP), pivot tables, charts.
+      2. **SQL** — SELECT, WHERE, GROUP BY, JOIN.
+      3. **A BI tool** — pick either Power BI or Tableau and build a dashboard.
+      4. **Statistics fundamentals** — going deeper into what we covered in this course.
+      5. **Python and pandas** — for automating repetitive work and for large datasets.
+
+      > 💡 The Python Basics course on DaCy is a good next step for learning Python from scratch.
+
+      ## Build a portfolio
+
+      Employers want to see **the work you've done** more than certificates:
+
+      - pick a real question from open datasets (Kaggle, statistics committees' open data);
+      - clean the data, analyze it and build a dashboard;
+      - write up the result as a short story: question → data → discovery → recommendation;
+      - 3–4 projects like this make a strong portfolio.
+
+      ## Career path
+
+      **Junior analyst → Data analyst → Senior → Lead / Analytics manager.** Later you can move into these directions:
+
+      - **Data scientist** — forecasting models, machine learning;
+      - **Analytics engineer** — models in the warehouse with SQL and dbt;
+      - **Product analyst** — product usage and experiments;
+      - **BI developer** — company-wide BI systems.
+
+      ## Quick summary
+
+      - The core trio: Excel, SQL and a BI tool; then statistics and Python.
+      - Portfolio — 3–4 complete projects on real datasets.
+      - Analytics opens the door to many other data careers.
+  tam-layihe:
+    title: 'A complete project: abandoned carts at NarMarket'
+    content: |
+      Let's bring everything we've learned in the course together in one real project. Aysel goes through the whole process from start to finish.
+
+      ## 1. Ask
+
+      Management is worried: "Customers fill their carts but don't place orders." Aysel turns this into a SMART question:
+
+      > "Why did the cart abandonment rate rise from 60% to 70% between July and September, and what can we do to reduce it by at least 5 percentage points within 4 weeks?"
+
+      **KPIs:** cart abandonment rate and conversion.
+
+      ## 2. Prepare
+
+      Data sources: app events (add to cart, going to the payment page, placing an order), the orders table and the history of delivery fees. All of it is internal and lives in the data warehouse.
+
+      ## 3. Process
+
+      - Removes test accounts and employees' orders.
+      - Deletes duplicate events (the app sometimes sends the same event twice).
+      - Converts timestamps to a single time zone.
+
+      ## 4. Analyze
+
+      **Funnel analysis** — how many customers are lost at each step:
+
+      | Step | Customers | Move on to the next step |
+      | --- | --- | --- |
+      | Opened the app | 100,000 | 30% |
+      | Added a product to the cart | 30,000 | 40% |
+      | Opened the payment page | 12,000 | 75% |
+      | Placed an order | 9,000 | — |
+
+      The biggest loss is at the "cart → payment page" step — exactly where the delivery fee appears. The history shows the fee was raised **from 2 AZN to 4 AZN** in July. **Segmentation**: the drop-off grew most in carts under 20 AZN — on a small order, a 4 AZN delivery fee looks relatively expensive.
+
+      This is still only a **correlation** — proving the cause requires a test.
+
+      ## 5. Share
+
+      Aysel shows the director 3 slides:
+
+      1. **Conclusion:** "Cart abandonment is up 10 percentage points; customers are lost on the way to the payment page, mostly with small carts."
+      2. **Chart:** the abandonment rate by month (line), with the date of the fee change marked.
+      3. **Recommendation:** "Let's test free delivery on orders over 25 AZN with an A/B test."
+
+      ## 6. Act
+
+      A 4-week **A/B test**: group A — the old rule, group B — free delivery over 25 AZN.
+
+      | Group | Abandonment | Conversion | Average cart |
+      | --- | --- | --- | --- |
+      | A (old) | 70% | 9.0% | 31 AZN |
+      | B (new) | 63% | 10.1% | 34 AZN |
+
+      Abandonment fell by 7 percentage points, and the average cart grew too — customers buy extra products to reach the free-delivery threshold. The new rule is rolled out to everyone, a new KPI is added to the dashboard, and the result is monitored over the following months.
+
+      ## Lessons from this project
+
+      - A vague concern was turned into a SMART question.
+      - Without cleaning, duplicate events would have skewed the result.
+      - The funnel and segmentation showed **where** the problem was.
+      - Correlation gave a hypothesis; the **A/B test** proved it.
+      - A short story and a clear recommendation sped up the decision.
+  yekun-test:
+    title: 'Final test: What is Data Analytics?'
+    questions:
+      - text: '"Estimate which customers will cancel their subscription next month" — what type of analytics is this?'
+        options:
+          - Descriptive
+          - Diagnostic
+          - Predictive
+          - Prescriptive
+        explanation: Estimating what will happen in the future is predictive analytics.
+      - text: What is the **correct order** of the steps of the analysis process?
+        options:
+          - Analyze → Ask → Share → Process → Prepare → Act
+          - Ask → Prepare → Process → Analyze → Share → Act
+          - Prepare → Process → Ask → Share → Analyze → Act
+          - Share → Ask → Analyze → Prepare → Process → Act
+        explanation: First the question, then the data, cleaning, analysis, sharing the result and the decision.
+      - text: Sort the columns into data types.
+        buckets:
+          - name: Quantitative
+            items:
+              - Delivery time (minutes)
+              - Order amount (AZN)
+              - Number of products in the cart
+          - name: Qualitative
+            items:
+              - "Customer's district"
+              - Payment method
+              - Order number
+        explanation: Numbers you calculate with are quantitative. An order number is a number, but it's an identifier — its average is meaningless — so it's qualitative data.
+      - text: 'Order amounts: **8, 9, 10, 11, 12, 200 AZN**. Which measure best describes the typical order?'
+        options:
+          - Mean (≈41.7 AZN)
+          - Median (10.5 AZN)
+          - Maximum (200 AZN)
+          - Range (192 AZN)
+        explanation: The 200 AZN outlier inflates the mean. The median (the average of 10 and 11, 10.5 AZN) shows the typical order more accurately.
+      - text: An analyst finds that customers who have push notifications turned on in the app place more orders. Which conclusion is **the most correct**?
+        options:
+          - Notifications increase the number of orders — let's send mandatory notifications to everyone
+          - This is a correlation; testing causation requires an A/B test — maybe active customers simply turn on notifications more often
+          - Notifications reduce orders
+          - No conclusion at all can be drawn from this data
+        explanation: Correlation is not causation. There may be a hidden factor (the customer's overall activity). An A/B test with random groups makes it possible to test the cause.
+      - text: Choose the suitable chart for each task.
+        buckets:
+          - name: Line
+            items:
+              - How monthly revenue changed over the last 2 years
+          - name: Bar
+            items:
+              - Comparing the number of deliveries across 10 couriers
+          - name: Scatter
+            items:
+              - The relationship between a product's price and the number sold
+          - name: Histogram
+            items:
+              - The distribution of order amounts
+        explanation: Time → line; comparison → bar; the relationship between two numbers → scatter; distribution → histogram.
+      - text: There were **40,000** visits and **1,000** orders in one day. What is the conversion rate?
+        options:
+          - 0.25%
+          - 2.5%
+          - 4%
+          - 25%
+        explanation: 1,000 ÷ 40,000 × 100% = 2.5%.
+      - text: Which question is a **SMART** question?
+        options:
+          - Are our customers happy?
+          - Is our marketing good?
+          - In October in Sumgait, what percentage of deliveries took longer than 45 minutes?
+          - How can we grow our business?
+        explanation: This question is specific, measurable and relevant, and it refers to a defined period.

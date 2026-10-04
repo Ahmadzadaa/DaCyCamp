@@ -1,0 +1,247 @@
+title: The analytics process
+description: The 6 steps of analysis, SMART questions and KPIs, data sources and data types.
+steps:
+  alti-addim:
+    title: The 6 steps of the analysis process
+    content: |
+      Good analysis doesn't happen by chance — it follows a set sequence. The most widely used model has six steps:
+
+      ```text
+      1. Ask → 2. Prepare → 3. Process → 4. Analyze → 5. Share → 6. Act
+      ```
+
+      ## 1. Ask
+
+      Clarify the problem and the question. Who are we working for? What decision will be made? How is success measured?
+
+      ## 2. Prepare
+
+      Identify and collect the data you need: which tables, which period, and is the data reliable?
+
+      ## 3. Process
+
+      Get the data ready for analysis: remove duplicates, deal with blanks, standardize formats and fix errors.
+
+      ## 4. Analyze
+
+      Aggregate, compare, split into segments, and look for trends and relationships. This is where the answer to the question is found.
+
+      ## 5. Share
+
+      Deliver the result to your audience with charts, a dashboard or a presentation. The goal is to be understood.
+
+      ## 6. Act
+
+      A decision is made based on the result and put into practice. Then the outcome is measured again — and the cycle repeats.
+
+      ## NarMarket example: abandoned carts 🛒
+
+      | Step | What Aysel does |
+      | --- | --- |
+      | **Ask** | "Why has the share of customers who add products to their cart but don't complete the order risen from 60% to 70% over the last 3 months?" |
+      | **Prepare** | App events (add to cart, payment page), orders, delivery fees |
+      | **Process** | Removes test users, deletes duplicate events, converts timestamps to a single time zone |
+      | **Analyze** | Most customers leave at the step where they see the delivery fee; the fee was raised from 2 AZN to 4 AZN in July |
+      | **Share** | A chart showing customer drop-off at each step, plus 3 slides |
+      | **Act** | Free delivery on orders over 30 AZN is tested with an A/B test |
+
+      > 🔁 The process isn't always a straight line. It's perfectly normal to discover during analysis that the data is incomplete and go back to the "Prepare" step, or to refine the question.
+
+      ## Quick summary
+
+      - The analysis process: ask → prepare → process → analyze → share → act.
+      - Each step has its own purpose; skipping steps leads to wrong conclusions.
+      - The process is a cycle: the result of the action is measured again.
+  hansi-addim:
+    title: 'Practice: Which step is this?'
+    questions:
+      - text: Sort the work Aysel did on the "abandoned carts" project into the steps of the process.
+        buckets:
+          - name: Ask
+            items:
+              - Meeting management to clarify what decision will be made
+              - Defining which number will measure success
+          - name: Prepare and process
+            items:
+              - Finding the tables needed and extracting the last 3 months of data
+              - Deleting duplicate events and putting timestamps into one format
+          - name: Analyze
+            items:
+              - Calculating the step at which customers leave
+              - Comparing the abandonment rate across cities
+          - name: Share and act
+            items:
+              - Giving management a short presentation with a chart
+              - Rolling out a free-delivery threshold with an A/B test
+        explanation: Clarifying the question — ask; finding and cleaning data — prepare/process; calculating and comparing — analyze; presenting and deciding — share and act.
+      - text: During the analysis, Aysel sees that the data for August is incomplete. What should she do?
+        options:
+          - Carry on with the incomplete data and present the result
+          - Go back to the "Prepare" step to find the missing data, or clearly state this limitation
+          - Fill in August with her own estimates and tell no one
+          - Stop the project
+        explanation: The process isn't a straight line — going back to a previous step is normal. Making up data, however, is unacceptable; limitations must be stated openly.
+  smart-kpi:
+    title: 'Asking the right question: SMART and KPIs'
+    content: |
+      The quality of an analysis starts with the quality of the question. "Do customers love us?" is almost impossible to answer with data. "How has the share of customers who rated the app 5 stars changed over the last 3 months?" is entirely possible.
+
+      ## SMART questions
+
+      A good analytical question is **SMART**:
+
+      | Letter | Meaning | Explanation |
+      | --- | --- | --- |
+      | **S** — Specific | Specific | Focuses on one topic |
+      | **M** — Measurable | Measurable | The answer is expressed as a number |
+      | **A** — Action-oriented | Action-oriented | The answer helps with a decision |
+      | **R** — Relevant | Relevant | Relates to a real business problem |
+      | **T** — Time-bound | Time-bound | The period is defined |
+
+      **Bad:** "How can we increase sales?"
+      **Good:** "In October in Baku, by how many manats did free delivery on orders over 30 AZN increase the average order value?"
+
+      ## Metrics and KPIs
+
+      A **metric** is any measured indicator: number of visits, number of orders, average order value.
+      **KPIs** (Key Performance Indicators) are the **most important** metrics — the ones that show whether you are reaching a goal. Not every metric is a KPI.
+
+      ## Key e-commerce KPIs
+
+      | KPI | Formula | NarMarket example |
+      | --- | --- | --- |
+      | **Conversion rate** | orders ÷ visits × 100% | 600 orders ÷ 20,000 visits = **3%** |
+      | **Average order value (AOV)** | total revenue ÷ number of orders | 21,000 AZN ÷ 600 = **35 AZN** |
+      | **Cart abandonment** | incomplete carts ÷ carts created × 100% | 1,400 ÷ 2,000 = **70%** |
+      | **Customer retention** | returning customers ÷ all customers × 100% | 3,600 ÷ 6,000 = **60%** |
+      | **Customer churn** | customers lost ÷ customers at the start of the period × 100% | 300 ÷ 6,000 = **5%** |
+
+      > ⚠️ Beware of **vanity metrics**: "the app has been downloaded 1 million times" sounds great, but it doesn't show how many people actually place orders. A good KPI influences decisions.
+
+      ## From a business question to a data question
+
+      | The business says | The analyst asks |
+      | --- | --- |
+      | "Couriers are late" | "What percentage of deliveries in the last 30 days took longer than 45 minutes, and how does this differ by city?" |
+      | "Is the new campaign working?" | "By what percentage did the conversion rate change in the campaign week compared with the average of the previous 4 weeks?" |
+
+      ## Quick summary
+
+      - A good question is SMART: specific, measurable, action-oriented, relevant and time-bound.
+      - KPIs are the most important metrics for a goal; beware of vanity metrics.
+      - Conversion = orders ÷ visits; AOV = revenue ÷ number of orders.
+  yaxsi-sual:
+    title: 'Practice: Good question, bad question'
+    questions:
+      - text: Management has sent the analysts some questions. Which ones are SMART, and which are vague?
+        buckets:
+          - name: SMART question
+            items:
+              - What share of customers in Baku abandoned their cart over the last 3 months?
+              - By how many manats did the October campaign increase the average order value?
+              - Which 5 products were returned the most last week?
+          - name: Vague question
+            items:
+              - Do customers love us?
+              - How can we increase sales?
+              - Is our app good?
+        explanation: SMART questions have a specific topic, a measurable indicator and a defined period. Vague questions can't be answered with a number.
+      - text: The NarMarket website had **20,000** visits and **600** orders in one day. What is the conversion rate?
+        options:
+          - 0.3%
+          - 3%
+          - 30%
+          - 33%
+        explanation: Conversion = 600 ÷ 20,000 × 100% = 3%.
+      - text: Total revenue for the day is **21,000 AZN**, and the number of orders is **600**. What is the average order value (AOV)?
+        options:
+          - 21 AZN
+          - 35 AZN
+          - 60 AZN
+          - 350 AZN
+        explanation: AOV = total revenue ÷ number of orders = 21,000 ÷ 600 = 35 AZN.
+  menbeler-novler:
+    title: Data sources and data types
+    content: |
+      Once the question is clear, the next step is to find out where the answer lives.
+
+      ## Data sources
+
+      **Internal and external:**
+
+      - **Internal data** — data created in the company's own systems: orders, payments, app events, CRM, warehouse stock.
+      - **External data** — data that comes from outside: government statistics (for example, the open data of the State Statistics Committee), weather forecasts, market research, partners' data.
+
+      **Primary and secondary:**
+
+      - **Primary data** — data you collect yourself for your own purpose: surveys, interviews, experiments.
+      - **Secondary data** — data collected by someone else for another purpose: reports, open datasets.
+
+      ## Data collection methods
+
+      | Method | Example |
+      | --- | --- |
+      | Operational systems | Every order, payment and return |
+      | Web and app analytics | Clicks, pages viewed, add-to-cart events |
+      | Surveys | "How satisfied are you with the delivery?" |
+      | APIs | Exchange rates, weather data |
+      | Open datasets | Statistics committees, Kaggle |
+
+      ## Data types
+
+      **Quantitative data** — measured with numbers; you can do calculations with it:
+
+      - **Discrete** — counted, whole numbers: number of products in a cart, number of orders.
+      - **Continuous** — measured, can take any value: amount, weight, delivery time.
+
+      **Qualitative (categorical) data** — categories or descriptions:
+
+      - **Nominal** — no order: city, payment method, color.
+      - **Ordinal** — has an order: satisfaction (low / medium / high), clothing size (S / M / L).
+
+      > 💡 **A quick test:** "Does it make sense to calculate the average of these values?" The average of amounts — yes (quantitative). The average of cities — no (qualitative). A phone number is made of digits, but its average is meaningless — it's actually qualitative data!
+
+      ## Ethics and privacy 🔒
+
+      - Collect and use personal data only as much as you need.
+      - Don't use customers' data for another purpose without their consent.
+      - Hide names and phone numbers for analysis (anonymization).
+      - When presenting results, it must not be possible to identify individuals.
+
+      ## Quick summary
+
+      - Sources: internal and external; primary (you collect it) and secondary (ready-made).
+      - Quantitative data is measured with numbers (discrete, continuous); qualitative data is categorical (nominal, ordinal).
+      - Personal data requires responsibility: minimal collection, consent, anonymization.
+  data-novleri:
+    title: 'Practice: Sort the data types'
+    questions:
+      - text: Sort the columns of NarMarket's orders table into quantitative and qualitative data.
+        buckets:
+          - name: Quantitative (measured with numbers)
+            items:
+              - Order amount (AZN)
+              - Number of products in the cart
+              - Delivery time (minutes)
+              - Customer's age
+          - name: Qualitative (category / description)
+            items:
+              - 'Payment method: card / cash'
+              - "Customer's city"
+              - Comment text in a review
+              - 'Satisfaction: low / medium / high'
+        explanation: Numbers you can calculate with are quantitative data. Categories and text — even when ordered (low/medium/high) — are qualitative data.
+      - text: To find out how satisfied customers are with delivery, Aysel **sends out a survey herself** and collects the answers. What kind of data is this?
+        options:
+          - Secondary data
+          - Primary data
+          - External data
+          - Unstructured data
+        explanation: Data you collect yourself for your own purpose is primary data.
+      - text: Customers' **phone numbers** are made of digits. What type of data is this?
+        options:
+          - Quantitative — because it's made of digits
+          - Qualitative — the digits act as an identifier, and calculating their average is meaningless
+          - Continuous quantitative data
+          - Ordinal data
+        explanation: If calculating the average or the sum is meaningless, number-like data is really a category. Phone numbers, order numbers and postal codes are like this.
