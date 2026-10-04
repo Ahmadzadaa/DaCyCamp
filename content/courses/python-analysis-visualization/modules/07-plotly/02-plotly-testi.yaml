@@ -1,0 +1,46 @@
+type: quiz
+title: 'Test: Plotly'
+xp: 30
+estimated_minutes: 6
+pass_score: 75
+questions:
+- text: Hər xüsusiyyət hansı kitabxanaya daha uyğundur?
+  type: classify
+  buckets:
+  - name: Plotly
+    items:
+    - Hover ilə dəyəri görmək
+    - Zoom və seriyaları gizlətmək
+    - Veb dashboard üçün HTML
+  - name: Matplotlib / seaborn
+    items:
+    - Məqalə və slayd üçün statik PNG
+    - Çap olunan hesabat
+  explanation: Plotly interaktivdir və HTML verir; matplotlib/seaborn statik şəkillər üçündür.
+- text: '`px.scatter(df, x="A", y="B", color="Category")` — `color` seaborn-da hansı parametrə uyğundur?'
+  options:
+  - palette
+  - hue
+  - style
+  - size
+  correct:
+  - 2
+  explanation: color qruplara görə rəngləyir — seaborn-un hue-su kimi.
+- text: İnteraktiv Plotly qrafikini həmkara göndərmək üçün ən rahat yol?
+  options:
+  - fig.show()
+  - fig.write_html("fayl.html")
+  - plt.savefig()
+  - print(fig)
+  correct:
+  - 2
+  explanation: HTML faylı brauzerdə interaktiv açılır.
+- text: '`go.Scatter(..., mode="lines")` nə çəkir?'
+  options:
+  - Nöqtələr
+  - Xətt
+  - Sütunlar
+  - Histoqram
+  correct:
+  - 2
+  explanation: mode="lines" — xətt, "markers" — nöqtələr, "lines+markers" — hər ikisi.

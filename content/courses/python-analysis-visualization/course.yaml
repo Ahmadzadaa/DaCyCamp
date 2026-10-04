@@ -1,0 +1,16 @@
+# Python for Data Analysis & Visualization — Python4Business Gün 6–9: pandas qrafikləri, matplotlib, seaborn,
+# statistika və korrelyasiya, FacetGrid, wordcloud, Plotly (nəzəri), reqressiya (sklearn, statsmodels), e-poçtla
+# hesabat. Qrafik tapşırıqları matplotlib obyektlərini (axes, patches, lines) yoxlayan testlərlə qiymətləndirilir.
+slug: python-analysis-visualization
+track: data-analytics
+title: Python for Data Analysis & Visualization
+level: intermediate
+description: 'Datanı görməli et və ondan nəticə çıxar: pandas qrafikləri, matplotlib və seaborn, qrafiklərin
+  fərdiləşdirilməsi və subplot-lar, təsviri statistika, korrelyasiya və istilik xəritəsi, FacetGrid, wordcloud,
+  interaktiv qrafiklər (Plotly), trend xətti və reqressiya modelləri, hesabatın e-poçtla göndərilməsi.
+  Sonda satış dashboard-u layihəsi.'
+sequential: true
+estimated_hours: 14
+published: true
+topics:
+- python

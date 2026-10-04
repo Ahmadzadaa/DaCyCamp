@@ -1,0 +1,33 @@
+type: quiz
+title: 'Test: çoxluq analizi və xüsusi qrafiklər'
+xp: 25
+estimated_minutes: 5
+pass_score: 66
+questions:
+- text: '`sns.FacetGrid(df, col="Region")` nə edir?'
+  options:
+  - Regionları filtrləyir
+  - Hər region üçün ayrıca qrafik yaradır
+  - Regionları rəngləyir
+  - Region sütununu silir
+  correct:
+  - 2
+  explanation: col — hər dəyər üçün ayrı alt-qrafik.
+- text: Çoxsözlü məhsul adları (məs. "iPhone 15") wordcloud-da bölünməsin deyə nə istifadə olunur?
+  options:
+  - generate(metn)
+  - generate_from_frequencies(lüğət)
+  - STOPWORDS
+  - max_words
+  correct:
+  - 2
+  explanation: Tezlik lüğəti hər açarı bir «söz» kimi qəbul edir.
+- text: '`wedgeprops={"width": 0.4}` nəticəsi:'
+  options:
+  - Dilimlər kənara çıxır
+  - Donut (ortası boş) qrafik
+  - Qrafik 40% kiçilir
+  - Faizlər yazılır
+  correct:
+  - 2
+  explanation: width dilimin enini təyin edir — ortası boşalır.

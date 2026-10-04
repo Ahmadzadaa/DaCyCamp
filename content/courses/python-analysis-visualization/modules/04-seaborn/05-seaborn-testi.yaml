@@ -1,0 +1,40 @@
+type: quiz
+title: 'Test: seaborn'
+xp: 25
+estimated_minutes: 5
+pass_score: 66
+questions:
+- text: '`sns.barplot(data=df, x="Region", y="Total Revenue")` defolt olaraq nəyi göstərir?'
+  options:
+  - Cəmi
+  - Ortanı və etibar intervalını
+  - Sayı
+  - Medianı
+  correct:
+  - 2
+  explanation: barplot defolt orta + etibar intervalı; cəm üçün estimator="sum".
+- text: 'Hər tapşırığa uyğun seaborn funksiyası:'
+  type: classify
+  buckets:
+  - name: countplot
+    items:
+    - Hər ödəniş üsulunun neçə dəfə istifadə olunduğu
+  - name: regplot
+    items:
+    - Satış və mənfəət arasında trend xətti
+  - name: boxplot
+    items:
+    - Regionlar üzrə satışların yayılması
+  - name: histplot
+    items:
+    - Gəlirin paylanması
+  explanation: Say — countplot; trend — regplot; qruplar üzrə yayılma — boxplot; paylanma — histplot.
+- text: '`hue="Product Category"` nə edir?'
+  options:
+  - Qrafiki kateqoriyaya görə filtrləyir
+  - Nöqtələri/sütunları kateqoriyaya görə rəngləyir
+  - Başlıq əlavə edir
+  - Sıralayır
+  correct:
+  - 2
+  explanation: hue üçüncü dəyişəni rənglə göstərir.

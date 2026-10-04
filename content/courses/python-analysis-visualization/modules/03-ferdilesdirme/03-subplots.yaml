@@ -1,0 +1,71 @@
+type: python
+title: '2×2 subplot: kiçik dashboard'
+xp: 40
+estimated_minutes: 12
+instructions: |
+  Bir figure-də dörd qrafik — rəhbərlik üçün mini dashboard.
+tasks:
+- fig, axs = plt.subplots(2, 2, figsize=(10, 7)).
+- 'axs[0, 0]: region gəliri (bar), başlıq "Regionlar"; axs[0, 1]: aylıq gəlir (line), başlıq "Aylıq gəlir".'
+- 'axs[1, 0]: Total Revenue histoqramı (bins=20), başlıq "Paylanma"; axs[1, 1]: ödəniş üsulları sayı (barh),
+  başlıq "Ödəniş".'
+- plt.tight_layout().
+dataset: datasets/satislar.csv
+starter_code: |
+  import pandas as pd
+  import matplotlib.pyplot as plt
+
+  df = pd.read_csv("satislar.csv")
+
+  fig, axs = ...
+solution: |
+  import pandas as pd
+  import matplotlib.pyplot as plt
+
+  df = pd.read_csv("satislar.csv")
+
+  fig, axs = plt.subplots(2, 2, figsize=(10, 7))
+
+  region = df.groupby("Region")["Total Revenue"].sum()
+  axs[0, 0].bar(region.index, region.values)
+  axs[0, 0].set_title("Regionlar")
+
+  ayliq = df.groupby(df["Date"].str[:7])["Total Revenue"].sum()
+  axs[0, 1].plot(range(len(ayliq)), ayliq.values)
+  axs[0, 1].set_title("Aylıq gəlir")
+
+  axs[1, 0].hist(df["Total Revenue"], bins=20)
+  axs[1, 0].set_title("Paylanma")
+
+  odenis = df["Payment Method"].value_counts()
+  axs[1, 1].barh(odenis.index, odenis.values)
+  axs[1, 1].set_title("Ödəniş")
+
+  plt.tight_layout()
+tests: |
+  import pandas as _pd
+  import numpy as _np
+  import matplotlib.pyplot as _plt
+  def _axes():
+      return [a for n in _plt.get_fignums() for a in _plt.figure(n).axes]
+  def _ax(title):
+      for a in _axes():
+          if a.get_title().strip() == title:
+              return a
+      _t = [a.get_title() for a in _axes()]
+      raise AssertionError(f"«{title}» başlıqlı qrafik tapılmadı (title=... ver). Tapılan başlıqlar: {_t}")
+
+  _s = _pd.read_csv("satislar.csv")
+
+  _f = [_plt.figure(n) for n in _plt.get_fignums() if len(_plt.figure(n).axes) == 4]
+  assert _f, "4 qrafikli bir figure olmalıdır: plt.subplots(2, 2)"
+  _t = sorted(a.get_title() for a in _f[0].axes)
+  assert _t == sorted(["Regionlar", "Aylıq gəlir", "Paylanma", "Ödəniş"]), f"Başlıqlar: Regionlar, Aylıq gəlir, Paylanma, Ödəniş. Səndə: {_t}"
+  assert len(_ax("Regionlar").patches) == 5, "Regionlar — 5 sütun"
+  assert len(_ax("Aylıq gəlir").get_lines()[0].get_ydata()) == 24, "Aylıq gəlir — 24 nöqtə"
+  assert len(_ax("Paylanma").patches) == 20, "Paylanma — bins=20"
+  assert len(_ax("Ödəniş").patches) == 4, "Ödəniş — 4 üfüqi sütun"
+hints:
+- fig, axs = plt.subplots(2, 2, figsize=(10, 7))
+- axs[0, 0].bar(...); axs[0, 0].set_title("Regionlar") — axes-də set_title
+- axs[1, 0].hist(df["Total Revenue"], bins=20); axs[1, 1].barh(odenis.index, odenis.values)

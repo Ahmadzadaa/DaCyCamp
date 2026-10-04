@@ -1077,4 +1077,822 @@ m.quiz('statistika-testi', 'Test: statistika', [
     ),
 ])
 
-print(c.root, c.modules, 'modules', c.steps, 'steps (part 1)')
+
+# ───────────────────────────── 06 · FacetGrid, catplot, pie, wordcloud ─────────────────────────────
+m = c.module('xususi', 'Çoxluq analizi və xüsusi qrafiklər',
+             'catplot, FacetGrid, wedgeprops ilə dairəvi qrafik və wordcloud.')
+
+m.lesson('facet-ders', 'catplot, FacetGrid, wedgeprops və wordcloud', 9, '''
+    ## catplot — kateqoriyalar üçün
+
+    ```python
+    sns.catplot(data=df, x="Payment Method", y="Units Sold", kind="box", height=4, aspect=1.5)
+    ```
+
+    `kind=` — `"bar"`, `"box"`, `"violin"`, `"strip"`, `"count"`. `catplot` **öz figure-ini** yaradır (axes deyil) — başlıq üçün `g.figure.suptitle(...)`.
+
+    ## FacetGrid — eyni qrafik hər qrup üçün
+
+    ```python
+    g = sns.FacetGrid(df, col="Region", col_wrap=3, height=3)
+    g.map(sns.histplot, "Total Revenue")
+    g.figure.suptitle("Regionlar üzrə paylanma", y=1.03)
+    ```
+
+    - `col` — hər dəyər üçün ayrıca sütun-qrafik; `row` — sətir-qrafik; `hue` — rənglə;
+    - `col_wrap=3` — hər sətirdə 3 qrafik;
+    - `g.map(funksiya, "sütun")` — hər qrafikdə nə çəkiləcək;
+    - `g.add_legend()` — legend.
+
+    Çoxluq (facet) analizi müxtəlif qrupların paylanmasını yan-yana müqayisə etməyə imkan verir.
+
+    ## Dairəvi qrafik: wedgeprops
+
+    ```python
+    df.set_index("Products").plot(kind="pie", y="Sales", autopct="%1.1f%%",
+                                  wedgeprops={"edgecolor": "black", "linewidth": 2})
+    plt.ylabel("")
+    ```
+
+    `wedgeprops` — dilimlərin xassələri: kənar xətt rəngi, qalınlığı; `{"width": 0.4}` — «donut» qrafik.
+
+    ## Wordcloud — mətnin vizuallaşdırılması
+
+    ```python
+    from wordcloud import WordCloud, STOPWORDS
+
+    wc = WordCloud(width=800, height=400, background_color="white",
+                   colormap="plasma", max_words=50, stopwords=set(STOPWORDS)).generate(metn)
+    plt.imshow(wc, interpolation="bilinear")
+    plt.axis("off")
+    ```
+
+    Söz nə qədər tez-tez keçirsə, o qədər böyük yazılır. Hazır tezliklər varsa (məs. məhsul → satış sayı), `generate_from_frequencies(dict)` istifadə et — onda çoxsözlü adlar bölünmür.
+''')
+
+m.python('facetgrid', 'FacetGrid və catplot', 10, '''
+    Gün 8 (3, 4): regionlar üzrə paylanma və ödəniş üsulları üzrə satılan ədəd.
+''', [
+    'FacetGrid: col="Region", col_wrap=3; hər qrafikdə Total Revenue histoqramı (g.map(sns.histplot, "Total Revenue")) → g.',
+    'g.figure.suptitle("Regionlar üzrə paylanma").',
+    'sns.catplot: x="Payment Method", y="Units Sold", kind="box" → cat; cat.figure.suptitle("Ödəniş üsulu və ədəd").',
+], '''
+    import pandas as pd
+    import seaborn as sns
+    import matplotlib.pyplot as plt
+
+    df = pd.read_csv("satislar.csv")
+
+    g = ...
+
+    cat = ...
+''', '''
+    import pandas as pd
+    import seaborn as sns
+    import matplotlib.pyplot as plt
+
+    df = pd.read_csv("satislar.csv")
+
+    g = sns.FacetGrid(df, col="Region", col_wrap=3, height=3)
+    g.map(sns.histplot, "Total Revenue")
+    g.figure.suptitle("Regionlar üzrə paylanma", y=1.03)
+
+    cat = sns.catplot(data=df, x="Payment Method", y="Units Sold", kind="box")
+    cat.figure.suptitle("Ödəniş üsulu və ədəd", y=1.03)
+''', FS + '''
+    import seaborn as _sns
+    assert isinstance(g, _sns.FacetGrid), "g = sns.FacetGrid(...)"
+    _fa = [a for a in g.figure.axes if a.patches]
+    assert len(_fa) == 5, f"5 region üçün 5 histoqram olmalıdır, səndə {len(_fa)}"
+    assert g.figure._suptitle is not None and g.figure._suptitle.get_text() == "Regionlar üzrə paylanma", "g.figure.suptitle('Regionlar üzrə paylanma')"
+    assert isinstance(cat, _sns.FacetGrid) and cat.figure._suptitle is not None and cat.figure._suptitle.get_text() == "Ödəniş üsulu və ədəd", "cat = sns.catplot(..., kind='box'); cat.figure.suptitle(...)"
+    assert len(cat.ax.get_xticklabels()) == 4, "catplot x='Payment Method' — 4 kateqoriya"
+''', [
+    'g = sns.FacetGrid(df, col="Region", col_wrap=3, height=3); g.map(sns.histplot, "Total Revenue")',
+    'g.figure.suptitle("Regionlar üzrə paylanma", y=1.03)',
+    'cat = sns.catplot(data=df, x="Payment Method", y="Units Sold", kind="box")',
+], dataset=S)
+
+m.python('wordcloud-pie', 'Wordcloud və donut qrafik', 10, '''
+    Gün 8 (5, 9) və wedgeprops: ən çox satılan məhsulların söz buludu və kateqoriyaların donut qrafiki.
+''', [
+    'Ən çox satılan 10 məhsulun {ad: satılan ədəd} lüğəti → tezlik.',
+    'WordCloud(width=800, height=400, background_color="white").generate_from_frequencies(tezlik) → wc; plt.imshow(wc), plt.axis("off"), plt.title("Top 10 məhsul").',
+    'Yeni figure-də kateqoriyalar üzrə gəlirin donut qrafiki: plt.pie(..., wedgeprops={"width": 0.4, "edgecolor": "white"}), plt.title("Kateqoriyalar").',
+], '''
+    import pandas as pd
+    import matplotlib.pyplot as plt
+    from wordcloud import WordCloud
+
+    df = pd.read_csv("satislar.csv")
+
+    tezlik = ...
+    wc = ...
+    plt.figure(figsize=(8, 4))
+
+    plt.figure()
+''', '''
+    import pandas as pd
+    import matplotlib.pyplot as plt
+    from wordcloud import WordCloud
+
+    df = pd.read_csv("satislar.csv")
+
+    tezlik = df.groupby("Product Name")["Units Sold"].sum().nlargest(10).to_dict()
+    wc = WordCloud(width=800, height=400, background_color="white").generate_from_frequencies(tezlik)
+    plt.figure(figsize=(8, 4))
+    plt.imshow(wc, interpolation="bilinear")
+    plt.axis("off")
+    plt.title("Top 10 məhsul")
+
+    plt.figure()
+    kat = df.groupby("Product Category")["Total Revenue"].sum()
+    plt.pie(kat.values, labels=kat.index, autopct="%1.1f%%", wedgeprops={"width": 0.4, "edgecolor": "white"})
+    plt.title("Kateqoriyalar")
+''', FS + '''
+    from wordcloud import WordCloud as _WC
+    from matplotlib.patches import Wedge as _W
+    _t = _s.groupby("Product Name")["Units Sold"].sum().nlargest(10).to_dict()
+    assert tezlik == _t, f"tezlik top 10 məhsulun {{ad: ədəd}} lüğəti olmalıdır: {_t}"
+    assert isinstance(wc, _WC) and set(wc.words_) <= set(_t) and len(wc.words_) == 10, "wc = WordCloud(...).generate_from_frequencies(tezlik)"
+    _a = _ax("Top 10 məhsul")
+    assert _a.images, "plt.imshow(wc) ilə söz buludunu göstər"
+    _p = _ax("Kateqoriyalar")
+    _w = [x for x in _p.patches if isinstance(x, _W)]
+    assert len(_w) == 5 and all(x.width is not None and abs(x.width - 0.4) < 1e-6 for x in _w), "Donut: wedgeprops={'width': 0.4, ...}"
+''', [
+    'tezlik = df.groupby("Product Name")["Units Sold"].sum().nlargest(10).to_dict()',
+    'wc = WordCloud(width=800, height=400, background_color="white").generate_from_frequencies(tezlik)',
+    'plt.pie(kat.values, labels=kat.index, wedgeprops={"width": 0.4, "edgecolor": "white"})',
+], dataset=S)
+
+m.quiz('xususi-testi', 'Test: çoxluq analizi və xüsusi qrafiklər', [
+    single('`sns.FacetGrid(df, col="Region")` nə edir?', ['Regionları filtrləyir', 'Hər region üçün ayrıca qrafik yaradır', 'Regionları rəngləyir', 'Region sütununu silir'], 2,
+           'col — hər dəyər üçün ayrı alt-qrafik.'),
+    single('Çoxsözlü məhsul adları (məs. "iPhone 15") wordcloud-da bölünməsin deyə nə istifadə olunur?', ['generate(metn)', 'generate_from_frequencies(lüğət)', 'STOPWORDS', 'max_words'], 2,
+           'Tezlik lüğəti hər açarı bir «söz» kimi qəbul edir.'),
+    single('`wedgeprops={"width": 0.4}` nəticəsi:', ['Dilimlər kənara çıxır', 'Donut (ortası boş) qrafik', 'Qrafik 40% kiçilir', 'Faizlər yazılır'], 2,
+           'width dilimin enini təyin edir — ortası boşalır.'),
+])
+
+# ───────────────────────────── 07 · Plotly ─────────────────────────────
+m = c.module('plotly', 'İnteraktiv vizuallaşdırma: Plotly',
+             'plotly.express və graph_objects: histogram, scatter, bar, box, scatter_matrix, xətt qrafiki.')
+
+m.lesson('plotly-ders', 'Plotly ilə interaktiv qrafiklər', 9, '''
+    Matplotlib və seaborn **statik** şəkil çəkir. **Plotly** isə interaktiv qrafiklər yaradır: siçanı nöqtənin üstünə gətirəndə dəyəri görünür (hover), yaxınlaşdırmaq (zoom), seriyaları legend-dən gizlətmək olur. Veb dashboard-lar (Dash, Streamlit) və hesabatlar üçün idealdır.
+
+    ## plotly.express — qısa yol
+
+    ```python
+    import plotly.express as px
+
+    fig = px.histogram(df, x="Total Revenue", nbins=20, title="Gəlirin paylanması",
+                       color_discrete_sequence=["blue"], opacity=0.5)
+    fig.show()
+
+    fig = px.scatter(df, x="Units Sold", y="Total Revenue", color="Product Category",
+                     size="Unit Price", hover_data=["Product Name"], title="Ədəd və gəlir")
+
+    fig = px.bar(df, x="Region", y="Total Revenue", color="Payment Method", title="Region və ödəniş")
+
+    fig = px.box(df, x="Region", y="Total Revenue", color="Region")
+
+    fig = px.scatter_matrix(o, dimensions=["Sales", "Quantity", "Discount", "Profit"], color="Category")
+    ```
+
+    Seaborn-dakı kimi: `color` — qruplara görə rəng (seaborn-un `hue`-su), `size` — nöqtə ölçüsü, `hover_data` — hover-də əlavə sütunlar.
+
+    ## graph_objects — tam nəzarət
+
+    ```python
+    import plotly.graph_objects as go
+
+    fig = go.Figure(data=go.Scatter(x=[1, 2, 3, 4, 5], y=[10, 12, 14, 16, 18],
+                                    mode="lines", name="Xətt"))
+    fig.update_layout(title="İnteraktiv xətt qrafiki", xaxis_title="X dəyəri", yaxis_title="Y dəyəri")
+    fig.show()
+    ```
+
+    ## Faylda saxlamaq
+
+    ```python
+    fig.write_html("dashboard.html")    # brauzerdə açılan interaktiv fayl — e-poçtla göndərmək olar
+    ```
+
+    | | matplotlib / seaborn | plotly |
+    | --- | --- | --- |
+    | Nəticə | Şəkil (PNG, PDF) | İnteraktiv HTML |
+    | Üstünlük | Çap, məqalə, slayd | Kəşfiyyat, veb, dashboard |
+    | Kod | Çox detal | Az kodla interaktivlik |
+
+    > 💻 DaCy-nin brauzer mühiti qrafikləri şəkil kimi göstərir, ona görə Plotly qrafiklərini burada işə salmırıq. Kodları **Google Colab** və ya **Jupyter**-də sına — orada `fig.show()` interaktiv qrafiki dərhal göstərir. Bu fəslin testi anlayışları yoxlayır.
+''')
+
+m.quiz('plotly-testi', 'Test: Plotly', [
+    classify(
+        'Hər xüsusiyyət hansı kitabxanaya daha uyğundur?',
+        [
+            ('Plotly', ['Hover ilə dəyəri görmək', 'Zoom və seriyaları gizlətmək', 'Veb dashboard üçün HTML']),
+            ('Matplotlib / seaborn', ['Məqalə və slayd üçün statik PNG', 'Çap olunan hesabat']),
+        ],
+        'Plotly interaktivdir və HTML verir; matplotlib/seaborn statik şəkillər üçündür.',
+    ),
+    single('`px.scatter(df, x="A", y="B", color="Category")` — `color` seaborn-da hansı parametrə uyğundur?', ['palette', 'hue', 'style', 'size'], 2,
+           'color qruplara görə rəngləyir — seaborn-un hue-su kimi.'),
+    single('İnteraktiv Plotly qrafikini həmkara göndərmək üçün ən rahat yol?', ['fig.show()', 'fig.write_html("fayl.html")', 'plt.savefig()', 'print(fig)'], 2,
+           'HTML faylı brauzerdə interaktiv açılır.'),
+    single('`go.Scatter(..., mode="lines")` nə çəkir?', ['Nöqtələr', 'Xətt', 'Sütunlar', 'Histoqram'], 2,
+           'mode="lines" — xətt, "markers" — nöqtələr, "lines+markers" — hər ikisi.'),
+])
+
+# ───────────────────────────── 08 · Reqressiya ─────────────────────────────
+m = c.module('reqressiya', 'Proqnoz vaxtıdır: reqressiya modelləri',
+             'Trend xətti, sadə və çoxlu xətti reqressiya, modelin təfsiri, proqnoz və qalıqların təhlili.')
+
+m.lesson('reqressiya-giris', 'Reqressiya nədir və necə təfsir olunur?', 9, '''
+    **Reqressiya** — bir dəyişənin (asılı dəyişən, y) digər dəyişən(lər)dən (müstəqil dəyişənlər, X) necə asılı olduğunu modelləşdirən statistik metoddur. Məqsəd: əlaqəni ölçmək və **proqnoz** vermək.
+
+    - **Sadə xətti reqressiya:** bir X — `y = b₀ + b₁·x`
+    - **Çoxlu (mürəkkəb) xətti reqressiya:** bir neçə X — `y = b₀ + b₁·x₁ + b₂·x₂ + …`
+
+    ## Əmsallar
+
+    - **b₀ (intercept, sabit)** — x = 0 olanda y-in gözlənilən dəyəri.
+    - **b₁ (slope, meyl)** — x 1 vahid artanda y-in orta hesabla nə qədər dəyişdiyi.
+
+    > Mənfəət = −20 + 0.25 × Satış → hər əlavə 100 ₼ satış orta hesabla 25 ₼ mənfəət gətirir.
+
+    ## Modelin keyfiyyəti
+
+    | Göstərici | Mənası |
+    | --- | --- |
+    | **R²** | y-dəki dəyişkənliyin neçə faizini model izah edir (0–1). 0.8 — 80% |
+    | **Adjusted R²** | Dəyişən sayına görə düzəldilmiş R² — çoxlu reqressiyada müqayisə üçün |
+    | **t-dəyəri / p-dəyəri** | Əmsal statistik əhəmiyyətlidirmi? p < 0.05 — adətən «əhəmiyyətli» |
+    | **Qalıqlar (residuals)** | Faktiki y − proqnoz. Təsadüfi səpələnməlidir |
+
+    ## Qalıqları yoxlamaq
+
+    1. **Qalıqlar vs proqnoz** qrafiki — nöqtələr 0 xəttinin ətrafında **təsadüfi** səpələnməlidir. Naxış (qövs, huni) görünürsə, model nəyisə qaçırır.
+    2. **Q-Q qrafiki** — qalıqlar normal paylanıbsa, nöqtələr düz xətt üzərində olur.
+
+    ## Ehtiyat
+
+    - Reqressiya **korrelyasiyanı** modelləşdirir — səbəbiyyəti sübut etmir.
+    - Data aralığından çox kənara proqnoz (ekstrapolyasiya) etibarsızdır.
+    - Kənar dəyərlər xətti güclü əyə bilər.
+''')
+
+m.lesson('reqressiya-kod', 'Python-da reqressiya: polyfit, scikit-learn, statsmodels', 10, '''
+    ## 1. Trend xətti: np.polyfit
+
+    ```python
+    import numpy as np
+    meyl, sabit = np.polyfit(x, y, 1)        # 1 — xətti (1-ci dərəcə)
+    plt.scatter(x, y)
+    plt.plot(x, meyl * np.array(x) + sabit, color="red", linestyle="--", label="Trend xətti")
+    ```
+
+    ## 2. scikit-learn: LinearRegression
+
+    ```python
+    from sklearn.linear_model import LinearRegression
+
+    X = df[["Sales"]]          # 2 ölçülü olmalıdır (DataFrame və ya reshape(-1, 1))
+    y = df["Profit"]
+    model = LinearRegression()
+    model.fit(X, y)
+
+    model.coef_          # meyl(lər)
+    model.intercept_     # sabit
+    model.score(X, y)    # R²
+    model.predict(pd.DataFrame({"Sales": [1000]}))   # proqnoz
+    ```
+
+    ## 3. statsmodels: OLS və ətraflı xülasə
+
+    ```python
+    import statsmodels.api as sm
+
+    X = sm.add_constant(data[["mph", "hp", "wt"]])   # sabit termini əlavə et
+    y = data["mpg"]
+    results = sm.OLS(y, X).fit()
+    print(results.summary())        # əmsallar, t, p, R², Adjusted R²
+
+    results.params                  # əmsallar
+    results.rsquared                # R²
+    results.pvalues                 # p-dəyərləri
+
+    yeni = sm.add_constant(pd.DataFrame({"mph": [65], "hp": [155], "wt": [2450]}), has_constant="add")
+    results.predict(yeni)
+    ```
+
+    > ⚠️ statsmodels-də `add_constant` unudulsa, model sabitsiz (xətt 0-dan keçən) qurulur — ən çox edilən səhvlərdən biridir.
+
+    ## Qalıqlar və Q-Q qrafiki
+
+    ```python
+    qaliqlar = y - results.predict(X)
+
+    plt.scatter(results.predict(X), qaliqlar)
+    plt.axhline(y=0, color="red", linestyle="--")
+    plt.title("Qalıqlar")
+
+    import scipy.stats as stats
+    stats.probplot(qaliqlar, dist="norm", plot=plt)    # Q-Q qrafiki
+    ```
+
+    | Alət | Nə vaxt |
+    | --- | --- |
+    | `np.polyfit` | Sürətli trend xətti |
+    | `sklearn` | Proqnoz yönümlü işlər, maşın öyrənməsi pipeline-ları |
+    | `statsmodels` | Statistik təfsir: p-dəyərləri, etibar intervalları, ətraflı xülasə |
+''')
+
+m.python('trend-xetti', 'Aylıq gəlirin trend xətti', 10, '''
+    Gün 7 (trend line): aylıq gəlir artır, yoxsa azalır? np.polyfit ilə xətti trend tap.
+''', [
+    'Aylar üzrə gəlir (24 ay) → ayliq; x = 0, 1, …, 23 (np.arange).',
+    'np.polyfit(x, ayliq.values, 1) ilə meyl və sabit → meyl, sabit (2 onluq).',
+    'Nöqtələri (scatter) və trend xəttini (qırmızı, "--", label="Trend xətti") çək; title="Gəlir trendi"; legend.',
+    'Trendə görə növbəti ayın (x = 24) proqnozu, 2 onluq → novbeti.',
+], '''
+    import pandas as pd
+    import numpy as np
+    import matplotlib.pyplot as plt
+
+    df = pd.read_csv("satislar.csv")
+
+    ayliq = ...
+    x = ...
+    meyl, sabit = 0, 0
+    novbeti = ...
+
+    plt.figure(figsize=(9, 4))
+''', '''
+    import pandas as pd
+    import numpy as np
+    import matplotlib.pyplot as plt
+
+    df = pd.read_csv("satislar.csv")
+
+    ayliq = df.groupby(df["Date"].str[:7])["Total Revenue"].sum()
+    x = np.arange(len(ayliq))
+    m_, s_ = np.polyfit(x, ayliq.values, 1)
+    meyl, sabit = round(m_, 2), round(s_, 2)
+    novbeti = round(m_ * 24 + s_, 2)
+
+    plt.figure(figsize=(9, 4))
+    plt.scatter(x, ayliq.values, label="Aylıq gəlir")
+    plt.plot(x, m_ * x + s_, color="red", linestyle="--", label="Trend xətti")
+    plt.title("Gəlir trendi")
+    plt.legend()
+''', FS + '''
+    _m = _s.groupby(_s["Date"].str[:7])["Total Revenue"].sum()
+    _k, _b = _np.polyfit(_np.arange(24), _m.values, 1)
+    assert (meyl, sabit) == (round(_k, 2), round(_b, 2)), f"meyl, sabit = {round(_k, 2)}, {round(_b, 2)} olmalıdır"
+    assert novbeti == round(_k * 24 + _b, 2), f"novbeti {round(_k * 24 + _b, 2)} olmalıdır"
+    _a = _ax("Gəlir trendi")
+    assert _a.collections and len(_a.collections[0].get_offsets()) == 24, "24 aylıq nöqtə (scatter) olmalıdır"
+    _tl = [l for l in _a.get_lines() if l.get_label() == "Trend xətti"]
+    assert _tl and _tl[0].get_linestyle() == "--", "label='Trend xətti', linestyle='--' olan xətt olmalıdır"
+''', [
+    'ayliq = df.groupby(df["Date"].str[:7])["Total Revenue"].sum(); x = np.arange(len(ayliq))',
+    'm_, s_ = np.polyfit(x, ayliq.values, 1); trend = m_ * x + s_',
+    'novbeti = round(m_ * 24 + s_, 2)',
+], dataset=S)
+
+m.python('sklearn-reg', 'Sadə reqressiya: scikit-learn', 10, '''
+    Gün 9: sifarişlərdə satış mənfəəti nə qədər izah edir? Profit-i Sales ilə proqnozlaşdıran model qur.
+''' + ORDERS_NOTE, [
+    'X = o[["Sales"]], y = o["Profit"]; LinearRegression ilə model qur → model.',
+    'Meyl (coef_[0]) və sabit (intercept_), 4 onluq → meyl, sabit.',
+    'R² (model.score), 3 onluq → r2.',
+    'Sales = 1000 üçün proqnoz, 2 onluq → proqnoz_1000.',
+], '''
+    import pandas as pd
+    from sklearn.linear_model import LinearRegression
+
+    o = pd.read_csv("sifarisler.csv")
+
+    model = ...
+    meyl, sabit = 0, 0
+    r2 = ...
+    proqnoz_1000 = ...
+
+    print(meyl, sabit, r2, proqnoz_1000)
+''', '''
+    import pandas as pd
+    from sklearn.linear_model import LinearRegression
+
+    o = pd.read_csv("sifarisler.csv")
+
+    X = o[["Sales"]]
+    y = o["Profit"]
+    model = LinearRegression()
+    model.fit(X, y)
+    meyl, sabit = round(model.coef_[0], 4), round(model.intercept_, 4)
+    r2 = round(model.score(X, y), 3)
+    proqnoz_1000 = round(model.predict(pd.DataFrame({"Sales": [1000]}))[0], 2)
+
+    print(meyl, sabit, r2, proqnoz_1000)
+''', FO + '''
+    _k, _b = _np.polyfit(_o["Sales"], _o["Profit"], 1)
+    assert hasattr(model, "coef_"), "model = LinearRegression(); model.fit(X, y)"
+    assert abs(meyl - round(_k, 4)) < 2e-4 and abs(sabit - round(_b, 4)) < 2e-3, f"meyl ≈ {round(_k, 4)}, sabit ≈ {round(_b, 4)} olmalıdır"
+    _r2 = _np.corrcoef(_o["Sales"], _o["Profit"])[0, 1] ** 2
+    assert abs(r2 - round(_r2, 3)) < 0.0011, f"r2 {round(_r2, 3)} olmalıdır"
+    assert abs(proqnoz_1000 - round(_k * 1000 + _b, 2)) < 0.02, f"proqnoz_1000 {round(_k * 1000 + _b, 2)} olmalıdır"
+''', [
+    'X = o[["Sales"]] (iki cüt mötərizə — 2 ölçülü); model = LinearRegression().fit(X, y)',
+    'model.coef_[0], model.intercept_, model.score(X, y)',
+    'model.predict(pd.DataFrame({"Sales": [1000]}))[0]',
+], dataset=O)
+
+m.python('statsmodels-ols', 'Çoxlu reqressiya: statsmodels və qalıqlar', 12, '''
+    Gün 9: mənfəəti satış, endirim və ədədlə izah et. Hansı dəyişən mənfəəti azaldır?
+''', [
+    'X = sm.add_constant(o[["Sales", "Discount", "Quantity"]]), y = o["Profit"]; results = sm.OLS(y, X).fit().',
+    'Discount əmsalı, 2 onluq → endirim_emsali; R², 3 onluq → r2; Discount-un p-dəyəri 0.05-dən kiçikdirmi → ehemiyyetli.',
+    'Sales=1000, Discount=0.2, Quantity=3 üçün proqnoz, 2 onluq → proqnoz.',
+    'Qalıqlar = y − proqnoz; qalıqlar vs proqnoz səpələnmə qrafiki + plt.axhline(0, color="red", linestyle="--"); title="Qalıqlar".',
+], '''
+    import pandas as pd
+    import statsmodels.api as sm
+    import matplotlib.pyplot as plt
+
+    o = pd.read_csv("sifarisler.csv")
+
+    results = ...
+    endirim_emsali = ...
+    r2 = ...
+    ehemiyyetli = ...
+    proqnoz = ...
+
+    plt.figure()
+''', '''
+    import pandas as pd
+    import statsmodels.api as sm
+    import matplotlib.pyplot as plt
+
+    o = pd.read_csv("sifarisler.csv")
+
+    X = sm.add_constant(o[["Sales", "Discount", "Quantity"]])
+    y = o["Profit"]
+    results = sm.OLS(y, X).fit()
+    endirim_emsali = round(results.params["Discount"], 2)
+    r2 = round(results.rsquared, 3)
+    ehemiyyetli = bool(results.pvalues["Discount"] < 0.05)
+    yeni = pd.DataFrame({"const": [1.0], "Sales": [1000], "Discount": [0.2], "Quantity": [3]})
+    proqnoz = round(results.predict(yeni)[0], 2)
+
+    plt.figure()
+    texmin = results.predict(X)
+    qaliqlar = y - texmin
+    plt.scatter(texmin, qaliqlar, alpha=0.4)
+    plt.axhline(0, color="red", linestyle="--")
+    plt.title("Qalıqlar")
+''', FO + '''
+    import statsmodels.api as _sm
+    _X = _sm.add_constant(_o[["Sales", "Discount", "Quantity"]])
+    _r = _sm.OLS(_o["Profit"], _X).fit()
+    assert abs(endirim_emsali - round(_r.params["Discount"], 2)) < 0.011, f"endirim_emsali {round(_r.params['Discount'], 2)} olmalıdır — add_constant unutma"
+    assert r2 == round(_r.rsquared, 3), f"r2 {round(_r.rsquared, 3)} olmalıdır"
+    assert ehemiyyetli == bool(_r.pvalues["Discount"] < 0.05), "ehemiyyetli = results.pvalues['Discount'] < 0.05"
+    _p = _r.params["const"] + _r.params["Sales"] * 1000 + _r.params["Discount"] * 0.2 + _r.params["Quantity"] * 3
+    assert abs(proqnoz - round(_p, 2)) < 0.02, f"proqnoz {round(_p, 2)} olmalıdır"
+    _a = _ax("Qalıqlar")
+    assert _a.collections and len(_a.collections[0].get_offsets()) == len(_o), "Hər sifariş üçün qalıq nöqtəsi olmalıdır"
+    assert any(_np.allclose(l.get_ydata(), 0) for l in _a.get_lines()), "plt.axhline(0, ...) ilə sıfır xəttini çək"
+''', [
+    'X = sm.add_constant(o[["Sales", "Discount", "Quantity"]]); results = sm.OLS(o["Profit"], X).fit()',
+    'results.params["Discount"], results.rsquared, results.pvalues["Discount"]',
+    'Proqnoz üçün const sütunu da lazımdır: pd.DataFrame({"const": [1.0], "Sales": [1000], "Discount": [0.2], "Quantity": [3]})',
+], dataset=O)
+
+m.quiz('reqressiya-testi', 'Test: reqressiya', [
+    single('Model: Mənfəət = −20 + 0.25 × Satış. Satış 400 ₼ olanda proqnoz?', ['80 ₼', '100 ₼', '−20 ₼', '120 ₼'], 1,
+           '−20 + 0.25 × 400 = 80.'),
+    single('R² = 0.65 nə deməkdir?', ['Model 65% hallarda düzgündür', 'Mənfəətdəki dəyişkənliyin 65%-i model tərəfindən izah olunur', 'Korrelyasiya 0.65-dir', 'p-dəyəri 0.65-dir'], 2,
+           'R² izah olunan dəyişkənlik payıdır.'),
+    classify(
+        'Hər alət və ya göstərici nə üçündür?',
+        [
+            ('Modelin keyfiyyəti', ['R²', 'Adjusted R²']),
+            ('Əmsalın əhəmiyyəti', ['p-dəyəri', 't-dəyəri']),
+            ('Modelin fərziyyələrini yoxlamaq', ['Qalıqlar vs proqnoz qrafiki', 'Q-Q qrafiki']),
+        ],
+        'R² — izahetmə gücü; p/t — əmsalın əhəmiyyəti; qalıq qrafikləri — modelin uyğunluğu.',
+    ),
+    single('statsmodels-də `sm.add_constant` unudulsa nə olur?', ['Xəta verir', 'Model sabitsiz — xətt 0-dan keçir', 'R² 1 olur', 'Heç nə'], 2,
+           'OLS sabiti avtomatik əlavə etmir.'),
+])
+
+# ───────────────────────────── 09 · E-poçt ─────────────────────────────
+m = c.module('email', 'Hesabatı avtomatlaşdır: e-poçt göndərmək',
+             'smtplib, MIME məktubu, əlavə fayl, tətbiq parolu və təhlükəsizlik.')
+
+m.lesson('email-ders', 'Python ilə e-poçt: smtplib və MIME', 9, '''
+    Hər səhər eyni hesabatı hazırlayıb e-poçtla göndərirsən? Python bunu avtomatlaşdıra bilər.
+
+    ## Məktubu qurmaq: MIME
+
+    ```python
+    from email.mime.multipart import MIMEMultipart
+    from email.mime.text import MIMEText
+    from email.mime.base import MIMEBase
+    from email import encoders
+
+    msg = MIMEMultipart()
+    msg["From"] = "hesabat@sirket.az"
+    msg["To"] = "rehberlik@sirket.az"
+    msg["Subject"] = "Gündəlik satış hesabatı"
+    msg.attach(MIMEText("Salam! Dünənki hesabat əlavədədir.", "plain"))
+
+    with open("hesabat.csv", "rb") as f:
+        hisse = MIMEBase("application", "octet-stream")
+        hisse.set_payload(f.read())
+    encoders.encode_base64(hisse)
+    hisse.add_header("Content-Disposition", "attachment; filename=hesabat.csv")
+    msg.attach(hisse)
+    ```
+
+    ## Göndərmək: smtplib
+
+    ```python
+    import os, smtplib
+
+    with smtplib.SMTP("smtp.gmail.com", 587) as server:
+        server.starttls()                                    # şifrələnmiş əlaqə
+        server.login(os.environ["EMAIL_USER"], os.environ["EMAIL_APP_PASSWORD"])
+        server.send_message(msg)
+    ```
+
+    - **587** — standart təhlükəsiz SMTP portu (STARTTLS).
+    - Gmail kimi xidmətlər adi parol əvəzinə **tətbiq parolu** (app password) tələb edir — iki faktorlu autentifikasiya açıq olmalıdır.
+
+    ## 🔒 Təhlükəsizlik — ən vacib hissə
+
+    > ⚠️ **Parolu heç vaxt koda yazma.** Kod faylları paylaşılır, GitHub-a yüklənir, e-poçtla göndərilir — içindəki parol da onunla birlikdə yayılır. Kodda parol görmüsənsə, onu dərhal **ləğv et** və yenisini yarat.
+
+    - Parolu **mühit dəyişənində** (`os.environ`), `.env` faylında (git-ə əlavə olunmayan) və ya parol menecerində saxla.
+    - Hesabatda şəxsi məlumatlar varsa, alıcıların siyahısını yoxla; mümkünsə faylı şifrələ.
+    - Kütləvi göndərişdə xidmətin limitlərinə əməl et.
+
+    > 💻 Brauzer mühitində (DaCy) internetə SMTP əlaqəsi açmaq mümkün deyil. Tapşırıqda məktubu **qurub** yoxlayırıq; göndərmə hissəsini öz kompüterində və ya Colab-da sına.
+''')
+
+m.python('email-tapsiriq', 'Hesabatlı məktub hazırla', 12, '''
+    Regionlar üzrə gəlir xülasəsini CSV faylı kimi hazırla və onu əlavə edilmiş MIME məktubu qur (göndərmədən).
+''', [
+    'Regionlar üzrə gəlir (2 onluq) xülasəsini region_hesabat.csv faylına yaz (index=True, sütun adı "Gəlir").',
+    'MIMEMultipart məktub → msg: From "hesabat@technar.az", To "rehberlik@technar.az", Subject "Regionlar üzrə gəlir".',
+    'Mətn hissəsi: "Salam! Regionlar üzrə gəlir hesabatı əlavədədir." (MIMEText, "plain").',
+    'CSV-ni base64 əlavə kimi qoş: filename=region_hesabat.csv. Parol yazma — göndərmə lazım deyil.',
+], '''
+    import pandas as pd
+    from email.mime.multipart import MIMEMultipart
+    from email.mime.text import MIMEText
+    from email.mime.base import MIMEBase
+    from email import encoders
+
+    df = pd.read_csv("satislar.csv")
+
+    xulase = ...
+    # CSV yaz
+
+    msg = ...
+''', '''
+    import pandas as pd
+    from email.mime.multipart import MIMEMultipart
+    from email.mime.text import MIMEText
+    from email.mime.base import MIMEBase
+    from email import encoders
+
+    df = pd.read_csv("satislar.csv")
+
+    xulase = df.groupby("Region")["Total Revenue"].sum().round(2).rename("Gəlir")
+    xulase.to_csv("region_hesabat.csv")
+
+    msg = MIMEMultipart()
+    msg["From"] = "hesabat@technar.az"
+    msg["To"] = "rehberlik@technar.az"
+    msg["Subject"] = "Regionlar üzrə gəlir"
+    msg.attach(MIMEText("Salam! Regionlar üzrə gəlir hesabatı əlavədədir.", "plain"))
+
+    with open("region_hesabat.csv", "rb") as f:
+        hisse = MIMEBase("application", "octet-stream")
+        hisse.set_payload(f.read())
+    encoders.encode_base64(hisse)
+    hisse.add_header("Content-Disposition", "attachment; filename=region_hesabat.csv")
+    msg.attach(hisse)
+''', FS + '''
+    import os as _os, base64 as _b64
+    assert _os.path.exists("region_hesabat.csv"), "region_hesabat.csv faylı yaradılmayıb"
+    _csv = _pd.read_csv("region_hesabat.csv", index_col=0)
+    _e = _s.groupby("Region")["Total Revenue"].sum().round(2)
+    assert list(_csv.columns) == ["Gəlir"] and _np.allclose(_csv["Gəlir"].sort_index().values, _e.sort_index().values), "CSV-də Region indeksi və 'Gəlir' sütunu olmalıdır"
+    from email.mime.multipart import MIMEMultipart as _MM
+    assert isinstance(msg, _MM), "msg = MIMEMultipart()"
+    assert (msg["From"], msg["To"], msg["Subject"]) == ("hesabat@technar.az", "rehberlik@technar.az", "Regionlar üzrə gəlir"), "From / To / Subject düzgün deyil"
+    _parts = msg.get_payload()
+    _txt = [p for p in _parts if p.get_content_type() == "text/plain"]
+    assert _txt and "Regionlar üzrə gəlir hesabatı əlavədədir" in _txt[0].get_payload(decode=True).decode("utf-8"), "Mətn hissəsi (MIMEText) yoxdur"
+    _att = [p for p in _parts if p.get_filename() == "region_hesabat.csv"]
+    assert _att, "region_hesabat.csv əlavəsi yoxdur (Content-Disposition: attachment; filename=...)"
+    assert _att[0]["Content-Transfer-Encoding"] == "base64" and "Gəlir" in _att[0].get_payload(decode=True).decode("utf-8"), "Əlavə base64 ilə kodlaşdırılmalı və CSV məzmununu daşımalıdır"
+    assert "login(" not in dacy.code and "password" not in dacy.code.lower(), "Bu tapşırıqda parol və login yazma"
+''', [
+    'xulase = df.groupby("Region")["Total Revenue"].sum().round(2).rename("Gəlir"); xulase.to_csv("region_hesabat.csv")',
+    'msg = MIMEMultipart(); msg["Subject"] = ...; msg.attach(MIMEText("...", "plain"))',
+    'MIMEBase("application", "octet-stream") → set_payload → encoders.encode_base64 → add_header("Content-Disposition", "attachment; filename=region_hesabat.csv")',
+], dataset=S)
+
+m.quiz('email-testi', 'Test: e-poçt və təhlükəsizlik', [
+    single('Kodda real e-poçt parolu yazılıb və fayl paylaşılıb. Nə etməli?', ['Faylı silmək kifayətdir', 'Parolu dərhal ləğv edib yenisini yaratmaq, parolu mühit dəyişəninə köçürmək', 'Heç nə — fayl şəxsidir', 'Parolu base64 ilə kodlaşdırmaq'], 2,
+           'Yayılmış parol ləğv edilməlidir; base64 şifrələmə deyil.'),
+    classify(
+        'Hər addım məktubun hansı hissəsinə aiddir?',
+        [
+            ('Məktubu qurmaq (email.mime)', ['MIMEMultipart()', 'MIMEText(mətn, "plain")', 'encoders.encode_base64(hissə)']),
+            ('Göndərmək (smtplib)', ['smtplib.SMTP(server, 587)', 'server.starttls()', 'server.send_message(msg)']),
+        ],
+        'MIME məktubun quruluşudur; smtplib serverə qoşulub göndərir.',
+    ),
+    single('587 portu və `starttls()` nə üçündür?', ['Sürət üçün', 'Əlaqəni şifrələmək üçün', 'Əlavə faylları sıxmaq üçün', 'Spam filtrindən keçmək üçün'], 2,
+           'STARTTLS əlaqəni şifrələnmiş kanala keçirir.'),
+])
+
+# ───────────────────────────── 10 · Yekun layihə ─────────────────────────────
+m = c.module('layihe', 'Yekun layihə: satış dashboard-u',
+             'Gün 7 və Gün 8-in qiymətləndirilən tapşırıqları: çoxqrafikli dashboard və əsas nəticələr.')
+
+m.lesson('layihe-izah', 'Yekun layihə: rəhbərlik üçün vizual hesabat', 5, '''
+    Gün 7 və Gün 8-in tapşırıqlarını bir **dashboard**-da birləşdiririk. Rəhbərlik bir səhifədə görmək istəyir:
+
+    1. Kateqoriyalar üzrə gəlir (sütun);
+    2. Regionların gəlir payı (dairə);
+    3. Apple məhsullarının aylıq satılan ədədi (xətt);
+    4. Units Sold ilə Total Revenue əlaqəsi (səpələnmə);
+    5. Məhsul qiymətlərinin paylanması (histoqram);
+    6. Regionlar üzrə satış məbləğlərinin yayılması (qutu).
+
+    Sonra ən çox satılan 3 məhsulun gəlirini və regionların aylıq dinamikasını ayrıca göstərəcəyik.
+
+    ## Yaxşı dashboard qaydaları (xatırlatma)
+
+    - Hər qrafikin **başlığı nəticəni** və ya sualı desin.
+    - Ox adları və vahidlər olsun.
+    - Rənglər ardıcıl və az olsun; vacib olan vurğulansın.
+    - `figsize` və `tight_layout()` ilə qrafiklər bir-birini örtməsin.
+
+    > 💡 Apple məhsullarını tapmaq üçün adın başlanğıcına bax: iPhone, iPad, MacBook, AirPods, Apple Watch — `str.contains(r"^(?:iPhone|iPad|MacBook|AirPods|Apple)", regex=True)`.
+''')
+
+m.python('dashboard', 'Layihə 1: 2×3 dashboard', 15, '''
+    Gün 7-nin qiymətləndirilən tapşırıqları bir figure-də: `plt.subplots(2, 3, figsize=(15, 8))`. Başlıqlar dəqiq aşağıdakı kimi olmalıdır.
+''', [
+    'axs[0, 0] — kateqoriyalar üzrə gəlir (bar): "Kateqoriyalar üzrə gəlir".',
+    'axs[0, 1] — regionların gəlir payı (pie, autopct): "Regionların payı".',
+    'axs[0, 2] — Apple məhsullarının aylıq satılan ədədi (line): "Apple satışları".',
+    'axs[1, 0] — Units Sold vs Total Revenue (scatter): "Ədəd və gəlir"; axs[1, 1] — Unit Price histoqramı (bins=20): "Qiymət paylanması".',
+    'axs[1, 2] — regionlar üzrə Total Revenue qutu qrafiki (boxplot): "Regionlar üzrə yayılma"; plt.tight_layout().',
+], '''
+    import pandas as pd
+    import matplotlib.pyplot as plt
+
+    df = pd.read_csv("satislar.csv")
+
+    fig, axs = plt.subplots(2, 3, figsize=(15, 8))
+''', '''
+    import pandas as pd
+    import matplotlib.pyplot as plt
+
+    df = pd.read_csv("satislar.csv")
+
+    fig, axs = plt.subplots(2, 3, figsize=(15, 8))
+
+    kat = df.groupby("Product Category")["Total Revenue"].sum()
+    axs[0, 0].bar(kat.index, kat.values)
+    axs[0, 0].set_title("Kateqoriyalar üzrə gəlir")
+    axs[0, 0].tick_params(axis="x", rotation=30)
+
+    reg = df.groupby("Region")["Total Revenue"].sum()
+    axs[0, 1].pie(reg.values, labels=reg.index, autopct="%1.1f%%")
+    axs[0, 1].set_title("Regionların payı")
+
+    apple = df[df["Product Name"].str.contains(r"^(?:iPhone|iPad|MacBook|AirPods|Apple)", regex=True)]
+    ay = apple.groupby(apple["Date"].str[:7])["Units Sold"].sum()
+    axs[0, 2].plot(range(len(ay)), ay.values, marker="o")
+    axs[0, 2].set_title("Apple satışları")
+
+    axs[1, 0].scatter(df["Units Sold"], df["Total Revenue"], alpha=0.4)
+    axs[1, 0].set_title("Ədəd və gəlir")
+
+    axs[1, 1].hist(df["Unit Price"], bins=20)
+    axs[1, 1].set_title("Qiymət paylanması")
+
+    regionlar = sorted(df["Region"].unique())
+    axs[1, 2].boxplot([df[df["Region"] == r]["Total Revenue"] for r in regionlar], labels=regionlar)
+    axs[1, 2].set_title("Regionlar üzrə yayılma")
+
+    plt.tight_layout()
+''', FS + '''
+    from matplotlib.patches import Wedge as _W
+    _f = [_plt.figure(n) for n in _plt.get_fignums() if len(_plt.figure(n).axes) == 6]
+    assert _f, "6 qrafikli figure olmalıdır: plt.subplots(2, 3)"
+    assert len(_ax("Kateqoriyalar üzrə gəlir").patches) == 5, "Kateqoriyalar — 5 sütun"
+    assert len([x for x in _ax("Regionların payı").patches if isinstance(x, _W)]) == 5, "Regionların payı — 5 dilim"
+    _ap = _s[_s["Product Name"].str.contains(r"^(?:iPhone|iPad|MacBook|AirPods|Apple)", regex=True)]
+    _ay = _ap.groupby(_ap["Date"].str[:7])["Units Sold"].sum()
+    _l = _ax("Apple satışları").get_lines()
+    assert _l and sorted(_l[0].get_ydata()) == sorted(_ay.values), "Apple satışları — Apple məhsullarının aylıq ədədi (iPhone, iPad, MacBook, AirPods, Apple Watch)"
+    assert len(_ax("Ədəd və gəlir").collections[0].get_offsets()) == len(_s), "Ədəd və gəlir — bütün əməliyyatlar"
+    assert len(_ax("Qiymət paylanması").patches) == 20, "Qiymət paylanması — bins=20"
+    assert len(_ax("Regionlar üzrə yayılma").get_xticklabels()) == 5, "Regionlar üzrə yayılma — 5 qutu"
+''', [
+    'fig, axs = plt.subplots(2, 3, figsize=(15, 8)); hər axes-də set_title(...)',
+    'apple = df[df["Product Name"].str.contains(r"^(?:iPhone|iPad|MacBook|AirPods|Apple)", regex=True)]',
+    'axs[1, 2].boxplot([df[df["Region"] == r]["Total Revenue"] for r in regionlar], labels=regionlar)',
+], dataset=S, xp=70)
+
+m.python('layihe-top3', 'Layihə 2: top 3 məhsul və regionların dinamikası', 12, '''
+    Gün 8 (8, 10): ən çox satılan 3 məhsulun gəliri və regionların aylıq satış hərəkəti.
+''', [
+    'Satılan ədədə görə top 3 məhsulun adları → top3; onların ümumi gəliri (Series) → top3_gelir.',
+    'sns.barplot ilə top3_gelir: plt.title("Top 3 məhsulun gəliri").',
+    'Yeni figure-də sns.lineplot: hər region üçün aylıq gəlir (Date-in ilk 7 simvolu "Ay" sütunu, hue="Region"); plt.title("Regionların aylıq gəliri").',
+], '''
+    import pandas as pd
+    import seaborn as sns
+    import matplotlib.pyplot as plt
+
+    df = pd.read_csv("satislar.csv")
+
+    top3 = ...
+    top3_gelir = ...
+    plt.figure()
+
+    plt.figure(figsize=(10, 4))
+''', '''
+    import pandas as pd
+    import seaborn as sns
+    import matplotlib.pyplot as plt
+
+    df = pd.read_csv("satislar.csv")
+
+    top3 = df.groupby("Product Name")["Units Sold"].sum().nlargest(3).index.tolist()
+    top3_gelir = df[df["Product Name"].isin(top3)].groupby("Product Name")["Total Revenue"].sum()
+    plt.figure()
+    sns.barplot(x=top3_gelir.index, y=top3_gelir.values)
+    plt.title("Top 3 məhsulun gəliri")
+
+    plt.figure(figsize=(10, 4))
+    df["Ay"] = df["Date"].str[:7]
+    ra = df.groupby(["Ay", "Region"])["Total Revenue"].sum().reset_index()
+    sns.lineplot(data=ra, x="Ay", y="Total Revenue", hue="Region")
+    plt.xticks(rotation=90)
+    plt.title("Regionların aylıq gəliri")
+''', FS + '''
+    _t = _s.groupby("Product Name")["Units Sold"].sum().nlargest(3).index.tolist()
+    assert top3 == _t, f"top3 {_t} olmalıdır"
+    _g = _s[_s["Product Name"].isin(_t)].groupby("Product Name")["Total Revenue"].sum()
+    assert isinstance(top3_gelir, _pd.Series) and top3_gelir.round(2).to_dict() == _g.round(2).to_dict(), "top3_gelir düzgün deyil"
+    _b = _ax("Top 3 məhsulun gəliri")
+    assert sorted(round(p.get_height()) for p in _b.patches) == sorted(round(v) for v in _g.values), "barplot top 3 məhsulun gəlirini göstərməlidir"
+    _l = _ax("Regionların aylıq gəliri")
+    assert len([x for x in _l.get_lines() if len(x.get_xdata()) > 1]) >= 5, "Hər region üçün bir xətt olmalıdır (hue='Region')"
+''', [
+    'top3 = df.groupby("Product Name")["Units Sold"].sum().nlargest(3).index.tolist()',
+    'top3_gelir = df[df["Product Name"].isin(top3)].groupby("Product Name")["Total Revenue"].sum()',
+    'ra = df.groupby(["Ay", "Region"])["Total Revenue"].sum().reset_index(); sns.lineplot(data=ra, x="Ay", y="Total Revenue", hue="Region")',
+], dataset=S, xp=60)
+
+m.quiz('yekun-test', 'Yekun test: Data Analysis & Visualization', [
+    classify(
+        'Hər sual üçün qrafik:',
+        [
+            ('Xətt', ['Aylıq gəlirin dəyişməsi']),
+            ('Səpələnmə', ['Satış və mənfəət əlaqəsi']),
+            ('Histoqram', ['Qiymətlərin paylanması']),
+            ('Qutu', ['Regionlar üzrə yayılma və kənar dəyərlər']),
+        ],
+        'Zaman — xətt; əlaqə — səpələnmə; paylanma — histoqram; qruplar üzrə yayılma — qutu.',
+    ),
+    single('Subplot-da başlıq necə verilir?', ['plt.title() hər zaman', 'ax.set_title()', 'ax.title = ...', 'fig.title()'], 2, 'Axes metodları set_ prefiksi ilə.'),
+    single('`sns.barplot(..., estimator="sum", errorbar=None)` nə göstərir?', ['Orta və interval', 'Cəm, intervalsız', 'Say', 'Median'], 2, 'estimator — aqreqasiya, errorbar=None — interval yox.'),
+    single('Korrelyasiya 0.05-dir. Nəticə?', ['Güclü əlaqə', 'Praktik olaraq xətti əlaqə yoxdur', 'Mənfi əlaqə', 'Səbəbiyyət var'], 2, '0-a yaxın — xətti əlaqə yoxdur.'),
+    single('IQR qaydasına görə kənar dəyər:', ['Ortadan 2 dəfə böyük', 'Q3 + 1.5×IQR-dən böyük və ya Q1 − 1.5×IQR-dən kiçik', 'Maksimum', 'Mediandan kiçik'], 2, 'Qutu qrafikinin «bığları» bu qaydadır.'),
+    single('Reqressiyada qalıqlar qrafikində aydın qövs görünür. Bu nə deməkdir?', ['Model idealdır', 'Model əlaqənin bir hissəsini (məs. qeyri-xətti) qaçırır', 'Data azdır', 'R² = 1'], 2, 'Qalıqlar təsadüfi olmalıdır.'),
+    single('Plotly-nin əsas üstünlüyü:', ['Ən kiçik fayl ölçüsü', 'İnteraktivlik: hover, zoom', 'Yalnız çap üçün', 'Statistik testlər'], 2, 'Plotly interaktiv HTML qrafiklər yaradır.'),
+    single('E-poçt parolunu harada saxlamaq düzgündür?', ['Kodun içində', 'Mühit dəyişənində və ya parol menecerində', 'Notebook-un Markdown hüceyrəsində', 'CSV faylında'], 2, 'Parol heç vaxt koda yazılmır.'),
+    multiple(
+        'Hansılar seaborn funksiyalarıdır? (Bir neçə cavab)',
+        ['histplot', 'regplot', 'pivot_table', 'heatmap', 'read_csv'],
+        [1, 2, 4],
+        'pivot_table və read_csv pandas funksiyalarıdır.',
+    ),
+], xp=50, pass_score=70)
+
+print(c.root, c.modules, 'modules', c.steps, 'steps')

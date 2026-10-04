@@ -1,0 +1,69 @@
+type: python
+title: scatterplot, hue və regplot
+xp: 40
+estimated_minutes: 10
+instructions: |
+  Gün 8 (7): qiymət və ədəd əlaqəsi; sifarişlərdə satış və mənfəət arasında trend.
+
+  > 📁 **`sifarisler.csv`** — Superstore tipli sifarişlər (2023–2024, 5 ölkə): `OrderID`, `OrderDate`, `ShipDate`, `ShipMode`, `CustomerID`, `CustomerName`, `CustomerSegment`, `Country`, `City`, `ProductID`, `ProductName`, `Category`, `Sales`, `Quantity`, `Discount`, `Profit`.
+tasks:
+- 'sns.scatterplot: satislar.csv, x="Unit Price", y="Units Sold", hue="Product Category"; plt.title("Qiymət
+  və ədəd").'
+- 'Yeni figure-də sns.regplot: sifarisler.csv, x="Sales", y="Profit", scatter_kws={"alpha": 0.3}, line_kws={"color":
+  "red"}; plt.title("Satış və mənfəət").'
+dataset:
+- datasets/satislar.csv
+- datasets/sifarisler.csv
+starter_code: |
+  import pandas as pd
+  import seaborn as sns
+  import matplotlib.pyplot as plt
+
+  df = pd.read_csv("satislar.csv")
+  o = pd.read_csv("sifarisler.csv")
+
+  plt.figure()
+  # scatterplot
+
+  plt.figure()
+  # regplot
+solution: |
+  import pandas as pd
+  import seaborn as sns
+  import matplotlib.pyplot as plt
+
+  df = pd.read_csv("satislar.csv")
+  o = pd.read_csv("sifarisler.csv")
+
+  plt.figure()
+  sns.scatterplot(data=df, x="Unit Price", y="Units Sold", hue="Product Category")
+  plt.title("Qiymət və ədəd")
+
+  plt.figure()
+  sns.regplot(data=o, x="Sales", y="Profit", scatter_kws={"alpha": 0.3}, line_kws={"color": "red"})
+  plt.title("Satış və mənfəət")
+tests: |
+  import pandas as _pd
+  import numpy as _np
+  import matplotlib.pyplot as _plt
+  def _axes():
+      return [a for n in _plt.get_fignums() for a in _plt.figure(n).axes]
+  def _ax(title):
+      for a in _axes():
+          if a.get_title().strip() == title:
+              return a
+      _t = [a.get_title() for a in _axes()]
+      raise AssertionError(f"«{title}» başlıqlı qrafik tapılmadı (title=... ver). Tapılan başlıqlar: {_t}")
+
+  _s = _pd.read_csv("satislar.csv")
+
+  _a = _ax("Qiymət və ədəd")
+  assert _a.collections and len(_a.collections[0].get_offsets()) == len(_s), "Hər əməliyyat üçün nöqtə olmalıdır"
+  assert _a.get_legend() is not None and len(_a.get_legend().get_texts()) == 5, "hue='Product Category' — legend-də 5 kateqoriya"
+  _r = _ax("Satış və mənfəət")
+  assert len(_r.get_lines()) >= 1, "regplot trend xətti çəkməlidir"
+  assert "sns.regplot(" in dacy.code, "sns.regplot istifadə et"
+hints:
+- sns.scatterplot(data=df, x="Unit Price", y="Units Sold", hue="Product Category")
+- 'sns.regplot(data=o, x="Sales", y="Profit", scatter_kws={"alpha": 0.3}, line_kws={"color": "red"})'
+- Hər birindən sonra plt.title(...).

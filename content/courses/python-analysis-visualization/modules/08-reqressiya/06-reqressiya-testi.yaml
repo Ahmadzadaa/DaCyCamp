@@ -1,0 +1,49 @@
+type: quiz
+title: 'Test: reqressiya'
+xp: 30
+estimated_minutes: 6
+pass_score: 75
+questions:
+- text: 'Model: Mənfəət = −20 + 0.25 × Satış. Satış 400 ₼ olanda proqnoz?'
+  options:
+  - 80 ₼
+  - 100 ₼
+  - −20 ₼
+  - 120 ₼
+  correct:
+  - 1
+  explanation: −20 + 0.25 × 400 = 80.
+- text: R² = 0.65 nə deməkdir?
+  options:
+  - Model 65% hallarda düzgündür
+  - Mənfəətdəki dəyişkənliyin 65%-i model tərəfindən izah olunur
+  - Korrelyasiya 0.65-dir
+  - p-dəyəri 0.65-dir
+  correct:
+  - 2
+  explanation: R² izah olunan dəyişkənlik payıdır.
+- text: Hər alət və ya göstərici nə üçündür?
+  type: classify
+  buckets:
+  - name: Modelin keyfiyyəti
+    items:
+    - R²
+    - Adjusted R²
+  - name: Əmsalın əhəmiyyəti
+    items:
+    - p-dəyəri
+    - t-dəyəri
+  - name: Modelin fərziyyələrini yoxlamaq
+    items:
+    - Qalıqlar vs proqnoz qrafiki
+    - Q-Q qrafiki
+  explanation: R² — izahetmə gücü; p/t — əmsalın əhəmiyyəti; qalıq qrafikləri — modelin uyğunluğu.
+- text: statsmodels-də `sm.add_constant` unudulsa nə olur?
+  options:
+  - Xəta verir
+  - Model sabitsiz — xətt 0-dan keçir
+  - R² 1 olur
+  - Heç nə
+  correct:
+  - 2
+  explanation: OLS sabiti avtomatik əlavə etmir.

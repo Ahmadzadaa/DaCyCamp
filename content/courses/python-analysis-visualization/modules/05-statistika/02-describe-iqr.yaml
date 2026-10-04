@@ -1,0 +1,68 @@
+type: python
+title: describe, kvantillər və kənar dəyərlər
+xp: 40
+estimated_minutes: 10
+instructions: |
+  Gün 8: xülasə statistikası və kvantillər.
+tasks:
+- describe ilə 10%, 25%, 50%, 75%, 90% kvantillərini də göstər → stat.
+- Total Revenue-nin 90% kvantili, 2 onluq → p90.
+- IQR qaydası ilə Total Revenue-də kənar dəyərlərin sayı → kenar_say.
+- Kənar dəyər olan əməliyyatların ən çox rast gəlinən kateqoriyası → kenar_kateqoriya.
+dataset: datasets/satislar.csv
+starter_code: |
+  import pandas as pd
+
+  df = pd.read_csv("satislar.csv")
+  s = df["Total Revenue"]
+
+  stat = ...
+  p90 = ...
+  kenar_say = ...
+  kenar_kateqoriya = ...
+
+  print(p90, kenar_say, kenar_kateqoriya)
+  stat
+solution: |
+  import pandas as pd
+
+  df = pd.read_csv("satislar.csv")
+  s = df["Total Revenue"]
+
+  stat = df.describe(percentiles=[.1, .25, .5, .75, .9])
+  p90 = round(s.quantile(0.9), 2)
+  q1, q3 = s.quantile(0.25), s.quantile(0.75)
+  iqr = q3 - q1
+  maska = (s < q1 - 1.5 * iqr) | (s > q3 + 1.5 * iqr)
+  kenar_say = int(maska.sum())
+  kenar_kateqoriya = df[maska]["Product Category"].value_counts().idxmax()
+
+  print(p90, kenar_say, kenar_kateqoriya)
+  stat
+tests: |
+  import pandas as _pd
+  import numpy as _np
+  import matplotlib.pyplot as _plt
+  def _axes():
+      return [a for n in _plt.get_fignums() for a in _plt.figure(n).axes]
+  def _ax(title):
+      for a in _axes():
+          if a.get_title().strip() == title:
+              return a
+      _t = [a.get_title() for a in _axes()]
+      raise AssertionError(f"«{title}» başlıqlı qrafik tapılmadı (title=... ver). Tapılan başlıqlar: {_t}")
+
+  _s = _pd.read_csv("satislar.csv")
+
+  _st = _s.describe(percentiles=[.1, .25, .5, .75, .9])
+  assert isinstance(stat, _pd.DataFrame) and "10%" in stat.index and "90%" in stat.index, "describe(percentiles=[.1, .25, .5, .75, .9])"
+  _t = _s["Total Revenue"]
+  assert p90 == round(_t.quantile(0.9), 2), f"p90 {round(_t.quantile(0.9), 2)} olmalıdır"
+  _q1, _q3 = _t.quantile(0.25), _t.quantile(0.75)
+  _m = (_t < _q1 - 1.5 * (_q3 - _q1)) | (_t > _q3 + 1.5 * (_q3 - _q1))
+  assert kenar_say == int(_m.sum()), f"kenar_say {int(_m.sum())} olmalıdır"
+  assert kenar_kateqoriya == _s[_m]["Product Category"].value_counts().idxmax(), "kenar_kateqoriya düzgün deyil"
+hints:
+- df.describe(percentiles=[.1, .25, .5, .75, .9])
+- q1, q3 = s.quantile(0.25), s.quantile(0.75); iqr = q3 - q1
+- maska = (s < q1 - 1.5 * iqr) | (s > q3 + 1.5 * iqr); df[maska]["Product Category"].value_counts().idxmax()

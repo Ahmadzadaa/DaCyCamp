@@ -1,0 +1,66 @@
+type: python
+title: Sütun qrafikləri
+xp: 40
+estimated_minutes: 10
+instructions: |
+  Gün 7 (1, 9): kateqoriyalar üzrə gəlir və satılan ədəd.
+tasks:
+- Kateqoriyalar üzrə ümumi gəliri plt.bar ilə çək (rəng "steelblue"), plt.title("Kateqoriyalar üzrə gəlir").
+- Yeni figure-də kateqoriyalar üzrə Units Sold cəmini plt.barh ilə çək, plt.title("Kateqoriyalar üzrə
+  satılan ədəd").
+dataset: datasets/satislar.csv
+starter_code: |
+  import pandas as pd
+  import matplotlib.pyplot as plt
+
+  df = pd.read_csv("satislar.csv")
+  gelir = df.groupby("Product Category")["Total Revenue"].sum()
+  eded = df.groupby("Product Category")["Units Sold"].sum()
+
+  plt.figure()
+  # plt.bar(...)
+
+  plt.figure()
+  # plt.barh(...)
+solution: |
+  import pandas as pd
+  import matplotlib.pyplot as plt
+
+  df = pd.read_csv("satislar.csv")
+  gelir = df.groupby("Product Category")["Total Revenue"].sum()
+  eded = df.groupby("Product Category")["Units Sold"].sum()
+
+  plt.figure()
+  plt.bar(gelir.index, gelir.values, color="steelblue")
+  plt.title("Kateqoriyalar üzrə gəlir")
+
+  plt.figure()
+  plt.barh(eded.index, eded.values)
+  plt.title("Kateqoriyalar üzrə satılan ədəd")
+tests: |
+  import pandas as _pd
+  import numpy as _np
+  import matplotlib.pyplot as _plt
+  def _axes():
+      return [a for n in _plt.get_fignums() for a in _plt.figure(n).axes]
+  def _ax(title):
+      for a in _axes():
+          if a.get_title().strip() == title:
+              return a
+      _t = [a.get_title() for a in _axes()]
+      raise AssertionError(f"«{title}» başlıqlı qrafik tapılmadı (title=... ver). Tapılan başlıqlar: {_t}")
+
+  _s = _pd.read_csv("satislar.csv")
+
+  _a = _ax("Kateqoriyalar üzrə gəlir")
+  _g = _s.groupby("Product Category")["Total Revenue"].sum()
+  assert len(_a.patches) == len(_g), "Hər kateqoriya üçün bir sütun olmalıdır"
+  assert sorted(round(p.get_height()) for p in _a.patches) == sorted(round(v) for v in _g.values), "Sütunların hündürlüyü kateqoriyaların gəliri olmalıdır"
+  _b = _ax("Kateqoriyalar üzrə satılan ədəd")
+  _e = _s.groupby("Product Category")["Units Sold"].sum()
+  assert sorted(round(p.get_width()) for p in _b.patches) == sorted(_e.tolist()), "Üfüqi sütunların uzunluğu satılan ədəd olmalıdır (plt.barh)"
+  assert "plt.bar(" in dacy.code and "plt.barh(" in dacy.code, "plt.bar və plt.barh istifadə et"
+hints:
+- plt.bar(gelir.index, gelir.values, color="steelblue"); plt.title("Kateqoriyalar üzrə gəlir")
+- plt.barh(eded.index, eded.values)
+- Başlıqlar testdə dəqiq yoxlanılır — kopyala.

@@ -1,0 +1,62 @@
+type: python
+title: FacetGrid və catplot
+xp: 40
+estimated_minutes: 10
+instructions: |
+  Gün 8 (3, 4): regionlar üzrə paylanma və ödəniş üsulları üzrə satılan ədəd.
+tasks:
+- 'FacetGrid: col="Region", col_wrap=3; hər qrafikdə Total Revenue histoqramı (g.map(sns.histplot, "Total
+  Revenue")) → g.'
+- g.figure.suptitle("Regionlar üzrə paylanma").
+- 'sns.catplot: x="Payment Method", y="Units Sold", kind="box" → cat; cat.figure.suptitle("Ödəniş üsulu
+  və ədəd").'
+dataset: datasets/satislar.csv
+starter_code: |
+  import pandas as pd
+  import seaborn as sns
+  import matplotlib.pyplot as plt
+
+  df = pd.read_csv("satislar.csv")
+
+  g = ...
+
+  cat = ...
+solution: |
+  import pandas as pd
+  import seaborn as sns
+  import matplotlib.pyplot as plt
+
+  df = pd.read_csv("satislar.csv")
+
+  g = sns.FacetGrid(df, col="Region", col_wrap=3, height=3)
+  g.map(sns.histplot, "Total Revenue")
+  g.figure.suptitle("Regionlar üzrə paylanma", y=1.03)
+
+  cat = sns.catplot(data=df, x="Payment Method", y="Units Sold", kind="box")
+  cat.figure.suptitle("Ödəniş üsulu və ədəd", y=1.03)
+tests: |
+  import pandas as _pd
+  import numpy as _np
+  import matplotlib.pyplot as _plt
+  def _axes():
+      return [a for n in _plt.get_fignums() for a in _plt.figure(n).axes]
+  def _ax(title):
+      for a in _axes():
+          if a.get_title().strip() == title:
+              return a
+      _t = [a.get_title() for a in _axes()]
+      raise AssertionError(f"«{title}» başlıqlı qrafik tapılmadı (title=... ver). Tapılan başlıqlar: {_t}")
+
+  _s = _pd.read_csv("satislar.csv")
+
+  import seaborn as _sns
+  assert isinstance(g, _sns.FacetGrid), "g = sns.FacetGrid(...)"
+  _fa = [a for a in g.figure.axes if a.patches]
+  assert len(_fa) == 5, f"5 region üçün 5 histoqram olmalıdır, səndə {len(_fa)}"
+  assert g.figure._suptitle is not None and g.figure._suptitle.get_text() == "Regionlar üzrə paylanma", "g.figure.suptitle('Regionlar üzrə paylanma')"
+  assert isinstance(cat, _sns.FacetGrid) and cat.figure._suptitle is not None and cat.figure._suptitle.get_text() == "Ödəniş üsulu və ədəd", "cat = sns.catplot(..., kind='box'); cat.figure.suptitle(...)"
+  assert len(cat.ax.get_xticklabels()) == 4, "catplot x='Payment Method' — 4 kateqoriya"
+hints:
+- g = sns.FacetGrid(df, col="Region", col_wrap=3, height=3); g.map(sns.histplot, "Total Revenue")
+- g.figure.suptitle("Regionlar üzrə paylanma", y=1.03)
+- cat = sns.catplot(data=df, x="Payment Method", y="Units Sold", kind="box")

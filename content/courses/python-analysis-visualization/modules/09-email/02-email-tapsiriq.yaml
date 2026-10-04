@@ -1,0 +1,85 @@
+type: python
+title: Hesabatlı məktub hazırla
+xp: 40
+estimated_minutes: 12
+instructions: |
+  Regionlar üzrə gəlir xülasəsini CSV faylı kimi hazırla və onu əlavə edilmiş MIME məktubu qur (göndərmədən).
+tasks:
+- Regionlar üzrə gəlir (2 onluq) xülasəsini region_hesabat.csv faylına yaz (index=True, sütun adı "Gəlir").
+- 'MIMEMultipart məktub → msg: From "hesabat@technar.az", To "rehberlik@technar.az", Subject "Regionlar
+  üzrə gəlir".'
+- 'Mətn hissəsi: "Salam! Regionlar üzrə gəlir hesabatı əlavədədir." (MIMEText, "plain").'
+- 'CSV-ni base64 əlavə kimi qoş: filename=region_hesabat.csv. Parol yazma — göndərmə lazım deyil.'
+dataset: datasets/satislar.csv
+starter_code: |
+  import pandas as pd
+  from email.mime.multipart import MIMEMultipart
+  from email.mime.text import MIMEText
+  from email.mime.base import MIMEBase
+  from email import encoders
+
+  df = pd.read_csv("satislar.csv")
+
+  xulase = ...
+  # CSV yaz
+
+  msg = ...
+solution: |
+  import pandas as pd
+  from email.mime.multipart import MIMEMultipart
+  from email.mime.text import MIMEText
+  from email.mime.base import MIMEBase
+  from email import encoders
+
+  df = pd.read_csv("satislar.csv")
+
+  xulase = df.groupby("Region")["Total Revenue"].sum().round(2).rename("Gəlir")
+  xulase.to_csv("region_hesabat.csv")
+
+  msg = MIMEMultipart()
+  msg["From"] = "hesabat@technar.az"
+  msg["To"] = "rehberlik@technar.az"
+  msg["Subject"] = "Regionlar üzrə gəlir"
+  msg.attach(MIMEText("Salam! Regionlar üzrə gəlir hesabatı əlavədədir.", "plain"))
+
+  with open("region_hesabat.csv", "rb") as f:
+      hisse = MIMEBase("application", "octet-stream")
+      hisse.set_payload(f.read())
+  encoders.encode_base64(hisse)
+  hisse.add_header("Content-Disposition", "attachment; filename=region_hesabat.csv")
+  msg.attach(hisse)
+tests: |
+  import pandas as _pd
+  import numpy as _np
+  import matplotlib.pyplot as _plt
+  def _axes():
+      return [a for n in _plt.get_fignums() for a in _plt.figure(n).axes]
+  def _ax(title):
+      for a in _axes():
+          if a.get_title().strip() == title:
+              return a
+      _t = [a.get_title() for a in _axes()]
+      raise AssertionError(f"«{title}» başlıqlı qrafik tapılmadı (title=... ver). Tapılan başlıqlar: {_t}")
+
+  _s = _pd.read_csv("satislar.csv")
+
+  import os as _os, base64 as _b64
+  assert _os.path.exists("region_hesabat.csv"), "region_hesabat.csv faylı yaradılmayıb"
+  _csv = _pd.read_csv("region_hesabat.csv", index_col=0)
+  _e = _s.groupby("Region")["Total Revenue"].sum().round(2)
+  assert list(_csv.columns) == ["Gəlir"] and _np.allclose(_csv["Gəlir"].sort_index().values, _e.sort_index().values), "CSV-də Region indeksi və 'Gəlir' sütunu olmalıdır"
+  from email.mime.multipart import MIMEMultipart as _MM
+  assert isinstance(msg, _MM), "msg = MIMEMultipart()"
+  assert (msg["From"], msg["To"], msg["Subject"]) == ("hesabat@technar.az", "rehberlik@technar.az", "Regionlar üzrə gəlir"), "From / To / Subject düzgün deyil"
+  _parts = msg.get_payload()
+  _txt = [p for p in _parts if p.get_content_type() == "text/plain"]
+  assert _txt and "Regionlar üzrə gəlir hesabatı əlavədədir" in _txt[0].get_payload(decode=True).decode("utf-8"), "Mətn hissəsi (MIMEText) yoxdur"
+  _att = [p for p in _parts if p.get_filename() == "region_hesabat.csv"]
+  assert _att, "region_hesabat.csv əlavəsi yoxdur (Content-Disposition: attachment; filename=...)"
+  assert _att[0]["Content-Transfer-Encoding"] == "base64" and "Gəlir" in _att[0].get_payload(decode=True).decode("utf-8"), "Əlavə base64 ilə kodlaşdırılmalı və CSV məzmununu daşımalıdır"
+  assert "login(" not in dacy.code and "password" not in dacy.code.lower(), "Bu tapşırıqda parol və login yazma"
+hints:
+- xulase = df.groupby("Region")["Total Revenue"].sum().round(2).rename("Gəlir"); xulase.to_csv("region_hesabat.csv")
+- msg = MIMEMultipart(); msg["Subject"] = ...; msg.attach(MIMEText("...", "plain"))
+- MIMEBase("application", "octet-stream") → set_payload → encoders.encode_base64 → add_header("Content-Disposition",
+  "attachment; filename=region_hesabat.csv")

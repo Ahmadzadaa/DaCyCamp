@@ -1,0 +1,36 @@
+type: quiz
+title: 'Test: matplotlib'
+xp: 20
+estimated_minutes: 4
+pass_score: 100
+questions:
+- text: Hər parametri uyğun qrafikə yerləşdir.
+  type: classify
+  buckets:
+  - name: plt.pie
+    items:
+    - explode
+    - startangle
+    - autopct
+  - name: plt.scatter
+    items:
+    - alpha (nöqtə şəffaflığı)
+    - cmap və colorbar
+  - name: plt.hist
+    items:
+    - bins
+  - name: plt.plot
+    items:
+    - linestyle
+    - marker
+  explanation: explode/startangle/autopct — dairə; alpha/cmap — səpələnmə; bins — histoqram; linestyle/marker
+    — xətt.
+- text: Qutu qrafikində qutunun hündürlüyü nəyi göstərir?
+  options:
+  - Ortanı
+  - IQR — datanın ortadakı 50%-ini (Q1–Q3)
+  - Maksimumu
+  - Sətir sayını
+  correct:
+  - 2
+  explanation: Qutu Q1-dən Q3-ə qədərdir, içindəki xətt mediandır.

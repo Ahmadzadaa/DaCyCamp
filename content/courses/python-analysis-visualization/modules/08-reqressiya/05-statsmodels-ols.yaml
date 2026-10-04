@@ -1,0 +1,81 @@
+type: python
+title: 'Çoxlu reqressiya: statsmodels və qalıqlar'
+xp: 40
+estimated_minutes: 12
+instructions: |
+  Gün 9: mənfəəti satış, endirim və ədədlə izah et. Hansı dəyişən mənfəəti azaldır?
+tasks:
+- X = sm.add_constant(o[["Sales", "Discount", "Quantity"]]), y = o["Profit"]; results = sm.OLS(y, X).fit().
+- Discount əmsalı, 2 onluq → endirim_emsali; R², 3 onluq → r2; Discount-un p-dəyəri 0.05-dən kiçikdirmi
+  → ehemiyyetli.
+- Sales=1000, Discount=0.2, Quantity=3 üçün proqnoz, 2 onluq → proqnoz.
+- Qalıqlar = y − proqnoz; qalıqlar vs proqnoz səpələnmə qrafiki + plt.axhline(0, color="red", linestyle="--");
+  title="Qalıqlar".
+dataset: datasets/sifarisler.csv
+starter_code: |
+  import pandas as pd
+  import statsmodels.api as sm
+  import matplotlib.pyplot as plt
+
+  o = pd.read_csv("sifarisler.csv")
+
+  results = ...
+  endirim_emsali = ...
+  r2 = ...
+  ehemiyyetli = ...
+  proqnoz = ...
+
+  plt.figure()
+solution: |
+  import pandas as pd
+  import statsmodels.api as sm
+  import matplotlib.pyplot as plt
+
+  o = pd.read_csv("sifarisler.csv")
+
+  X = sm.add_constant(o[["Sales", "Discount", "Quantity"]])
+  y = o["Profit"]
+  results = sm.OLS(y, X).fit()
+  endirim_emsali = round(results.params["Discount"], 2)
+  r2 = round(results.rsquared, 3)
+  ehemiyyetli = bool(results.pvalues["Discount"] < 0.05)
+  yeni = pd.DataFrame({"const": [1.0], "Sales": [1000], "Discount": [0.2], "Quantity": [3]})
+  proqnoz = round(results.predict(yeni)[0], 2)
+
+  plt.figure()
+  texmin = results.predict(X)
+  qaliqlar = y - texmin
+  plt.scatter(texmin, qaliqlar, alpha=0.4)
+  plt.axhline(0, color="red", linestyle="--")
+  plt.title("Qalıqlar")
+tests: |
+  import pandas as _pd
+  import numpy as _np
+  import matplotlib.pyplot as _plt
+  def _axes():
+      return [a for n in _plt.get_fignums() for a in _plt.figure(n).axes]
+  def _ax(title):
+      for a in _axes():
+          if a.get_title().strip() == title:
+              return a
+      _t = [a.get_title() for a in _axes()]
+      raise AssertionError(f"«{title}» başlıqlı qrafik tapılmadı (title=... ver). Tapılan başlıqlar: {_t}")
+
+  _o = _pd.read_csv("sifarisler.csv")
+
+  import statsmodels.api as _sm
+  _X = _sm.add_constant(_o[["Sales", "Discount", "Quantity"]])
+  _r = _sm.OLS(_o["Profit"], _X).fit()
+  assert abs(endirim_emsali - round(_r.params["Discount"], 2)) < 0.011, f"endirim_emsali {round(_r.params['Discount'], 2)} olmalıdır — add_constant unutma"
+  assert r2 == round(_r.rsquared, 3), f"r2 {round(_r.rsquared, 3)} olmalıdır"
+  assert ehemiyyetli == bool(_r.pvalues["Discount"] < 0.05), "ehemiyyetli = results.pvalues['Discount'] < 0.05"
+  _p = _r.params["const"] + _r.params["Sales"] * 1000 + _r.params["Discount"] * 0.2 + _r.params["Quantity"] * 3
+  assert abs(proqnoz - round(_p, 2)) < 0.02, f"proqnoz {round(_p, 2)} olmalıdır"
+  _a = _ax("Qalıqlar")
+  assert _a.collections and len(_a.collections[0].get_offsets()) == len(_o), "Hər sifariş üçün qalıq nöqtəsi olmalıdır"
+  assert any(_np.allclose(l.get_ydata(), 0) for l in _a.get_lines()), "plt.axhline(0, ...) ilə sıfır xəttini çək"
+hints:
+- X = sm.add_constant(o[["Sales", "Discount", "Quantity"]]); results = sm.OLS(o["Profit"], X).fit()
+- results.params["Discount"], results.rsquared, results.pvalues["Discount"]
+- 'Proqnoz üçün const sütunu da lazımdır: pd.DataFrame({"const": [1.0], "Sales": [1000], "Discount": [0.2],
+  "Quantity": [3]})'

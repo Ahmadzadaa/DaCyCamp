@@ -1,0 +1,61 @@
+type: python
+title: Səpələnmə və histoqram
+xp: 40
+estimated_minutes: 10
+instructions: |
+  Gün 7 (7, 8): Units Sold ilə Total Revenue arasındakı əlaqə və qiymətlərin paylanması.
+tasks:
+- 'plt.scatter: x=Units Sold, y=Total Revenue, alpha=0.4; title="Ədəd və gəlir"; ox adları xlabel/ylabel.'
+- 'Yeni figure-də Unit Price histoqramı: bins=15, edgecolor="black"; title="Qiymətlərin paylanması".'
+dataset: datasets/satislar.csv
+starter_code: |
+  import pandas as pd
+  import matplotlib.pyplot as plt
+
+  df = pd.read_csv("satislar.csv")
+
+  plt.figure()
+  # scatter
+
+  plt.figure()
+  # hist
+solution: |
+  import pandas as pd
+  import matplotlib.pyplot as plt
+
+  df = pd.read_csv("satislar.csv")
+
+  plt.figure()
+  plt.scatter(df["Units Sold"], df["Total Revenue"], alpha=0.4)
+  plt.title("Ədəd və gəlir")
+  plt.xlabel("Units Sold")
+  plt.ylabel("Total Revenue")
+
+  plt.figure()
+  plt.hist(df["Unit Price"], bins=15, edgecolor="black")
+  plt.title("Qiymətlərin paylanması")
+tests: |
+  import pandas as _pd
+  import numpy as _np
+  import matplotlib.pyplot as _plt
+  def _axes():
+      return [a for n in _plt.get_fignums() for a in _plt.figure(n).axes]
+  def _ax(title):
+      for a in _axes():
+          if a.get_title().strip() == title:
+              return a
+      _t = [a.get_title() for a in _axes()]
+      raise AssertionError(f"«{title}» başlıqlı qrafik tapılmadı (title=... ver). Tapılan başlıqlar: {_t}")
+
+  _s = _pd.read_csv("satislar.csv")
+
+  _a = _ax("Ədəd və gəlir")
+  assert _a.collections and len(_a.collections[0].get_offsets()) == len(_s), "Səpələnmədə hər əməliyyat üçün bir nöqtə olmalıdır (plt.scatter)"
+  assert abs(_a.collections[0].get_alpha() - 0.4) < 1e-9, "alpha=0.4 ver"
+  assert _a.get_xlabel() and _a.get_ylabel(), "Ox adlarını yaz: plt.xlabel(...), plt.ylabel(...)"
+  _h = _ax("Qiymətlərin paylanması")
+  assert len(_h.patches) == 15, f"Histoqramda 15 sütun olmalıdır, səndə {len(_h.patches)}"
+hints:
+- plt.scatter(df["Units Sold"], df["Total Revenue"], alpha=0.4)
+- plt.xlabel("Units Sold"); plt.ylabel("Total Revenue")
+- plt.hist(df["Unit Price"], bins=15, edgecolor="black")

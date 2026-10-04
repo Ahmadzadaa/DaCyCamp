@@ -1,0 +1,69 @@
+type: python
+title: pandas ilə üç qrafik
+xp: 40
+estimated_minutes: 10
+instructions: |
+  Gün 6 (sadə vizuallaşdırma): satış datasından üç əsas qrafik. Hər qrafikdən əvvəl `plt.figure()` yaz ki, ayrı-ayrı çəkilsinlər. **Başlıqlar dəqiq tapşırıqdakı kimi olmalıdır** — testlər qrafikləri başlığa görə tapır.
+tasks:
+- 'Total Revenue histoqramı: bins=20, title="Gəlir paylanması".'
+- 'Aylar üzrə gəlirin xətt qrafiki (Date-in ilk 7 simvolu ilə qruplaşdır): title="Aylıq gəlir".'
+- 'Kateqoriyaların əməliyyat sayının sütun qrafiki (value_counts): title="Kateqoriya tezliyi".'
+dataset: datasets/satislar.csv
+starter_code: |
+  import pandas as pd
+  import matplotlib.pyplot as plt
+
+  df = pd.read_csv("satislar.csv")
+
+  plt.figure()
+  # 1. histoqram
+
+  plt.figure()
+  ayliq = ...
+  # 2. xətt
+
+  plt.figure()
+  # 3. sütun
+solution: |
+  import pandas as pd
+  import matplotlib.pyplot as plt
+
+  df = pd.read_csv("satislar.csv")
+
+  plt.figure()
+  df["Total Revenue"].plot(kind="hist", bins=20, title="Gəlir paylanması")
+
+  plt.figure()
+  ayliq = df.groupby(df["Date"].str[:7])["Total Revenue"].sum()
+  ayliq.plot(kind="line", title="Aylıq gəlir")
+
+  plt.figure()
+  df["Product Category"].value_counts().plot(kind="bar", title="Kateqoriya tezliyi")
+tests: |
+  import pandas as _pd
+  import numpy as _np
+  import matplotlib.pyplot as _plt
+  def _axes():
+      return [a for n in _plt.get_fignums() for a in _plt.figure(n).axes]
+  def _ax(title):
+      for a in _axes():
+          if a.get_title().strip() == title:
+              return a
+      _t = [a.get_title() for a in _axes()]
+      raise AssertionError(f"«{title}» başlıqlı qrafik tapılmadı (title=... ver). Tapılan başlıqlar: {_t}")
+
+  _s = _pd.read_csv("satislar.csv")
+
+  _h = _ax("Gəlir paylanması")
+  assert len(_h.patches) == 20, f"Histoqramda 20 sütun (bins=20) olmalıdır, səndə {len(_h.patches)}"
+  _l = _ax("Aylıq gəlir")
+  assert len(_l.get_lines()) >= 1 and len(_l.get_lines()[0].get_ydata()) == 24, "Aylıq gəlir — 24 aylıq nöqtədən ibarət xətt olmalıdır"
+  _b = _ax("Kateqoriya tezliyi")
+  assert len(_b.patches) == _s["Product Category"].nunique(), "Kateqoriya tezliyi — hər kateqoriya üçün bir sütun"
+  _hs = sorted(round(p.get_height()) for p in _b.patches)
+  assert _hs == sorted(_s["Product Category"].value_counts().tolist()), "Sütunların hündürlüyü kateqoriyaların sayı olmalıdır"
+hints:
+- df["Total Revenue"].plot(kind="hist", bins=20, title="Gəlir paylanması")
+- ayliq = df.groupby(df["Date"].str[:7])["Total Revenue"].sum(); ayliq.plot(kind="line", title="Aylıq
+  gəlir")
+- df["Product Category"].value_counts().plot(kind="bar", title="Kateqoriya tezliyi")

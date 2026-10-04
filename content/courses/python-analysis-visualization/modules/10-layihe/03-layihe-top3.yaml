@@ -1,0 +1,71 @@
+type: python
+title: 'Layihə 2: top 3 məhsul və regionların dinamikası'
+xp: 60
+estimated_minutes: 12
+instructions: |
+  Gün 8 (8, 10): ən çox satılan 3 məhsulun gəliri və regionların aylıq satış hərəkəti.
+tasks:
+- Satılan ədədə görə top 3 məhsulun adları → top3; onların ümumi gəliri (Series) → top3_gelir.
+- 'sns.barplot ilə top3_gelir: plt.title("Top 3 məhsulun gəliri").'
+- 'Yeni figure-də sns.lineplot: hər region üçün aylıq gəlir (Date-in ilk 7 simvolu "Ay" sütunu, hue="Region");
+  plt.title("Regionların aylıq gəliri").'
+dataset: datasets/satislar.csv
+starter_code: |
+  import pandas as pd
+  import seaborn as sns
+  import matplotlib.pyplot as plt
+
+  df = pd.read_csv("satislar.csv")
+
+  top3 = ...
+  top3_gelir = ...
+  plt.figure()
+
+  plt.figure(figsize=(10, 4))
+solution: |
+  import pandas as pd
+  import seaborn as sns
+  import matplotlib.pyplot as plt
+
+  df = pd.read_csv("satislar.csv")
+
+  top3 = df.groupby("Product Name")["Units Sold"].sum().nlargest(3).index.tolist()
+  top3_gelir = df[df["Product Name"].isin(top3)].groupby("Product Name")["Total Revenue"].sum()
+  plt.figure()
+  sns.barplot(x=top3_gelir.index, y=top3_gelir.values)
+  plt.title("Top 3 məhsulun gəliri")
+
+  plt.figure(figsize=(10, 4))
+  df["Ay"] = df["Date"].str[:7]
+  ra = df.groupby(["Ay", "Region"])["Total Revenue"].sum().reset_index()
+  sns.lineplot(data=ra, x="Ay", y="Total Revenue", hue="Region")
+  plt.xticks(rotation=90)
+  plt.title("Regionların aylıq gəliri")
+tests: |
+  import pandas as _pd
+  import numpy as _np
+  import matplotlib.pyplot as _plt
+  def _axes():
+      return [a for n in _plt.get_fignums() for a in _plt.figure(n).axes]
+  def _ax(title):
+      for a in _axes():
+          if a.get_title().strip() == title:
+              return a
+      _t = [a.get_title() for a in _axes()]
+      raise AssertionError(f"«{title}» başlıqlı qrafik tapılmadı (title=... ver). Tapılan başlıqlar: {_t}")
+
+  _s = _pd.read_csv("satislar.csv")
+
+  _t = _s.groupby("Product Name")["Units Sold"].sum().nlargest(3).index.tolist()
+  assert top3 == _t, f"top3 {_t} olmalıdır"
+  _g = _s[_s["Product Name"].isin(_t)].groupby("Product Name")["Total Revenue"].sum()
+  assert isinstance(top3_gelir, _pd.Series) and top3_gelir.round(2).to_dict() == _g.round(2).to_dict(), "top3_gelir düzgün deyil"
+  _b = _ax("Top 3 məhsulun gəliri")
+  assert sorted(round(p.get_height()) for p in _b.patches) == sorted(round(v) for v in _g.values), "barplot top 3 məhsulun gəlirini göstərməlidir"
+  _l = _ax("Regionların aylıq gəliri")
+  assert len([x for x in _l.get_lines() if len(x.get_xdata()) > 1]) >= 5, "Hər region üçün bir xətt olmalıdır (hue='Region')"
+hints:
+- top3 = df.groupby("Product Name")["Units Sold"].sum().nlargest(3).index.tolist()
+- top3_gelir = df[df["Product Name"].isin(top3)].groupby("Product Name")["Total Revenue"].sum()
+- ra = df.groupby(["Ay", "Region"])["Total Revenue"].sum().reset_index(); sns.lineplot(data=ra, x="Ay",
+  y="Total Revenue", hue="Region")

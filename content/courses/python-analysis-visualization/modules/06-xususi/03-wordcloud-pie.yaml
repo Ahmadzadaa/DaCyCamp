@@ -1,0 +1,72 @@
+type: python
+title: Wordcloud və donut qrafik
+xp: 40
+estimated_minutes: 10
+instructions: |
+  Gün 8 (5, 9) və wedgeprops: ən çox satılan məhsulların söz buludu və kateqoriyaların donut qrafiki.
+tasks:
+- 'Ən çox satılan 10 məhsulun {ad: satılan ədəd} lüğəti → tezlik.'
+- WordCloud(width=800, height=400, background_color="white").generate_from_frequencies(tezlik) → wc; plt.imshow(wc),
+  plt.axis("off"), plt.title("Top 10 məhsul").
+- 'Yeni figure-də kateqoriyalar üzrə gəlirin donut qrafiki: plt.pie(..., wedgeprops={"width": 0.4, "edgecolor":
+  "white"}), plt.title("Kateqoriyalar").'
+dataset: datasets/satislar.csv
+starter_code: |
+  import pandas as pd
+  import matplotlib.pyplot as plt
+  from wordcloud import WordCloud
+
+  df = pd.read_csv("satislar.csv")
+
+  tezlik = ...
+  wc = ...
+  plt.figure(figsize=(8, 4))
+
+  plt.figure()
+solution: |
+  import pandas as pd
+  import matplotlib.pyplot as plt
+  from wordcloud import WordCloud
+
+  df = pd.read_csv("satislar.csv")
+
+  tezlik = df.groupby("Product Name")["Units Sold"].sum().nlargest(10).to_dict()
+  wc = WordCloud(width=800, height=400, background_color="white").generate_from_frequencies(tezlik)
+  plt.figure(figsize=(8, 4))
+  plt.imshow(wc, interpolation="bilinear")
+  plt.axis("off")
+  plt.title("Top 10 məhsul")
+
+  plt.figure()
+  kat = df.groupby("Product Category")["Total Revenue"].sum()
+  plt.pie(kat.values, labels=kat.index, autopct="%1.1f%%", wedgeprops={"width": 0.4, "edgecolor": "white"})
+  plt.title("Kateqoriyalar")
+tests: |
+  import pandas as _pd
+  import numpy as _np
+  import matplotlib.pyplot as _plt
+  def _axes():
+      return [a for n in _plt.get_fignums() for a in _plt.figure(n).axes]
+  def _ax(title):
+      for a in _axes():
+          if a.get_title().strip() == title:
+              return a
+      _t = [a.get_title() for a in _axes()]
+      raise AssertionError(f"«{title}» başlıqlı qrafik tapılmadı (title=... ver). Tapılan başlıqlar: {_t}")
+
+  _s = _pd.read_csv("satislar.csv")
+
+  from wordcloud import WordCloud as _WC
+  from matplotlib.patches import Wedge as _W
+  _t = _s.groupby("Product Name")["Units Sold"].sum().nlargest(10).to_dict()
+  assert tezlik == _t, f"tezlik top 10 məhsulun {{ad: ədəd}} lüğəti olmalıdır: {_t}"
+  assert isinstance(wc, _WC) and set(wc.words_) <= set(_t) and len(wc.words_) == 10, "wc = WordCloud(...).generate_from_frequencies(tezlik)"
+  _a = _ax("Top 10 məhsul")
+  assert _a.images, "plt.imshow(wc) ilə söz buludunu göstər"
+  _p = _ax("Kateqoriyalar")
+  _w = [x for x in _p.patches if isinstance(x, _W)]
+  assert len(_w) == 5 and all(x.width is not None and abs(x.width - 0.4) < 1e-6 for x in _w), "Donut: wedgeprops={'width': 0.4, ...}"
+hints:
+- tezlik = df.groupby("Product Name")["Units Sold"].sum().nlargest(10).to_dict()
+- wc = WordCloud(width=800, height=400, background_color="white").generate_from_frequencies(tezlik)
+- 'plt.pie(kat.values, labels=kat.index, wedgeprops={"width": 0.4, "edgecolor": "white"})'

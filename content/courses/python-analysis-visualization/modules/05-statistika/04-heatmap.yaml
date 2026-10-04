@@ -1,0 +1,59 @@
+type: python
+title: Korrelyasiya istilik xəritəsi
+xp: 40
+estimated_minutes: 8
+instructions: |
+  Gün 8 (2): bütün rəqəmsal sütunlar arasındakı əlaqələri heatmap ilə vizuallaşdır, xanalara dəyərləri yaz.
+tasks:
+- sifarisler.csv-nin rəqəmsal sütunlarının korrelyasiyası (corr(numeric_only=True)) → corr.
+- 'sns.heatmap: annot=True, cmap="coolwarm", fmt=".2f", linewidths=0.5.'
+- plt.title("Korrelyasiya matrisi").
+dataset: datasets/sifarisler.csv
+starter_code: |
+  import pandas as pd
+  import seaborn as sns
+  import matplotlib.pyplot as plt
+
+  o = pd.read_csv("sifarisler.csv")
+
+  corr = ...
+  plt.figure(figsize=(7, 5))
+  # heatmap
+solution: |
+  import pandas as pd
+  import seaborn as sns
+  import matplotlib.pyplot as plt
+
+  o = pd.read_csv("sifarisler.csv")
+
+  corr = o.corr(numeric_only=True)
+  plt.figure(figsize=(7, 5))
+  sns.heatmap(corr, annot=True, cmap="coolwarm", fmt=".2f", linewidths=0.5)
+  plt.title("Korrelyasiya matrisi")
+tests: |
+  import pandas as _pd
+  import numpy as _np
+  import matplotlib.pyplot as _plt
+  def _axes():
+      return [a for n in _plt.get_fignums() for a in _plt.figure(n).axes]
+  def _ax(title):
+      for a in _axes():
+          if a.get_title().strip() == title:
+              return a
+      _t = [a.get_title() for a in _axes()]
+      raise AssertionError(f"«{title}» başlıqlı qrafik tapılmadı (title=... ver). Tapılan başlıqlar: {_t}")
+
+  _o = _pd.read_csv("sifarisler.csv")
+
+  _c = _o.corr(numeric_only=True)
+  assert isinstance(corr, _pd.DataFrame) and corr.shape == _c.shape, "corr = o.corr(numeric_only=True)"
+  _a = _ax("Korrelyasiya matrisi")
+  from matplotlib.collections import QuadMesh as _QM
+  assert any(isinstance(x, _QM) for x in _a.collections), "sns.heatmap çəkilməyib"
+  _tx = [t.get_text() for t in _a.texts]
+  assert len(_tx) == _c.size, "annot=True — hər xanada dəyər olmalıdır"
+  assert all(len(t.split(".")[-1]) == 2 for t in _tx if "." in t), "fmt='.2f' — 2 onluq"
+hints:
+- corr = o.corr(numeric_only=True)
+- sns.heatmap(corr, annot=True, cmap="coolwarm", fmt=".2f", linewidths=0.5)
+- plt.title("Korrelyasiya matrisi")

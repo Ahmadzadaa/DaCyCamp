@@ -1,0 +1,37 @@
+type: quiz
+title: 'Test: statistika'
+xp: 25
+estimated_minutes: 5
+pass_score: 66
+questions:
+- text: Korrelyasiya −0.85-dir. Bu nə deməkdir?
+  options:
+  - Əlaqə yoxdur
+  - Güclü mənfi xətti əlaqə
+  - Zəif müsbət
+  - Səbəb-nəticə sübut olunub
+  correct:
+  - 2
+  explanation: '|r| 0.8-dən böyükdür və işarə mənfidir. Korrelyasiya səbəbiyyəti sübut etmir.'
+- text: Kovariasiya əvəzinə korrelyasiya niyə daha çox istifadə olunur?
+  options:
+  - Daha tez hesablanır
+  - Vahidsizdir və −1…+1 aralığındadır — müqayisə etmək asandır
+  - Mənfi ola bilmir
+  - Kateqoriyalarla işləyir
+  correct:
+  - 2
+  explanation: Kovariasiya ölçü vahidindən asılıdır.
+- text: 'Hər kodun nəticəsi:'
+  type: classify
+  buckets:
+  - name: Tək ədəd
+    items:
+    - s.quantile(0.9)
+    - df[["A", "B"]].corr().loc["A", "B"]
+  - name: Matris (DataFrame)
+    items:
+    - df.corr(numeric_only=True)
+    - df.cov(numeric_only=True)
+    - df.describe()
+  explanation: quantile(0.9) və matrisdən bir xana — ədəd; corr/cov/describe — cədvəl.

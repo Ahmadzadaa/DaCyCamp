@@ -1,0 +1,65 @@
+type: python
+title: Dairə və üfüqi sütun
+xp: 40
+estimated_minutes: 8
+instructions: |
+  Regionların gəlir payını dairəvi qrafiklə, ən çox satılan məhsulları üfüqi sütunla göstər.
+tasks:
+- 'Regionlar üzrə gəlirin dairəvi qrafiki: autopct="%1.1f%%", title="Regionlar üzrə gəlir".'
+- 'Ədədə görə ən çox satılan 10 məhsulun üfüqi sütun qrafiki (kind="barh"), rəng "lightgreen": title="Top
+  10 məhsul".'
+dataset: datasets/satislar.csv
+starter_code: |
+  import pandas as pd
+  import matplotlib.pyplot as plt
+
+  df = pd.read_csv("satislar.csv")
+
+  plt.figure()
+  region = ...
+  # dairə
+
+  plt.figure()
+  top10 = ...
+  # üfüqi sütun
+solution: |
+  import pandas as pd
+  import matplotlib.pyplot as plt
+
+  df = pd.read_csv("satislar.csv")
+
+  plt.figure()
+  region = df.groupby("Region")["Total Revenue"].sum()
+  region.plot(kind="pie", autopct="%1.1f%%", title="Regionlar üzrə gəlir")
+
+  plt.figure()
+  top10 = df.groupby("Product Name")["Units Sold"].sum().nlargest(10)
+  top10.plot(kind="barh", color="lightgreen", title="Top 10 məhsul")
+tests: |
+  import pandas as _pd
+  import numpy as _np
+  import matplotlib.pyplot as _plt
+  def _axes():
+      return [a for n in _plt.get_fignums() for a in _plt.figure(n).axes]
+  def _ax(title):
+      for a in _axes():
+          if a.get_title().strip() == title:
+              return a
+      _t = [a.get_title() for a in _axes()]
+      raise AssertionError(f"«{title}» başlıqlı qrafik tapılmadı (title=... ver). Tapılan başlıqlar: {_t}")
+
+  _s = _pd.read_csv("satislar.csv")
+
+  from matplotlib.patches import Wedge as _W
+  _p = _ax("Regionlar üzrə gəlir")
+  _w = [x for x in _p.patches if isinstance(x, _W)]
+  assert len(_w) == 5, f"Dairədə 5 dilim (region) olmalıdır, səndə {len(_w)}"
+  assert any("%" in t.get_text() for t in _p.texts), "Dilimlərdə faizlər görünmür — autopct='%1.1f%%' əlavə et"
+  _b = _ax("Top 10 məhsul")
+  assert len(_b.patches) == 10, f"10 sütun olmalıdır, səndə {len(_b.patches)}"
+  _wd = sorted(round(x.get_width()) for x in _b.patches)
+  assert _wd == sorted(_s.groupby("Product Name")["Units Sold"].sum().nlargest(10).tolist()), "Üfüqi sütunların uzunluğu satılan ədəd olmalıdır (kind='barh')"
+hints:
+- region = df.groupby("Region")["Total Revenue"].sum(); region.plot(kind="pie", autopct="%1.1f%%", title=...)
+- top10 = df.groupby("Product Name")["Units Sold"].sum().nlargest(10)
+- top10.plot(kind="barh", color="lightgreen", title="Top 10 məhsul")

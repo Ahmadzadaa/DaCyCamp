@@ -1,0 +1,66 @@
+type: python
+title: 'Sadə reqressiya: scikit-learn'
+xp: 40
+estimated_minutes: 10
+instructions: |
+  Gün 9: sifarişlərdə satış mənfəəti nə qədər izah edir? Profit-i Sales ilə proqnozlaşdıran model qur.
+
+  > 📁 **`sifarisler.csv`** — Superstore tipli sifarişlər (2023–2024, 5 ölkə): `OrderID`, `OrderDate`, `ShipDate`, `ShipMode`, `CustomerID`, `CustomerName`, `CustomerSegment`, `Country`, `City`, `ProductID`, `ProductName`, `Category`, `Sales`, `Quantity`, `Discount`, `Profit`.
+tasks:
+- X = o[["Sales"]], y = o["Profit"]; LinearRegression ilə model qur → model.
+- Meyl (coef_[0]) və sabit (intercept_), 4 onluq → meyl, sabit.
+- R² (model.score), 3 onluq → r2.
+- Sales = 1000 üçün proqnoz, 2 onluq → proqnoz_1000.
+dataset: datasets/sifarisler.csv
+starter_code: |
+  import pandas as pd
+  from sklearn.linear_model import LinearRegression
+
+  o = pd.read_csv("sifarisler.csv")
+
+  model = ...
+  meyl, sabit = 0, 0
+  r2 = ...
+  proqnoz_1000 = ...
+
+  print(meyl, sabit, r2, proqnoz_1000)
+solution: |
+  import pandas as pd
+  from sklearn.linear_model import LinearRegression
+
+  o = pd.read_csv("sifarisler.csv")
+
+  X = o[["Sales"]]
+  y = o["Profit"]
+  model = LinearRegression()
+  model.fit(X, y)
+  meyl, sabit = round(model.coef_[0], 4), round(model.intercept_, 4)
+  r2 = round(model.score(X, y), 3)
+  proqnoz_1000 = round(model.predict(pd.DataFrame({"Sales": [1000]}))[0], 2)
+
+  print(meyl, sabit, r2, proqnoz_1000)
+tests: |
+  import pandas as _pd
+  import numpy as _np
+  import matplotlib.pyplot as _plt
+  def _axes():
+      return [a for n in _plt.get_fignums() for a in _plt.figure(n).axes]
+  def _ax(title):
+      for a in _axes():
+          if a.get_title().strip() == title:
+              return a
+      _t = [a.get_title() for a in _axes()]
+      raise AssertionError(f"«{title}» başlıqlı qrafik tapılmadı (title=... ver). Tapılan başlıqlar: {_t}")
+
+  _o = _pd.read_csv("sifarisler.csv")
+
+  _k, _b = _np.polyfit(_o["Sales"], _o["Profit"], 1)
+  assert hasattr(model, "coef_"), "model = LinearRegression(); model.fit(X, y)"
+  assert abs(meyl - round(_k, 4)) < 2e-4 and abs(sabit - round(_b, 4)) < 2e-3, f"meyl ≈ {round(_k, 4)}, sabit ≈ {round(_b, 4)} olmalıdır"
+  _r2 = _np.corrcoef(_o["Sales"], _o["Profit"])[0, 1] ** 2
+  assert abs(r2 - round(_r2, 3)) < 0.0011, f"r2 {round(_r2, 3)} olmalıdır"
+  assert abs(proqnoz_1000 - round(_k * 1000 + _b, 2)) < 0.02, f"proqnoz_1000 {round(_k * 1000 + _b, 2)} olmalıdır"
+hints:
+- X = o[["Sales"]] (iki cüt mötərizə — 2 ölçülü); model = LinearRegression().fit(X, y)
+- model.coef_[0], model.intercept_, model.score(X, y)
+- 'model.predict(pd.DataFrame({"Sales": [1000]}))[0]'

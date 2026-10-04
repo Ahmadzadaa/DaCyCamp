@@ -1,0 +1,98 @@
+type: quiz
+title: 'Yekun test: Data Analysis & Visualization'
+xp: 50
+estimated_minutes: 11
+pass_score: 70
+questions:
+- text: 'Hər sual üçün qrafik:'
+  type: classify
+  buckets:
+  - name: Xətt
+    items:
+    - Aylıq gəlirin dəyişməsi
+  - name: Səpələnmə
+    items:
+    - Satış və mənfəət əlaqəsi
+  - name: Histoqram
+    items:
+    - Qiymətlərin paylanması
+  - name: Qutu
+    items:
+    - Regionlar üzrə yayılma və kənar dəyərlər
+  explanation: Zaman — xətt; əlaqə — səpələnmə; paylanma — histoqram; qruplar üzrə yayılma — qutu.
+- text: Subplot-da başlıq necə verilir?
+  options:
+  - plt.title() hər zaman
+  - ax.set_title()
+  - ax.title = ...
+  - fig.title()
+  correct:
+  - 2
+  explanation: Axes metodları set_ prefiksi ilə.
+- text: '`sns.barplot(..., estimator="sum", errorbar=None)` nə göstərir?'
+  options:
+  - Orta və interval
+  - Cəm, intervalsız
+  - Say
+  - Median
+  correct:
+  - 2
+  explanation: estimator — aqreqasiya, errorbar=None — interval yox.
+- text: Korrelyasiya 0.05-dir. Nəticə?
+  options:
+  - Güclü əlaqə
+  - Praktik olaraq xətti əlaqə yoxdur
+  - Mənfi əlaqə
+  - Səbəbiyyət var
+  correct:
+  - 2
+  explanation: 0-a yaxın — xətti əlaqə yoxdur.
+- text: 'IQR qaydasına görə kənar dəyər:'
+  options:
+  - Ortadan 2 dəfə böyük
+  - Q3 + 1.5×IQR-dən böyük və ya Q1 − 1.5×IQR-dən kiçik
+  - Maksimum
+  - Mediandan kiçik
+  correct:
+  - 2
+  explanation: Qutu qrafikinin «bığları» bu qaydadır.
+- text: Reqressiyada qalıqlar qrafikində aydın qövs görünür. Bu nə deməkdir?
+  options:
+  - Model idealdır
+  - Model əlaqənin bir hissəsini (məs. qeyri-xətti) qaçırır
+  - Data azdır
+  - R² = 1
+  correct:
+  - 2
+  explanation: Qalıqlar təsadüfi olmalıdır.
+- text: 'Plotly-nin əsas üstünlüyü:'
+  options:
+  - Ən kiçik fayl ölçüsü
+  - 'İnteraktivlik: hover, zoom'
+  - Yalnız çap üçün
+  - Statistik testlər
+  correct:
+  - 2
+  explanation: Plotly interaktiv HTML qrafiklər yaradır.
+- text: E-poçt parolunu harada saxlamaq düzgündür?
+  options:
+  - Kodun içində
+  - Mühit dəyişənində və ya parol menecerində
+  - Notebook-un Markdown hüceyrəsində
+  - CSV faylında
+  correct:
+  - 2
+  explanation: Parol heç vaxt koda yazılmır.
+- text: Hansılar seaborn funksiyalarıdır? (Bir neçə cavab)
+  type: multiple
+  options:
+  - histplot
+  - regplot
+  - pivot_table
+  - heatmap
+  - read_csv
+  correct:
+  - 1
+  - 2
+  - 4
+  explanation: pivot_table və read_csv pandas funksiyalarıdır.

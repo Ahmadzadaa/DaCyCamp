@@ -1,0 +1,38 @@
+type: quiz
+title: 'Test: fərdiləşdirmə'
+xp: 25
+estimated_minutes: 5
+pass_score: 66
+questions:
+- text: Legend-də xətlərin adları görünməsi üçün nə lazımdır?
+  options:
+  - Yalnız plt.legend()
+  - Hər xəttə label=... vermək və plt.legend() çağırmaq
+  - plt.title()
+  - plt.grid()
+  correct:
+  - 2
+  explanation: legend label-ları göstərir — label olmayan xətt legend-ə düşmür.
+- text: '`fig, axs = plt.subplots(2, 3)` — sağ alt qrafikə necə müraciət edilir?'
+  options:
+  - axs[2, 3]
+  - axs[1, 2]
+  - axs[6]
+  - axs[-1, 3]
+  correct:
+  - 2
+  explanation: 'İndekslər 0-dan başlayır: 2-ci sətir (1), 3-cü sütun (2).'
+- text: 'pyplot funksiyası və axes metodu:'
+  type: classify
+  buckets:
+  - name: pyplot (cari qrafik)
+    items:
+    - plt.title()
+    - plt.xlabel()
+    - plt.ylim()
+  - name: axes metodu (subplot)
+    items:
+    - ax.set_title()
+    - ax.set_xlabel()
+    - ax.set_ylim()
+  explanation: Subplot-larla işləyəndə axes metodları set_ prefiksi ilə yazılır.

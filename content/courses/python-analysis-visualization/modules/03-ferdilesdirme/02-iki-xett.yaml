@@ -1,0 +1,74 @@
+type: python
+title: 'İki ilin müqayisəsi: legend, grid, oxlar'
+xp: 40
+estimated_minutes: 12
+instructions: |
+  2023 və 2024-ün aylıq gəlirini **eyni** qrafikdə iki xətt kimi göstər.
+tasks:
+- 'Hər il üçün aylar (1–12) üzrə gəlir: g23, g24.'
+- 'İki xətt çək: 2023 — qırıq xətt (linestyle="--"), marker "o", label="2023"; 2024 — bütöv, marker "s",
+  label="2024".'
+- 'title="Aylıq gəlir: 2023 və 2024", xlabel="Ay", ylabel="Gəlir (AZN)", legend, grid.'
+dataset: datasets/satislar.csv
+starter_code: |
+  import pandas as pd
+  import matplotlib.pyplot as plt
+
+  df = pd.read_csv("satislar.csv", parse_dates=["Date"])
+
+  g23 = ...
+  g24 = ...
+
+  plt.figure(figsize=(9, 4))
+  # xətlər, başlıq, oxlar, legend, grid
+solution: |
+  import pandas as pd
+  import matplotlib.pyplot as plt
+
+  df = pd.read_csv("satislar.csv", parse_dates=["Date"])
+
+  il = df["Date"].dt.year
+  g23 = df[il == 2023].groupby(df["Date"].dt.month)["Total Revenue"].sum()
+  g24 = df[il == 2024].groupby(df["Date"].dt.month)["Total Revenue"].sum()
+
+  plt.figure(figsize=(9, 4))
+  plt.plot(g23.index, g23.values, linestyle="--", marker="o", label="2023")
+  plt.plot(g24.index, g24.values, linestyle="-", marker="s", label="2024")
+  plt.title("Aylıq gəlir: 2023 və 2024")
+  plt.xlabel("Ay")
+  plt.ylabel("Gəlir (AZN)")
+  plt.legend()
+  plt.grid(True, linestyle=":")
+  plt.tight_layout()
+tests: |
+  import pandas as _pd
+  import numpy as _np
+  import matplotlib.pyplot as _plt
+  def _axes():
+      return [a for n in _plt.get_fignums() for a in _plt.figure(n).axes]
+  def _ax(title):
+      for a in _axes():
+          if a.get_title().strip() == title:
+              return a
+      _t = [a.get_title() for a in _axes()]
+      raise AssertionError(f"«{title}» başlıqlı qrafik tapılmadı (title=... ver). Tapılan başlıqlar: {_t}")
+
+  _s = _pd.read_csv("satislar.csv")
+
+  _a = _ax("Aylıq gəlir: 2023 və 2024")
+  _ls = _a.get_lines()
+  assert len(_ls) >= 2, "Qrafikdə iki xətt olmalıdır"
+  _leg = _a.get_legend()
+  assert _leg is not None and sorted(t.get_text() for t in _leg.get_texts()) == ["2023", "2024"], "Legend 2023 və 2024 göstərməlidir (label=... + plt.legend())"
+  _st = sorted(l.get_linestyle() for l in _ls[:2])
+  assert _st == ["--", "-"] or set(_st) == {"--", "-"}, "2023 qırıq (--), 2024 bütöv (-) xətt olmalıdır"
+  assert _a.get_xlabel() == "Ay" and _a.get_ylabel() == "Gəlir (AZN)", "Ox adları: 'Ay' və 'Gəlir (AZN)'"
+  assert any(g.get_visible() for g in _a.get_xgridlines()), "Grid əlavə et: plt.grid(True)"
+  _d = _s.assign(Date=_pd.to_datetime(_s["Date"]))
+  _e = _d[_d["Date"].dt.year == 2024].groupby(_d["Date"].dt.month)["Total Revenue"].sum()
+  _y = [l for l in _ls if l.get_label() == "2024"][0].get_ydata()
+  assert _np.allclose(sorted(_y), sorted(_e.values)), "2024 xəttinin dəyərləri aylıq gəlir olmalıdır"
+hints:
+- g24 = df[il == 2024].groupby(df["Date"].dt.month)["Total Revenue"].sum()
+- plt.plot(g23.index, g23.values, linestyle="--", marker="o", label="2023")
+- plt.legend(); plt.grid(True); plt.xlabel("Ay"); plt.ylabel("Gəlir (AZN)")

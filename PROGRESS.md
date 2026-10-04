@@ -407,7 +407,8 @@ Mənbə: `Python_Day_1/2.pptx` (nəzəri) + `Python_Day_1/2.docx` (35 tapşırı
 - ✅ **Python Basics** (`content/courses/python-basics`) — köhnə Python4Business (Gün 1–2) + 6 yeni fəsil; 13 fəsil, 77 addım, 35 Python tapşırığı. Köhnə «Python4Business» kursu bazada qalıbsa, admin paneldən silin (yeni kurs onu əvəz edir).
 - ✅ **Python runtime:** pandas/matplotlib/seaborn (micropip) dəstəyi, son ifadənin Jupyter kimi göstərilməsi, `display()`, paket mesajlarının gizlədilməsi.
 - ✅ **Python Pandas** (`content/courses/python-pandas`, Gün 3–6) — 15 fəsil, 80 addım, 44 Python tapşırığı (həllər CPython-da Pyodide versiyaları ilə yoxlanılıb; CI-da `check:python` CDN-dən paketləri yükləyib yoxlayır).
-- ⏳ Qalan plan: Python for Data Analysis & Visualization (Gün 6–9), Python & SQL (Gün 9, sqlite3), Capstone (Gün 9 qiymətləndirilən tapşırıqlar). Datasetlər: `scripts/course-gen/py_datasets.py`.
+- ✅ **Python for Data Analysis & Visualization** (`content/courses/python-analysis-visualization`, Gün 6–9) — 10 fəsil, 42 addım, 21 tapşırıq: pandas/matplotlib/seaborn qrafikləri (testlər axes/patches/lines-ı yoxlayır), statistika və heatmap, FacetGrid, wordcloud, Plotly (nəzəri — brauzer mühiti interaktiv qrafiki göstərmir), reqressiya (polyfit, sklearn, statsmodels), e-poçt (MIME, parolsuz).
+- ⏳ Qalan plan: Python & SQL (Gün 9, sqlite3), Capstone (Gün 9 qiymətləndirilən tapşırıqlar). Datasetlər: `scripts/course-gen/py_datasets.py`.
 - ⚠️ `Python Day 7 _ File Attachment.py` faylında real görünən Gmail tətbiq parolu var — onu ləğv edin; kurslarda yalnız yer tutucular istifadə olunur.
 
 ## Növbəti mərhələ — digər kursların köçürülməsi (gözləyir)

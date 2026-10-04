@@ -1,0 +1,64 @@
+type: python
+title: Korrelyasiya və kovariasiya
+xp: 40
+estimated_minutes: 10
+instructions: |
+  Gün 9 (1): sifarişlərdə Sales ilə Profit arasındakı əlaqə; endirimin mənfəətə təsiri.
+
+  > 📁 **`sifarisler.csv`** — Superstore tipli sifarişlər (2023–2024, 5 ölkə): `OrderID`, `OrderDate`, `ShipDate`, `ShipMode`, `CustomerID`, `CustomerName`, `CustomerSegment`, `Country`, `City`, `ProductID`, `ProductName`, `Category`, `Sales`, `Quantity`, `Discount`, `Profit`.
+tasks:
+- Sales, Quantity, Discount, Profit sütunlarının korrelyasiya matrisi → corr.
+- Sales–Profit korrelyasiyası, 3 onluq → sales_profit.
+- Profit ilə ən güclü mənfi korrelyasiyası olan sütun (Profit-dən başqa) → menfi.
+- Sales–Profit kovariasiyası, 2 onluq → kov.
+dataset: datasets/sifarisler.csv
+starter_code: |
+  import pandas as pd
+
+  o = pd.read_csv("sifarisler.csv")
+  cols = ["Sales", "Quantity", "Discount", "Profit"]
+
+  corr = ...
+  sales_profit = ...
+  menfi = ...
+  kov = ...
+
+  print(sales_profit, menfi, kov)
+  corr
+solution: |
+  import pandas as pd
+
+  o = pd.read_csv("sifarisler.csv")
+  cols = ["Sales", "Quantity", "Discount", "Profit"]
+
+  corr = o[cols].corr()
+  sales_profit = round(corr.loc["Sales", "Profit"], 3)
+  menfi = corr["Profit"].drop("Profit").idxmin()
+  kov = round(o[cols].cov().loc["Sales", "Profit"], 2)
+
+  print(sales_profit, menfi, kov)
+  corr
+tests: |
+  import pandas as _pd
+  import numpy as _np
+  import matplotlib.pyplot as _plt
+  def _axes():
+      return [a for n in _plt.get_fignums() for a in _plt.figure(n).axes]
+  def _ax(title):
+      for a in _axes():
+          if a.get_title().strip() == title:
+              return a
+      _t = [a.get_title() for a in _axes()]
+      raise AssertionError(f"«{title}» başlıqlı qrafik tapılmadı (title=... ver). Tapılan başlıqlar: {_t}")
+
+  _o = _pd.read_csv("sifarisler.csv")
+
+  _c = _o[["Sales", "Quantity", "Discount", "Profit"]].corr()
+  assert isinstance(corr, _pd.DataFrame) and corr.shape == (4, 4) and _np.allclose(corr.values, _c.values), "corr = o[cols].corr()"
+  assert sales_profit == round(_c.loc["Sales", "Profit"], 3), f"sales_profit {round(_c.loc['Sales', 'Profit'], 3)} olmalıdır"
+  assert menfi == _c["Profit"].drop("Profit").idxmin(), f"menfi {_c['Profit'].drop('Profit').idxmin()!r} olmalıdır"
+  assert kov == round(_o[["Sales", "Profit"]].cov().loc["Sales", "Profit"], 2), "kov = o[cols].cov().loc['Sales', 'Profit']"
+hints:
+- corr = o[cols].corr(); corr.loc["Sales", "Profit"]
+- corr["Profit"].drop("Profit").idxmin() — özü ilə korrelyasiya (1.0) çıxarılır.
+- o[cols].cov().loc["Sales", "Profit"]

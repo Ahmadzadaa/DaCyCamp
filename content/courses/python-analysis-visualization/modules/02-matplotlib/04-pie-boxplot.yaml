@@ -1,0 +1,71 @@
+type: python
+title: Dairə və qutu qrafiki
+xp: 40
+estimated_minutes: 10
+instructions: |
+  Gün 7 (2, 5, 10): ödəniş üsullarının payı və kateqoriyalar üzrə qiymət yayılması.
+tasks:
+- 'Ödəniş üsullarının sayına görə plt.pie: labels, autopct="%1.1f%%", startangle=90, ilk dilim 0.1 kənara
+  (explode); title="Ödəniş üsulları".'
+- Yeni figure-də hər kateqoriyanın Unit Price dəyərlərinin qutu qrafiki (plt.boxplot, patch_artist=True,
+  labels=kateqoriyalar); title="Kateqoriyalar üzrə qiymət".
+dataset: datasets/satislar.csv
+starter_code: |
+  import pandas as pd
+  import matplotlib.pyplot as plt
+
+  df = pd.read_csv("satislar.csv")
+  odenis = df["Payment Method"].value_counts()
+  kateqoriyalar = sorted(df["Product Category"].unique())
+  qiymetler = [df[df["Product Category"] == k]["Unit Price"] for k in kateqoriyalar]
+
+  plt.figure()
+  # pie
+
+  plt.figure()
+  # boxplot
+solution: |
+  import pandas as pd
+  import matplotlib.pyplot as plt
+
+  df = pd.read_csv("satislar.csv")
+  odenis = df["Payment Method"].value_counts()
+  kateqoriyalar = sorted(df["Product Category"].unique())
+  qiymetler = [df[df["Product Category"] == k]["Unit Price"] for k in kateqoriyalar]
+
+  plt.figure()
+  plt.pie(odenis.values, labels=odenis.index, autopct="%1.1f%%", startangle=90,
+          explode=[0.1] + [0] * (len(odenis) - 1))
+  plt.title("Ödəniş üsulları")
+
+  plt.figure()
+  plt.boxplot(qiymetler, patch_artist=True, labels=kateqoriyalar)
+  plt.title("Kateqoriyalar üzrə qiymət")
+tests: |
+  import pandas as _pd
+  import numpy as _np
+  import matplotlib.pyplot as _plt
+  def _axes():
+      return [a for n in _plt.get_fignums() for a in _plt.figure(n).axes]
+  def _ax(title):
+      for a in _axes():
+          if a.get_title().strip() == title:
+              return a
+      _t = [a.get_title() for a in _axes()]
+      raise AssertionError(f"«{title}» başlıqlı qrafik tapılmadı (title=... ver). Tapılan başlıqlar: {_t}")
+
+  _s = _pd.read_csv("satislar.csv")
+
+  from matplotlib.patches import Wedge as _W, PathPatch as _PP
+  _p = _ax("Ödəniş üsulları")
+  _w = [x for x in _p.patches if isinstance(x, _W)]
+  assert len(_w) == 4, "Dairədə 4 dilim olmalıdır"
+  assert any("%" in t.get_text() for t in _p.texts), "autopct='%1.1f%%' əlavə et"
+  _c = [_np.hypot(*_np.subtract(_x.center, (0, 0))) for _x in _w]
+  assert max(_c) > 0.05, "İlk dilimi explode ilə kənara çıxar: explode=[0.1, 0, 0, 0]"
+  _b = _ax("Kateqoriyalar üzrə qiymət")
+  assert len([x for x in _b.patches if isinstance(x, _PP)]) == 5, "5 qutu olmalıdır (patch_artist=True)"
+hints:
+- plt.pie(odenis.values, labels=odenis.index, autopct="%1.1f%%", startangle=90, explode=[0.1, 0, 0, 0])
+- plt.boxplot(qiymetler, patch_artist=True, labels=kateqoriyalar)
+- Hər qrafikdən sonra plt.title(...) yaz.

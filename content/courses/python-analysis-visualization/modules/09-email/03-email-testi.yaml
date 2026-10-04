@@ -1,0 +1,38 @@
+type: quiz
+title: 'Test: e-poçt və təhlükəsizlik'
+xp: 25
+estimated_minutes: 5
+pass_score: 66
+questions:
+- text: Kodda real e-poçt parolu yazılıb və fayl paylaşılıb. Nə etməli?
+  options:
+  - Faylı silmək kifayətdir
+  - Parolu dərhal ləğv edib yenisini yaratmaq, parolu mühit dəyişəninə köçürmək
+  - Heç nə — fayl şəxsidir
+  - Parolu base64 ilə kodlaşdırmaq
+  correct:
+  - 2
+  explanation: Yayılmış parol ləğv edilməlidir; base64 şifrələmə deyil.
+- text: Hər addım məktubun hansı hissəsinə aiddir?
+  type: classify
+  buckets:
+  - name: Məktubu qurmaq (email.mime)
+    items:
+    - MIMEMultipart()
+    - MIMEText(mətn, "plain")
+    - encoders.encode_base64(hissə)
+  - name: Göndərmək (smtplib)
+    items:
+    - smtplib.SMTP(server, 587)
+    - server.starttls()
+    - server.send_message(msg)
+  explanation: MIME məktubun quruluşudur; smtplib serverə qoşulub göndərir.
+- text: 587 portu və `starttls()` nə üçündür?
+  options:
+  - Sürət üçün
+  - Əlaqəni şifrələmək üçün
+  - Əlavə faylları sıxmaq üçün
+  - Spam filtrindən keçmək üçün
+  correct:
+  - 2
+  explanation: STARTTLS əlaqəni şifrələnmiş kanala keçirir.

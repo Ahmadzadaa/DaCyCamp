@@ -1,0 +1,62 @@
+type: python
+title: barplot və countplot
+xp: 40
+estimated_minutes: 10
+instructions: |
+  Gün 7 (3) və Gün 8 (3): regionların gəliri və ödəniş üsulları.
+tasks:
+- 'sns.barplot: x="Region", y="Total Revenue", estimator="sum", errorbar=None; plt.title("Regionların
+  gəliri").'
+- 'Yeni figure-də sns.countplot: x="Payment Method"; plt.title("Ödəniş üsulları üzrə əməliyyat").'
+dataset: datasets/satislar.csv
+starter_code: |
+  import pandas as pd
+  import seaborn as sns
+  import matplotlib.pyplot as plt
+
+  df = pd.read_csv("satislar.csv")
+
+  plt.figure()
+  # barplot
+
+  plt.figure()
+  # countplot
+solution: |
+  import pandas as pd
+  import seaborn as sns
+  import matplotlib.pyplot as plt
+
+  df = pd.read_csv("satislar.csv")
+
+  plt.figure()
+  sns.barplot(data=df, x="Region", y="Total Revenue", estimator="sum", errorbar=None)
+  plt.title("Regionların gəliri")
+
+  plt.figure()
+  sns.countplot(data=df, x="Payment Method")
+  plt.title("Ödəniş üsulları üzrə əməliyyat")
+tests: |
+  import pandas as _pd
+  import numpy as _np
+  import matplotlib.pyplot as _plt
+  def _axes():
+      return [a for n in _plt.get_fignums() for a in _plt.figure(n).axes]
+  def _ax(title):
+      for a in _axes():
+          if a.get_title().strip() == title:
+              return a
+      _t = [a.get_title() for a in _axes()]
+      raise AssertionError(f"«{title}» başlıqlı qrafik tapılmadı (title=... ver). Tapılan başlıqlar: {_t}")
+
+  _s = _pd.read_csv("satislar.csv")
+
+  _b = _ax("Regionların gəliri")
+  _g = _s.groupby("Region")["Total Revenue"].sum()
+  assert sorted(round(p.get_height()) for p in _b.patches) == sorted(round(v) for v in _g.values), "Sütunlar regionların ümumi gəliri olmalıdır — estimator='sum'"
+  assert len(_b.get_lines()) == 0, "Etibar intervalı xətləri olmamalıdır — errorbar=None"
+  _c = _ax("Ödəniş üsulları üzrə əməliyyat")
+  assert sorted(round(p.get_height()) for p in _c.patches) == sorted(_s["Payment Method"].value_counts().tolist()), "countplot hər ödəniş üsulunun sayını göstərməlidir"
+hints:
+- sns.barplot(data=df, x="Region", y="Total Revenue", estimator="sum", errorbar=None)
+- sns.countplot(data=df, x="Payment Method")
+- estimator olmadan barplot ortanı göstərir.

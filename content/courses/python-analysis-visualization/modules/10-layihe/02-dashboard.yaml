@@ -1,0 +1,85 @@
+type: python
+title: 'Layihə 1: 2×3 dashboard'
+xp: 70
+estimated_minutes: 15
+instructions: |
+  Gün 7-nin qiymətləndirilən tapşırıqları bir figure-də: `plt.subplots(2, 3, figsize=(15, 8))`. Başlıqlar dəqiq aşağıdakı kimi olmalıdır.
+tasks:
+- 'axs[0, 0] — kateqoriyalar üzrə gəlir (bar): "Kateqoriyalar üzrə gəlir".'
+- 'axs[0, 1] — regionların gəlir payı (pie, autopct): "Regionların payı".'
+- 'axs[0, 2] — Apple məhsullarının aylıq satılan ədədi (line): "Apple satışları".'
+- 'axs[1, 0] — Units Sold vs Total Revenue (scatter): "Ədəd və gəlir"; axs[1, 1] — Unit Price histoqramı
+  (bins=20): "Qiymət paylanması".'
+- 'axs[1, 2] — regionlar üzrə Total Revenue qutu qrafiki (boxplot): "Regionlar üzrə yayılma"; plt.tight_layout().'
+dataset: datasets/satislar.csv
+starter_code: |
+  import pandas as pd
+  import matplotlib.pyplot as plt
+
+  df = pd.read_csv("satislar.csv")
+
+  fig, axs = plt.subplots(2, 3, figsize=(15, 8))
+solution: |
+  import pandas as pd
+  import matplotlib.pyplot as plt
+
+  df = pd.read_csv("satislar.csv")
+
+  fig, axs = plt.subplots(2, 3, figsize=(15, 8))
+
+  kat = df.groupby("Product Category")["Total Revenue"].sum()
+  axs[0, 0].bar(kat.index, kat.values)
+  axs[0, 0].set_title("Kateqoriyalar üzrə gəlir")
+  axs[0, 0].tick_params(axis="x", rotation=30)
+
+  reg = df.groupby("Region")["Total Revenue"].sum()
+  axs[0, 1].pie(reg.values, labels=reg.index, autopct="%1.1f%%")
+  axs[0, 1].set_title("Regionların payı")
+
+  apple = df[df["Product Name"].str.contains(r"^(?:iPhone|iPad|MacBook|AirPods|Apple)", regex=True)]
+  ay = apple.groupby(apple["Date"].str[:7])["Units Sold"].sum()
+  axs[0, 2].plot(range(len(ay)), ay.values, marker="o")
+  axs[0, 2].set_title("Apple satışları")
+
+  axs[1, 0].scatter(df["Units Sold"], df["Total Revenue"], alpha=0.4)
+  axs[1, 0].set_title("Ədəd və gəlir")
+
+  axs[1, 1].hist(df["Unit Price"], bins=20)
+  axs[1, 1].set_title("Qiymət paylanması")
+
+  regionlar = sorted(df["Region"].unique())
+  axs[1, 2].boxplot([df[df["Region"] == r]["Total Revenue"] for r in regionlar], labels=regionlar)
+  axs[1, 2].set_title("Regionlar üzrə yayılma")
+
+  plt.tight_layout()
+tests: |
+  import pandas as _pd
+  import numpy as _np
+  import matplotlib.pyplot as _plt
+  def _axes():
+      return [a for n in _plt.get_fignums() for a in _plt.figure(n).axes]
+  def _ax(title):
+      for a in _axes():
+          if a.get_title().strip() == title:
+              return a
+      _t = [a.get_title() for a in _axes()]
+      raise AssertionError(f"«{title}» başlıqlı qrafik tapılmadı (title=... ver). Tapılan başlıqlar: {_t}")
+
+  _s = _pd.read_csv("satislar.csv")
+
+  from matplotlib.patches import Wedge as _W
+  _f = [_plt.figure(n) for n in _plt.get_fignums() if len(_plt.figure(n).axes) == 6]
+  assert _f, "6 qrafikli figure olmalıdır: plt.subplots(2, 3)"
+  assert len(_ax("Kateqoriyalar üzrə gəlir").patches) == 5, "Kateqoriyalar — 5 sütun"
+  assert len([x for x in _ax("Regionların payı").patches if isinstance(x, _W)]) == 5, "Regionların payı — 5 dilim"
+  _ap = _s[_s["Product Name"].str.contains(r"^(?:iPhone|iPad|MacBook|AirPods|Apple)", regex=True)]
+  _ay = _ap.groupby(_ap["Date"].str[:7])["Units Sold"].sum()
+  _l = _ax("Apple satışları").get_lines()
+  assert _l and sorted(_l[0].get_ydata()) == sorted(_ay.values), "Apple satışları — Apple məhsullarının aylıq ədədi (iPhone, iPad, MacBook, AirPods, Apple Watch)"
+  assert len(_ax("Ədəd və gəlir").collections[0].get_offsets()) == len(_s), "Ədəd və gəlir — bütün əməliyyatlar"
+  assert len(_ax("Qiymət paylanması").patches) == 20, "Qiymət paylanması — bins=20"
+  assert len(_ax("Regionlar üzrə yayılma").get_xticklabels()) == 5, "Regionlar üzrə yayılma — 5 qutu"
+hints:
+- fig, axs = plt.subplots(2, 3, figsize=(15, 8)); hər axes-də set_title(...)
+- apple = df[df["Product Name"].str.contains(r"^(?:iPhone|iPad|MacBook|AirPods|Apple)", regex=True)]
+- axs[1, 2].boxplot([df[df["Region"] == r]["Total Revenue"] for r in regionlar], labels=regionlar)

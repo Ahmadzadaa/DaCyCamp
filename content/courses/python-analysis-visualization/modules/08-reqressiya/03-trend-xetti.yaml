@@ -1,0 +1,71 @@
+type: python
+title: Aylıq gəlirin trend xətti
+xp: 40
+estimated_minutes: 10
+instructions: |
+  Gün 7 (trend line): aylıq gəlir artır, yoxsa azalır? np.polyfit ilə xətti trend tap.
+tasks:
+- Aylar üzrə gəlir (24 ay) → ayliq; x = 0, 1, …, 23 (np.arange).
+- np.polyfit(x, ayliq.values, 1) ilə meyl və sabit → meyl, sabit (2 onluq).
+- Nöqtələri (scatter) və trend xəttini (qırmızı, "--", label="Trend xətti") çək; title="Gəlir trendi";
+  legend.
+- Trendə görə növbəti ayın (x = 24) proqnozu, 2 onluq → novbeti.
+dataset: datasets/satislar.csv
+starter_code: |
+  import pandas as pd
+  import numpy as np
+  import matplotlib.pyplot as plt
+
+  df = pd.read_csv("satislar.csv")
+
+  ayliq = ...
+  x = ...
+  meyl, sabit = 0, 0
+  novbeti = ...
+
+  plt.figure(figsize=(9, 4))
+solution: |
+  import pandas as pd
+  import numpy as np
+  import matplotlib.pyplot as plt
+
+  df = pd.read_csv("satislar.csv")
+
+  ayliq = df.groupby(df["Date"].str[:7])["Total Revenue"].sum()
+  x = np.arange(len(ayliq))
+  m_, s_ = np.polyfit(x, ayliq.values, 1)
+  meyl, sabit = round(m_, 2), round(s_, 2)
+  novbeti = round(m_ * 24 + s_, 2)
+
+  plt.figure(figsize=(9, 4))
+  plt.scatter(x, ayliq.values, label="Aylıq gəlir")
+  plt.plot(x, m_ * x + s_, color="red", linestyle="--", label="Trend xətti")
+  plt.title("Gəlir trendi")
+  plt.legend()
+tests: |
+  import pandas as _pd
+  import numpy as _np
+  import matplotlib.pyplot as _plt
+  def _axes():
+      return [a for n in _plt.get_fignums() for a in _plt.figure(n).axes]
+  def _ax(title):
+      for a in _axes():
+          if a.get_title().strip() == title:
+              return a
+      _t = [a.get_title() for a in _axes()]
+      raise AssertionError(f"«{title}» başlıqlı qrafik tapılmadı (title=... ver). Tapılan başlıqlar: {_t}")
+
+  _s = _pd.read_csv("satislar.csv")
+
+  _m = _s.groupby(_s["Date"].str[:7])["Total Revenue"].sum()
+  _k, _b = _np.polyfit(_np.arange(24), _m.values, 1)
+  assert (meyl, sabit) == (round(_k, 2), round(_b, 2)), f"meyl, sabit = {round(_k, 2)}, {round(_b, 2)} olmalıdır"
+  assert novbeti == round(_k * 24 + _b, 2), f"novbeti {round(_k * 24 + _b, 2)} olmalıdır"
+  _a = _ax("Gəlir trendi")
+  assert _a.collections and len(_a.collections[0].get_offsets()) == 24, "24 aylıq nöqtə (scatter) olmalıdır"
+  _tl = [l for l in _a.get_lines() if l.get_label() == "Trend xətti"]
+  assert _tl and _tl[0].get_linestyle() == "--", "label='Trend xətti', linestyle='--' olan xətt olmalıdır"
+hints:
+- ayliq = df.groupby(df["Date"].str[:7])["Total Revenue"].sum(); x = np.arange(len(ayliq))
+- m_, s_ = np.polyfit(x, ayliq.values, 1); trend = m_ * x + s_
+- novbeti = round(m_ * 24 + s_, 2)

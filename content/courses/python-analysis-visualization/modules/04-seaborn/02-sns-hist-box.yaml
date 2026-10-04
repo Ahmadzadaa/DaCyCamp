@@ -1,0 +1,60 @@
+type: python
+title: histplot və boxplot
+xp: 40
+estimated_minutes: 10
+instructions: |
+  Gün 7 (5, 10): paylanmalar seaborn ilə.
+tasks:
+- 'sns.histplot: Total Revenue, bins=20; plt.title("Gəlirin paylanması").'
+- 'Yeni figure-də sns.boxplot: x="Region", y="Total Revenue"; plt.title("Regionlar üzrə satış").'
+dataset: datasets/satislar.csv
+starter_code: |
+  import pandas as pd
+  import seaborn as sns
+  import matplotlib.pyplot as plt
+
+  df = pd.read_csv("satislar.csv")
+
+  plt.figure()
+  # histplot
+
+  plt.figure()
+  # boxplot
+solution: |
+  import pandas as pd
+  import seaborn as sns
+  import matplotlib.pyplot as plt
+
+  df = pd.read_csv("satislar.csv")
+
+  plt.figure()
+  sns.histplot(data=df, x="Total Revenue", bins=20)
+  plt.title("Gəlirin paylanması")
+
+  plt.figure()
+  sns.boxplot(data=df, x="Region", y="Total Revenue")
+  plt.title("Regionlar üzrə satış")
+tests: |
+  import pandas as _pd
+  import numpy as _np
+  import matplotlib.pyplot as _plt
+  def _axes():
+      return [a for n in _plt.get_fignums() for a in _plt.figure(n).axes]
+  def _ax(title):
+      for a in _axes():
+          if a.get_title().strip() == title:
+              return a
+      _t = [a.get_title() for a in _axes()]
+      raise AssertionError(f"«{title}» başlıqlı qrafik tapılmadı (title=... ver). Tapılan başlıqlar: {_t}")
+
+  _s = _pd.read_csv("satislar.csv")
+
+  _h = _ax("Gəlirin paylanması")
+  assert len(_h.patches) == 20, f"histplot-da 20 sütun olmalıdır, səndə {len(_h.patches)}"
+  _b = _ax("Regionlar üzrə satış")
+  assert len(_b.get_xticklabels()) == 5 and _b.get_xlabel() == "Region", "boxplot x='Region' olmalıdır (5 qutu)"
+  assert "sns.histplot(" in dacy.code and "sns.boxplot(" in dacy.code, "seaborn funksiyalarından istifadə et"
+hints:
+- sns.histplot(data=df, x="Total Revenue", bins=20)
+- sns.boxplot(data=df, x="Region", y="Total Revenue")
+- 'Başlıq: plt.title(...)'

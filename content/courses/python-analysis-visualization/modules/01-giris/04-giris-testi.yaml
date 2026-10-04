@@ -1,0 +1,32 @@
+type: quiz
+title: 'Test: qrafik növləri'
+xp: 20
+estimated_minutes: 4
+pass_score: 100
+questions:
+- text: 'Hər sual üçün ən uyğun qrafik növü:'
+  type: classify
+  buckets:
+  - name: line
+    items:
+    - Son 24 ayda gəlirin dəyişməsi
+  - name: bar / barh
+    items:
+    - Regionların satışını müqayisə etmək
+    - Top 10 məhsul
+  - name: hist
+    items:
+    - Sifariş məbləğlərinin paylanması
+  - name: pie
+    items:
+    - Ödəniş üsullarının payı (4 hissə)
+  explanation: Zaman — xətt; müqayisə — sütun; paylanma — histoqram; az hissəli bütöv — dairə.
+- text: Ardıcıl iki `.plot()` çağırışı niyə eyni qrafikdə görünür?
+  options:
+  - pandas-ın xətasıdır
+  - İkisi də cari figure-ə çəkilir — ayırmaq üçün plt.figure() lazımdır
+  - kind eyni olduğuna görə
+  - show() yazılmadığına görə
+  correct:
+  - 2
+  explanation: matplotlib cari axes-ə çəkir; plt.figure() yeni pəncərə açır.
