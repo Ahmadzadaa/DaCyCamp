@@ -1,0 +1,53 @@
+type: quiz
+title: 'Test: sual → alət'
+xp: 30
+estimated_minutes: 6
+pass_score: 75
+questions:
+- text: Hər sualı uyğun pandas alətinə yerləşdir.
+  type: classify
+  buckets:
+  - name: groupby + sum/mean
+    items:
+    - ShipMode üzrə ümumi Sales
+    - Kateqoriyalar üzrə orta Profit
+  - name: corr()
+    items:
+    - Sales ilə Profit arasındakı əlaqə
+    - Discount artdıqca Profit azalırmı?
+  - name: crosstab / pivot_table
+    items:
+    - Hər ölkə üzrə hər seqmentdə müştəri sayı
+    - Şəhər × kateqoriya satış cədvəli
+  - name: .dt.days
+    items:
+    - Sifarişdən göndərməyə keçən gün
+    - Müştərinin son alışından keçən gün
+  explanation: Aqreqasiya — groupby; əlaqə — corr; iki ölçülü say — crosstab; tarix fərqi — Timedelta.dt.days.
+- text: Müştəri sayını hansı sütunla saymaq düzgündür?
+  options:
+  - CustomerName
+  - CustomerID
+  - City
+  - OrderID
+  correct:
+  - 2
+  explanation: Adlar təkrarlana bilər; ID unikaldır.
+- text: Bir sifarişdə 3 məhsul varsa, `sifarisler.csv`-də neçə sətir olur?
+  options:
+  - '1'
+  - '3'
+  - '0'
+  - Məhsul sayından asılı deyil
+  correct:
+  - 2
+  explanation: Hər məhsul sətri ayrıca sətirdir; sifariş sayı üçün OrderID.nunique().
+- text: '`OrderDate` mətn kimi oxunubsa, `ShipDate - OrderDate` nə edər?'
+  options:
+  - Gün sayını qaytarar
+  - TypeError verər
+  - NaN qaytarar
+  - Tarixləri birləşdirər
+  correct:
+  - 2
+  explanation: Mətnləri çıxmaq olmur — əvvəl parse_dates və ya pd.to_datetime.

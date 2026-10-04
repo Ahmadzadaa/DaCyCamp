@@ -1,0 +1,40 @@
+type: quiz
+title: 'Test: məhsul təhlili'
+xp: 25
+estimated_minutes: 5
+pass_score: 66
+questions:
+- text: '`df.groupby(["Category", "ProductID"])["Sales"].sum().idxmax()` nə qaytarır?'
+  options:
+  - ProductID
+  - ("Category", "ProductID") tuple-ı
+  - Ən böyük Sales dəyəri
+  - DataFrame
+  correct:
+  - 2
+  explanation: MultiIndex olanda idxmax tuple qaytarır.
+- text: Uzun məhsul adları olan 15 məhsulu müqayisə etmək üçün ən oxunaqlı qrafik?
+  options:
+  - Pie
+  - Üfüqi sütun qrafiki (barh)
+  - Xətt qrafiki
+  - Histogram
+  correct:
+  - 2
+  explanation: barh-da adlar y oxunda rahat oxunur; xətt qrafiki zaman üçündür.
+- text: 'Məhsulu qrafikdəki yerinə görə təsnif et (scatter: x = Sales, y = Profit).'
+  type: classify
+  buckets:
+  - name: Ulduz ⭐
+    items:
+    - 'Sağ yuxarı: çox satış, çox mənfəət'
+  - name: Diqqət ⚠️
+    items:
+    - 'Sağ aşağı: çox satış, az mənfəət'
+  - name: Niş 💎
+    items:
+    - 'Sol yuxarı: az satış, yüksək mənfəət'
+  - name: Sual altında ❓
+    items:
+    - 'Sol aşağı: az satış, az mənfəət'
+  explanation: «Diqqət» məhsulları adətən endirim və qiymət siyasətinin yoxlanmasını tələb edir.

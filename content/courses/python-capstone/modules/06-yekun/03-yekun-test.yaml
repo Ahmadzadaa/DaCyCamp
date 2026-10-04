@@ -1,0 +1,70 @@
+type: quiz
+title: 'Yekun test: Sales Analytics'
+xp: 50
+estimated_minutes: 8
+pass_score: 70
+questions:
+- text: Bir sifarişdə neçə məhsul olduğunu nəzərə alaraq sifariş sayını necə tapırsan?
+  options:
+  - len(df)
+  - df["OrderID"].nunique()
+  - df["OrderID"].count()
+  - df["Quantity"].sum()
+  correct:
+  - 2
+  explanation: count və len sətirləri sayır.
+- text: Ölkə üzrə mənfəəti azalan sırada göstərən ifadə?
+  options:
+  - df.groupby("Country")["Profit"].sum().sort_values(ascending=False)
+  - df.sort_values("Profit").groupby("Country")
+  - df["Country"].value_counts()
+  - df.pivot("Country", "Profit")
+  correct:
+  - 1
+  explanation: value_counts sətir sayıdır, mənfəət deyil.
+- text: Hansılar «Risk altında» seqmenti üçün düzgün addımlardır?
+  type: multiple
+  options:
+  - Fərdi geri qaytarma təklifi göndərmək
+  - Onları bazadan silmək
+  - Niyə getdiklərini soruşmaq (sorğu)
+  - Çempionlarla eyni VIP kampaniyaya salmaq
+  correct:
+  - 1
+  - 3
+  explanation: Risk altındakılar — əvvəlki dəyərli müştərilər; onları geri qaytarmaq yeni müştəri tapmaqdan
+    ucuzdur.
+- text: Gün 9 sualını həll edən koda uyğunlaşdır.
+  type: classify
+  buckets:
+  - name: Çatdırılma müddəti
+    items:
+    - (df["ShipDate"] - df["OrderDate"]).dt.days
+  - name: Korrelyasiya
+    items:
+    - df["Sales"].corr(df["Profit"])
+  - name: Top 2 ölkə
+    items:
+    - df.groupby("Country")["Profit"].sum().nlargest(2)
+  - name: Ölkə × seqment say
+    items:
+    - pd.crosstab(rfm["Country"], rfm["Seqment"])
+  explanation: Bu 4 sətir layihənin skeletidir.
+- text: Kateqoriya üzrə satış lideri ilə mənfəət lideri fərqli məhsullardır. Bu nə deməkdir?
+  options:
+  - Data səhvdir
+  - Çox satılan məhsul aşağı marjalıdır — qiymət/endirim siyasətinə baxmaq lazımdır
+  - Mənfəət hesablanmayıb
+  - Fərq yoxdur
+  correct:
+  - 2
+  explanation: Satış həcmi və mənfəətlilik fərqli şeylərdir.
+- text: Dashboard-da hər qrafikin başlığı ideal halda nə olmalıdır?
+  options:
+  - Sütunun adı
+  - Qrafikin göstərdiyi əsas nəticə (məsələn, «Mənfəətin yarıdan çoxu iki ölkədən gəlir»)
+  - Boş
+  - Faylın adı
+  correct:
+  - 2
+  explanation: Oxucu başlığı oxuyub nəticəni bilməlidir.

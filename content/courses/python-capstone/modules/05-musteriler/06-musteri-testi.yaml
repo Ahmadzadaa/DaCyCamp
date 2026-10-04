@@ -1,0 +1,51 @@
+type: quiz
+title: 'Test: müştəri təhlili'
+xp: 30
+estimated_minutes: 6
+pass_score: 75
+questions:
+- text: Adla qruplaşdıranda «Zaur Quliyeva» birinci çıxdı, ID ilə — C-1099. Səbəb?
+  options:
+  - Hesablama xətası
+  - Eyni adlı 4 fərqli müştərinin alışları adla qruplaşdırmada birləşib
+  - C-1099 sifarişləri ləğv edilib
+  - CustomerID mətndir
+  correct:
+  - 2
+  explanation: Hesablama ID ilə, göstərmə adla.
+- text: Müştərini RFM seqmentinə yerləşdir.
+  type: classify
+  buckets:
+  - name: Çempion
+    items:
+    - 'R=4, F=4: dünən aldı, ildə 15 sifariş'
+    - R=3, F=3
+  - name: Risk altında
+    items:
+    - 'R=1, F=4: əvvəllər tez-tez alırdı, 8 aydır yoxdur'
+  - name: Perspektivli
+    items:
+    - 'R=4, F=1: ilk alışını keçən həftə edib'
+  - name: Yuxuda
+    items:
+    - 'R=1, F=1: bir dəfə alıb, çoxdan'
+  explanation: 'R × F matrisi: yaxınlıq və tezlik.'
+- text: Recency balı üçün qcut etiketləri niyə `[4, 3, 2, 1]`-dir?
+  options:
+  - Səhvdir, [1, 2, 3, 4] olmalıdır
+  - Az gün keçməsi yaxşıdır, ona görə ən kiçik Recency ən yüksək balı alır
+  - qcut yalnız tərs sıra qəbul edir
+  - Recency mənfi ədəddir
+  correct:
+  - 2
+  explanation: F və M-də çox yaxşıdır, R-də az.
+- text: '`rank(method="first")` qcut-dan əvvəl niyə lazımdır?'
+  options:
+  - Sürət üçün
+  - Bərabər dəyərlər çox olanda qcut sərhədləri təkrarlanır və xəta verir; rank hər müştəriyə unikal yer
+    verir
+  - Dəyərləri yuvarlaqlaşdırır
+  - NaN-ları silir
+  correct:
+  - 2
+  explanation: Məsələn, Frequency-də çox müştərinin 7 sifarişi ola bilər — «Bin edges must be unique».

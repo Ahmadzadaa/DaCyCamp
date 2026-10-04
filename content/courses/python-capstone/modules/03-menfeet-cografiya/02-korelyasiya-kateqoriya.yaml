@@ -1,0 +1,69 @@
+type: python
+title: Sales ~ Profit əlaqəsi və kateqoriyalar
+xp: 40
+estimated_minutes: 12
+instructions: |
+  Gün 9-un 1-ci və 2-ci sualları: korrelyasiya və kateqoriyaların ortalama göstəriciləri, üstəlik marja.
+tasks:
+- Sales və Profit arasındakı korrelyasiya (3 rəqəm) → korr.
+- 'Korrelyasiyanın gücünü cədvələ əsasən mətnlə yaz: "zəif", "orta" və ya "güclü" → guc.'
+- 'Kateqoriyalar üzrə orta Sales və orta Profit → kat_orta (sütunlar: Sales, Profit; Profit-ə görə azalan).'
+- Kateqoriyalar üzrə marja % = Profit cəmi / Sales cəmi × 100, 1 rəqəm → marja (Series, azalan).
+- Ən yüksək marjalı kateqoriya → en_marjali.
+dataset: datasets/sifarisler.csv
+starter_code: |
+  import pandas as pd
+
+  df = pd.read_csv("sifarisler.csv", parse_dates=["OrderDate", "ShipDate"])
+
+  korr = ...
+  guc = ...
+
+  kat_orta = ...
+  marja = ...
+  en_marjali = ...
+
+  print("r =", korr, "→", guc, "| Ən marjalı:", en_marjali)
+  print(marja)
+  kat_orta
+solution: |
+  import pandas as pd
+
+  df = pd.read_csv("sifarisler.csv", parse_dates=["OrderDate", "ShipDate"])
+
+  korr = round(df["Sales"].corr(df["Profit"]), 3)
+  if abs(korr) >= 0.7:
+      guc = "güclü"
+  elif abs(korr) >= 0.3:
+      guc = "orta"
+  else:
+      guc = "zəif"
+
+  kat_orta = df.groupby("Category")[["Sales", "Profit"]].mean().sort_values("Profit", ascending=False)
+  cem = df.groupby("Category")[["Sales", "Profit"]].sum()
+  marja = (cem["Profit"] / cem["Sales"] * 100).round(1).sort_values(ascending=False)
+  en_marjali = marja.idxmax()
+
+  print("r =", korr, "→", guc, "| Ən marjalı:", en_marjali)
+  print(marja)
+  kat_orta
+tests: |
+  import pandas as _pd
+  import numpy as _np
+  _o = _pd.read_csv("sifarisler.csv", parse_dates=["OrderDate", "ShipDate"])
+
+  _k = round(_o["Sales"].corr(_o["Profit"]), 3)
+  assert korr == _k, f"korr {_k} olmalıdır: round(df['Sales'].corr(df['Profit']), 3)"
+  _gc = "güclü" if abs(_k) >= 0.7 else ("orta" if abs(_k) >= 0.3 else "zəif")
+  assert guc == _gc, f"r = {_k} üçün guc «{_gc}» olmalıdır (0.3-dən kiçik — zəif, 0.3–0.7 — orta, 0.7+ — güclü)"
+  _m = _o.groupby("Category")[["Sales", "Profit"]].mean().sort_values("Profit", ascending=False)
+  assert isinstance(kat_orta, _pd.DataFrame) and list(kat_orta.columns) == ["Sales", "Profit"], "kat_orta sütunları: Sales, Profit"
+  assert list(kat_orta.index) == list(_m.index) and _np.allclose(kat_orta.values, _m.values), "kat_orta: orta (mean) dəyərlər, Profit-ə görə azalan"
+  _c = _o.groupby("Category")[["Sales", "Profit"]].sum()
+  _mj = (_c["Profit"] / _c["Sales"] * 100).round(1).sort_values(ascending=False)
+  assert isinstance(marja, _pd.Series) and list(marja.index) == list(_mj.index) and _np.allclose(marja.values, _mj.values), f"marja düzgün deyil (cəmlərin nisbəti, sətir marjalarının ortası yox): {_mj.to_dict()}"
+  assert en_marjali == _mj.idxmax(), f"en_marjali {_mj.idxmax()} olmalıdır"
+hints:
+- korr = round(df["Sales"].corr(df["Profit"]), 3); guc üçün if/elif/else və abs(korr)
+- df.groupby("Category")[["Sales", "Profit"]].mean().sort_values("Profit", ascending=False)
+- cem = df.groupby("Category")[["Sales", "Profit"]].sum(); marja = (cem["Profit"] / cem["Sales"] * 100).round(1)

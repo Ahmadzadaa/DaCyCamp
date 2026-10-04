@@ -11,6 +11,7 @@ yaratmaq və davam etdirmək üçündür.
 | `c5_pandas.py` | Python Pandas (15 fəsil, 80 addım, 44 tapşırıq) | hazır, repoda |
 | `c6_viz.py` | Python for Data Analysis & Visualization (10 fəsil, 42 addım, 21 tapşırıq) | hazır, repoda |
 | `c7_sql.py` | Python & SQL: Working with Databases (5 fəsil, 17 addım, 7 tapşırıq) | hazır, repoda |
+| `c8_capstone.py` | Python Capstone: Sales Analytics Project (6 fəsil, 24 addım, 10 tapşırıq) | hazır, repoda |
 | `py_datasets.py` | Sintetik datasetlər (deterministik). xlsx üçün pandas+openpyxl lazımdır | — |
 | `pyverify.py` | CPython-da (Pyodide ilə eyni paket versiyaları) həll keçir / starter keçmir yoxlaması | — |
 | `validate-package.cjs` | Paketi shared sxemləri ilə yoxlayır (`apps/api` qovluğundan işlədin) | — |

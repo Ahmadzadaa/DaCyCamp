@@ -1,0 +1,73 @@
+type: python
+title: 'Məhsullar: satış lideri, mənfəət lideri, kateqoriya liderləri'
+xp: 40
+estimated_minutes: 12
+instructions: |
+  Gün 9-un 6-cı və 12-ci sualları: ProductID üzrə Sales və Profit müqayisəsi və hər kateqoriyanın top məhsulu.
+tasks:
+- 'ProductID üzrə xülasə → mehsul (DataFrame, indeks ProductID): ProductName (ilk dəyər), Sales cəmi,
+  Profit cəmi, Marja % (1 rəqəm); Sales-ə görə azalan.'
+- Ən çox satış gətirən məhsulun ProductID-si → satis_lideri; ən çox mənfəət gətirənin → menfeet_lideri.
+- 'Hər Category üçün Sales-ə görə top ProductID → kat_lider_satis (dict: kateqoriya → ProductID).'
+- Hər Category üçün Profit-ə görə top ProductID → kat_lider_menfeet (dict).
+dataset: datasets/sifarisler.csv
+starter_code: |
+  import pandas as pd
+
+  df = pd.read_csv("sifarisler.csv", parse_dates=["OrderDate", "ShipDate"])
+
+  mehsul = ...
+  satis_lideri = ...
+  menfeet_lideri = ...
+  kat_lider_satis = ...
+  kat_lider_menfeet = ...
+
+  print("Satış lideri:", satis_lideri, "| Mənfəət lideri:", menfeet_lideri)
+  print(kat_lider_satis)
+  print(kat_lider_menfeet)
+  mehsul.head()
+solution: |
+  import pandas as pd
+
+  df = pd.read_csv("sifarisler.csv", parse_dates=["OrderDate", "ShipDate"])
+
+  mehsul = (
+      df.groupby("ProductID")
+      .agg(ProductName=("ProductName", "first"), Sales=("Sales", "sum"), Profit=("Profit", "sum"))
+      .sort_values("Sales", ascending=False)
+  )
+  mehsul["Marja"] = (mehsul["Profit"] / mehsul["Sales"] * 100).round(1)
+  satis_lideri = mehsul["Sales"].idxmax()
+  menfeet_lideri = mehsul["Profit"].idxmax()
+
+  kp = df.groupby(["Category", "ProductID"])[["Sales", "Profit"]].sum().reset_index()
+  kat_lider_satis = dict(kp.sort_values("Sales", ascending=False).drop_duplicates("Category")[["Category", "ProductID"]].values)
+  kat_lider_menfeet = dict(kp.sort_values("Profit", ascending=False).drop_duplicates("Category")[["Category", "ProductID"]].values)
+
+  print("Satış lideri:", satis_lideri, "| Mənfəət lideri:", menfeet_lideri)
+  print(kat_lider_satis)
+  print(kat_lider_menfeet)
+  mehsul.head()
+tests: |
+  import pandas as _pd
+  import numpy as _np
+  _o = _pd.read_csv("sifarisler.csv", parse_dates=["OrderDate", "ShipDate"])
+
+  _m = _o.groupby("ProductID").agg(ProductName=("ProductName", "first"), Sales=("Sales", "sum"), Profit=("Profit", "sum")).sort_values("Sales", ascending=False)
+  _m["Marja"] = (_m["Profit"] / _m["Sales"] * 100).round(1)
+  assert isinstance(mehsul, _pd.DataFrame) and list(mehsul.columns) == ["ProductName", "Sales", "Profit", "Marja"], "mehsul sütunları: ProductName, Sales, Profit, Marja"
+  assert list(mehsul.index) == list(_m.index), "mehsul: indeks ProductID, Sales-ə görə azalan"
+  assert _np.allclose(mehsul[["Sales", "Profit", "Marja"]].values, _m[["Sales", "Profit", "Marja"]].values) and list(mehsul["ProductName"]) == list(_m["ProductName"]), "mehsul dəyərləri düzgün deyil"
+  assert satis_lideri == _m["Sales"].idxmax(), f"satis_lideri {_m['Sales'].idxmax()} olmalıdır"
+  assert menfeet_lideri == _m["Profit"].idxmax(), f"menfeet_lideri {_m['Profit'].idxmax()} olmalıdır"
+  _kp = _o.groupby(["Category", "ProductID"])[["Sales", "Profit"]].sum()
+  _ks = {k: v for k, v in _kp["Sales"].groupby(level=0).idxmax().map(lambda t: t[1]).items()}
+  _km = {k: v for k, v in _kp["Profit"].groupby(level=0).idxmax().map(lambda t: t[1]).items()}
+  assert isinstance(kat_lider_satis, dict) and {str(k): str(v) for k, v in kat_lider_satis.items()} == _ks, f"kat_lider_satis {_ks} olmalıdır"
+  assert isinstance(kat_lider_menfeet, dict) and {str(k): str(v) for k, v in kat_lider_menfeet.items()} == _km, f"kat_lider_menfeet {_km} olmalıdır"
+hints:
+- agg(ProductName=("ProductName", "first"), Sales=("Sales", "sum"), Profit=("Profit", "sum"))
+- 'Marja: mehsul["Profit"] / mehsul["Sales"] * 100, sonra .round(1)'
+- kp = df.groupby(["Category", "ProductID"])[["Sales", "Profit"]].sum().reset_index(); kp.sort_values("Sales",
+  ascending=False).drop_duplicates("Category")
+- dict(cədvəl[["Category", "ProductID"]].values) — iki sütundan lüğət

@@ -1,0 +1,36 @@
+type: quiz
+title: 'Test: yoxlama və çatdırılma'
+xp: 25
+estimated_minutes: 5
+pass_score: 66
+questions:
+- text: '`(df["ShipDate"] - df["OrderDate"])` nəticəsinin tipi nədir?'
+  options:
+  - int
+  - Timedelta (timedelta64)
+  - datetime64
+  - str
+  correct:
+  - 2
+  explanation: Tarixlərin fərqi Timedelta-dır; gün sayı üçün .dt.days.
+- text: Standard Class ən çox satış gətirir. Bu, onun ən yaxşı çatdırılma növü olduğunu göstərirmi?
+  options:
+  - Bəli, satış həmişə keyfiyyət deməkdir
+  - Yox — sadəcə ən çox istifadə olunan (defolt, ucuz) növdür; sürət və qiymətlə birlikdə qiymətləndirilməlidir
+  - Bəli, çünki ən sürətlidir
+  - Yox, çünki Same Day ən çox satır
+  correct:
+  - 2
+  explanation: Böyük cəm çox vaxt böyük say deməkdir. Ortalamalara və müddətə də bax.
+- text: Named aggregation (`agg(ad=("sütun", "funksiya"))`) haqqında hansılar doğrudur?
+  type: multiple
+  options:
+  - Nəticə sütunlarının adını özün verirsən
+  - Bir neçə sütun üzrə fərqli funksiyalar tətbiq edə bilərsən
+  - Yalnız sum işləyir
+  - Nəticə DataFrame olur
+  correct:
+  - 1
+  - 2
+  - 4
+  explanation: 'agg istənilən aqreqasiya funksiyasını qəbul edir: sum, mean, nunique, lambda...'

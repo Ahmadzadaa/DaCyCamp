@@ -1,0 +1,40 @@
+type: quiz
+title: 'Test: mənfəət və coğrafiya'
+xp: 25
+estimated_minutes: 5
+pass_score: 66
+questions:
+- text: r(Sales, Profit) ≈ 0.28 çıxdı. Ən düzgün şərh hansıdır?
+  options:
+  - Satış artdıqca mənfəət həmişə artır
+  - 'Zəif müsbət əlaqə: böyük satışlar mənfəətə zəmanət vermir (endirim, maya dəyəri)'
+  - Heç bir əlaqə yoxdur
+  - Satış mənfəəti azaldır
+  correct:
+  - 2
+  explanation: 0.28 zəif müsbətdir. Bu, mənfəətin endirim və məhsul qarışığından da asılı olduğunu göstərir.
+- text: Kateqoriya marjasını necə hesablamaq düzgündür?
+  options:
+  - Hər sətrin Profit/Sales nisbətinin ortalaması
+  - Kateqoriyanın Profit cəmi / Sales cəmi
+  - Profit-in ortalaması / Sales-in maksimumu
+  - Sales cəmi / Profit cəmi
+  correct:
+  - 2
+  explanation: Sətir marjalarının ortası kiçik sifarişlərə həddən artıq çəki verir.
+- text: Hansı ifadə nə qaytarır?
+  type: classify
+  buckets:
+  - name: Series (dəyərlər)
+    items:
+    - s.nlargest(2)
+    - s.sort_values().head(2)
+  - name: Bir etiket (ad)
+    items:
+    - s.idxmax()
+    - s.idxmin()
+  - name: Etiketlər siyahısı
+    items:
+    - s.head(2).index.tolist()
+    - list(s.nlargest(3).index)
+  explanation: nlargest/head Series qaytarır; idxmax bir etiket; .index.tolist() — adlar siyahısı.

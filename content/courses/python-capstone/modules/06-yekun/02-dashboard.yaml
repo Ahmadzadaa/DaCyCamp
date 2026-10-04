@@ -1,0 +1,97 @@
+type: python
+title: Yekun dashboard (2 × 2)
+xp: 40
+estimated_minutes: 15
+instructions: |
+  Layihənin son addımı: əsas nəticələri bir şəkildə birləşdir.
+tasks:
+- fig, axes = plt.subplots(2, 2, figsize=(14, 9)); fig.suptitle("DaCy Store — 2023–2024 satış təhlili").
+- 'axes[0, 0]: aylıq Sales (resample("ME").sum()), xətt qrafiki, başlıq "Aylıq satış".'
+- 'axes[0, 1]: ölkələr üzrə Profit cəmi, azalan, sütun (bar), başlıq "Ölkələr üzrə mənfəət".'
+- 'axes[1, 0]: kateqoriya marjası % (Profit cəmi / Sales cəmi × 100), barh, başlıq "Kateqoriya marjası,
+  %".'
+- 'axes[1, 1]: ShipMode üzrə Sales payı, pie (autopct="%1.0f%%"), başlıq "ShipMode üzrə satış".'
+- 'Ümumi göstəricilər: umumi_satis, umumi_menfeet (2 rəqəm), umumi_marja (% , 1 rəqəm).'
+dataset: datasets/sifarisler.csv
+starter_code: |
+  import pandas as pd
+  import matplotlib.pyplot as plt
+
+  df = pd.read_csv("sifarisler.csv", parse_dates=["OrderDate", "ShipDate"])
+
+  umumi_satis = ...
+  umumi_menfeet = ...
+  umumi_marja = ...
+
+  fig, axes = plt.subplots(2, 2, figsize=(14, 9))
+  fig.suptitle("DaCy Store — 2023–2024 satış təhlili", fontsize=16)
+
+  # 4 qrafik
+
+  plt.tight_layout()
+  plt.show()
+  print(f"Satış: {umumi_satis} AZN | Mənfəət: {umumi_menfeet} AZN | Marja: {umumi_marja}%")
+solution: |
+  import pandas as pd
+  import matplotlib.pyplot as plt
+
+  df = pd.read_csv("sifarisler.csv", parse_dates=["OrderDate", "ShipDate"])
+
+  umumi_satis = round(df["Sales"].sum(), 2)
+  umumi_menfeet = round(df["Profit"].sum(), 2)
+  umumi_marja = round(umumi_menfeet / umumi_satis * 100, 1)
+
+  ayliq = df.set_index("OrderDate")["Sales"].resample("ME").sum()
+  olke = df.groupby("Country")["Profit"].sum().sort_values(ascending=False)
+  k = df.groupby("Category")[["Sales", "Profit"]].sum()
+  marja = (k["Profit"] / k["Sales"] * 100).sort_values()
+  mode = df.groupby("ShipMode")["Sales"].sum()
+
+  fig, axes = plt.subplots(2, 2, figsize=(14, 9))
+  fig.suptitle("DaCy Store — 2023–2024 satış təhlili", fontsize=16)
+
+  ayliq.plot(ax=axes[0, 0], title="Aylıq satış")
+  olke.plot(kind="bar", ax=axes[0, 1], title="Ölkələr üzrə mənfəət", color="seagreen")
+  marja.plot(kind="barh", ax=axes[1, 0], title="Kateqoriya marjası, %", color="orange")
+  mode.plot(kind="pie", ax=axes[1, 1], title="ShipMode üzrə satış", autopct="%1.0f%%")
+  axes[1, 1].set_ylabel("")
+
+  plt.tight_layout()
+  plt.show()
+  print(f"Satış: {umumi_satis} AZN | Mənfəət: {umumi_menfeet} AZN | Marja: {umumi_marja}%")
+tests: |
+  import pandas as _pd
+  import numpy as _np
+  _o = _pd.read_csv("sifarisler.csv", parse_dates=["OrderDate", "ShipDate"])
+
+  import matplotlib.pyplot as _plt
+  def _axes():
+      return [a for n in _plt.get_fignums() for a in _plt.figure(n).axes]
+  def _ax(title):
+      for a in _axes():
+          if a.get_title().strip() == title:
+              return a
+      _t = [a.get_title() for a in _axes()]
+      raise AssertionError(f"«{title}» başlıqlı qrafik tapılmadı (title=... ver). Tapılan başlıqlar: {_t}")
+
+  assert umumi_satis == round(_o["Sales"].sum(), 2) and umumi_menfeet == round(_o["Profit"].sum(), 2), "umumi_satis / umumi_menfeet — Sales və Profit cəmləri, 2 rəqəm"
+  assert umumi_marja == round(round(_o["Profit"].sum(), 2) / round(_o["Sales"].sum(), 2) * 100, 1), "umumi_marja = mənfəət / satış × 100, 1 rəqəm"
+  _figs = [_plt.figure(n) for n in _plt.get_fignums()]
+  assert any(f._suptitle is not None and f._suptitle.get_text() == "DaCy Store — 2023–2024 satış təhlili" for f in _figs), "fig.suptitle('DaCy Store — 2023–2024 satış təhlili') ver"
+  _a = _ax("Aylıq satış")
+  _ay = _o.set_index("OrderDate")["Sales"].resample("ME").sum()
+  assert _a.lines and len(_a.lines[0].get_ydata()) == len(_ay) and _np.allclose(_a.lines[0].get_ydata(), _ay.values), f"«Aylıq satış» — {len(_ay)} aylıq nöqtə (resample('ME').sum())"
+  _b = _ax("Ölkələr üzrə mənfəət")
+  _op = _o.groupby("Country")["Profit"].sum().sort_values(ascending=False)
+  assert _np.allclose([p.get_height() for p in _b.patches], _op.values), "«Ölkələr üzrə mənfəət» — azalan sırada bar qrafiki"
+  _m = _ax("Kateqoriya marjası, %")
+  _k = _o.groupby("Category")[["Sales", "Profit"]].sum()
+  _mj = _k["Profit"] / _k["Sales"] * 100
+  assert _np.allclose(sorted(p.get_width() for p in _m.patches), sorted(_mj.values), atol=0.06), "«Kateqoriya marjası, %» — barh, dəyərlər Profit cəmi / Sales cəmi × 100"
+  _p = _ax("ShipMode üzrə satış")
+  assert len(_p.patches) == _o["ShipMode"].nunique() and any("%" in t.get_text() for t in _p.texts), "«ShipMode üzrə satış» — pie, autopct ilə faizlər"
+hints:
+- ayliq = df.set_index("OrderDate")["Sales"].resample("ME").sum(); ayliq.plot(ax=axes[0, 0], title="Aylıq
+  satış")
+- olke.plot(kind="bar", ax=axes[0, 1], title="Ölkələr üzrə mənfəət")
+- mode.plot(kind="pie", ax=axes[1, 1], title="ShipMode üzrə satış", autopct="%1.0f%%")

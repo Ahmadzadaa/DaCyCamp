@@ -1,0 +1,69 @@
+type: python
+title: Çatdırılma müddəti və ShipMode təhlili
+xp: 40
+estimated_minutes: 12
+instructions: |
+  Gün 9-un 3-cü, 4-cü və 10-cu sualları: göndərmə müddəti, ShipMode üzrə satış, orta say və satış.
+tasks:
+- 'ShipDays sütunu yarat: ShipDate − OrderDate (gün, tam ədəd).'
+- Orta çatdırılma müddəti (2 rəqəm yuvarlaqlaşdırılmış) → orta_gun.
+- 'ShipMode üzrə xülasə → mode_xulase: sütunlar satis (Sales cəmi), ort_say (Quantity ortası), ort_satis
+  (Sales ortası), ort_gun (ShipDays ortası); satis-ə görə azalan.'
+- Ən çox satış gətirən ShipMode → lider_mode; ən sürətli (ort_gun ən kiçik) ShipMode → en_suretli.
+dataset: datasets/sifarisler.csv
+starter_code: |
+  import pandas as pd
+
+  df = pd.read_csv("sifarisler.csv", parse_dates=["OrderDate", "ShipDate"])
+
+  df["ShipDays"] = ...
+  orta_gun = ...
+
+  mode_xulase = ...
+  lider_mode = ...
+  en_suretli = ...
+
+  print("Orta:", orta_gun, "gün | Lider:", lider_mode, "| Ən sürətli:", en_suretli)
+  mode_xulase
+solution: |
+  import pandas as pd
+
+  df = pd.read_csv("sifarisler.csv", parse_dates=["OrderDate", "ShipDate"])
+
+  df["ShipDays"] = (df["ShipDate"] - df["OrderDate"]).dt.days
+  orta_gun = round(df["ShipDays"].mean(), 2)
+
+  mode_xulase = (
+      df.groupby("ShipMode")
+      .agg(
+          satis=("Sales", "sum"),
+          ort_say=("Quantity", "mean"),
+          ort_satis=("Sales", "mean"),
+          ort_gun=("ShipDays", "mean"),
+      )
+      .sort_values("satis", ascending=False)
+  )
+  lider_mode = mode_xulase["satis"].idxmax()
+  en_suretli = mode_xulase["ort_gun"].idxmin()
+
+  print("Orta:", orta_gun, "gün | Lider:", lider_mode, "| Ən sürətli:", en_suretli)
+  mode_xulase
+tests: |
+  import pandas as _pd
+  import numpy as _np
+  _o = _pd.read_csv("sifarisler.csv", parse_dates=["OrderDate", "ShipDate"])
+
+  _o["ShipDays"] = (_o["ShipDate"] - _o["OrderDate"]).dt.days
+  assert "ShipDays" in df.columns and list(df["ShipDays"]) == list(_o["ShipDays"]), "ShipDays = (ShipDate - OrderDate).dt.days"
+  assert orta_gun == round(_o["ShipDays"].mean(), 2), f"orta_gun {round(_o['ShipDays'].mean(), 2)} olmalıdır"
+  _g = _o.groupby("ShipMode").agg(satis=("Sales", "sum"), ort_say=("Quantity", "mean"), ort_satis=("Sales", "mean"), ort_gun=("ShipDays", "mean")).sort_values("satis", ascending=False)
+  assert isinstance(mode_xulase, _pd.DataFrame) and list(mode_xulase.columns) == ["satis", "ort_say", "ort_satis", "ort_gun"], "mode_xulase sütunları: satis, ort_say, ort_satis, ort_gun (bu sırada)"
+  assert list(mode_xulase.index) == list(_g.index), f"mode_xulase satis-ə görə azalan olmalıdır: {list(_g.index)}"
+  assert _np.allclose(mode_xulase.values, _g.values), "mode_xulase dəyərləri düzgün deyil"
+  assert lider_mode == _g["satis"].idxmax(), f"lider_mode {_g['satis'].idxmax()} olmalıdır"
+  assert en_suretli == _g["ort_gun"].idxmin(), f"en_suretli {_g['ort_gun'].idxmin()} olmalıdır"
+hints:
+- df["ShipDays"] = (df["ShipDate"] - df["OrderDate"]).dt.days
+- df.groupby("ShipMode").agg(satis=("Sales", "sum"), ort_say=("Quantity", "mean"), ort_satis=("Sales",
+  "mean"), ort_gun=("ShipDays", "mean"))
+- lider_mode = mode_xulase["satis"].idxmax(); en_suretli = mode_xulase["ort_gun"].idxmin()

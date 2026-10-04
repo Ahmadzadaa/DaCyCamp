@@ -1,0 +1,61 @@
+type: python
+title: 'Datanı tanı: ölçü, dövr, sifariş və müştəri sayı'
+xp: 40
+estimated_minutes: 10
+instructions: |
+  Layihənin ilk addımı — datanı yoxlamaq. Rəhbərliyə göndəriləcək «data pasportu»nu hazırla.
+tasks:
+- sifarisler.csv-ni OrderDate və ShipDate tarix kimi oxunmaqla df-ə yüklə.
+- Sətir sayı → setir, boş xanaların ümumi sayı → bos.
+- 'Dövr: ilk və son sifariş tarixi → ilk_tarix, son_tarix (Timestamp).'
+- Unikal sifariş sayı → sifaris_sayi, unikal müştəri (CustomerID) sayı → musteri_sayi.
+- Birdən çox CustomerID-yə aid olan adların sayı → tekrar_ad.
+dataset: datasets/sifarisler.csv
+starter_code: |
+  import pandas as pd
+
+  df = ...
+
+  setir = ...
+  bos = ...
+  ilk_tarix = ...
+  son_tarix = ...
+  sifaris_sayi = ...
+  musteri_sayi = ...
+  tekrar_ad = ...
+
+  print(setir, bos, ilk_tarix.date(), son_tarix.date())
+  print("Sifariş:", sifaris_sayi, "| Müştəri:", musteri_sayi, "| Təkrar ad:", tekrar_ad)
+solution: |
+  import pandas as pd
+
+  df = pd.read_csv("sifarisler.csv", parse_dates=["OrderDate", "ShipDate"])
+
+  setir = len(df)
+  bos = int(df.isna().sum().sum())
+  ilk_tarix = df["OrderDate"].min()
+  son_tarix = df["OrderDate"].max()
+  sifaris_sayi = df["OrderID"].nunique()
+  musteri_sayi = df["CustomerID"].nunique()
+  ad_id = df.groupby("CustomerName")["CustomerID"].nunique()
+  tekrar_ad = int((ad_id > 1).sum())
+
+  print(setir, bos, ilk_tarix.date(), son_tarix.date())
+  print("Sifariş:", sifaris_sayi, "| Müştəri:", musteri_sayi, "| Təkrar ad:", tekrar_ad)
+tests: |
+  import pandas as _pd
+  import numpy as _np
+  _o = _pd.read_csv("sifarisler.csv", parse_dates=["OrderDate", "ShipDate"])
+
+  assert isinstance(df, _pd.DataFrame) and _pd.api.types.is_datetime64_any_dtype(df["OrderDate"]) and _pd.api.types.is_datetime64_any_dtype(df["ShipDate"]), "OrderDate və ShipDate tarix (datetime64) olmalıdır — parse_dates"
+  assert setir == len(_o), f"setir {len(_o)} olmalıdır"
+  assert bos == 0, "bos 0 olmalıdır (isna().sum().sum())"
+  assert ilk_tarix == _o["OrderDate"].min() and son_tarix == _o["OrderDate"].max(), "ilk_tarix/son_tarix — OrderDate-in min və max-ı"
+  assert sifaris_sayi == _o["OrderID"].nunique(), f"sifaris_sayi {_o['OrderID'].nunique()} olmalıdır — sətir sayı yox, unikal OrderID"
+  assert musteri_sayi == _o["CustomerID"].nunique(), f"musteri_sayi {_o['CustomerID'].nunique()} olmalıdır — CustomerID.nunique()"
+  _t = int((_o.groupby("CustomerName")["CustomerID"].nunique() > 1).sum())
+  assert tekrar_ad == _t, f"tekrar_ad {_t} olmalıdır: groupby('CustomerName')['CustomerID'].nunique() > 1"
+hints:
+- pd.read_csv("sifarisler.csv", parse_dates=["OrderDate", "ShipDate"])
+- 'Boş xanalar: df.isna().sum().sum(); unikal say: df["OrderID"].nunique()'
+- ad_id = df.groupby("CustomerName")["CustomerID"].nunique(); tekrar_ad = (ad_id > 1).sum()

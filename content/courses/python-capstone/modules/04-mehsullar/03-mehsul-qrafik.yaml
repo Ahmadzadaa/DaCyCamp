@@ -1,0 +1,84 @@
+type: python
+title: ProductName üzrə Sales və Profit qrafikləri
+xp: 40
+estimated_minutes: 12
+instructions: |
+  Gün 9-un 9-cu sualı: məhsulların satış və mənfəətini vizual müqayisə et. İki qrafik bir şəkildə (1×2).
+tasks:
+- ProductName üzrə Sales və Profit cəmi, Sales-ə görə artan → t (DataFrame).
+- fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6)).
+- 'ax1: t-ni üfüqi sütun qrafiki (barh) kimi çək, başlıq "Məhsullar: Sales və Profit", x oxu "AZN".'
+- 'ax2: scatter — x = Sales, y = Profit (hər nöqtə bir məhsul), başlıq "Satış və mənfəət", oxlar "Sales"
+  və "Profit".'
+- Ən mənfəətli məhsulun adını ax2-də annotate ilə göstər (istəyə bağlı).
+dataset: datasets/sifarisler.csv
+starter_code: |
+  import pandas as pd
+  import matplotlib.pyplot as plt
+
+  df = pd.read_csv("sifarisler.csv", parse_dates=["OrderDate", "ShipDate"])
+
+  t = ...
+
+  fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6))
+  # ax1 — barh
+
+  # ax2 — scatter
+
+  plt.tight_layout()
+  plt.show()
+solution: |
+  import pandas as pd
+  import matplotlib.pyplot as plt
+
+  df = pd.read_csv("sifarisler.csv", parse_dates=["OrderDate", "ShipDate"])
+
+  t = df.groupby("ProductName")[["Sales", "Profit"]].sum().sort_values("Sales")
+
+  fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6))
+  t.plot(kind="barh", ax=ax1, title="Məhsullar: Sales və Profit")
+  ax1.set_xlabel("AZN")
+  ax1.set_ylabel("")
+
+  ax2.scatter(t["Sales"], t["Profit"], s=60, color="teal")
+  ax2.set_title("Satış və mənfəət")
+  ax2.set_xlabel("Sales")
+  ax2.set_ylabel("Profit")
+  lider = t["Profit"].idxmax()
+  ax2.annotate(lider, (t.loc[lider, "Sales"], t.loc[lider, "Profit"]), xytext=(5, 5), textcoords="offset points")
+
+  plt.tight_layout()
+  plt.show()
+tests: |
+  import pandas as _pd
+  import numpy as _np
+  _o = _pd.read_csv("sifarisler.csv", parse_dates=["OrderDate", "ShipDate"])
+
+  import matplotlib.pyplot as _plt
+  def _axes():
+      return [a for n in _plt.get_fignums() for a in _plt.figure(n).axes]
+  def _ax(title):
+      for a in _axes():
+          if a.get_title().strip() == title:
+              return a
+      _t = [a.get_title() for a in _axes()]
+      raise AssertionError(f"«{title}» başlıqlı qrafik tapılmadı (title=... ver). Tapılan başlıqlar: {_t}")
+
+  _t = _o.groupby("ProductName")[["Sales", "Profit"]].sum().sort_values("Sales")
+  assert isinstance(t, _pd.DataFrame) and list(t.columns) == ["Sales", "Profit"] and list(t.index) == list(_t.index) and _np.allclose(t.values, _t.values), "t: ProductName üzrə Sales və Profit cəmi, Sales-ə görə artan"
+  _a = _ax("Məhsullar: Sales və Profit")
+  _bars = [p for p in _a.patches if p.get_width() != 0 or p.get_height() != 0]
+  assert len(_bars) == 2 * len(_t), f"barh qrafikində {2 * len(_t)} sütun olmalıdır (hər məhsul üçün Sales və Profit)"
+  assert _a.get_xlabel() == "AZN", "ax1 x oxu: AZN"
+  _w = sorted(round(p.get_width(), 2) for p in _bars)
+  assert _np.allclose(_w, sorted(_np.round(list(_t["Sales"]) + list(_t["Profit"]), 2)), atol=0.01), "barh — sütun uzunluqları Sales və Profit cəmləri olmalıdır (kind='barh')"
+  _s = _ax("Satış və mənfəət")
+  assert _s.collections, "ax2-də scatter olmalıdır"
+  _xy = _s.collections[0].get_offsets()
+  assert len(_xy) == len(_t), f"scatter-də {len(_t)} nöqtə olmalıdır (hər məhsul bir nöqtə)"
+  assert _np.allclose(sorted(_xy[:, 0]), sorted(_t["Sales"])), "scatter x = Sales"
+  assert _s.get_xlabel() == "Sales" and _s.get_ylabel() == "Profit", "ax2 oxları: Sales və Profit"
+hints:
+- 't.plot(kind="barh", ax=ax1, title="Məhsullar: Sales və Profit"); ax1.set_xlabel("AZN")'
+- ax2.scatter(t["Sales"], t["Profit"]); ax2.set_title("Satış və mənfəət")
+- ax2.annotate(ad, (x, y), xytext=(5, 5), textcoords="offset points")

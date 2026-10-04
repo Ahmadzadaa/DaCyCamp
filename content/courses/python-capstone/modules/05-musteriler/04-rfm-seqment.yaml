@@ -1,0 +1,109 @@
+type: python
+title: 'RFM: müştəriləri seqmentlərə ayır'
+xp: 40
+estimated_minutes: 15
+instructions: |
+  Gün 9-un 13-cü sualı: hər müştəri üçün R, F, M hesabla, bal ver və seqmentə ayır (dərsdəki qaydalarla).
+tasks:
+- ref = son OrderDate + 1 gün; CustomerID üzrə Recency, Frequency, Monetary → rfm (bu sütun adları ilə).
+- 'R, F, M balları (1–4, int): qcut + rank(method="first"); Recency üçün etiketlər [4, 3, 2, 1].'
+- 'Seqment sütunu: Çempion / Risk altında / Perspektivli / Yuxuda (R × F qaydası).'
+- Hər seqmentdə müştəri sayı → seqment_say (Series, value_counts).
+- Seqmentlər üzrə orta Recency, Frequency, Monetary → seqment_profil (DataFrame, Monetary-ə görə azalan).
+dataset: datasets/sifarisler.csv
+starter_code: |
+  import pandas as pd
+
+  df = pd.read_csv("sifarisler.csv", parse_dates=["OrderDate", "ShipDate"])
+
+  ref = ...
+  rfm = ...
+
+  # R, F, M ballari
+
+  def seqment(row):
+      ...
+
+  rfm["Seqment"] = ...
+
+  seqment_say = ...
+  seqment_profil = ...
+
+  print(seqment_say)
+  seqment_profil
+solution: |
+  import pandas as pd
+
+  df = pd.read_csv("sifarisler.csv", parse_dates=["OrderDate", "ShipDate"])
+
+  ref = df["OrderDate"].max() + pd.Timedelta(days=1)
+  rfm = df.groupby("CustomerID").agg(
+      Recency=("OrderDate", lambda s: (ref - s.max()).days),
+      Frequency=("OrderID", "nunique"),
+      Monetary=("Sales", "sum"),
+  )
+
+  rfm["R"] = pd.qcut(rfm["Recency"].rank(method="first"), 4, labels=[4, 3, 2, 1]).astype(int)
+  rfm["F"] = pd.qcut(rfm["Frequency"].rank(method="first"), 4, labels=[1, 2, 3, 4]).astype(int)
+  rfm["M"] = pd.qcut(rfm["Monetary"].rank(method="first"), 4, labels=[1, 2, 3, 4]).astype(int)
+
+  def seqment(row):
+      if row["R"] >= 3 and row["F"] >= 3:
+          return "Çempion"
+      if row["F"] >= 3:
+          return "Risk altında"
+      if row["R"] >= 3:
+          return "Perspektivli"
+      return "Yuxuda"
+
+  rfm["Seqment"] = rfm.apply(seqment, axis=1)
+
+  seqment_say = rfm["Seqment"].value_counts()
+  seqment_profil = (
+      rfm.groupby("Seqment")[["Recency", "Frequency", "Monetary"]].mean().sort_values("Monetary", ascending=False)
+  )
+
+  print(seqment_say)
+  seqment_profil
+tests: |
+  import pandas as _pd
+  import numpy as _np
+  _o = _pd.read_csv("sifarisler.csv", parse_dates=["OrderDate", "ShipDate"])
+
+  _ref = _o["OrderDate"].max() + _pd.Timedelta(days=1)
+  _r = _o.groupby("CustomerID").agg(
+      Recency=("OrderDate", lambda s: (_ref - s.max()).days),
+      Frequency=("OrderID", "nunique"),
+      Monetary=("Sales", "sum"),
+  )
+  _r["R"] = _pd.qcut(_r["Recency"].rank(method="first"), 4, labels=[4, 3, 2, 1]).astype(int)
+  _r["F"] = _pd.qcut(_r["Frequency"].rank(method="first"), 4, labels=[1, 2, 3, 4]).astype(int)
+  _r["M"] = _pd.qcut(_r["Monetary"].rank(method="first"), 4, labels=[1, 2, 3, 4]).astype(int)
+  def _seg(row):
+      if row["R"] >= 3 and row["F"] >= 3:
+          return "Çempion"
+      if row["F"] >= 3:
+          return "Risk altında"
+      if row["R"] >= 3:
+          return "Perspektivli"
+      return "Yuxuda"
+  _r["Seqment"] = _r.apply(_seg, axis=1)
+
+  assert isinstance(rfm, _pd.DataFrame) and len(rfm) == len(_r), f"rfm-də {len(_r)} müştəri (CustomerID) olmalıdır"
+  for _c in ["Recency", "Frequency", "Monetary"]:
+      assert _c in rfm.columns, f"rfm-də {_c} sütunu yoxdur"
+  _x = rfm.loc[_r.index]
+  assert (_x["Recency"].values == _r["Recency"].values).all(), "Recency = (ref - son OrderDate).days, ref = son tarix + 1 gün"
+  assert (_x["Frequency"].values == _r["Frequency"].values).all(), "Frequency = OrderID.nunique() (sətir sayı yox)"
+  assert _np.allclose(_x["Monetary"].values, _r["Monetary"].values), "Monetary = Sales cəmi"
+  for _c in ["R", "F", "M"]:
+      assert _c in rfm.columns and (_x[_c].astype(int).values == _r[_c].values).all(), f"{_c} balları düzgün deyil — qcut(rank(method='first'), 4, labels=...)" + (" (Recency üçün [4, 3, 2, 1])" if _c == "R" else "")
+  assert "Seqment" in rfm.columns and (_x["Seqment"].values == _r["Seqment"].values).all(), "Seqment qaydası: R≥3 və F≥3 → Çempion; F≥3 → Risk altında; R≥3 → Perspektivli; qalan → Yuxuda"
+  _vc = _r["Seqment"].value_counts()
+  assert isinstance(seqment_say, _pd.Series) and seqment_say.to_dict() == _vc.to_dict(), f"seqment_say {_vc.to_dict()} olmalıdır"
+  _sp = _r.groupby("Seqment")[["Recency", "Frequency", "Monetary"]].mean().sort_values("Monetary", ascending=False)
+  assert isinstance(seqment_profil, _pd.DataFrame) and list(seqment_profil.index) == list(_sp.index) and _np.allclose(seqment_profil[["Recency", "Frequency", "Monetary"]].values, _sp.values), "seqment_profil: orta Recency, Frequency, Monetary, Monetary-ə görə azalan"
+hints:
+- 'Recency=("OrderDate", lambda s: (ref - s.max()).days)'
+- rfm["R"] = pd.qcut(rfm["Recency"].rank(method="first"), 4, labels=[4, 3, 2, 1]).astype(int)
+- rfm["Seqment"] = rfm.apply(seqment, axis=1); seqment_say = rfm["Seqment"].value_counts()

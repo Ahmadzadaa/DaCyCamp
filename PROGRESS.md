@@ -402,14 +402,14 @@ Mənbə: `Python_Day_1/2.pptx` (nəzəri) + `Python_Day_1/2.docx` (35 tapşırı
 
 - Testlər: API `quiz-classify.e2e-spec.ts` (görünüşdə cavab yoxdur, qiymətləndirmə), `content-packages.e2e-spec.ts` (bütün paketlər; test bazasında üç defolt istiqamət yaradılır), shared `classify.test.ts`; Playwright `intro-courses.spec.ts` (idxal, kataloq, sürüşdür → səhv → izah → toxunaraq düzəlt → keçdi, mobil, admin redaktoru), `admin-control.spec.ts` yeni silmə dialoqu ilə. Ekran görüntüləri: `docs/screenshots/intro-kurslar/`.
 
-## Python kursları (Python_slides.zip + Python_tasks.zip, Gün 1–9) — davam edir, 3 oktyabr 2026
+## Python kursları (Python_slides.zip + Python_tasks.zip, Gün 1–9) — tamamlandı, 4 oktyabr 2026
 
 - ✅ **Python Basics** (`content/courses/python-basics`) — köhnə Python4Business (Gün 1–2) + 6 yeni fəsil; 13 fəsil, 77 addım, 35 Python tapşırığı. Köhnə «Python4Business» kursu bazada qalıbsa, admin paneldən silin (yeni kurs onu əvəz edir).
 - ✅ **Python runtime:** pandas/matplotlib/seaborn (micropip) dəstəyi, son ifadənin Jupyter kimi göstərilməsi, `display()`, paket mesajlarının gizlədilməsi.
 - ✅ **Python Pandas** (`content/courses/python-pandas`, Gün 3–6) — 15 fəsil, 80 addım, 44 Python tapşırığı (həllər CPython-da Pyodide versiyaları ilə yoxlanılıb; CI-da `check:python` CDN-dən paketləri yükləyib yoxlayır).
 - ✅ **Python for Data Analysis & Visualization** (`content/courses/python-analysis-visualization`, Gün 6–9) — 10 fəsil, 42 addım, 21 tapşırıq: pandas/matplotlib/seaborn qrafikləri (testlər axes/patches/lines-ı yoxlayır), statistika və heatmap, FacetGrid, wordcloud, Plotly (nəzəri — brauzer mühiti interaktiv qrafiki göstərmir), reqressiya (polyfit, sklearn, statsmodels), e-poçt (MIME, parolsuz).
 - ✅ **Python & SQL** (`content/courses/python-sql`, Gün 9) — 5 fəsil, 17 addım, 7 tapşırıq: sqlite3 (cədvəl, parametrli sorğu və SQL injection), `to_sql`/`read_sql_query`, JOIN/LEFT JOIN, GROUP BY/HAVING/strftime, normallaşdırılmış baza layihəsi. Həllər həm CPython, həm real Pyodide-də (lokal güzgü) keçir; `check:python` oflayn rejimdə yüklənməyən paketləri artıq «ötürülür» sayır.
-- ⏳ Qalan plan: Capstone (Gün 9 qiymətləndirilən tapşırıqlar). Datasetlər: `scripts/course-gen/py_datasets.py`.
+- ✅ **Python Capstone: Sales Analytics Project** (`content/courses/python-capstone`, Gün 9 qiymətləndirilən 15 sualın hamısı) — 6 fəsil, 24 addım, 10 tapşırıq: data yoxlaması, çatdırılma müddəti/ShipMode, korrelyasiya və marja, top ölkə/şəhər/seqment, məhsul liderləri və qrafiklər, ən dəyərli müştəri (adla qruplaşdırma tələsi — eyni adlı fərqli müştərilər), RFM seqmentasiyası, ölkə × seqment, çempionların məhsulları, 2×2 dashboard. Həllər CPython və real Pyodide-də keçir. Datasetlər: `scripts/course-gen/py_datasets.py`.
 - ⚠️ `Python Day 7 _ File Attachment.py` faylında real görünən Gmail tətbiq parolu var — onu ləğv edin; kurslarda yalnız yer tutucular istifadə olunur.
 
 ## Növbəti mərhələ — digər kursların köçürülməsi (gözləyir)

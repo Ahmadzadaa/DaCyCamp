@@ -1,0 +1,79 @@
+type: python
+title: Ən çox gəlir gətirən müştəri və onun profili
+xp: 40
+estimated_minutes: 10
+instructions: |
+  Gün 9-un 11-ci sualı: ən çox gəlir gətirən müştərini tap və ona aid məlumatları göstər — tələyə düşmədən.
+tasks:
+- CustomerID üzrə Sales cəmi → musteri_satis (Series, azalan).
+- Ən çox satış gətirən müştərinin ID-si → top_id.
+- 'Onun profili → profil (dict) açarları: "ad", "seqment", "olke", "seher", "sifaris" (unikal sifariş
+  sayı), "satis" (2 rəqəm), "menfeet" (2 rəqəm), "sevimli_kateqoriya" (Sales-ə görə).'
+- Bu müştərinin bütün sətirləri, OrderDate-ə görə → tarixce (DataFrame).
+- Adla qruplaşdıranda birinci çıxan ad → adla_lider (tələni gör!).
+dataset: datasets/sifarisler.csv
+starter_code: |
+  import pandas as pd
+
+  df = pd.read_csv("sifarisler.csv", parse_dates=["OrderDate", "ShipDate"])
+
+  musteri_satis = ...
+  top_id = ...
+
+  sec = df[df["CustomerID"] == top_id]
+  profil = {
+      "ad": ...,
+  }
+  tarixce = ...
+  adla_lider = ...
+
+  print(top_id, profil)
+  print("Adla qruplaşdırsaq:", adla_lider, "— amma bu ad", df[df["CustomerName"] == adla_lider]["CustomerID"].nunique(), "müştəriyə aiddir")
+  tarixce.head()
+solution: |
+  import pandas as pd
+
+  df = pd.read_csv("sifarisler.csv", parse_dates=["OrderDate", "ShipDate"])
+
+  musteri_satis = df.groupby("CustomerID")["Sales"].sum().sort_values(ascending=False)
+  top_id = musteri_satis.idxmax()
+
+  sec = df[df["CustomerID"] == top_id]
+  profil = {
+      "ad": sec["CustomerName"].iloc[0],
+      "seqment": sec["CustomerSegment"].iloc[0],
+      "olke": sec["Country"].iloc[0],
+      "seher": sec["City"].iloc[0],
+      "sifaris": sec["OrderID"].nunique(),
+      "satis": round(sec["Sales"].sum(), 2),
+      "menfeet": round(sec["Profit"].sum(), 2),
+      "sevimli_kateqoriya": sec.groupby("Category")["Sales"].sum().idxmax(),
+  }
+  tarixce = sec.sort_values("OrderDate")
+  adla_lider = df.groupby("CustomerName")["Sales"].sum().idxmax()
+
+  print(top_id, profil)
+  print("Adla qruplaşdırsaq:", adla_lider, "— amma bu ad", df[df["CustomerName"] == adla_lider]["CustomerID"].nunique(), "müştəriyə aiddir")
+  tarixce.head()
+tests: |
+  import pandas as _pd
+  import numpy as _np
+  _o = _pd.read_csv("sifarisler.csv", parse_dates=["OrderDate", "ShipDate"])
+
+  _ms = _o.groupby("CustomerID")["Sales"].sum().sort_values(ascending=False)
+  assert isinstance(musteri_satis, _pd.Series) and list(musteri_satis.index[:10]) == list(_ms.index[:10]) and _np.allclose(musteri_satis.values, _ms.values), "musteri_satis: CustomerID üzrə Sales cəmi, azalan"
+  _id = _ms.idxmax()
+  assert top_id == _id, f"top_id {_id} olmalıdır — CustomerName ilə yox, CustomerID ilə qruplaşdır"
+  _s = _o[_o["CustomerID"] == _id]
+  _p = {"ad": _s["CustomerName"].iloc[0], "seqment": _s["CustomerSegment"].iloc[0], "olke": _s["Country"].iloc[0], "seher": _s["City"].iloc[0], "sifaris": _s["OrderID"].nunique(), "satis": round(_s["Sales"].sum(), 2), "menfeet": round(_s["Profit"].sum(), 2), "sevimli_kateqoriya": _s.groupby("Category")["Sales"].sum().idxmax()}
+  assert isinstance(profil, dict) and set(profil) == set(_p), f"profil açarları: {list(_p)}"
+  for _k, _v in _p.items():
+      _u = profil[_k]
+      assert (abs(float(_u) - float(_v)) < 0.01) if isinstance(_v, (int, float)) and not isinstance(_v, bool) else str(_u) == str(_v), f"profil['{_k}'] {_v!r} olmalıdır, səndə: {_u!r}"
+  assert isinstance(tarixce, _pd.DataFrame) and len(tarixce) == len(_s) and tarixce["OrderDate"].is_monotonic_increasing, f"tarixce: bu müştərinin {len(_s)} sətri, OrderDate-ə görə"
+  _al = _o.groupby("CustomerName")["Sales"].sum().idxmax()
+  assert adla_lider == _al, f"adla_lider {_al} olmalıdır"
+hints:
+- musteri_satis = df.groupby("CustomerID")["Sales"].sum().sort_values(ascending=False); top_id = musteri_satis.idxmax()
+- 'Profil: sec["CustomerName"].iloc[0], sec["OrderID"].nunique(), round(sec["Sales"].sum(), 2)'
+- 'sevimli_kateqoriya: sec.groupby("Category")["Sales"].sum().idxmax()'

@@ -1,0 +1,58 @@
+type: python
+title: Top ölkələr, mənfəətli şəhərlər və seqmentlər
+xp: 40
+estimated_minutes: 12
+instructions: |
+  Gün 9-un 5-ci, 7-ci və 8-ci sualları: coğrafiya və müştəri seqmenti üzrə mənzərə.
+tasks:
+- Ölkələr üzrə Profit cəmi, azalan → olke_profit (Series); top 2 ölkənin adları (siyahı) → top2_olke.
+- Şəhərlər üzrə Profit cəmi, ən yüksək 5 şəhər (azalan) → top5_seher (Series).
+- CustomerSegment üzrə Sales cəmi, azalan → seqment_satis (Series).
+- Hər seqmentin satışdakı payı %, 1 rəqəm → seqment_pay (Series, eyni sırada).
+dataset: datasets/sifarisler.csv
+starter_code: |
+  import pandas as pd
+
+  df = pd.read_csv("sifarisler.csv", parse_dates=["OrderDate", "ShipDate"])
+
+  olke_profit = ...
+  top2_olke = ...
+  top5_seher = ...
+  seqment_satis = ...
+  seqment_pay = ...
+
+  print("Top 2:", top2_olke)
+  print(top5_seher)
+  seqment_pay
+solution: |
+  import pandas as pd
+
+  df = pd.read_csv("sifarisler.csv", parse_dates=["OrderDate", "ShipDate"])
+
+  olke_profit = df.groupby("Country")["Profit"].sum().sort_values(ascending=False)
+  top2_olke = olke_profit.head(2).index.tolist()
+  top5_seher = df.groupby("City")["Profit"].sum().nlargest(5)
+  seqment_satis = df.groupby("CustomerSegment")["Sales"].sum().sort_values(ascending=False)
+  seqment_pay = (seqment_satis / seqment_satis.sum() * 100).round(1)
+
+  print("Top 2:", top2_olke)
+  print(top5_seher)
+  seqment_pay
+tests: |
+  import pandas as _pd
+  import numpy as _np
+  _o = _pd.read_csv("sifarisler.csv", parse_dates=["OrderDate", "ShipDate"])
+
+  _op = _o.groupby("Country")["Profit"].sum().sort_values(ascending=False)
+  assert isinstance(olke_profit, _pd.Series) and list(olke_profit.index) == list(_op.index) and _np.allclose(olke_profit.values, _op.values), "olke_profit: ölkələr üzrə Profit cəmi, azalan"
+  assert top2_olke == list(_op.index[:2]), f"top2_olke {list(_op.index[:2])} olmalıdır (siyahı)"
+  _cs = _o.groupby("City")["Profit"].sum().nlargest(5)
+  assert isinstance(top5_seher, _pd.Series) and list(top5_seher.index) == list(_cs.index) and _np.allclose(top5_seher.values, _cs.values), f"top5_seher: {list(_cs.index)}"
+  _ss = _o.groupby("CustomerSegment")["Sales"].sum().sort_values(ascending=False)
+  assert isinstance(seqment_satis, _pd.Series) and list(seqment_satis.index) == list(_ss.index) and _np.allclose(seqment_satis.values, _ss.values), "seqment_satis: seqmentlər üzrə Sales cəmi, azalan"
+  _sp = (_ss / _ss.sum() * 100).round(1)
+  assert list(seqment_pay.index) == list(_sp.index) and _np.allclose(seqment_pay.values, _sp.values), f"seqment_pay: {_sp.to_dict()}"
+hints:
+- olke_profit.head(2).index.tolist()
+- df.groupby("City")["Profit"].sum().nlargest(5)
+- seqment_pay = (seqment_satis / seqment_satis.sum() * 100).round(1)

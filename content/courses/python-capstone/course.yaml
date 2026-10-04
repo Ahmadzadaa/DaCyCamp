@@ -1,0 +1,15 @@
+# Python Capstone — Python4Business Gün 9 qiymətləndirilən tapşırıqları (15 sual) layihə formatında.
+# Bütün tapşırıqlar eyni dataset (sifarisler.csv) üzərindədir; ardıcıl açılır.
+slug: python-capstone
+track: data-analytics
+title: 'Python Capstone: Sales Analytics Project'
+level: intermediate
+description: 'Öyrəndiklərini real layihədə birləşdir: 5 ölkədə fəaliyyət göstərən onlayn mağazanın 2 illik
+  sifarişləri üzərində tam təhlil — data yoxlaması, çatdırılma müddəti, mənfəət və korrelyasiya, ölkə/şəhər/seqment
+  müqayisəsi, məhsul təhlili, top müştərilər, RFM seqmentasiyası və yekun dashboard. Python4Business Gün
+  9 qiymətləndirilən tapşırıqlarının hamısı burada addım-addım həll olunur.'
+sequential: true
+estimated_hours: 7
+published: true
+topics:
+- python

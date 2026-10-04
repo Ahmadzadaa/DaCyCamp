@@ -1,0 +1,126 @@
+type: python
+title: Top müştərilər haradandır və nə alırlar?
+xp: 40
+estimated_minutes: 15
+instructions: |
+  Gün 9-un 14-cü və 15-ci sualları. «Top müştəri» = RFM-də «Çempion» seqmenti (RFM-i əvvəlki tapşırıqdakı kimi qur).
+tasks:
+- RFM və Seqment sütununu qur (əvvəlki tapşırığın kodu); hər müştərinin Country və City-sini əlavə et
+  → rfm.
+- 'Ölkə × seqment müştəri sayı cədvəli → olke_seqment (pd.crosstab: sətirlər Country, sütunlar Seqment).'
+- Çempionların ən çox olduğu ölkə → top_olke; şəhər → top_seher.
+- Çempion müştərilərin sifariş sətirləri → top_df; ən çox alınan (Quantity cəmi) 5 məhsul → top_mehsullar
+  (Series, ProductName).
+- Çempionların kateqoriyalar üzrə Sales payı %, 1 rəqəm → top_kateqoriya (Series, azalan).
+dataset: datasets/sifarisler.csv
+starter_code: |
+  import pandas as pd
+
+  df = pd.read_csv("sifarisler.csv", parse_dates=["OrderDate", "ShipDate"])
+
+  # 1) RFM + Seqment (əvvəlki tapşırıq)
+  rfm = ...
+
+  # 2) coğrafiya
+  olke_seqment = ...
+  top_olke = ...
+  top_seher = ...
+
+  # 3) çempionlar nə alır?
+  top_df = ...
+  top_mehsullar = ...
+  top_kateqoriya = ...
+
+  print(top_olke, top_seher)
+  print(top_mehsullar)
+  print(top_kateqoriya)
+  olke_seqment
+solution: |
+  import pandas as pd
+
+  df = pd.read_csv("sifarisler.csv", parse_dates=["OrderDate", "ShipDate"])
+
+  # 1) RFM + Seqment
+  ref = df["OrderDate"].max() + pd.Timedelta(days=1)
+  rfm = df.groupby("CustomerID").agg(
+      Recency=("OrderDate", lambda s: (ref - s.max()).days),
+      Frequency=("OrderID", "nunique"),
+      Monetary=("Sales", "sum"),
+      Country=("Country", "first"),
+      City=("City", "first"),
+  )
+  rfm["R"] = pd.qcut(rfm["Recency"].rank(method="first"), 4, labels=[4, 3, 2, 1]).astype(int)
+  rfm["F"] = pd.qcut(rfm["Frequency"].rank(method="first"), 4, labels=[1, 2, 3, 4]).astype(int)
+  rfm["M"] = pd.qcut(rfm["Monetary"].rank(method="first"), 4, labels=[1, 2, 3, 4]).astype(int)
+
+  def seqment(row):
+      if row["R"] >= 3 and row["F"] >= 3:
+          return "Çempion"
+      if row["F"] >= 3:
+          return "Risk altında"
+      if row["R"] >= 3:
+          return "Perspektivli"
+      return "Yuxuda"
+
+  rfm["Seqment"] = rfm.apply(seqment, axis=1)
+
+  # 2) coğrafiya
+  olke_seqment = pd.crosstab(rfm["Country"], rfm["Seqment"])
+  cemp = rfm[rfm["Seqment"] == "Çempion"]
+  top_olke = cemp["Country"].value_counts().idxmax()
+  top_seher = cemp["City"].value_counts().idxmax()
+
+  # 3) çempionlar nə alır?
+  top_df = df[df["CustomerID"].isin(cemp.index)]
+  top_mehsullar = top_df.groupby("ProductName")["Quantity"].sum().nlargest(5)
+  kat = top_df.groupby("Category")["Sales"].sum()
+  top_kateqoriya = (kat / kat.sum() * 100).round(1).sort_values(ascending=False)
+
+  print(top_olke, top_seher)
+  print(top_mehsullar)
+  print(top_kateqoriya)
+  olke_seqment
+tests: |
+  import pandas as _pd
+  import numpy as _np
+  _o = _pd.read_csv("sifarisler.csv", parse_dates=["OrderDate", "ShipDate"])
+
+  _ref = _o["OrderDate"].max() + _pd.Timedelta(days=1)
+  _r = _o.groupby("CustomerID").agg(
+      Recency=("OrderDate", lambda s: (_ref - s.max()).days),
+      Frequency=("OrderID", "nunique"),
+      Monetary=("Sales", "sum"),
+  )
+  _r["R"] = _pd.qcut(_r["Recency"].rank(method="first"), 4, labels=[4, 3, 2, 1]).astype(int)
+  _r["F"] = _pd.qcut(_r["Frequency"].rank(method="first"), 4, labels=[1, 2, 3, 4]).astype(int)
+  _r["M"] = _pd.qcut(_r["Monetary"].rank(method="first"), 4, labels=[1, 2, 3, 4]).astype(int)
+  def _seg(row):
+      if row["R"] >= 3 and row["F"] >= 3:
+          return "Çempion"
+      if row["F"] >= 3:
+          return "Risk altında"
+      if row["R"] >= 3:
+          return "Perspektivli"
+      return "Yuxuda"
+  _r["Seqment"] = _r.apply(_seg, axis=1)
+
+  _geo = _o.groupby("CustomerID")[["Country", "City"]].first()
+  _r = _r.join(_geo)
+  assert isinstance(rfm, _pd.DataFrame) and {"Seqment", "Country", "City"} <= set(rfm.columns), "rfm-də Seqment, Country, City sütunları olmalıdır"
+  assert (rfm.loc[_r.index, "Seqment"].values == _r["Seqment"].values).all(), "Seqment əvvəlki tapşırıqdakı qaydalarla hesablanmalıdır"
+  _ct = _pd.crosstab(_r["Country"], _r["Seqment"])
+  assert isinstance(olke_seqment, _pd.DataFrame) and olke_seqment.shape == _ct.shape and (olke_seqment.loc[_ct.index, _ct.columns].values == _ct.values).all(), "olke_seqment = pd.crosstab(rfm['Country'], rfm['Seqment'])"
+  _c = _r[_r["Seqment"] == "Çempion"]
+  assert top_olke == _c["Country"].value_counts().idxmax(), f"top_olke {_c['Country'].value_counts().idxmax()} olmalıdır"
+  assert top_seher == _c["City"].value_counts().idxmax(), f"top_seher {_c['City'].value_counts().idxmax()} olmalıdır"
+  _td = _o[_o["CustomerID"].isin(_c.index)]
+  assert isinstance(top_df, _pd.DataFrame) and len(top_df) == len(_td), f"top_df-də çempionların {len(_td)} sətri olmalıdır (isin)"
+  _tm = _td.groupby("ProductName")["Quantity"].sum().nlargest(5)
+  assert isinstance(top_mehsullar, _pd.Series) and list(top_mehsullar.values) == list(_tm.values) and set(top_mehsullar.index) == set(_tm.index), f"top_mehsullar: {_tm.to_dict()}"
+  _k = _td.groupby("Category")["Sales"].sum()
+  _kp = (_k / _k.sum() * 100).round(1).sort_values(ascending=False)
+  assert isinstance(top_kateqoriya, _pd.Series) and list(top_kateqoriya.index) == list(_kp.index) and _np.allclose(top_kateqoriya.values, _kp.values), f"top_kateqoriya: {_kp.to_dict()}"
+hints:
+- 'agg-a əlavə et: Country=("Country", "first"), City=("City", "first")'
+- olke_seqment = pd.crosstab(rfm["Country"], rfm["Seqment"]); cemp = rfm[rfm["Seqment"] == "Çempion"]
+- top_df = df[df["CustomerID"].isin(cemp.index)]; top_df.groupby("ProductName")["Quantity"].sum().nlargest(5)
