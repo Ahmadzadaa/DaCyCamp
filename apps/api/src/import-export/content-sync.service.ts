@@ -51,7 +51,15 @@ export class ContentSyncService implements OnApplicationBootstrap {
       zip.addLocalFolder(join(dir, name), name, (p) => !/(^|\/)\./.test(p));
       const buf = zip.toBuffer();
       const { report } = await this.pkg.validate(buf);
-      if (report.course?.exists) continue;
+      if (report.course?.exists) {
+        // mövcud kurs: məzmuna toxunmadan yalnız tərcümələri (i18n/) yenilə
+        const n = await this.pkg.applyTranslations(buf).catch((e: Error) => {
+          this.log.warn(`${name}: tərcümələr yenilənmədi — ${e.message}`);
+          return null;
+        });
+        if (n) this.log.log(`✓ ${name}: tərcümələr yeniləndi (${n})`);
+        continue;
+      }
       if (!report.ok) {
         const why = report.errors.map((e) => `${e.file}: ${e.message}`).join('; ');
         this.log.warn(`${name}: paket idxal olunmadı — ${why}`);

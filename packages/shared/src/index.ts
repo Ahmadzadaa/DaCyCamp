@@ -8,6 +8,7 @@ export * from './content/package';
 export * from './content/path';
 export * from './content/roadmap';
 export * from './content/step-templates';
+export * from './content/i18n';
 export * from './sql/canonical';
 export * from './sql/arrow';
 export * from './progress/unlock';

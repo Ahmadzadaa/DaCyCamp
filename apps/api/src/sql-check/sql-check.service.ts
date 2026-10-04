@@ -17,6 +17,7 @@ import type * as DuckBlocking from '@duckdb/duckdb-wasm/dist/duckdb-node-blockin
 import { PrismaService } from '../prisma/prisma.service';
 import { readFromStorage } from '../assets/storage';
 import { unprocessable } from '../common/errors';
+import { withRawContent } from '../common/i18n/request-locale';
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const duckdb: typeof DuckBlocking = require('@duckdb/duckdb-wasm/dist/duckdb-node-blocking.cjs');
@@ -138,6 +139,11 @@ export class SqlCheckService {
 
   /** Hesablayıb Step.secret.expected-ə yazır */
   async computeAndStore(stepId: string): Promise<SqlExpected> {
+    // secret oxunub geri yazılır — tərcümə (ipucları və s.) mənbəyə düşməsin
+    return withRawContent(() => this.computeAndStoreRaw(stepId));
+  }
+
+  private async computeAndStoreRaw(stepId: string): Promise<SqlExpected> {
     const step = await this.prisma.step.findUniqueOrThrow({
       where: { id: stepId },
       include: { module: { select: { courseId: true } } },

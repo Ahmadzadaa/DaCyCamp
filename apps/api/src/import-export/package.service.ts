@@ -33,6 +33,12 @@ import { SqlCheckService } from '../sql-check/sql-check.service';
 import { PathsAdminService } from '../paths/paths-admin.service';
 import { hashAnswer } from '../content/ctf-hash';
 import {
+  loadTranslations,
+  moduleTranslation,
+  translateStep,
+  type StepTranslation,
+} from './package-i18n';
+import {
   detectKind,
   readFromStorage,
   removeFromStorage,
@@ -51,6 +57,8 @@ interface PlannedStep {
   type: StepType;
   def: StepDefinition;
   published: boolean;
+  /** i18n/en tərcüməsi (yoxdursa null) */
+  tr: StepTranslation | null;
 }
 interface PlannedModule {
   key: string;
@@ -60,6 +68,7 @@ interface PlannedModule {
   description?: string;
   published: boolean;
   steps: PlannedStep[];
+  i18n: { en: { title?: string; description?: string } } | null;
 }
 interface PlannedAsset {
   path: string;
@@ -80,6 +89,7 @@ interface ImportPlan {
   existingCourseId: string | null;
   /** course.yaml-da `topics` verilibsə — bazada tapılan mövzular (verilməyibsə null: dəyişmir) */
   topicIds: string[] | null;
+  courseI18n: { en: { title?: string; description?: string } } | null;
   modules: PlannedModule[];
   assets: PlannedAsset[];
   path: PlannedPath | null;
@@ -184,6 +194,7 @@ export class PackageService {
                 trackId: null,
                 existingCourseId: null,
                 topicIds: null,
+                courseI18n: null,
                 modules: [],
                 assets: [],
                 path,
@@ -214,6 +225,8 @@ export class PackageService {
       return { report: empty(), plan: null };
     }
     const course = courseParsed.data;
+    const translations = loadTranslations(files, errors);
+    const courseI18n = translations.course ? { en: translations.course } : null;
     const coursePublishedExplicit =
       typeof courseRaw === 'object' &&
       courseRaw !== null &&
@@ -241,6 +254,7 @@ export class PackageService {
       if (
         path.startsWith('modules/') ||
         path.startsWith('path-items/') ||
+        path.startsWith('i18n/') ||
         path === courseFile ||
         path === 'path.yaml'
       )
@@ -326,6 +340,8 @@ export class PackageService {
         });
       const steps: PlannedStep[] = [];
       const seenStepKeys = new Set<string>();
+      const mt = moduleTranslation(translations, dir, key);
+      const usedTr = new Set<string>();
       const stepFiles = paths
         .filter((p) => !/\/module\.ya?ml$/.test(p) && p.split('/').length === 3)
         .sort(
@@ -380,15 +396,27 @@ export class PackageService {
         }
         const yamlStep = parsed.data as StepYaml;
         const def = yamlStepToDefinition(yamlStep);
+        const enPartial = mt?.steps[pf.key];
+        if (enPartial) usedTr.add(pf.key);
+        const tr = enPartial
+          ? translateStep(raw, enPartial, splitStep(def), `${mt!.file} → ${pf.key}`, errors)
+          : null;
         const published = (raw.published as boolean | undefined) ?? true;
         const issues = validateForPublish(def, assetPaths);
         for (const i of issues) errors.push({ file, message: `${i.path}: ${i.message}` });
         const type = stepTypeOf(def);
         byType[type] = (byType[type] ?? 0) + 1;
         stepCount++;
-        steps.push({ key: pf.key, order: si + 1, file, type, def, published });
+        steps.push({ key: pf.key, order: si + 1, file, type, def, published, tr });
       }
-      modules.push({ key, order: mi + 1, dir, title, description, published, steps });
+      for (const k of Object.keys(mt?.steps ?? {}))
+        if (!usedTr.has(k))
+          warnings.push({ file: mt!.file, message: `Tərcümədə naməlum addım: ${k}` });
+      const i18n =
+        mt && (mt.title || mt.description)
+          ? { en: { title: mt.title, description: mt.description } }
+          : null;
+      modules.push({ key, order: mi + 1, dir, title, description, published, steps, i18n });
     }
 
     const willUnpublish: string[] = [];
@@ -445,6 +473,7 @@ export class PackageService {
             trackId: track.id,
             existingCourseId: existing?.id ?? null,
             topicIds,
+            courseI18n,
             modules,
             assets,
             path: plannedPath,
@@ -585,6 +614,7 @@ export class PackageService {
                 sequential: c.sequential,
                 estimatedHours: c.estimated_hours ?? null,
                 importedAt: new Date(),
+                i18n: jsonOrNull(plan.courseI18n),
                 ...(plan.topicIds ? { topics: { set: plan.topicIds.map((id) => ({ id })) } } : {}),
                 ...(plan.coursePublishedExplicit
                   ? {
@@ -613,6 +643,7 @@ export class PackageService {
                 isPublished: c.published,
                 publishedAt: c.published ? new Date() : null,
                 importedAt: new Date(),
+                i18n: jsonOrNull(plan.courseI18n),
                 createdById: userId,
                 ...(plan.topicIds?.length
                   ? { topics: { connect: plan.topicIds.map((id) => ({ id })) } }
@@ -670,12 +701,14 @@ export class PackageService {
               description: m.description,
               order: m.order,
               isPublished: m.published,
+              i18n: jsonOrNull(m.i18n),
             },
             update: {
               title: m.title,
               description: m.description,
               order: m.order,
               isPublished: m.published,
+              i18n: jsonOrNull(m.i18n),
             },
           });
           moduleIds.set(m.key, row.id);
@@ -712,6 +745,8 @@ export class PackageService {
                 isPublished: s.published,
                 config: split.config as unknown as Prisma.InputJsonValue,
                 secret,
+                i18n: jsonOrNull(s.tr?.i18n),
+                secretI18n: jsonOrNull(s.tr?.secretI18n),
               },
               update: {
                 type: split.type,
@@ -722,6 +757,8 @@ export class PackageService {
                 isPublished: s.published,
                 config: split.config as unknown as Prisma.InputJsonValue,
                 secret,
+                i18n: jsonOrNull(s.tr?.i18n),
+                secretI18n: jsonOrNull(s.tr?.secretI18n),
               },
             });
             // ctf tapşırıqları
@@ -741,6 +778,7 @@ export class PackageService {
                 points: t.points,
                 caseSensitive: t.caseSensitive,
                 answerHash,
+                i18n: jsonOrNull(s.tr?.ctf.get(t.key)),
               };
               await tx.ctfTask.upsert({
                 where: { stepId_key: { stepId: row.id, key: t.key } },
@@ -817,6 +855,93 @@ export class PackageService {
       pathSlug: pathResult?.slug ?? null,
     };
     return report;
+  }
+
+  /**
+   * Bazada artıq olan kurs üçün YALNIZ tərcümələri yenilə (məzmun, sıra, irəliləyiş toxunulmaz).
+   * API açılanda ContentSync çağırır — paketə yeni tərcümə əlavə olunanda yenidən idxal lazım olmur.
+   * Qaytarır: yenilənən sətirlərin sayı (paket keçərsizdirsə və ya kurs yoxdursa null).
+   */
+  async applyTranslations(buffer: Buffer): Promise<number | null> {
+    const { report, plan } = await this.validate(buffer);
+    if (!plan?.existingCourseId || !report.ok) return null;
+    const courseId = plan.existingCourseId;
+    // jsonb açarları sıralayır — müqayisə açar sırasından asılı olmasın
+    const canon = (v: unknown): unknown =>
+      Array.isArray(v)
+        ? v.map(canon)
+        : v && typeof v === 'object'
+          ? Object.fromEntries(
+              Object.entries(v as Record<string, unknown>)
+                .filter(([, x]) => x !== undefined)
+                .sort(([a], [b]) => a.localeCompare(b))
+                .map(([k, x]) => [k, canon(x)]),
+            )
+          : v;
+    const same = (a: unknown, b: unknown) =>
+      JSON.stringify(canon(a ?? null)) === JSON.stringify(canon(b ?? null));
+    let n = 0;
+    const course = await this.prisma.course.findUniqueOrThrow({
+      where: { id: courseId },
+      select: {
+        i18n: true,
+        modules: {
+          select: {
+            id: true,
+            key: true,
+            i18n: true,
+            steps: {
+              select: {
+                id: true,
+                key: true,
+                i18n: true,
+                secretI18n: true,
+                ctfTasks: { select: { id: true, key: true, i18n: true } },
+              },
+            },
+          },
+        },
+      },
+    });
+    if (!same(course.i18n, plan.courseI18n)) {
+      await this.prisma.course.update({
+        where: { id: courseId },
+        data: { i18n: jsonOrNull(plan.courseI18n) },
+      });
+      n++;
+    }
+    for (const m of plan.modules) {
+      const row = course.modules.find((x) => x.key === m.key);
+      if (!row) continue;
+      if (!same(row.i18n, m.i18n)) {
+        await this.prisma.module.update({
+          where: { id: row.id },
+          data: { i18n: jsonOrNull(m.i18n) },
+        });
+        n++;
+      }
+      for (const s of m.steps) {
+        const st = row.steps.find((x) => x.key === s.key);
+        if (!st) continue;
+        if (!same(st.i18n, s.tr?.i18n) || !same(st.secretI18n, s.tr?.secretI18n)) {
+          await this.prisma.step.update({
+            where: { id: st.id },
+            data: { i18n: jsonOrNull(s.tr?.i18n), secretI18n: jsonOrNull(s.tr?.secretI18n) },
+          });
+          n++;
+        }
+        for (const t of st.ctfTasks) {
+          const want = s.tr?.ctf.get(t.key);
+          if (same(t.i18n, want)) continue;
+          await this.prisma.ctfTask.update({
+            where: { id: t.id },
+            data: { i18n: jsonOrNull(want) },
+          });
+          n++;
+        }
+      }
+    }
+    return n;
   }
 
   /** Yolun tətbiqi — uğursuz olsa hesabat xətası (kurs idxalı ləğv olunmur) */
@@ -953,6 +1078,11 @@ export class PackageService {
     }
     return { buffer: zip.toBuffer(), filename: `${course.slug}.zip` };
   }
+}
+
+/** Json? sütun üçün: dəyər yoxdursa SQL NULL */
+function jsonOrNull(v: unknown): Prisma.InputJsonValue | typeof Prisma.JsonNull {
+  return v ? (v as Prisma.InputJsonValue) : Prisma.JsonNull;
 }
 
 function row_id(map: Map<string, string>, key: string): string {

@@ -7,6 +7,7 @@ import { env } from '../config/env';
 import { PrismaService } from '../prisma/prisma.service';
 import { notFound } from '../common/errors';
 import { renderCertificatePdf } from './certificate-pdf';
+import { reqLocale, withRawContent } from '../common/i18n/request-locale';
 
 type Tx = Prisma.TransactionClient | PrismaService;
 
@@ -19,6 +20,23 @@ export interface CertificateSnapshot {
   trackColor: string;
   hours: number | null;
   xp: number;
+  /** verilən anda ingiliscə adlar (göstərişdə dilə görə) */
+  i18n?: { en?: { courseTitle?: string; trackTitle?: string } };
+}
+
+type I18nTitle = { en?: { title?: string } } | null;
+const enTitle = (j: unknown) => (j as I18nTitle)?.en?.title || undefined;
+
+/** Snapshot-ı sorğunun dilində göstər (en — verilən anda saxlanmış ingiliscə adlar) */
+function localSnapshot(s: CertificateSnapshot): CertificateSnapshot {
+  const en = reqLocale() === 'en' ? s.i18n?.en : undefined;
+  return en
+    ? {
+        ...s,
+        courseTitle: en.courseTitle || s.courseTitle,
+        trackTitle: en.trackTitle || s.trackTitle,
+      }
+    : s;
 }
 
 /** Hər iki cədvəlin (kurs / yol sertifikatı) ümumi görünüşü */
@@ -38,7 +56,7 @@ const fromCourse = (c: Certificate): AnyCert => ({
   kind: 'course',
   id: c.id,
   serial: c.serial,
-  snapshot: c.snapshot as unknown as CertificateSnapshot,
+  snapshot: localSnapshot(c.snapshot as unknown as CertificateSnapshot),
   issuedAt: c.issuedAt,
   revokedAt: c.revokedAt,
 });
@@ -46,7 +64,7 @@ const fromPath = (c: PathCertificate): AnyCert => ({
   kind: 'path',
   id: c.id,
   serial: c.serial,
-  snapshot: c.snapshot as unknown as CertificateSnapshot,
+  snapshot: localSnapshot(c.snapshot as unknown as CertificateSnapshot),
   issuedAt: c.issuedAt,
   revokedAt: c.revokedAt,
 });
@@ -74,6 +92,11 @@ export class CertificatesService {
 
   /** İdempotent: eyni tələbə + kurs üçün bir sertifikat. Adlar snapshot-da dondurulur. */
   async issueForCourse(tx: Tx, userId: string, courseId: string): Promise<string> {
+    // adlar mənbə dilində dondurulur; ingiliscə adlar snapshot.i18n-də ayrıca
+    return withRawContent(() => this.issueForCourseRaw(tx, userId, courseId));
+  }
+
+  private async issueForCourseRaw(tx: Tx, userId: string, courseId: string): Promise<string> {
     const existing = await tx.certificate.findUnique({
       where: { userId_courseId: { userId, courseId } },
     });
@@ -82,7 +105,7 @@ export class CertificatesService {
     const course = await tx.course.findUniqueOrThrow({
       where: { id: courseId },
       include: {
-        track: { select: { title: true, color: true } },
+        track: { select: { title: true, color: true, i18n: true } },
         modules: { include: { steps: { select: { xp: true, isPublished: true } } } },
       },
     });
@@ -98,6 +121,7 @@ export class CertificatesService {
       trackColor: course.track.color,
       hours: course.estimatedHours ?? null,
       xp,
+      i18n: { en: { courseTitle: enTitle(course.i18n), trackTitle: enTitle(course.track.i18n) } },
     };
     const created = await tx.certificate.create({
       data: {
@@ -114,6 +138,10 @@ export class CertificatesService {
 
   /** Yol sertifikatı (Mərhələ 4) — eyni qayda, seriya DACY-P-… */
   async issueForPath(tx: Tx, userId: string, pathId: string): Promise<string> {
+    return withRawContent(() => this.issueForPathRaw(tx, userId, pathId));
+  }
+
+  private async issueForPathRaw(tx: Tx, userId: string, pathId: string): Promise<string> {
     const existing = await tx.pathCertificate.findUnique({
       where: { userId_pathId: { userId, pathId } },
     });
@@ -122,7 +150,7 @@ export class CertificatesService {
     const path = await tx.learningPath.findUniqueOrThrow({
       where: { id: pathId },
       include: {
-        track: { select: { title: true, color: true } },
+        track: { select: { title: true, color: true, i18n: true } },
         items: {
           select: {
             xp: true,
@@ -150,6 +178,12 @@ export class CertificatesService {
       trackColor: path.track.color,
       hours: hours ? Math.round(hours) : null,
       xp: path.items.reduce((a, i) => a + i.xp, 0),
+      i18n: {
+        en: {
+          courseTitle: certTitle ? undefined : enTitle(path.i18n),
+          trackTitle: enTitle(path.track.i18n),
+        },
+      },
     };
     const created = await tx.pathCertificate.create({
       data: {

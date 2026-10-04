@@ -166,6 +166,8 @@ model Track {
   slug        String   @unique // data-analytics | data-engineering | cyber-security (seeded, editable)
   title       String
   description String?
+  /// Tərcümələr: {"en": {...}} — oxuyanda dil İngiliscədirsə mətn sahələrinin üzərinə yazılır (admin marşrutlarında yox)
+  i18n        Json?
   color       String // hex, e.g. #6C7CF0 — every badge / card top / progress bar reads this
   icon        String? // lucide icon name
   order       Int      @unique
@@ -184,6 +186,8 @@ model Topic {
   slug        String   @unique
   title       String
   description String?
+  /// Tərcümələr: {"en": {...}} — oxuyanda dil İngiliscədirsə mətn sahələrinin üzərinə yazılır (admin marşrutlarında yox)
+  i18n        Json?
   color       String   @default("#6C7CF0")
   order       Int      @default(0)
   isPublished Boolean  @default(true)
@@ -202,6 +206,8 @@ model Course {
   title              String
   level              Level     @default(BEGINNER)
   description        String    @default("")
+  /// Tərcümələr: {"en": {...}} — oxuyanda dil İngiliscədirsə mətn sahələrinin üzərinə yazılır (admin marşrutlarında yox)
+  i18n               Json?
   coverAssetId       String?
   sequential         Boolean   @default(true) // false = free navigation
   estimatedHours     Float?
@@ -248,6 +254,8 @@ model Module {
   key         String // stable key: folder name minus numeric prefix ("01-giris" -> "giris")
   title       String
   description String?
+  /// Tərcümələr: {"en": {...}} — oxuyanda dil İngiliscədirsə mətn sahələrinin üzərinə yazılır (admin marşrutlarında yox)
+  i18n        Json?
   order       Int
   isPublished Boolean  @default(false)
   createdAt   DateTime @default(now())
@@ -271,6 +279,10 @@ model Step {
   /// SERVER-ONLY part: quiz {questions[].correct, explanation}, sql {solution, expected, hints}, python {solution, hints},
   /// terminal {check_script, hints}. Never selected by student endpoints.
   secret           Json?
+  /// Tərcümələr: {"en": {...}} — oxuyanda dil İngiliscədirsə mətn sahələrinin üzərinə yazılır (admin marşrutlarında yox)
+  i18n             Json?
+  /// secret-in tərcüməsi (ipucları, izahlar) — yalnız secret seçiləndə üzərinə yazılır
+  secretI18n       Json?
   xp               Int      @default(0)
   estimatedMinutes Int?
   order            Int
@@ -301,6 +313,8 @@ model CtfTask {
   order         Int
   question      String // Markdown
   hint          String? // revealed only via the hint endpoint
+  /// Tərcümələr: {"en": {...}} — oxuyanda dil İngiliscədirsə mətn sahələrinin üzərinə yazılır (admin marşrutlarında yox)
+  i18n          Json?
   points        Int     @default(0)
   caseSensitive Boolean @default(false)
   answerHash    String
@@ -572,6 +586,8 @@ model LearningPath {
   slug           String   @unique // "data-analyst"
   title          String // "Data Analyst ol"
   description    String   @default("")
+  /// Tərcümələr: {"en": {...}} — oxuyanda dil İngiliscədirsə mətn sahələrinin üzərinə yazılır (admin marşrutlarında yox)
+  i18n           Json?
   level          Level    @default(BEGINNER)
   targetAudience String?
   skills         String[] @default([])
@@ -604,6 +620,9 @@ model PathItem {
   /// PROJECT {instructions, deliverables[], review_mode} | ASSESSMENT quiz public config | MILESTONE {certificate_title, description} | COURSE {}
   config         Json         @default("{}")
   secret         Json? // ASSESSMENT correct answers / explanations
+  /// Tərcümələr: {"en": {...}} — oxuyanda dil İngiliscədirsə mətn sahələrinin üzərinə yazılır (admin marşrutlarında yox)
+  i18n           Json?
+  secretI18n     Json?
   isOptional     Boolean      @default(false)
   estimatedHours Float?
   xp             Int          @default(0)
@@ -692,6 +711,8 @@ model Roadmap {
   order       Int      @default(0)
   isPublished Boolean  @default(true)
   content     Json
+  /// Tərcümələr: {"en": {...}} — oxuyanda dil İngiliscədirsə mətn sahələrinin üzərinə yazılır (admin marşrutlarında yox)
+  i18n        Json?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
