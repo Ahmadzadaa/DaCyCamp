@@ -1286,7 +1286,9 @@ m.python('dublikatlar', 'Təkrarlanan sətirlər', 10, '''
     tekrar_mehsul_sayi = (say >= 2).sum()
 
     print(dublikat_say, len(temiz), id_tekrar, tekrar_mehsul_sayi)
-''', T + TX.replace("import pandas as _pd\n    import numpy as _np\n", "") + '''
+''', T + '''
+    _x = _pd.read_csv("satislar_xam.csv")
+''' + '''
     assert dublikat_say == _x.duplicated().sum(), f"dublikat_say {_x.duplicated().sum()} olmalıdır, sənin nəticən: {dublikat_say!r}"
     _t = _x.drop_duplicates().reset_index(drop=True)
     assert isinstance(temiz, _pd.DataFrame) and temiz.equals(_t), f"temiz {len(_t)} sətir olmalıdır və indeksi 0-dan başlamalıdır — reset_index(drop=True)"
@@ -1332,4 +1334,1128 @@ m.quiz('siralama-testi', 'Test: sıralama və dublikatlar', [
     ),
 ])
 
-print(c.root, c.modules, 'modules', c.steps, 'steps (part 1)')
+
+# ───────────────────────────── 06 · Sütunlar ─────────────────────────────
+m = c.module('sutunlar', 'Sütun yaratmaq, adlandırmaq və silmək',
+             'Yeni sütunlar, rename, columns.str.replace, drop/del, insert, assign və eval.')
+
+m.lesson('sutunlar-ders', 'Sütunlarla iş', 9, '''
+    ## Yeni sütun yaratmaq və dəyişmək
+
+    `df["Sütun"] = dəyər/ifadə` — sütun yoxdursa yaradılır, varsa üzərinə yazılır:
+
+    ```python
+    df["Ümumi_Əməkhaqqı"] = df["Əməkhaqqı"] + df["Bonus"]
+    df["Ümumi_Əməkhaqqı"] = df["Ümumi_Əməkhaqqı"] + 50      # mövcudu dəyiş
+    df["Revenue Rounded"] = df["Total Revenue"].round()
+    df["Name Length"] = df["Product Name"].str.len()
+    ```
+
+    Əməliyyat bütün sütuna birdən tətbiq olunur — dövr yazmağa ehtiyac yoxdur (buna **vektorlaşdırma** deyilir).
+
+    ## Adlandırmaq
+
+    ```python
+    df.columns = ["a", "b", "c"]                                    # hamısını yenidən ver
+    df = df.rename(columns={"Total Revenue": "Gelir"})              # seçilmişləri
+    df.columns = df.columns.str.replace(" ", "_")                   # boşluq → alt xətt
+    ```
+
+    ## Silmək
+
+    ```python
+    df = df.drop("Filial", axis=1)               # və ya columns="Filial"
+    df = df.drop(columns=["Filial", "Transaction ID"])
+    del df["Filial"]                             # yerində silir
+    ```
+
+    > ⚠️ Əksər metodlar (`rename`, `drop`, `assign`) **yeni** DataFrame qaytarır — nəticəni dəyişənə yazmasan, dəyişiklik itir: `df = df.drop(...)`.
+
+    ## insert — müəyyən yerə sütun
+
+    ```python
+    df.insert(1, "Il", df["Date"].str[:4])      # 1-ci mövqeyə (ikinci sütun)
+    ```
+
+    `insert` df-i **yerində** dəyişir və heç nə qaytarmır.
+
+    ## assign — yeni DataFrame ilə
+
+    ```python
+    df_yeni = df.assign(EDV=df["Total Revenue"] * 0.18)
+    ```
+
+    Orijinal `df` dəyişmir — zəncirli yazılışda rahatdır.
+
+    ## eval — sütun ifadəsi sətir kimi
+
+    ```python
+    df["Hesab"] = df.eval("`Units Sold` * `Unit Price`")
+    ```
+
+    Python-un `eval()` funksiyasından fərqli olaraq `df.eval()` yalnız sütunlarla hesablama aparır və təhlükəsizdir. Boşluqlu adlar `` ` `` arasında yazılır.
+''')
+
+m.python('adlandirma', 'Sütun adlarını düzəlt', 8, '''
+    Gün 4 (15): sütun adlarındakı boşluqlar kodda narahatlıq yaradır. Adları səliqəyə sal.
+''', [
+    'df-in surətində (alt) bütün sütun adlarındakı boşluqları alt xətlə əvəz et: "Product Name" → "Product_Name".',
+    '"Total Revenue" → "Gelir", "Units Sold" → "Say" adlandır → ad (rename ilə).',
+    'Transaction ID və Filial sütunlarını sil → qisa (drop ilə).',
+], '''
+    import pandas as pd
+
+    df = pd.read_csv("satislar.csv")
+
+    alt = df.copy()
+    # alt.columns = ...
+
+    ad = ...
+    qisa = ...
+
+    print(alt.columns.tolist())
+    print(ad.columns.tolist())
+    print(qisa.shape)
+''', '''
+    import pandas as pd
+
+    df = pd.read_csv("satislar.csv")
+
+    alt = df.copy()
+    alt.columns = alt.columns.str.replace(" ", "_")
+
+    ad = df.rename(columns={"Total Revenue": "Gelir", "Units Sold": "Say"})
+    qisa = df.drop(columns=["Transaction ID", "Filial"])
+
+    print(alt.columns.tolist())
+    print(ad.columns.tolist())
+    print(qisa.shape)
+''', T + '''
+    assert alt.columns.tolist() == [c.replace(" ", "_") for c in _s.columns], f"alt-ın sütunları boşluqsuz olmalıdır, səndə: {alt.columns.tolist()}"
+    _a = _s.rename(columns={"Total Revenue": "Gelir", "Units Sold": "Say"})
+    assert isinstance(ad, _pd.DataFrame) and ad.columns.tolist() == _a.columns.tolist(), f"ad-ın sütunları: {_a.columns.tolist()}"
+    assert isinstance(qisa, _pd.DataFrame) and qisa.columns.tolist() == [c for c in _s.columns if c not in ("Transaction ID", "Filial")], "qisa = df.drop(columns=['Transaction ID', 'Filial'])"
+    assert df.columns.tolist() == _s.columns.tolist(), "Orijinal df dəyişməməlidir — rename/drop nəticəsini yeni dəyişənə yaz"
+''', [
+    'alt.columns = alt.columns.str.replace(" ", "_")',
+    'df.rename(columns={"Total Revenue": "Gelir", "Units Sold": "Say"})',
+    'df.drop(columns=["Transaction ID", "Filial"])',
+], dataset=S)
+
+m.python('yeni-sutunlar', 'Hesablanmış sütunlar', 10, '''
+    Gün 3 tapşırıqları 3, 6, 7, 8: mövcud sütunlardan yeni sütunlar yarat.
+''', [
+    'Total Revenue-ni tam ədədə yuvarlaqlaşdıraraq "Revenue Rounded" sütunu yarat (round()).',
+    'Hər məhsul adının uzunluğu — "Name Length" (str.len()).',
+    'Məhsul adlarını böyük hərflərlə — "Product Upper" (str.upper()).',
+    'Vahid qiymətin kvadratı — "Price Squared".',
+], '''
+    import pandas as pd
+
+    df = pd.read_csv("satislar.csv")
+
+    # df["Revenue Rounded"] = ...
+
+    df[["Product Name", "Total Revenue"]].head()
+''', '''
+    import pandas as pd
+
+    df = pd.read_csv("satislar.csv")
+
+    df["Revenue Rounded"] = df["Total Revenue"].round()
+    df["Name Length"] = df["Product Name"].str.len()
+    df["Product Upper"] = df["Product Name"].str.upper()
+    df["Price Squared"] = df["Unit Price"] ** 2
+
+    df[["Product Name", "Name Length", "Product Upper", "Revenue Rounded", "Price Squared"]].head()
+''', T + '''
+    for _c in ("Revenue Rounded", "Name Length", "Product Upper", "Price Squared"):
+        assert _c in df.columns, f"df-də '{_c}' sütunu yoxdur"
+    assert df["Revenue Rounded"].equals(_s["Total Revenue"].round()), "Revenue Rounded = df['Total Revenue'].round()"
+    assert df["Name Length"].equals(_s["Product Name"].str.len()), "Name Length = df['Product Name'].str.len()"
+    assert df["Product Upper"].equals(_s["Product Name"].str.upper()), "Product Upper = df['Product Name'].str.upper()"
+    assert (df["Price Squared"] - _s["Unit Price"] ** 2).abs().max() < 1e-6, "Price Squared = df['Unit Price'] ** 2"
+''', [
+    'df["Revenue Rounded"] = df["Total Revenue"].round()',
+    'Mətn metodları .str ilə: df["Product Name"].str.len(), .str.upper()',
+    'df["Price Squared"] = df["Unit Price"] ** 2',
+], dataset=S)
+
+m.python('eval-assign-insert', 'eval, assign və insert', 10, '''
+    Gün 5 (8): Total Revenue sütununu `Units Sold × Unit Price` kimi `eval()` ilə yenidən hesabla və mövcud dəyərlərlə müqayisə et.
+''', [
+    'df.eval ilə "Hesab" sütunu yarat: `Units Sold` * `Unit Price`.',
+    'Hesab (2 onluq) Total Revenue ilə hər sətirdə eynidirmi? → eynidir (True/False).',
+    'assign ilə 18% ƏDV sütunu "EDV" olan yeni DataFrame → edvli (df dəyişməsin).',
+    'insert ilə 1-ci mövqeyə ilin özünü ("2023"/"2024") "Il" sütunu kimi əlavə et (Date-in ilk 4 simvolu).',
+], '''
+    import pandas as pd
+
+    df = pd.read_csv("satislar.csv")
+
+    df["Hesab"] = ...
+    eynidir = ...
+    edvli = ...
+    # insert
+
+    df.head()
+''', '''
+    import pandas as pd
+
+    df = pd.read_csv("satislar.csv")
+
+    df["Hesab"] = df.eval("`Units Sold` * `Unit Price`")
+    eynidir = bool((df["Hesab"].round(2) == df["Total Revenue"].round(2)).all())
+    edvli = df.assign(EDV=df["Total Revenue"] * 0.18)
+    df.insert(1, "Il", df["Date"].str[:4])
+
+    df.head()
+''', T + '''
+    assert "Hesab" in df.columns and (df["Hesab"] - _s["Units Sold"] * _s["Unit Price"]).abs().max() < 1e-6, "Hesab = df.eval('`Units Sold` * `Unit Price`')"
+    _e = bool(((_s["Units Sold"] * _s["Unit Price"]).round(2) == _s["Total Revenue"].round(2)).all())
+    assert eynidir == _e, f"eynidir {_e} olmalıdır"
+    assert isinstance(edvli, _pd.DataFrame) and "EDV" in edvli.columns, "edvli = df.assign(EDV=df['Total Revenue'] * 0.18)"
+    assert (edvli["EDV"] - _s["Total Revenue"] * 0.18).abs().max() < 1e-6, "EDV = Total Revenue × 0.18"
+    assert "EDV" not in df.columns, "assign df-i dəyişməməlidir"
+    assert df.columns[1] == "Il" and df["Il"].equals(_s["Date"].str[:4]), "df.insert(1, 'Il', df['Date'].str[:4])"
+    assert ".eval(" in dacy.code and ".assign(" in dacy.code and ".insert(" in dacy.code, "eval, assign və insert istifadə et"
+''', [
+    'df.eval("`Units Sold` * `Unit Price`") — boşluqlu adlar backtick arasında.',
+    'eynidir = bool((df["Hesab"].round(2) == df["Total Revenue"].round(2)).all())',
+    'df.insert(1, "Il", df["Date"].str[:4]) — insert heç nə qaytarmır, df-i dəyişir.',
+], dataset=S)
+
+m.quiz('sutunlar-testi', 'Test: sütunlar', [
+    classify(
+        'Metod orijinal DataFrame-i dəyişir, yoxsa yenisini qaytarır? (defolt parametrlərlə)',
+        [
+            ('Yerində dəyişir', ['df.insert(1, "Il", ...)', 'del df["Filial"]', 'df["Yeni"] = ...']),
+            ('Yeni DataFrame qaytarır', ['df.rename(columns=...)', 'df.drop(columns=...)', 'df.assign(EDV=...)']),
+        ],
+        'insert, del və sütuna mənimsətmə df-i yerində dəyişir. rename, drop, assign isə yeni DataFrame qaytarır — nəticəni dəyişənə yazmaq lazımdır.',
+    ),
+    single(
+        '`df.drop("Filial", axis=1)` yazıb nəticəni heç yerə yazmadıq. Sonra `df.columns`-da Filial varmı?',
+        ['Xeyr, silinib', 'Bəli, df dəyişməyib', 'Xəta verir', 'Yalnız indeks silinib'],
+        2,
+        'drop yeni DataFrame qaytarır; df = df.drop(...) yazmaq lazımdır.',
+    ),
+    single(
+        '`df.eval("`Units Sold` * `Unit Price`")` Python-un `eval()`-indən nə ilə fərqlənir?',
+        [
+            'Heç nə ilə',
+            'Yalnız DataFrame sütunları ilə hesablama aparır və ixtiyari kod icra etmir',
+            'Yalnız mətn sütunları ilə işləyir',
+            'Nəticəni fayla yazır',
+        ],
+        2,
+        'df.eval sütun ifadələri üçündür; Python-un eval-i isə istənilən kodu icra edə bilər.',
+    ),
+])
+
+# ───────────────────────────── 07 · apply və şərtlər ─────────────────────────────
+m = c.module('apply', 'apply, lambda, map və şərtli sütunlar',
+             'Sütuna funksiya tətbiq etmək, np.where və np.select ilə «IF», map və replace.')
+
+m.lesson('apply-ders', '«IF» DataFrame-də: apply, np.where, map', 9, '''
+    Excel-də `=IF(D2>1000; "Yüksək"; "Aşağı")` yazırıq. Pandas-da bunun bir neçə yolu var.
+
+    ## np.where — iki variant
+
+    ```python
+    import numpy as np
+    df["Revenue Class"] = np.where(df["Total Revenue"] > 1000, "High Revenue", "Low Revenue")
+    ```
+
+    `np.where(şərt, doğrudursa, yanlışdırsa)` — bütün sütun üzrə bir dəfəyə, sürətli.
+
+    ## np.select — çox variant
+
+    ```python
+    sertler = [df["Total Revenue"] >= 2000, df["Total Revenue"] >= 500]
+    deyerler = ["Yüksək", "Orta"]
+    df["Kateqoriya"] = np.select(sertler, deyerler, default="Aşağı")
+    ```
+
+    Şərtlər sıra ilə yoxlanılır — birinci doğru olan qalib gəlir.
+
+    ## apply + funksiya
+
+    ```python
+    def qiymetlendir(ball):
+        if ball >= 90:
+            return "Mükəmməl"
+        elif ball >= 75:
+            return "Yaxşı"
+        elif ball >= 60:
+            return "Kafi"
+        return "Uğursuz"
+
+    df["Qiymət"] = df["Ballar"].apply(qiymetlendir)
+    df["Kateqoriya"] = df["Yaş"].apply(lambda x: "Yetkin" if x > 30 else "Gənc")
+    ```
+
+    `apply` funksiyanı hər dəyərə ayrıca tətbiq edir — istənilən məntiqi yazmaq olar.
+
+    ## Sətir üzrə apply: axis=1
+
+    ```python
+    df["Yer"] = df.apply(lambda r: f"{r['Region']} - {r['Filial']}", axis=1)
+    ```
+
+    `axis=1` — funksiya bütöv **sətri** alır və onun bir neçə sütunundan istifadə edir.
+
+    ## map — dəyərləri çevir
+
+    ```python
+    df["A"] = df["A"].map(lambda x: x + 2)
+    az = {"Electronics": "Elektronika", "Clothing": "Geyim"}
+    df["Kateqoriya AZ"] = df["Product Category"].map(az)   # lüğətdə olmayan → NaN
+    ```
+
+    ## replace — konkret dəyəri əvəz et
+
+    ```python
+    df["Payment Method"] = df["Payment Method"].replace("Credit Card", "Visa Card")
+    ```
+
+    | Alət | Nə vaxt |
+    | --- | --- |
+    | `np.where` | İki variantlı şərt — ən sürətli |
+    | `np.select` | Bir neçə şərt |
+    | `apply(funksiya)` | Mürəkkəb məntiq, öz funksiyan |
+    | `apply(..., axis=1)` | Bir neçə sütundan istifadə |
+    | `map(dict)` | Dəyərləri lüğətə görə çevirmək |
+    | `replace` | Konkret dəyərləri əvəz etmək |
+
+    > 💡 Böyük datada `np.where`/vektor əməliyyatları `apply`-dan dəfələrlə sürətlidir — çünki `apply` hər sətir üçün Python funksiyası çağırır.
+''')
+
+m.python('np-where', 'np.where ilə şərtli sütun', 10, '''
+    Gün 3 (12) və Gün 5 (10): şərtə görə etiketlər.
+''', [
+    'Total Revenue 1000-dən böyükdürsə "High Revenue", əks halda "Low Revenue" — "Revenue Class" sütunu (np.where).',
+    'df.eval ilə Units Sold < 5 şərtini hesabla və np.where ilə "Low Sales" / "High Sales" — "Sales Category" sütunu.',
+    '"High Revenue" əməliyyatlarının sayı → high_say.',
+], '''
+    import pandas as pd
+    import numpy as np
+
+    df = pd.read_csv("satislar.csv")
+
+    # df["Revenue Class"] = ...
+    # df["Sales Category"] = ...
+    high_say = ...
+
+    print(high_say)
+''', '''
+    import pandas as pd
+    import numpy as np
+
+    df = pd.read_csv("satislar.csv")
+
+    df["Revenue Class"] = np.where(df["Total Revenue"] > 1000, "High Revenue", "Low Revenue")
+    df["Sales Category"] = np.where(df.eval("`Units Sold` < 5"), "Low Sales", "High Sales")
+    high_say = (df["Revenue Class"] == "High Revenue").sum()
+
+    print(high_say)
+''', T + '''
+    assert "Revenue Class" in df.columns and list(df["Revenue Class"]) == list(_np.where(_s["Total Revenue"] > 1000, "High Revenue", "Low Revenue")), "Revenue Class düzgün deyil"
+    assert "Sales Category" in df.columns and list(df["Sales Category"]) == list(_np.where(_s["Units Sold"] < 5, "Low Sales", "High Sales")), "Sales Category düzgün deyil"
+    assert high_say == (_s["Total Revenue"] > 1000).sum(), f"high_say {(_s['Total Revenue'] > 1000).sum()} olmalıdır"
+    assert "np.where(" in dacy.code and ".eval(" in dacy.code, "np.where və df.eval istifadə et"
+''', [
+    'np.where(df["Total Revenue"] > 1000, "High Revenue", "Low Revenue")',
+    'np.where(df.eval("`Units Sold` < 5"), "Low Sales", "High Sales")',
+    'high_say = (df["Revenue Class"] == "High Revenue").sum()',
+], dataset=S)
+
+m.python('apply-funksiya', 'apply ilə öz funksiyan', 10, '''
+    Gün 5 (1): Total Revenue-yə əsasən «Kateqoriya» sütunu. Sərhədlər: **2000 ₼ və yuxarı — Yüksək**, **500–2000 — Orta**, **500-dən az — Aşağı**.
+''', [
+    'kateqoriya(gelir) funksiyasını yaz və apply ilə "Kateqoriya" sütunu yarat.',
+    'axis=1 ilə "Yer" sütunu: "Bakı - Nizami" formatında (Region - Filial).',
+    'Hər kateqoriyanın sayı → say (value_counts).',
+], '''
+    import pandas as pd
+
+    df = pd.read_csv("satislar.csv")
+
+
+    def kateqoriya(gelir):
+        ...
+
+
+    # df["Kateqoriya"] = ...
+    # df["Yer"] = ...
+    say = ...
+    print(say)
+''', '''
+    import pandas as pd
+
+    df = pd.read_csv("satislar.csv")
+
+
+    def kateqoriya(gelir):
+        if gelir >= 2000:
+            return "Yüksək"
+        elif gelir >= 500:
+            return "Orta"
+        return "Aşağı"
+
+
+    df["Kateqoriya"] = df["Total Revenue"].apply(kateqoriya)
+    df["Yer"] = df.apply(lambda r: f"{r['Region']} - {r['Filial']}", axis=1)
+    say = df["Kateqoriya"].value_counts()
+    print(say)
+''', T + '''
+    _k = _np.select([_s["Total Revenue"] >= 2000, _s["Total Revenue"] >= 500], ["Yüksək", "Orta"], default="Aşağı")
+    assert "Kateqoriya" in df.columns and list(df["Kateqoriya"]) == list(_k), "Kateqoriya düzgün deyil — sərhədləri yoxla (>= 2000, >= 500)"
+    assert kateqoriya(2000) == "Yüksək" and kateqoriya(1999.99) == "Orta" and kateqoriya(499) == "Aşağı", "kateqoriya() funksiyası sərhədlərdə səhvdir"
+    assert "Yer" in df.columns and list(df["Yer"]) == list(_s["Region"] + " - " + _s["Filial"]), "Yer 'Region - Filial' formatında olmalıdır"
+    assert isinstance(say, _pd.Series) and say.to_dict() == _pd.Series(_k).value_counts().to_dict(), "say = df['Kateqoriya'].value_counts()"
+    assert ".apply(" in dacy.code and "axis=1" in dacy.code, "apply və axis=1 istifadə et"
+''', [
+    'if gelir >= 2000: return "Yüksək" / elif gelir >= 500: return "Orta" / return "Aşağı"',
+    'df["Kateqoriya"] = df["Total Revenue"].apply(kateqoriya)',
+    'df.apply(lambda r: f"{r[\'Region\']} - {r[\'Filial\']}", axis=1)',
+], dataset=S)
+
+m.python('map-replace', 'map və replace', 8, '''
+    Gün 5 (9) və Gün 3 (9): dəyərləri çevir və əvəz et.
+''', [
+    'Region sütununu map ilə böyük hərflərə çevir.',
+    'Payment Method-da "Credit Card" dəyərlərini "Visa Card" ilə əvəz et (replace).',
+    'az lüğəti ilə "Kateqoriya AZ" sütunu yarat (map).',
+], '''
+    import pandas as pd
+
+    df = pd.read_csv("satislar.csv")
+    az = {"Electronics": "Elektronika", "Clothing": "Geyim", "Sports": "İdman",
+          "Home Appliances": "Məişət texnikası", "Beauty": "Kosmetika"}
+
+    # df["Region"] = ...
+    # df["Payment Method"] = ...
+    # df["Kateqoriya AZ"] = ...
+
+    df[["Region", "Payment Method", "Kateqoriya AZ"]].head()
+''', '''
+    import pandas as pd
+
+    df = pd.read_csv("satislar.csv")
+    az = {"Electronics": "Elektronika", "Clothing": "Geyim", "Sports": "İdman",
+          "Home Appliances": "Məişət texnikası", "Beauty": "Kosmetika"}
+
+    df["Region"] = df["Region"].map(lambda x: x.upper())
+    df["Payment Method"] = df["Payment Method"].replace("Credit Card", "Visa Card")
+    df["Kateqoriya AZ"] = df["Product Category"].map(az)
+
+    df[["Region", "Payment Method", "Kateqoriya AZ"]].head()
+''', T + '''
+    assert list(df["Region"]) == [r.upper() for r in _s["Region"]], "Region böyük hərflərlə olmalıdır"
+    assert "Credit Card" not in set(df["Payment Method"]) and (df["Payment Method"] == "Visa Card").sum() == (_s["Payment Method"] == "Credit Card").sum(), "Credit Card → Visa Card əvəz olunmalıdır"
+    assert "Kateqoriya AZ" in df.columns and df["Kateqoriya AZ"].notnull().all() and df.loc[0, "Kateqoriya AZ"] == az[_s.loc[0, "Product Category"]], "Kateqoriya AZ = df['Product Category'].map(az)"
+    assert ".map(" in dacy.code and ".replace(" in dacy.code, "map və replace istifadə et"
+''', [
+    'df["Region"].map(lambda x: x.upper())',
+    'df["Payment Method"].replace("Credit Card", "Visa Card")',
+    'df["Product Category"].map(az)',
+], dataset=S)
+
+m.quiz('apply-testi', 'Test: apply və şərtlər', [
+    classify(
+        'Hər tapşırıq üçün ən uyğun aləti seç.',
+        [
+            ('np.where', ['Gəlir > 1000 → "High", əks halda "Low"']),
+            ('np.select', ['Üç səviyyə: Yüksək / Orta / Aşağı (bir neçə şərt)']),
+            ('map(lüğət)', ['İngiliscə kateqoriya adlarını Azərbaycancaya çevirmək']),
+            ('apply(..., axis=1)', ['Region və Filial sütunlarını bir mətndə birləşdirmək']),
+        ],
+        'İki variant — np.where; çox şərt — np.select; lüğətlə çevirmə — map; bir neçə sütundan istifadə — apply(axis=1).',
+    ),
+    single(
+        '`df["K"].map({"a": 1, "b": 2})` — sütunda "c" dəyəri varsa nəticə nə olur?',
+        ['"c" olduğu kimi qalır', 'NaN olur', 'Xəta verir', '0 olur'],
+        2,
+        'map lüğətdə olmayan dəyərlər üçün NaN qaytarır. Dəyərləri saxlamaq üçün replace istifadə olunur.',
+    ),
+    single(
+        '`apply` niyə böyük datada `np.where`-dən yavaşdır?',
+        [
+            'apply hər dəyər üçün ayrıca Python funksiyası çağırır',
+            'apply datanı diskə yazır',
+            'np.where daha az dəqiqdir',
+            'Fərq yoxdur',
+        ],
+        1,
+        'np.where bütün sütunu bir dəfəyə (vektor) emal edir.',
+    ),
+])
+
+# ───────────────────────────── 08 · groupby ─────────────────────────────
+m = c.module('groupby', 'Qruplaşdırma və aqreqasiya',
+             'groupby ilə qrup üzrə cəm, orta, say; bir neçə açar, agg, hər qrupun lideri.')
+
+m.lesson('groupby-ders', 'groupby: böl, hesabla, birləşdir', 9, '''
+    «Hər region üzrə gəlir», «hər məhsulun orta satışı», «hər işçinin satış sayı» — bu suallar **qruplaşdırma** tələb edir. Excel-də pivot table, SQL-də `GROUP BY`, pandas-da `groupby`.
+
+    ## Böl → hesabla → birləşdir
+
+    ```python
+    df.groupby("Region")["Total Revenue"].sum()
+    ```
+
+    1. **Böl:** sətirlər Region dəyərinə görə qruplara bölünür.
+    2. **Hesabla:** hər qrupda Total Revenue cəmlənir.
+    3. **Birləşdir:** nəticə — indeksi region olan Series.
+
+    ## Aqreqasiya funksiyaları
+
+    | Funksiya | Nə hesablayır |
+    | --- | --- |
+    | `sum()` | Cəm |
+    | `mean()` | Orta |
+    | `count()` | Boş olmayan dəyərlərin sayı |
+    | `size()` | Qrupdakı sətirlərin sayı |
+    | `min()`, `max()` | Ən kiçik, ən böyük |
+    | `nunique()` | Unikal dəyərlərin sayı |
+    | `agg([...])` | Bir neçə funksiya birdən |
+
+    ```python
+    df.groupby("Region")["Total Revenue"].agg(["sum", "mean", "count"])
+    ```
+
+    ## Bir neçə açar
+
+    ```python
+    df.groupby(["Region", "Payment Method"])["Total Revenue"].sum()
+    ```
+
+    Nəticənin indeksi iki səviyyəlidir (MultiIndex). Adi cədvəl lazımdırsa — `.reset_index()`.
+
+    ## Adlandırılmış aqreqasiya
+
+    ```python
+    df.groupby("Product Name").agg(
+        orta_say=("Units Sold", "mean"),
+        orta_qiymet=("Unit Price", "mean"),
+        emeliyyat=("Transaction ID", "count"),
+    )
+    ```
+
+    Format: `yeni_ad=("sütun", "funksiya")` — nəticə sütunlarının adlarını özün seçirsən.
+
+    ## Nəticə ilə işləmək
+
+    ```python
+    gelir = df.groupby("Region")["Total Revenue"].sum().sort_values(ascending=False)
+    gelir.idxmax()        # ən çox gəlir gətirən region
+    gelir.head(3)         # ilk 3
+    ```
+''')
+
+m.lesson('groupby-lider', 'Hər qrupun lideri və digər texnikalar', 7, '''
+    ## «Hər regionda ən çox gəlir gətirən məhsul»
+
+    Bu, iki addımlı sualdır: əvvəlcə region × məhsul üzrə cəm, sonra hər regionda maksimum.
+
+    ```python
+    pg = df.groupby(["Region", "Product Name"])["Total Revenue"].sum().reset_index()
+    liderler = pg.loc[pg.groupby("Region")["Total Revenue"].idxmax()]
+    ```
+
+    `pg.groupby("Region")["Total Revenue"].idxmax()` hər regionun ən böyük sətrinin **indeksini** qaytarır, `loc` isə həmin sətirləri götürür.
+
+    Alternativ — sırala və hər qrupun birincisini saxla:
+
+    ```python
+    pg.sort_values("Total Revenue", ascending=False).drop_duplicates("Region")
+    ```
+
+    ## Qrupda neçə fərqli dəyər?
+
+    ```python
+    df.groupby("Sales Employee")["Product Name"].nunique()   # hər işçi neçə fərqli məhsul satıb
+    ```
+
+    ## transform — qrup nəticəsini hər sətrə qaytar
+
+    ```python
+    df["Region Payı"] = df["Total Revenue"] / df.groupby("Region")["Total Revenue"].transform("sum")
+    ```
+
+    `transform` nəticəni qrupun hər sətrinə yayır — «əməliyyat regionun gəlirinin neçə faizidir?» kimi suallar üçün.
+
+    ## Lüğət kimi nəticə
+
+    ```python
+    dict(zip(liderler["Region"], liderler["Product Name"]))
+    # {"Bakı": "iPhone 15", "Gəncə": ...}
+    ```
+''')
+
+m.python('groupby-esas', 'Region, kateqoriya və ödəniş üzrə', 10, '''
+    Gün 4 (1–3) və Gün 3 (25, 27).
+''', [
+    'Hər region üzrə Total Revenue cəmi, çoxdan aza sıralı → region_gelir.',
+    'Ən çox gəlir gətirən region → en_cox_region.',
+    'Hər Product Category üzrə satılan ümumi Units Sold → kateqoriya_say.',
+    'Hər Payment Method üzrə əməliyyat sayı → odenis_say (size()).',
+], '''
+    import pandas as pd
+
+    df = pd.read_csv("satislar.csv")
+
+    region_gelir = ...
+    en_cox_region = ...
+    kateqoriya_say = ...
+    odenis_say = ...
+
+    print(en_cox_region)
+    region_gelir
+''', '''
+    import pandas as pd
+
+    df = pd.read_csv("satislar.csv")
+
+    region_gelir = df.groupby("Region")["Total Revenue"].sum().sort_values(ascending=False)
+    en_cox_region = region_gelir.idxmax()
+    kateqoriya_say = df.groupby("Product Category")["Units Sold"].sum()
+    odenis_say = df.groupby("Payment Method").size()
+
+    print(en_cox_region)
+    region_gelir
+''', T + '''
+    _r = _s.groupby("Region")["Total Revenue"].sum().sort_values(ascending=False)
+    assert isinstance(region_gelir, _pd.Series) and list(region_gelir.index) == list(_r.index), f"region_gelir çoxdan aza sıralanmalıdır: {list(_r.index)}"
+    assert (region_gelir - _r).abs().max() < 0.01, "region_gelir dəyərləri düzgün deyil"
+    assert en_cox_region == _r.idxmax(), f"en_cox_region {_r.idxmax()!r} olmalıdır"
+    assert kateqoriya_say.to_dict() == _s.groupby("Product Category")["Units Sold"].sum().to_dict(), "kateqoriya_say düzgün deyil"
+    assert odenis_say.to_dict() == _s.groupby("Payment Method").size().to_dict(), "odenis_say düzgün deyil"
+    assert "groupby(" in dacy.code, "groupby istifadə et"
+''', [
+    'df.groupby("Region")["Total Revenue"].sum().sort_values(ascending=False)',
+    'en_cox_region = region_gelir.idxmax()',
+    'df.groupby("Payment Method").size()',
+], dataset=S)
+
+m.python('groupby-coxlu', 'Bir neçə açar və agg', 10, '''
+    Gün 4 (4) və Gün 3 (28): kombinasiyalar üzrə qruplaşdırma.
+''', [
+    'Filial və Sales Employee kombinasiyası üzrə ümumi gəlir → filial_isci.',
+    'Region və Payment Method üzrə: Satis (Units Sold cəmi) və Gelir (Total Revenue cəmi) sütunları olan cədvəl → region_odenis (agg, adlandırılmış).',
+    'region_odenis-dən Bakı + Credit Card sətrinin gəliri (2 onluq) → baki_kart_gelir.',
+], '''
+    import pandas as pd
+
+    df = pd.read_csv("satislar.csv")
+
+    filial_isci = ...
+    region_odenis = ...
+    baki_kart_gelir = ...
+
+    print(baki_kart_gelir)
+    region_odenis.head()
+''', '''
+    import pandas as pd
+
+    df = pd.read_csv("satislar.csv")
+
+    filial_isci = df.groupby(["Filial", "Sales Employee"])["Total Revenue"].sum()
+    region_odenis = df.groupby(["Region", "Payment Method"]).agg(
+        Satis=("Units Sold", "sum"),
+        Gelir=("Total Revenue", "sum"),
+    )
+    baki_kart_gelir = round(region_odenis.loc[("Bakı", "Credit Card"), "Gelir"], 2)
+
+    print(baki_kart_gelir)
+    region_odenis.head()
+''', T + '''
+    _f = _s.groupby(["Filial", "Sales Employee"])["Total Revenue"].sum()
+    assert isinstance(filial_isci, _pd.Series) and (filial_isci - _f).abs().max() < 0.01 and len(filial_isci) == len(_f), "filial_isci = df.groupby(['Filial', 'Sales Employee'])['Total Revenue'].sum()"
+    assert isinstance(region_odenis, _pd.DataFrame) and {"Satis", "Gelir"} <= set(region_odenis.columns), "region_odenis-də Satis və Gelir sütunları olmalıdır"
+    _g = _s.groupby(["Region", "Payment Method"])["Total Revenue"].sum()
+    assert (region_odenis["Gelir"] - _g).abs().max() < 0.01, "Gelir dəyərləri düzgün deyil"
+    assert (region_odenis["Satis"] - _s.groupby(["Region", "Payment Method"])["Units Sold"].sum()).abs().max() == 0, "Satis dəyərləri düzgün deyil"
+    assert baki_kart_gelir == round(_g.loc[("Bakı", "Credit Card")], 2), f"baki_kart_gelir {round(_g.loc[('Bakı', 'Credit Card')], 2)} olmalıdır"
+''', [
+    'df.groupby(["Filial", "Sales Employee"])["Total Revenue"].sum()',
+    '.agg(Satis=("Units Sold", "sum"), Gelir=("Total Revenue", "sum"))',
+    'MultiIndex-də sətir tuple ilə: region_odenis.loc[("Bakı", "Credit Card"), "Gelir"]',
+], dataset=S)
+
+m.python('groupby-mehsul', 'Məhsullar üzrə adlandırılmış aqreqasiya', 10, '''
+    Gün 4 (7, 13, 14) və Gün 3 (26).
+''', [
+    'Hər Product Name üçün: orta_say (Units Sold ortası), orta_qiymet (Unit Price ortası), emeliyyat (say) — 2 onluq → mehsul.',
+    'Hər Payment Method-un gətirdiyi orta gəlir, 2 onluq → odenis_orta.',
+    'Ən çox ədəd satılan məhsul → en_cox_satilan və onun satılan ədədi → en_cox_say.',
+], '''
+    import pandas as pd
+
+    df = pd.read_csv("satislar.csv")
+
+    mehsul = ...
+    odenis_orta = ...
+    en_cox_satilan = ...
+    en_cox_say = ...
+
+    print(en_cox_satilan, en_cox_say)
+    mehsul.head()
+''', '''
+    import pandas as pd
+
+    df = pd.read_csv("satislar.csv")
+
+    mehsul = df.groupby("Product Name").agg(
+        orta_say=("Units Sold", "mean"),
+        orta_qiymet=("Unit Price", "mean"),
+        emeliyyat=("Transaction ID", "count"),
+    ).round(2)
+    odenis_orta = df.groupby("Payment Method")["Total Revenue"].mean().round(2)
+    say = df.groupby("Product Name")["Units Sold"].sum()
+    en_cox_satilan = say.idxmax()
+    en_cox_say = say.max()
+
+    print(en_cox_satilan, en_cox_say)
+    mehsul.head()
+''', T + '''
+    _m = _s.groupby("Product Name").agg(orta_say=("Units Sold", "mean"), orta_qiymet=("Unit Price", "mean"), emeliyyat=("Transaction ID", "count")).round(2)
+    assert isinstance(mehsul, _pd.DataFrame) and {"orta_say", "orta_qiymet", "emeliyyat"} <= set(mehsul.columns), "mehsul-da orta_say, orta_qiymet, emeliyyat sütunları olmalıdır"
+    assert (mehsul[["orta_say", "orta_qiymet"]].round(2) - _m[["orta_say", "orta_qiymet"]]).abs().max().max() < 0.011, "orta dəyərlər düzgün deyil"
+    assert mehsul["emeliyyat"].to_dict() == _m["emeliyyat"].to_dict(), "emeliyyat sayı düzgün deyil"
+    _o = _s.groupby("Payment Method")["Total Revenue"].mean().round(2)
+    assert (odenis_orta - _o).abs().max() < 0.011, "odenis_orta düzgün deyil"
+    _say = _s.groupby("Product Name")["Units Sold"].sum()
+    assert en_cox_satilan == _say.idxmax() and en_cox_say == _say.max(), f"en çox satılan: {_say.idxmax()} ({_say.max()} ədəd)"
+''', [
+    '.agg(orta_say=("Units Sold", "mean"), orta_qiymet=("Unit Price", "mean"), emeliyyat=("Transaction ID", "count")).round(2)',
+    'df.groupby("Payment Method")["Total Revenue"].mean().round(2)',
+    'say = df.groupby("Product Name")["Units Sold"].sum(); say.idxmax(), say.max()',
+], dataset=S)
+
+m.python('groupby-lider-tapsiriq', 'Hər qrupun lideri', 12, '''
+    Gün 3 (15), Gün 6 (1) və Gün 4 (11, 12): hər qrupda ən yaxşısı.
+''', [
+    'Hər regionda ən çox gəlir gətirən məhsul → region_lider (dict: {region: məhsul}).',
+    'Hər filialda ən çox gəlir gətirən kateqoriya → filial_lider (dict).',
+    'Hər satıcının satdığı fərqli məhsulların sayı → isci_cesid (nunique).',
+], '''
+    import pandas as pd
+
+    df = pd.read_csv("satislar.csv")
+
+    region_lider = ...
+    filial_lider = ...
+    isci_cesid = ...
+
+    print(region_lider)
+    print(filial_lider)
+''', '''
+    import pandas as pd
+
+    df = pd.read_csv("satislar.csv")
+
+    pg = df.groupby(["Region", "Product Name"])["Total Revenue"].sum().reset_index()
+    top = pg.loc[pg.groupby("Region")["Total Revenue"].idxmax()]
+    region_lider = dict(zip(top["Region"], top["Product Name"]))
+
+    fk = df.groupby(["Filial", "Product Category"])["Total Revenue"].sum().reset_index()
+    top2 = fk.loc[fk.groupby("Filial")["Total Revenue"].idxmax()]
+    filial_lider = dict(zip(top2["Filial"], top2["Product Category"]))
+
+    isci_cesid = df.groupby("Sales Employee")["Product Name"].nunique()
+
+    print(region_lider)
+    print(filial_lider)
+''', T + '''
+    _pg = _s.groupby(["Region", "Product Name"])["Total Revenue"].sum().reset_index()
+    _t = _pg.loc[_pg.groupby("Region")["Total Revenue"].idxmax()]
+    _rl = dict(zip(_t["Region"], _t["Product Name"]))
+    assert region_lider == _rl, f"region_lider {_rl} olmalıdır, sənin nəticən: {region_lider!r}"
+    _fk = _s.groupby(["Filial", "Product Category"])["Total Revenue"].sum().reset_index()
+    _t2 = _fk.loc[_fk.groupby("Filial")["Total Revenue"].idxmax()]
+    _fl = dict(zip(_t2["Filial"], _t2["Product Category"]))
+    assert filial_lider == _fl, f"filial_lider {_fl} olmalıdır"
+    assert isci_cesid.to_dict() == _s.groupby("Sales Employee")["Product Name"].nunique().to_dict(), "isci_cesid = df.groupby('Sales Employee')['Product Name'].nunique()"
+''', [
+    'Əvvəl region × məhsul cəmi: df.groupby(["Region", "Product Name"])["Total Revenue"].sum().reset_index()',
+    'Hər regionun maksimumu: pg.loc[pg.groupby("Region")["Total Revenue"].idxmax()]',
+    'dict(zip(top["Region"], top["Product Name"]))',
+], dataset=S)
+
+m.quiz('groupby-testi', 'Test: qruplaşdırma', [
+    single(
+        '`df.groupby("Region")["Total Revenue"].sum()` nəyi qaytarır?',
+        ['Bir ədəd — ümumi gəlir', 'İndeksi region olan Series — hər regionun gəliri', 'Yalnız Bakının gəliri', 'Sıralanmış DataFrame'],
+        2,
+        'Hər qrup üçün bir dəyər — indeksi qrup açarları olan Series.',
+    ),
+    classify(
+        'count() və size() fərqi:',
+        [
+            ('count()', ['Boş (NaN) dəyərləri saymır', 'Hər sütun üçün ayrıca say verir']),
+            ('size()', ['Qrupdakı bütün sətirləri sayır (boşlar daxil)', 'Hər qrup üçün bir ədəd qaytarır']),
+        ],
+        'count yalnız boş olmayan dəyərləri sayır; size qrupun sətir sayını verir.',
+    ),
+    single(
+        'Adlandırılmış aqreqasiyada `orta=("Units Sold", "mean")` nə deməkdir?',
+        [
+            '"orta" sütununu silmək',
+            'Units Sold-un ortasını "orta" adlı sütunda hesablamaq',
+            'Units Sold-u "mean" adlandırmaq',
+            'Qrupları ortaya görə sıralamaq',
+        ],
+        2,
+        'yeni_ad=("sütun", "funksiya") formatıdır.',
+    ),
+    single(
+        '«Hər regionda ən çox satılan məhsul» üçün hansı yanaşma düzgündür?',
+        [
+            'df.groupby("Region")["Product Name"].max()',
+            'Əvvəl region × məhsul üzrə cəm, sonra hər regionda idxmax',
+            'df["Product Name"].value_counts().head(1)',
+            'df.sort_values("Region").head()',
+        ],
+        2,
+        'max() mətndə əlifba sırası ilə sonuncunu verir. Düzgün yol — əvvəl cəmləmək, sonra hər qrupda maksimumu tapmaq.',
+    ),
+])
+
+# ───────────────────────────── 09 · cut və qcut ─────────────────────────────
+m = c.module('cut-qcut', 'Kateqoriyalara ayırma: cut və qcut',
+             'Rəqəmsal sütunu aralıqlara (bin) bölmək: sabit sərhədlər (cut) və bərabər paylar (qcut).')
+
+m.lesson('cut-qcut-ders', 'Bin və label: cut və qcut', 7, '''
+    Yaşı «Gənc / Orta / Yetkin» qruplarına, qiyməti «Ucuz / Orta / Baha» səviyyələrinə bölmək tez-tez lazım olur.
+
+    ## pd.cut — sərhədləri sən verirsən
+
+    ```python
+    bins = [0, 18, 35, 50, 100]
+    labels = ["Gənc", "Orta", "Yetkin", "Yaşlı"]
+    df["Kateqoriya"] = pd.cut(df["Yaş"], bins=bins, labels=labels, right=False)
+    ```
+
+    - `bins` — sərhədlər; 4 aralıq üçün 5 sərhəd lazımdır.
+    - `labels` — aralıqların adları (aralıq sayı qədər).
+    - `right=False` — aralıq `[0, 18)`: sol daxil, sağ yox. Defolt `right=True`: `(0, 18]`.
+    - Sonsuz yuxarı sərhəd: `float("inf")`.
+
+    Labels verilməsə, nəticədə aralığın özü görünür: `[0, 18)`, `[18, 35)`…
+
+    ## pd.qcut — bərabər paylar (kvantillər)
+
+    ```python
+    df["Q_Bin"] = pd.qcut(df["Ballar"], q=4, labels=["Aşağı", "Orta", "Yaxşı", "Mükəmməl"])
+    ```
+
+    `qcut` sərhədləri datanın özünə görə seçir ki, hər qrupda təxminən **eyni sayda** sətir olsun. `q=4` — kvartillər, `q=5` — kvintillər, `q=10` — decillər.
+
+    | | `cut` | `qcut` |
+    | --- | --- | --- |
+    | Sərhədlər | Sən verirsən | Data əsasında |
+    | Qrupların ölçüsü | Fərqli ola bilər | Təxminən bərabər |
+    | Nümunə | Qiymət səviyyələri (0–100–500 ₼) | «Ən yaxşı 25%» |
+
+    Nəticə **category** tipindədir. Qruplaşdırarkən `observed=True` boş kateqoriyaları gizlədir:
+
+    ```python
+    df.groupby("Q_Bin", observed=True)["Total Revenue"].mean()
+    ```
+''')
+
+m.python('cut-tapsiriq', 'Qiymət səviyyələri (cut)', 8, '''
+    Məhsulları qiymət səviyyələrinə böl: **0–100 Ucuz, 100–500 Orta, 500–1500 Baha, 1500+ Premium** (sağ sərhəd daxil — defolt).
+''', [
+    'pd.cut ilə "Qiymət qrupu" sütunu: bins=[0, 100, 500, 1500, float("inf")], labels=["Ucuz", "Orta", "Baha", "Premium"].',
+    'Hər qrupda neçə əməliyyat var → qrup_say (value_counts).',
+    'Premium qrupun ümumi gəliri, 2 onluq → premium_gelir.',
+], '''
+    import pandas as pd
+
+    df = pd.read_csv("satislar.csv")
+
+    # df["Qiymət qrupu"] = ...
+    qrup_say = ...
+    premium_gelir = ...
+
+    print(qrup_say)
+    print(premium_gelir)
+''', '''
+    import pandas as pd
+
+    df = pd.read_csv("satislar.csv")
+
+    df["Qiymət qrupu"] = pd.cut(df["Unit Price"], bins=[0, 100, 500, 1500, float("inf")],
+                                labels=["Ucuz", "Orta", "Baha", "Premium"])
+    qrup_say = df["Qiymət qrupu"].value_counts()
+    premium_gelir = round(df[df["Qiymət qrupu"] == "Premium"]["Total Revenue"].sum(), 2)
+
+    print(qrup_say)
+    print(premium_gelir)
+''', T + '''
+    _q = _pd.cut(_s["Unit Price"], bins=[0, 100, 500, 1500, float("inf")], labels=["Ucuz", "Orta", "Baha", "Premium"])
+    assert "Qiymət qrupu" in df.columns and list(df["Qiymət qrupu"].astype(str)) == list(_q.astype(str)), "Qiymət qrupu düzgün deyil — bins və labels-i yoxla"
+    assert {str(k): v for k, v in qrup_say.to_dict().items()} == {str(k): v for k, v in _q.value_counts().to_dict().items()}, "qrup_say = df['Qiymət qrupu'].value_counts()"
+    assert premium_gelir == round(_s[_q == "Premium"]["Total Revenue"].sum(), 2), "premium_gelir düzgün deyil"
+    assert "pd.cut(" in dacy.code, "pd.cut istifadə et"
+''', [
+    'pd.cut(df["Unit Price"], bins=[0, 100, 500, 1500, float("inf")], labels=["Ucuz", "Orta", "Baha", "Premium"])',
+    'qrup_say = df["Qiymət qrupu"].value_counts()',
+    'df[df["Qiymət qrupu"] == "Premium"]["Total Revenue"].sum()',
+], dataset=S)
+
+m.python('qcut-tapsiriq', 'Gəliri 4 bərabər hissəyə böl (qcut)', 8, '''
+    Gün 5 (2): Total Revenue-ni 4 bərabər hissəyə ayır və «Q_Bin» sütunu yarat.
+''', [
+    'pd.qcut ilə "Q_Bin": q=4, labels=["Aşağı", "Orta", "Yaxşı", "Mükəmməl"].',
+    'Hər Q_Bin üzrə orta gəlir, 2 onluq → orta_bin (groupby, observed=True).',
+    'Mükəmməl qrupun alt sərhədi (gəlirin 75% kvantili), 2 onluq → sərhəd75 → serhed75.',
+], '''
+    import pandas as pd
+
+    df = pd.read_csv("satislar.csv")
+
+    # df["Q_Bin"] = ...
+    orta_bin = ...
+    serhed75 = ...
+
+    print(orta_bin)
+    print(serhed75)
+''', '''
+    import pandas as pd
+
+    df = pd.read_csv("satislar.csv")
+
+    df["Q_Bin"] = pd.qcut(df["Total Revenue"], q=4, labels=["Aşağı", "Orta", "Yaxşı", "Mükəmməl"])
+    orta_bin = df.groupby("Q_Bin", observed=True)["Total Revenue"].mean().round(2)
+    serhed75 = round(df["Total Revenue"].quantile(0.75), 2)
+
+    print(orta_bin)
+    print(serhed75)
+''', T + '''
+    _q = _pd.qcut(_s["Total Revenue"], q=4, labels=["Aşağı", "Orta", "Yaxşı", "Mükəmməl"])
+    assert "Q_Bin" in df.columns and list(df["Q_Bin"].astype(str)) == list(_q.astype(str)), "Q_Bin düzgün deyil"
+    _o = _s.groupby(_q, observed=True)["Total Revenue"].mean().round(2)
+    assert {str(k): v for k, v in orta_bin.to_dict().items()} == {str(k): v for k, v in _o.to_dict().items()}, "orta_bin düzgün deyil"
+    assert serhed75 == round(_s["Total Revenue"].quantile(0.75), 2), "serhed75 = round(df['Total Revenue'].quantile(0.75), 2)"
+    assert "pd.qcut(" in dacy.code, "pd.qcut istifadə et"
+''', [
+    'pd.qcut(df["Total Revenue"], q=4, labels=["Aşağı", "Orta", "Yaxşı", "Mükəmməl"])',
+    'df.groupby("Q_Bin", observed=True)["Total Revenue"].mean().round(2)',
+    'df["Total Revenue"].quantile(0.75)',
+], dataset=S)
+
+m.quiz('cut-qcut-testi', 'Test: cut və qcut', [
+    classify(
+        'Hər tapşırıq üçün cut, yoxsa qcut?',
+        [
+            ('pd.cut', ['Yaşı 0–18, 18–35, 35+ qruplarına bölmək', 'Qiyməti 0–100, 100–500, 500+ ₼ səviyyələrinə bölmək']),
+            ('pd.qcut', ['Müştəriləri xərcə görə 4 bərabər qrupa bölmək', '«Ən yaxşı 10%» satıcıları seçmək']),
+        ],
+        'Sərhədlər məlumdursa — cut; bərabər sayda qruplar lazımdırsa — qcut.',
+    ),
+    single(
+        '`pd.cut(x, bins=[0, 18, 35], right=False)` 18 yaşı hansı qrupa salır?',
+        ['[0, 18)', '[18, 35)', 'Heç birinə', 'Hər ikisinə'],
+        2,
+        'right=False — sol sərhəd daxildir, sağ yox: 18 ikinci aralığa düşür.',
+    ),
+])
+
+# ───────────────────────────── 10 · Boş dəyərlər və tiplər ─────────────────────────────
+m = c.module('itkin', 'Boş dəyərlər və məlumat tipləri',
+             'fillna, dropna, ffill/bfill, astype, to_numeric və xam datanın təmizlənməsi.')
+
+m.lesson('itkin-ders', 'Boş dəyərləri doldurmaq və tipləri düzəltmək', 9, '''
+    ## Boş dəyərləri tapmaq
+
+    ```python
+    df.isnull().sum()               # sütunlar üzrə
+    df[df["Şəhər"].isnull()]        # boş olan sətirlər
+    ```
+
+    ## fillna — doldurmaq
+
+    ```python
+    df["Ad"] = df["Ad"].fillna("Bilinmir")              # sabit dəyər
+    df["Bonus"] = df["Bonus"].fillna(0)
+    df["Yaş"] = df["Yaş"].fillna(df["Yaş"].mean())       # orta ilə
+    df["Yaş"] = df["Yaş"].fillna(df["Yaş"].median())     # median ilə (kənar dəyərlərə dayanıqlı)
+    df["Şəhər"] = df["Şəhər"].ffill()                    # əvvəlki dəyərlə (forward fill)
+    df["Şəhər"] = df["Şəhər"].bfill()                    # sonrakı dəyərlə (backward fill)
+    df["Şəhər"] = df["Şəhər"].fillna(df["Ad"])           # başqa sütunla
+    ```
+
+    > 📝 Köhnə yazılış `fillna(method="ffill")` artıq tövsiyə olunmur — `ffill()` / `bfill()` istifadə et.
+
+    ## dropna — silmək
+
+    ```python
+    df.dropna()                          # ən azı bir boşluğu olan sətirləri sil
+    df.dropna(subset=["Payment Method"]) # yalnız bu sütun boşdursa
+    df.dropna(how="all")                 # bütün dəyərləri boş olan sətirləri
+    ```
+
+    **Nə vaxt doldurmalı, nə vaxt silməli?** Boşluq azdırsa və təsadüfidirsə — silmək olar. Çoxdursa və ya məlumat vacibdirsə — məntiqli dəyərlə doldur və bunu qeyd et.
+
+    ## Tiplər: dtypes, astype, to_numeric
+
+    ```python
+    df["Age"] = df["Age"].astype(int)
+    df["Mebleg"] = pd.to_numeric(df["Mebleg"], errors="coerce")   # çevrilməyən → NaN
+    df["Date"] = pd.to_datetime(df["Date"])
+    ```
+
+    ## Mətnin təmizlənməsi
+
+    ```python
+    df["Region"] = df["Region"].str.strip()          # kənar boşluqlar
+    df["Region"] = df["Region"].str.lower().map(lugat)   # vahid yazılış
+    ```
+
+    ⚠️ **İ/ı problemi:** Python-da `"BAKI".lower()` → `"baki"` (nöqtəli i), `"Sumqayıt".title()` isə qaydasında görünsə də `"SUMQAYIT".title()` → `"Sumqayit"` olur. Azərbaycan dilindəki ı/İ hərfləri ingilis qaydaları ilə çevrilir. Buna görə səliqəsiz yazılışları **lüğətlə** düzgün forma uyğunlaşdırmaq daha etibarlıdır.
+
+    ## 0 — həmişə «sıfır» deyil
+
+    Sistem xətası səbəbindən gəlir 0 yazıla bilər. Belə dəyərləri tapıb düzgün hesabla əvəz etmək lazımdır:
+
+    ```python
+    sehv = df["Total Revenue"] == 0
+    df.loc[sehv, "Total Revenue"] = df.loc[sehv, "Units Sold"] * df.loc[sehv, "Unit Price"]
+    ```
+''')
+
+m.python('fillna-tapsiriq', 'İşçilər cədvəlində boşluqlar', 10, '''
+    `isciler.csv` — kiçik HR cədvəli: bəzi bonuslar, yaşlar və şəhərlər yazılmayıb.
+''', [
+    'Bonus boşluqlarını 0 ilə doldur.',
+    'Yaş boşluqlarını yaşların ortası ilə (tam ədədə yuvarlaqlaşdırılmış) doldur.',
+    'Şəhər boşluqlarını "Bilinmir" ilə doldur.',
+    '"Ümumi" sütunu = Əməkhaqqı + Bonus; cədvəldə qalan boşluqların sayı → qalan (0 olmalıdır).',
+], '''
+    import pandas as pd
+
+    df = pd.read_csv("isciler.csv")
+    print(df.isnull().sum())
+
+    # doldur
+
+    qalan = ...
+    df
+''', '''
+    import pandas as pd
+
+    df = pd.read_csv("isciler.csv")
+    print(df.isnull().sum())
+
+    df["Bonus"] = df["Bonus"].fillna(0)
+    df["Yaş"] = df["Yaş"].fillna(round(df["Yaş"].mean()))
+    df["Şəhər"] = df["Şəhər"].fillna("Bilinmir")
+    df["Ümumi"] = df["Əməkhaqqı"] + df["Bonus"]
+
+    qalan = int(df.isnull().sum().sum())
+    df
+''', '''
+    import pandas as _pd
+    _i = _pd.read_csv("isciler.csv")
+    assert df["Bonus"].isnull().sum() == 0 and (df["Bonus"] == _i["Bonus"].fillna(0)).all(), "Bonus boşluqları 0 ilə doldurulmalıdır"
+    _y = round(_i["Yaş"].mean())
+    assert (df["Yaş"] == _i["Yaş"].fillna(_y)).all(), f"Yaş boşluqları {_y} (orta, yuvarlaqlaşdırılmış) ilə doldurulmalıdır"
+    assert (df["Şəhər"] == _i["Şəhər"].fillna("Bilinmir")).all(), "Şəhər boşluqları 'Bilinmir' olmalıdır"
+    assert "Ümumi" in df.columns and (df["Ümumi"] == _i["Əməkhaqqı"] + _i["Bonus"].fillna(0)).all(), "Ümumi = Əməkhaqqı + Bonus (doldurulmuş)"
+    assert qalan == 0, f"qalan 0 olmalıdır, sənin nəticən: {qalan!r}"
+''', [
+    'df["Bonus"] = df["Bonus"].fillna(0)',
+    'df["Yaş"].fillna(round(df["Yaş"].mean()))',
+    'qalan = int(df.isnull().sum().sum()) — iki dəfə sum: sütunlar, sonra cəmi.',
+], dataset='datasets/isciler.csv')
+
+m.python('xam-temizle', 'Xam satış datasını təmizlə', 15, '''
+    Gün 6 (4) və EDA fəslində tapılan problemlər: `satislar_xam.csv`-ni analiz üçün hazırla. Addımları ardıcıl et.
+
+    Region yazılışları səliqəsizdir (`bakı`, `BAKI`, ` Bakı `). İ/ı problemi səbəbindən `title()` etibarlı deyil — starter-dəki **lüğətdən** istifadə et.
+''', [
+    'Tam dublikatları sil.',
+    'Region: kənar boşluqları sil, kiçik hərfə çevir və duzgun lüğəti ilə map et; Product Name-dən kənar boşluqları sil.',
+    'Payment Method boşluqlarını "Unknown" ilə doldur.',
+    'Unit Price boşluqlarını Total Revenue / Units Sold (2 onluq) ilə doldur.',
+    'Total Revenue 0 olan sətirlərin sayını sifir_say-a yaz, sonra onları Units Sold × Unit Price (2 onluq) ilə əvəz et. İndeksi sıfırla → temiz.',
+], '''
+    import pandas as pd
+
+    df = pd.read_csv("satislar_xam.csv")
+    duzgun = {"bakı": "Bakı", "baki": "Bakı", "gəncə": "Gəncə", "sumqayıt": "Sumqayıt",
+              "sumqayit": "Sumqayıt", "lənkəran": "Lənkəran", "şəki": "Şəki"}
+
+    sifir_say = ...
+    temiz = ...
+
+    print(sifir_say, len(temiz))
+''', '''
+    import pandas as pd
+
+    df = pd.read_csv("satislar_xam.csv")
+    duzgun = {"bakı": "Bakı", "baki": "Bakı", "gəncə": "Gəncə", "sumqayıt": "Sumqayıt",
+              "sumqayit": "Sumqayıt", "lənkəran": "Lənkəran", "şəki": "Şəki"}
+
+    df = df.drop_duplicates()
+    df["Region"] = df["Region"].str.strip().str.lower().map(duzgun)
+    df["Product Name"] = df["Product Name"].str.strip()
+    df["Payment Method"] = df["Payment Method"].fillna("Unknown")
+    df["Unit Price"] = df["Unit Price"].fillna((df["Total Revenue"] / df["Units Sold"]).round(2))
+    sifir = df["Total Revenue"] == 0
+    sifir_say = int(sifir.sum())
+    df.loc[sifir, "Total Revenue"] = (df.loc[sifir, "Units Sold"] * df.loc[sifir, "Unit Price"]).round(2)
+    temiz = df.reset_index(drop=True)
+
+    print(sifir_say, len(temiz))
+''', TX + '''
+    _d = _x.drop_duplicates()
+    assert isinstance(temiz, _pd.DataFrame) and len(temiz) == len(_d), f"temiz {len(_d)} sətir olmalıdır (dublikatlar silinməlidir)"
+    assert list(temiz.index) == list(range(len(temiz))), "İndeksi sıfırla: reset_index(drop=True)"
+    assert set(temiz["Region"]) == {"Bakı", "Gəncə", "Sumqayıt", "Lənkəran", "Şəki"}, f"Region-da yalnız 5 düzgün ad olmalıdır, səndə: {sorted(map(str, set(temiz['Region'])))}"
+    assert not temiz["Product Name"].str.startswith(" ").any(), "Product Name-dən boşluqları sil (str.strip())"
+    assert temiz["Payment Method"].isnull().sum() == 0 and (temiz["Payment Method"] == "Unknown").sum() == _d["Payment Method"].isnull().sum(), "Payment Method boşluqları 'Unknown' olmalıdır"
+    assert temiz["Unit Price"].isnull().sum() == 0, "Unit Price-da boşluq qalmamalıdır"
+    assert sifir_say == int((_d["Total Revenue"] == 0).sum()), f"sifir_say {int((_d['Total Revenue'] == 0).sum())} olmalıdır"
+    assert (temiz["Total Revenue"] == 0).sum() == 0, "0 gəlirlər yenidən hesablanmalıdır"
+    _bad = (temiz["Total Revenue"] - (temiz["Units Sold"] * temiz["Unit Price"]).round(2)).abs() > 0.05
+    assert _bad.sum() == 0, "Total Revenue = Units Sold × Unit Price olmalıdır (düzəldilən sətirlərdə)"
+''', [
+    'df = df.drop_duplicates(); df["Region"] = df["Region"].str.strip().str.lower().map(duzgun)',
+    'df["Unit Price"] = df["Unit Price"].fillna((df["Total Revenue"] / df["Units Sold"]).round(2))',
+    'sifir = df["Total Revenue"] == 0; df.loc[sifir, "Total Revenue"] = (df.loc[sifir, "Units Sold"] * df.loc[sifir, "Unit Price"]).round(2)',
+], dataset=X)
+
+m.quiz('itkin-testi', 'Test: boş dəyərlər və tiplər', [
+    classify(
+        'Hər yanaşmanı nəticəsinə görə qruplaşdır.',
+        [
+            ('Sətirlər silinir', ['df.dropna()', 'df.dropna(subset=["Payment Method"])']),
+            ('Boşluqlar doldurulur', ['df["Bonus"].fillna(0)', 'df["Şəhər"].ffill()', 'df["Yaş"].fillna(df["Yaş"].median())']),
+        ],
+        'dropna sətirləri atır, fillna/ffill/bfill isə boşluqları dəyərlə doldurur.',
+    ),
+    single(
+        '`pd.to_numeric(s, errors="coerce")` çevrilə bilməyən dəyərlərlə nə edir?',
+        ['Xəta verir', 'NaN edir', '0 edir', 'Olduğu kimi saxlayır'],
+        2,
+        'coerce — çevrilməyən dəyərlər NaN olur, sonra onları ayrıca araşdırmaq olar.',
+    ),
+    single(
+        'Niyə `"SUMQAYIT".title()` nəticəsi "Sumqayıt" deyil?',
+        [
+            'title() yalnız ilk hərfi dəyişir',
+            'Python I hərfini ingilis qaydası ilə kiçik i-yə çevirir, ı-ya yox',
+            'title() Azərbaycan hərflərini silir',
+            'Nəticə "Sumqayıt"-dır',
+        ],
+        2,
+        'Python-un hərf çevirməsi dildən asılı deyil: I → i. Buna görə lüğətlə uyğunlaşdırmaq daha etibarlıdır.',
+    ),
+])
+
+print(c.root, c.modules, 'modules', c.steps, 'steps (part 2)')

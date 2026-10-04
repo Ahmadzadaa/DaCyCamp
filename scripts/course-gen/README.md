@@ -8,7 +8,7 @@ yaratmaq və davam etdirmək üçündür.
 | `common.py` | Course/Module köməkçiləri: dərs (md), test (quiz yaml), Python addımı | — |
 | `c1_*`, `c2_*`, `c3_*` | What is Data Engineering / Data Analytics / Cyber Security | hazır, repoda |
 | `c4_python_basics.py` | Python Basics (köhnə python4business-in nüsxəsini `../src_p4b`-dən götürür) | hazır, repoda |
-| `c5_pandas.py` | Python Pandas — **yarımçıq**: 1–5-ci fəsillər yazılıb, yoxlanılmayıb; 6–15 qalır | davam edir |
+| `c5_pandas.py` | Python Pandas — **yarımçıq**: 1–10-cu fəsillər yazılıb və yoxlanılıb (29 tapşırıq); 11–15 qalır | davam edir |
 | `py_datasets.py` | Sintetik datasetlər (deterministik). xlsx üçün pandas+openpyxl lazımdır | — |
 | `pyverify.py` | CPython-da (Pyodide ilə eyni paket versiyaları) həll keçir / starter keçmir yoxlaması | — |
 | `validate-package.cjs` | Paketi shared sxemləri ilə yoxlayır (`apps/api` qovluğundan işlədin) | — |
