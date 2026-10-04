@@ -1,0 +1,321 @@
+title: Moving and processing data
+description: Data processing, scheduling, batch and streaming, parallel computing and the cloud.
+steps:
+  data-emali:
+    title: Data processing
+    content: |
+      Data coming from a source is rarely ready to use. **Data processing** means turning raw data into meaningful, usable data.
+
+      ## Why do we process data?
+
+      - **To discard unnecessary data** — test orders, empty records.
+      - **To save storage** — a summary of the route instead of a GPS point every second.
+      - **To convert data into the required format** — dates, currencies, units.
+      - **To fit the schema** — the data has to match the structure of the table in the warehouse.
+      - **Privacy** — hiding personal information (anonymization, masking).
+      - **Productivity** — automating work that would otherwise be done by hand every time.
+
+      ## Typical processing tasks
+
+      | Task | Example |
+      | --- | --- |
+      | **Cleaning** | Deleting duplicate orders, fixing incorrect values |
+      | **Formatting** | `03.10.2026` → `2026-10-03`, `"42,50"` → `42.50` |
+      | **Aggregation** | Total daily sales for each category |
+      | **Joining** | Combining an order with its payment record and customer information |
+      | **Filtering** | Keeping only completed orders |
+      | **Masking** | Card number: `4169 7380 1122 1234` → `4169 **** **** 1234` |
+      | **Enrichment** | Working out the district from the address and writing it to a separate column |
+
+      ## Before and after
+
+      Raw data:
+
+      | order | date | amount | city |
+      | --- | --- | --- | --- |
+      | 1045 | 03.10.2026 | 42,50 AZN | baku |
+      | 1045 | 03.10.2026 | 42,50 AZN | baku |
+      | 1046 | 2026-10-03 | $10.70 | GANJA |
+
+      After processing:
+
+      | order | date | amount_azn | city |
+      | --- | --- | --- | --- |
+      | 1045 | 2026-10-03 | 42.50 | Baku |
+      | 1046 | 2026-10-03 | 18.19 | Ganja |
+
+      The duplicate has been removed, the dates and city names have been put into one standard form, and dollars have been converted to manat (1 USD = 1.70 AZN).
+
+      ## Who does the processing?
+
+      The data engineer builds the processing steps **into the pipeline** so they run automatically every day. Analysts and data scientists also do extra cleaning from time to time, but automating the core, repetitive work is the data engineer's job. Tools such as **SQL**, **Python (pandas)**, **Apache Spark** and **dbt** are used for this.
+
+      ## Quick summary
+
+      - Processing turns raw data into a usable form: cleaning, formatting, aggregation, joining, masking.
+      - The goals of processing: quality, savings, compatibility, privacy and automation.
+      - Repetitive processing is built into a pipeline and runs automatically every day.
+  emal-yoxsa-yox:
+    title: 'Practice: Processing or not?'
+    questions:
+      - text: Which of these are **data processing** tasks, and which are other kinds of work?
+        buckets:
+          - name: Data processing task
+            items:
+              - 'Masking card numbers: 4169 **** **** 1234'
+              - Deleting an order that was recorded twice
+              - Aggregating daily sales by category
+              - Converting different date formats into one standard format
+              - Combining customer data from two systems
+          - name: Not processing (other work)
+            items:
+              - Approving the budget for buying a new server
+              - "Drawing up the couriers' work schedule"
+              - "Changing the color of the app's buttons"
+        explanation: 'Processing means changes made to the data itself: cleaning, formatting, aggregation, joining, masking.'
+      - text: NarMarket hides phone numbers before handing customer data to analysts. **Which goal** of processing does this serve?
+        options:
+          - Saving storage
+          - Privacy — protecting personal information
+          - Fitting the data to the schema
+          - Increasing speed
+        explanation: "Analysts don't need customers' phone numbers. Masking protects personal information and ensures compliance with the law."
+  planlasdirma:
+    title: Scheduling
+    content: |
+      A pipeline is made up of dozens of tasks: extraction, cleaning, joining, loading... **Scheduling** determines **when** and **in what order** they run. Scheduling is the "glue" that ties all the parts of a pipeline together.
+
+      ## Three ways to trigger a task
+
+      | Method | How | Example |
+      | --- | --- | --- |
+      | **Manual** | A person presses a button | A data engineer fixes an error and restarts the pipeline |
+      | **Time-based** | Automatically at a set time | Orders are loaded every night at 02:00 |
+      | **Event-based** (sensor) | When a specific event happens | Processing starts as soon as a new invoice file lands in the warehouse |
+
+      In real systems, these methods are used together.
+
+      ## Dependencies
+
+      The order of tasks matters: you can't clean data before extracting it, or aggregate it before cleaning it. The scheduler tracks these **dependencies** — the next step doesn't start until the previous one has finished successfully.
+
+      NarMarket's nightly pipeline:
+
+      ```text
+      01:00 extract orders ───┐
+                              ├─► 01:30 clean and join ─► 02:00 aggregate ─► 02:30 refresh dashboard
+      01:00 extract payments ─┘
+      ```
+
+      A diagram like this is called a **DAG** (Directed Acyclic Graph): the arrows show the order, and no task loops back to itself. If "extract payments" fails, the later steps wait and the data engineer gets an alert — so the dashboard never shows incomplete data.
+
+      ## Scheduling tools
+
+      - **Apache Airflow** — the most popular tool; created at Airbnb, with DAGs written in Python.
+      - **Prefect**, **Dagster**, **Luigi** — alternatives.
+      - In simple cases, **cron** — Linux's time-based scheduling tool.
+
+      ## Batch and streaming — again
+
+      - **Batch:** data is grouped and processed at a scheduled time. It's cheap and simple, and ideal for daily reports. It often runs at night, when systems are less busy.
+      - **Streaming:** each record is processed immediately. It's needed for fraud detection, live courier tracking and instant updates of warehouse stock. Tools such as **Apache Kafka** are used for this.
+
+      ## Quick summary
+
+      - Scheduling runs tasks at the right time and in the right order.
+      - Three methods: manual, time-based and event-based.
+      - Dependencies are described as a DAG; Airflow is the most popular scheduling tool.
+  ne-vaxt-ise-dusur:
+    title: 'Practice: When does it run?'
+    questions:
+      - text: "Tasks in NarMarket's pipelines are triggered in different ways. Place each one in the correct group."
+        buckets:
+          - name: Manual
+            items:
+              - The report refreshes when an analyst presses a button
+              - A data engineer fixes an error and restarts the pipeline themselves
+          - name: Time-based
+            items:
+              - Orders are loaded every night at 02:00
+              - A weekly report is prepared every Monday morning
+          - name: Event-based
+            items:
+              - Processing starts as soon as a new invoice file lands in the warehouse
+              - "As soon as a new customer signs up, their data is sent to the CRM"
+        explanation: Manual — a person starts it; time-based — by the clock and the calendar; event-based — when an event happens, such as a file arriving or a sign-up.
+      - text: What happens if the "aggregate" task in a pipeline starts before the "extract" task has finished?
+        options:
+          - Nothing — the order doesn't matter
+          - Aggregation runs on old or incomplete data, and the dashboard shows the wrong numbers
+          - The pipeline runs faster
+          - The data is cleaned automatically
+        explanation: 'That''s why dependencies must be set up correctly: the next step should start only after the previous one has finished successfully.'
+      - text: In which situation is **batch** processing completely sufficient?
+        options:
+          - Blocking a suspicious card transaction immediately
+          - "Showing a customer the courier's location live"
+          - "A daily report on yesterday's sales for management"
+          - Updating warehouse stock instantly with every sale
+        explanation: For a daily report, processing the data once a night is enough. In the other cases, the result is needed within seconds — that's streaming.
+  paralel-hesablama:
+    title: Parallel computing
+    content: |
+      NarMarket receives 18 million orders a year. A task like "analyze all orders from the last 3 years by product" could take hours on one computer — the memory might not even be enough. The solution is **parallel computing**.
+
+      ## The core idea
+
+      1. A large task is split into **smaller subtasks**.
+      2. The subtasks run **at the same time** on several **processing units** (processor cores or computers).
+      3. The results are combined.
+
+      > 📝 **An analogy:** a teacher marks 1,000 exam papers alone in 10 days. If 10 teachers share the papers, the work is done in about 1 day. At the end, everyone writes their results into a shared table.
+
+      ## Advantages
+
+      - **Processing power** — many processors work at once, so the result is ready sooner.
+      - **Memory** — the data is split across several machines; no single machine has to hold all of it in memory.
+
+      ## Risks and the "hidden cost" (overhead)
+
+      Parallelism isn't free:
+
+      - Splitting the task, sending the parts to the machines and combining the results **takes time**.
+      - **Communication** between the machines has a cost.
+      - For small tasks, this cost can exceed the gain — the parallel version runs **slower**.
+      - Some tasks can't be split at all: if every step depends on the result of the previous one, they can't run at the same time.
+
+      > 📦 **An analogy:** when you move house, 4 friends speed up the work. But 100 friends get in each other's way, and more time goes into organizing them.
+
+      ## Tools
+
+      - **Hadoop MapReduce** — the first popular framework for parallel processing: in the "map" step, the data is split into parts and processed; in the "reduce" step, the results are combined.
+      - **Apache Spark** — the most widely used tool today; because it keeps data in memory, it's much faster than MapReduce.
+      - A group of computers working together is called a **cluster**.
+
+      ## At NarMarket
+
+      The annual analysis is split into 12 parts — one per month. Each of 12 machines processes one month, and at the end the results are combined into one table. Work that took hours now takes minutes.
+
+      ## Quick summary
+
+      - Parallel computing splits a large task into parts and runs them at the same time on several processing units.
+      - Advantages: more processing power and divided memory.
+      - Splitting and combining have a cost — for small tasks, parallelism may not pay off.
+  paralel-dogru-yanlis:
+    title: 'Practice: Parallel computing'
+    questions:
+      - text: Which statement about parallel computing is **true**?
+        options:
+          - The task is compressed so it runs faster on one processor
+          - A large task is split into smaller parts and run at the same time on several processing units
+          - Parallel computing only works with small data
+          - It's always possible to make every task parallel
+        explanation: 'That''s the essence of parallel computing: split, run at the same time, combine the results.'
+      - text: |-
+          Murad, a data engineer, split a small **5 MB** file across 100 computers for processing. As a result, the job ran even **slower** than on a single computer.
+
+          Why?
+        options:
+          - The computers were old
+          - The cost of splitting, sending and combining the results (overhead) was greater than the task itself
+          - Parallel computing doesn't work at all
+          - The file was unstructured
+        explanation: For small tasks, the cost of coordination and communication outweighs the gain. Parallelism pays off with large volumes.
+      - text: What are the **advantages** of parallel computing? (Select all that apply)
+        options:
+          - More processing power
+          - Memory divided across several machines
+          - No communication cost at all between the machines
+          - Any task automatically becomes faster
+        explanation: Processing power and divided memory are the main advantages. There is always a communication cost, and not every task becomes faster.
+  bulud:
+    title: Cloud computing
+    content: |
+      Storing and processing data requires servers. These servers are either in the company's own building or rented in the cloud.
+
+      ## Your own servers (on-premises)
+
+      The company buys servers and keeps them in its own server room:
+
+      - you need to buy hardware and provide space, electricity, cooling and security;
+      - you need specialists to maintain the servers;
+      - capacity has to be bought for the **peak load** — for the rest of the year, most of the resources sit idle.
+
+      ## The cloud
+
+      Renting resources from a cloud provider **as much as you need**:
+
+      - **Pay-as-you-go** — take 20 servers for 2 hours and pay for just 2 hours.
+      - **Scaling** — when the load grows, add resources in a few minutes; when it drops, scale them back.
+      - **Reliability** — data is replicated across different regions; if one data center has a problem, another keeps working.
+      - **Ready-made services** — instead of setting up databases, warehouses and pipeline tools yourself, you use them as ready-made, managed services.
+
+      ## The big three
+
+      Most of the market is held by three providers: **Amazon Web Services (AWS)**, **Microsoft Azure** and **Google Cloud**. Their main services:
+
+      | Service type | AWS | Azure | Google Cloud |
+      | --- | --- | --- | --- |
+      | **Storage** (files, data lake) | S3 | Blob Storage | Cloud Storage |
+      | **Compute** (virtual servers) | EC2 | Virtual Machines | Compute Engine |
+      | **Database** | RDS | Azure SQL Database | Cloud SQL |
+      | **Data warehouse** | Redshift | Synapse Analytics | BigQuery |
+
+      ## Multicloud
+
+      Some companies use several providers together — **multicloud**.
+
+      - ✅ Less dependence on a single provider (vendor lock-in), the ability to compare prices, and easier compliance with some countries' data residency requirements.
+      - ❌ Managing different services together is complex, the team needs more knowledge, and keeping security at the same level everywhere becomes harder.
+
+      ## What to watch out for
+
+      - **Cost control** — a forgotten server running idle burns money every hour.
+      - **Privacy and the law** — some data (for example, banking and medical data) must be stored within a particular country.
+      - **Security** — misconfiguration in the cloud (for example, a file storage bucket left open to everyone) is one of the most common causes of data leaks.
+
+      ## At NarMarket
+
+      On Black Friday, traffic is 5 times higher than on a normal day. With its own servers, NarMarket would have to keep 5 times the capacity all year round. In the cloud, resources are scaled up automatically on that day and scaled back down the next — and you pay only for the capacity you use.
+
+      ## Quick summary
+
+      - On-premises — your own servers: full control, but high costs and idle capacity.
+      - The cloud — renting resources as much as you need: flexible, scalable, pay-as-you-go.
+      - The main services: storage, compute and databases; the big three are AWS, Azure and Google Cloud.
+  bulud-xidmetleri:
+    title: 'Practice: Cloud services'
+    questions:
+      - text: Place the work NarMarket does in the cloud, and the services it uses, under the correct type of service.
+        buckets:
+          - name: Storage
+            items:
+              - Storing courier photos and log files
+              - AWS S3
+              - Google Cloud Storage
+          - name: Compute
+            items:
+              - Renting 20 servers for 2 hours for nightly processing
+              - AWS EC2
+          - name: Database
+            items:
+              - A managed PostgreSQL database for orders
+              - Azure SQL Database
+        explanation: Storage — files and data lakes; compute — virtual servers and processing power; database — managed SQL databases.
+      - text: |-
+          At NarMarket, traffic is 5 times higher on Black Friday and normal for the rest of the year.
+
+          Which approach is more cost-effective?
+        options:
+          - Buying our own servers with 5 times the capacity for the whole year
+          - Scaling up resources in the cloud when needed, then scaling them back down
+          - Shutting down the website on Black Friday
+          - Processing orders a day later
+        explanation: 'The main advantage of the cloud is scaling and pay-as-you-go: capacity is added only on the day it''s needed.'
+      - text: What is the main drawback of the **multicloud** approach?
+        options:
+          - Greater dependence on a single provider
+          - The complexity of managing different providers' services together
+          - The cloud is always more expensive than your own servers
+          - Data can't be stored at all
+        explanation: Multicloud reduces dependence, but managing different systems, tools and security rules together becomes harder.

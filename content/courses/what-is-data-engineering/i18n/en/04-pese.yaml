@@ -1,0 +1,190 @@
+title: The data engineering profession
+description: The toolkit, a learning path, a day on the job and the final test.
+steps:
+  aletler:
+    title: "The data engineer's toolkit"
+    content: |
+      The list of data engineering tools is long and constantly changing. You don't need to learn them all at once — what matters is understanding **which problem each tool solves**.
+
+      ## A map of the tools
+
+      | Category | Used for | Tools |
+      | --- | --- | --- |
+      | **Programming** | Pipeline and processing code | SQL, Python; Scala and Java in large systems |
+      | **Databases** | Operational data | PostgreSQL, MySQL, MongoDB |
+      | **Data warehouse** | Analytical data | Snowflake, BigQuery, Redshift |
+      | **Processing** | Transforming big data | Apache Spark, dbt, pandas |
+      | **Streaming** | Real-time data | Apache Kafka |
+      | **Scheduling** | Managing pipelines | Apache Airflow, Prefect, Dagster |
+      | **Infrastructure** | Environments and deployment | Linux, Git, Docker, Kubernetes, Terraform |
+      | **Cloud** | Where everything runs | AWS, Azure, Google Cloud |
+
+      ## Where to start? A learning path 🧭
+
+      1. **SQL and databases** — the data engineer's native language. Tables, queries, joins (JOIN), schema design.
+      2. **Python** — reading, transforming and automating data.
+      3. **Linux and Git** — working on servers and versioning code.
+      4. **Data modeling and warehouses** — the star schema, warehouses, ELT, dbt.
+      5. **Scheduling and big data** — Airflow, Spark.
+      6. **The cloud and containers** — one cloud provider in depth, Docker.
+
+      > 💡 The SQL and Python courses on DaCy are a good start for the first two steps of this path.
+
+      ## Non-technical skills
+
+      - **Communication** — understanding what analysts and the business want, and explaining technical things in plain language.
+      - **Attention to detail and responsibility** — one wrong column can make hundreds of reports incorrect.
+      - **Problem-solving** — calmly finding the cause of a pipeline that broke in the middle of the night.
+      - **Documentation** — other people need to understand the system you built, too.
+
+      ## Career path
+
+      **Junior data engineer → Data engineer → Senior → Lead / Data architect.** Related roles:
+
+      - **Analytics engineer** — where data engineering meets analytics; mainly builds models in the warehouse with SQL and dbt.
+      - **ML engineer** — puts machine learning models into production systems.
+      - **Data architect** — designs the big-picture plan for the company's entire data system.
+
+      ## Quick summary
+
+      - Think of tools by category: programming, databases, warehouses, processing, streaming, scheduling, infrastructure, cloud.
+      - The two most important skills to start with: SQL and Python.
+      - Communication and responsibility matter as much as technical skills.
+  bir-gun:
+    title: A day as a data engineer
+    content: |
+      Meet **Nigar**, NarMarket's data engineer. Let's look at one of her working days.
+
+      ## 08:45 — A morning alert 🚨
+
+      Nigar sees a notification from Airflow on her phone: the **"load payments"** step of the nightly pipeline has failed. The dependent steps are waiting, and the sales dashboard hasn't been refreshed. The director will look at the report at 10:00.
+
+      ## 09:00 — Investigation
+
+      Nigar opens the error log: without any warning, the payment provider changed its date format from `03.10.2026` to `2026/10/03`, and the transformation step doesn't recognize this format. Nigar:
+
+      1. updates the transformation rule to handle the new format;
+      2. adds a **check** (data quality test) that will catch a change like this immediately in the future;
+      3. restarts the pipeline manually.
+
+      At 09:40, the dashboard is refreshed. Nigar sends the analysts a short message: what happened, what was fixed, and that the data is now correct.
+
+      ## 11:00 — A meeting: a real-time dashboard
+
+      The marketing team wants to see sales **live** during a campaign. The nightly batch pipeline isn't suitable for this. Nigar proposes a streaming solution that sends order events through **Kafka** and clarifies the requirements: which metrics, how much delay is acceptable and what the budget is.
+
+      ## 14:00 — Data quality
+
+      Aysel, an analyst, reports that the customer count is inflated. Nigar investigates: some customers have signed up both in the app and on the website and are counted twice. She adds a processing step that merges customers by phone number, along with a **uniqueness check**.
+
+      ## 16:00 — Cost control 💸
+
+      While looking at the monthly cloud bill, Nigar spots a Spark cluster that was spun up for testing last week and forgotten — it's costing money every hour. She shuts the cluster down and sets up a rule so that test clusters shut down automatically from now on.
+
+      ## 17:00 — Documentation
+
+      At the end of the day, Nigar describes the new checks and the customer-merging rule in the **data catalog**, so that everyone on the team knows what works and how.
+
+      ## What did we learn from this day?
+
+      - A large part of a data engineer's work is **reliability**: finding and fixing problems before the analysts notice them.
+      - Every error is an opportunity for a new **automated check**.
+      - **Communication** matters as much as technical work: explaining what happened and clarifying requirements.
+      - Costs and documentation are part of the job, too.
+  nigarin-gunu:
+    title: "Practice: Nigar's day"
+    questions:
+      - text: The payment provider changed its date format without notice, and the nightly pipeline stopped. What should Nigar's **first step** be?
+        options:
+          - Turn off the dashboard and tell no one
+          - Investigate the error log to find the cause, fix it and restart the pipeline
+          - Cancel the contract with the payment provider
+          - Delete the whole pipeline and rewrite it from scratch
+        explanation: First the cause is found and fixed, then the pipeline is restarted and the analysts are informed. Ideally, a check that will catch such a change is added as well.
+      - text: Which tasks are part of Nigar's daily work as a data engineer, and which belong to other roles?
+        buckets:
+          - name: "The data engineer's work"
+            items:
+              - Investigating and fixing a pipeline error
+              - Adding a data quality check
+              - Shutting down an idle cloud cluster
+              - Writing table descriptions in the data catalog
+          - name: "Another role's work"
+            items:
+              - "Building a model that forecasts next year's sales"
+              - Designing the quarterly dashboard for management
+              - "Writing a marketing campaign's slogan"
+        explanation: "Reliability, quality, costs and documentation are the data engineer's work. Forecasting models are the data scientist's job, dashboard design is the analyst's and the slogan is marketing's."
+  yekun-test:
+    title: 'Final test: What is Data Engineering?'
+    questions:
+      - text: What is the **first** stage of the data workflow, and who is responsible for it?
+        options:
+          - Exploration and visualization — the data analyst
+          - Collection and storage — the data engineer
+          - Experimentation and prediction — the data scientist
+          - Preparation — the designer
+        explanation: "The data workflow begins with collection and storage, and this stage is the data engineer's responsibility."
+      - text: Sort the tasks by role.
+        buckets:
+          - name: Data engineer
+            items:
+              - Building a pipeline that automatically collects data from sources
+              - Designing the schema of tables in the data warehouse
+              - Monitoring errors in the nightly loads
+          - name: Data analyst / data scientist
+            items:
+              - Analyzing why sales fell
+              - Predicting which customers will cancel their subscription
+              - Showing weekly trends on a dashboard
+        explanation: The data engineer builds the foundation — the systems for collecting, storing and delivering data; analysts and data scientists draw conclusions from this data.
+      - text: What does **ETL** stand for?
+        options:
+          - Extract, Transform, Load
+          - Encrypt, Transfer, Lock
+          - Explore, Test, Learn
+          - Edit, Translate, Launch
+        explanation: ETL means extracting data from a source, cleaning and transforming it, and loading it into its destination.
+      - text: Sort the data by type.
+        buckets:
+          - name: Structured
+            items:
+              - A bank statement table
+              - An employee salary table
+          - name: Semi-structured
+            items:
+              - A JSON response from an API
+              - "A sensor's measurement record in JSON format"
+          - name: Unstructured
+            items:
+              - An advertising video
+              - An audio recording of a call with a customer
+        explanation: Tables are structured data, JSON is semi-structured, and video and audio are unstructured.
+      - text: 'Data scientists want to experiment with different kinds of **raw data**: logs, photos, JSON events. Where should this data be stored?'
+        options:
+          - Data warehouse
+          - Data lake
+          - "The app's operational database"
+          - "An analyst's Excel file"
+        explanation: "A data lake stores every kind of raw data as it is and is designed for data scientists' exploratory work."
+      - text: Processing starts automatically as soon as a supplier uploads a new invoice file to the warehouse. Which scheduling method is this?
+        options:
+          - Manual
+          - Time-based
+          - Event-based (sensor)
+          - There is no scheduling
+        explanation: The trigger depends on a specific event — a file arriving. This is event-based (sensor) scheduling.
+      - text: Which statement about parallel computing is **false**?
+        options:
+          - The task is split into parts that run at the same time
+          - Data can be divided across the memory of several machines
+          - Parallelism always speeds up work, even for small tasks
+          - Apache Spark is a parallel processing tool
+        explanation: For small tasks, the cost of splitting and combining can exceed the gain — the parallel version can run slower.
+      - text: What is the main advantage of the cloud over on-premises servers?
+        options:
+          - Data never goes over the internet
+          - Scaling resources up and down as needed and paying only for what you use
+          - There are no costs at all
+          - There's no need to think about security
+        explanation: 'The cloud is flexible: resources are scaled up and down within minutes, and you pay for what you use. But cost control and security still matter.'

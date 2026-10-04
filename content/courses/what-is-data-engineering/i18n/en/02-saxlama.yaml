@@ -1,0 +1,300 @@
+title: Storing data
+description: Structured and unstructured data, SQL databases, data warehouses and data lakes.
+steps:
+  data-strukturlari:
+    title: Data structures
+    content: |
+      Not all data is the same. An orders table, an event record from the app and a photo uploaded by a customer are all data, but they're stored and processed completely differently. Data is usually divided into three groups.
+
+      ## 1. Structured data
+
+      Data made of rows and columns, with a predefined **schema**. Every column has a name and a type.
+
+      | order_id | date | customer | amount |
+      | --- | --- | --- | --- |
+      | 1045 | 2026-10-03 | Aysel M. | 42.50 |
+      | 1046 | 2026-10-03 | Rauf H. | 18.20 |
+
+      - Easy to search, filter and aggregate.
+      - Stored in **relational databases** (PostgreSQL, MySQL) and queried with SQL.
+      - Examples: orders, an employee salary table, bank transactions.
+
+      ## 2. Semi-structured data
+
+      Has some structure, but the schema isn't strict: each record can have different fields and nested information. The most popular formats are **JSON** and **XML**.
+
+      ```json
+      {
+        "event": "add_to_cart",
+        "user_id": 8812,
+        "time": "2026-10-03T09:15:22",
+        "product": { "id": 301, "name": "Pomegranate juice", "price": 3.40 },
+        "device": "iOS"
+      }
+      ```
+
+      - Event logs from apps and websites, and API responses, usually look like this.
+      - Can be stored in **NoSQL databases** (for example, MongoDB).
+
+      ## 3. Unstructured data
+
+      Data with no predefined model: **text, photos, video, audio**, PDF documents.
+
+      - Roughly **80–90%** of the world's data is unstructured.
+      - It's easy to store but hard to search and analyze.
+      - Artificial intelligence and machine learning help extract value from this data: detecting the sentiment of reviews, recognizing a product in a photo.
+
+      ## Three kinds of data in one review
+
+      When a NarMarket customer rates an order:
+
+      - the **star rating** (4 ⭐) — structured;
+      - the **JSON record sent by the app** (time, device, order number) — semi-structured;
+      - the **comment text** ("The courier was very polite, but the bread was squashed") and the **photo** — unstructured.
+
+      | | Structured | Semi-structured | Unstructured |
+      | --- | --- | --- | --- |
+      | **Form** | Table | JSON, XML | Text, photos, video, audio |
+      | **Schema** | Strict | Flexible | None |
+      | **Analysis** | Easy | Medium | Hard |
+      | **Where** | Relational database | NoSQL, data lake | Data lake, file storage |
+
+      ## Quick summary
+
+      - Structured data is in table form and is easy to query with SQL.
+      - Semi-structured data (JSON, XML) has a flexible structure.
+      - Unstructured data (text, photos, video) makes up the vast majority of the world's data.
+  strukturlara-ayir:
+    title: 'Practice: Sort by structure'
+    questions:
+      - text: All kinds of data arrive at NarMarket's data warehouse. Place each item in the correct group.
+        buckets:
+          - name: Structured
+            items:
+              - 'Orders table: order_id, date, amount'
+              - An employee salary table in Excel
+          - name: Semi-structured
+            items:
+              - An "add to cart" event in JSON format from the app
+              - "A supplier's product catalog in XML format"
+          - name: Unstructured
+            items:
+              - A review written freely by a customer
+              - A delivery photo taken by a courier
+              - A call center audio recording
+        explanation: Tables have a strict schema. JSON and XML have a flexible structure. Text, photos and audio have no predefined model.
+      - text: Roughly how much of the world's data is **unstructured**?
+        options:
+          - 10–20%
+          - About half
+          - 80–90%
+          - Almost none
+        explanation: Text, photos, videos and audio recordings make up the vast majority of data — roughly 80–90%.
+  sql-ve-bazalar:
+    title: SQL and databases
+    content: |
+      A **database** is a system where data is stored in an organized way and can be found easily. The software that manages a database is called a **DBMS** (Database Management System).
+
+      ## Relational databases
+
+      The most widely used databases are **relational**: data is stored in tables, and the tables are linked to each other through **keys**.
+
+      **customers**:
+
+      | customer_id | name | city |
+      | --- | --- | --- |
+      | 1 | Aysel | Baku |
+      | 2 | Rauf | Ganja |
+
+      **orders**:
+
+      | order_id | customer_id | amount |
+      | --- | --- | --- |
+      | 1045 | 1 | 42.50 |
+      | 1046 | 2 | 18.20 |
+      | 1047 | 1 | 9.90 |
+
+      - A **row** is one record, for example one order.
+      - A **column** is one attribute, for example the amount.
+      - A **primary key** is the column that uniquely identifies each row: `order_id`.
+      - A **foreign key** is a column that refers to another table: `orders.customer_id` → `customers.customer_id`. That's how we know orders 1045 and 1047 belong to Aysel.
+
+      ## SQL — the language of data
+
+      **SQL** (Structured Query Language) is the standard language for working with relational databases. It was created in the 1970s and is still the main tool of everyone who works with data. A simple query reads like an English sentence:
+
+      ```sql
+      SELECT name, city        -- which columns
+      FROM customers           -- from which table
+      WHERE city = 'Baku';     -- with which condition
+      ```
+
+      Result: the names and cities of customers who live in Baku.
+
+      ## Who uses SQL?
+
+      | Data engineer | Data analyst / data scientist |
+      | --- | --- |
+      | Creates the structure (schema) of tables | Queries and filters data |
+      | Defines the relationships between tables | Calculates totals, averages and counts |
+      | Connects new data sources and writes the loads | Prepares data for reports and dashboards |
+
+      ## Database schemas and the "star" schema
+
+      A **schema** is the plan of the tables in a database, their columns and the relationships between them — like a building's blueprint. Analytical warehouses often use a **star schema**:
+
+      ```text
+                     dim_customer
+                          │
+      dim_product ── fact_orders ── dim_date
+                          │
+                     dim_courier
+      ```
+
+      At the center is the **fact table** (events: each order, its amount). Around it are the **dimension tables** — descriptive information about customers, products, dates and couriers. This structure makes it possible to answer questions like "Which product sold how much, in which city, in which month?" very quickly.
+
+      ## Popular databases
+
+      - **Relational (SQL):** PostgreSQL, MySQL, Microsoft SQL Server, Oracle, SQLite.
+      - **NoSQL:** MongoDB (documents/JSON), Redis (key-value, very fast), Cassandra (huge volumes).
+
+      ## Quick summary
+
+      - Relational databases store data in tables linked by keys.
+      - SQL is the standard language for working with databases: the data engineer builds the schema, the analyst queries it.
+      - In a star schema, the fact table is at the center, surrounded by dimension tables.
+  sql-testi:
+    title: 'Practice: SQL and databases'
+    questions:
+      - text: |-
+          What does this query return?
+
+          ```sql
+          SELECT name, city
+          FROM customers
+          WHERE city = 'Ganja';
+          ```
+        options:
+          - The names and cities of all customers
+          - The names and cities of customers who live in Ganja
+          - The number of orders placed in Ganja
+          - It creates a new table called Ganja
+        explanation: SELECT says which columns, FROM which table, and WHERE which rows are selected.
+      - text: What is the column that **uniquely identifies each row** in a table called?
+        options:
+          - Foreign key
+          - Primary key
+          - Index
+          - Schema
+        explanation: The primary key is unique for every row, for example order_id. A foreign key refers to another table's primary key.
+      - text: Both data engineers and data analysts use SQL — but for different purposes. Sort the tasks into groups.
+        buckets:
+          - name: Usually the data engineer
+            items:
+              - Creating the structure (schema) of a new table
+              - Defining relationships (foreign keys) between tables
+              - Connecting a new data source to the database
+          - name: Usually the data analyst
+            items:
+              - Finding last month's 10 best-selling products
+              - Calculating the average order value by city
+              - Filtering data for a report
+        explanation: The data engineer creates the database's structure and brings the data in; the analyst queries the ready data to answer questions.
+      - text: In a **star schema**, which table is at the center?
+        options:
+          - A dimension table — for example, customers
+          - The fact table — for example, orders and their amounts
+          - The table of users' passwords
+          - A star schema has no center
+        explanation: At the center is the fact table that stores events, surrounded by dimension tables that store descriptive information (customer, product, date).
+  warehouse-lake:
+    title: Data warehouses and data lakes
+    content: |
+      At NarMarket, both tidy tables and huge volumes of raw data (logs, photos, JSON events) are created every day. Storing all of it in the same place and in the same way is inefficient. That's why there are two different kinds of storage.
+
+      ## Data lake 🏞️
+
+      A **data lake** stores all raw data — structured, semi-structured and unstructured — **as it is**.
+
+      - Very large volumes (petabytes) and cheap storage.
+      - No schema is required when data is written — the structure is defined when it's read (**schema-on-read**).
+      - Used mainly by data scientists: exploration, machine learning, testing new ideas.
+      - Examples: lakes built on Amazon S3, Azure Data Lake Storage or Google Cloud Storage.
+
+      ⚠️ **Risk:** without order, a lake turns into a **"data swamp"** — a pile of files where nobody knows what they are, where they came from or whether they're reliable.
+
+      ## Data warehouse 🏬
+
+      A **data warehouse** stores cleaned, structured data that is **optimized for analytics**.
+
+      - The schema is defined before data is written (**schema-on-write**).
+      - Very fast for read queries: dashboards, reports, business questions.
+      - Used mainly by business analysts.
+      - Examples: Snowflake, Google BigQuery, Amazon Redshift.
+
+      ## What about a regular database?
+
+      An app's own database (for example, the NarMarket app's PostgreSQL) is for **operations**: creating orders, updating their status — thousands of small writes every second. Analytical queries (for example, "sales over the last 3 years") would slow this database down, and customers would suffer. That's why the data engineer copies data from the operational database into a **separate warehouse**.
+
+      | | Operational database | Data warehouse | Data lake |
+      | --- | --- | --- | --- |
+      | **Purpose** | The app's day-to-day work | Analytics, reports | Storing raw data, ML |
+      | **Data** | Current, structured | Clean, structured, historical | Every kind, raw |
+      | **Schema** | Strict | On write | On read |
+      | **User** | The app | Analysts | Data scientists |
+      | **Cost** | Medium | More expensive | Cheap |
+
+      ## Data catalog
+
+      A **data catalog** is data's "library card": what each table is, its source, its owner, when it was updated and what the columns mean. A catalog keeps a data lake from turning into a swamp and helps everyone find the data they need.
+
+      ## Lakehouse
+
+      In recent years, the **lakehouse** approach, which combines the strengths of both worlds, has become popular: warehouse-like fast, organized queries on top of cheap lake storage (for example, Databricks, Delta Lake).
+
+      ## At NarMarket
+
+      - Courier photos, app logs, raw JSON events → **data lake**.
+      - Cleaned sales, customer and product tables → **data warehouse** → dashboards.
+      - Live orders → the app's **operational database**.
+
+      ## Quick summary
+
+      - A data lake stores every kind of raw data cheaply; without a catalog, it can turn into a swamp.
+      - A data warehouse stores clean, structured data for analytics.
+      - Analytical queries shouldn't load the app's operational database — that's why a separate warehouse is built.
+  gol-yoxsa-anbar:
+    title: 'Practice: Lake or warehouse?'
+    questions:
+      - text: Does each feature belong to a data lake or a data warehouse?
+        buckets:
+          - name: Data lake
+            items:
+              - Stores all raw data (logs, photos, JSON) as it is
+              - Also accepts unstructured data
+              - Very large volumes with cheap storage
+              - For data scientists' exploration and ML work
+          - name: Data warehouse
+            items:
+              - Only cleaned and structured data
+              - Optimized for analytical queries and dashboards
+              - The schema is defined before data is written
+              - "Business analysts' main workplace"
+        explanation: A lake — raw, every kind, cheap and flexible; a warehouse — clean, structured and built for fast analytics.
+      - text: What happens if a data lake has no **catalog** and no order?
+        options:
+          - The data is cleaned automatically
+          - 'The lake turns into a "data swamp": a pile of files nobody can identify or trace'
+          - It turns into a data warehouse
+          - Nothing — catalogs are only for large companies
+        explanation: A catalog explains the data's source, owner and meaning. Without one, a lake quickly becomes an unusable swamp.
+      - text: |-
+          NarMarket's management looks at the sales dashboard every morning. The data engineer doesn't want to connect the dashboard directly to the app's operational database.
+
+          Which source should the dashboard read from, and why?
+        options:
+          - "The app's database — the data there is the freshest"
+          - The data warehouse — the data is clean, and heavy queries don't slow the app down
+          - The data lake — it has the most data
+          - "An Excel file on the analyst's computer"
+        explanation: 'The data warehouse is designed for analytical queries: the data is clean, queries are fast and the app customers use doesn''t slow down.'

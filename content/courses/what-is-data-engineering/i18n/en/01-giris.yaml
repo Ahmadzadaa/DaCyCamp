@@ -1,0 +1,266 @@
+title: Introduction to data engineering
+description: The data workflow, the role of a data engineer, Big Data and the idea of a data pipeline.
+steps:
+  xos-geldin:
+    title: Welcome to the course
+    content: |
+      When you order something on your phone, pay by card or play your favorite song, **data** is created behind the scenes. Collecting this data correctly, storing it reliably and delivering it to the right person on time is the job of **data engineering**.
+
+      We won't write any code in this course. The goal is to see the big picture: where data comes from, where it lives, how it moves and who builds all of this.
+
+      ## The company that will be with us throughout the course: NarMarket 🍎
+
+      **NarMarket** is a fictional online grocery store. It operates in Baku, Ganja and Sumgait:
+
+      - a mobile app and a website — about **50,000 orders** a day;
+      - 3 warehouses and 400 couriers;
+      - card payments, customer reviews, discount campaigns.
+
+      Every second of this activity creates new data: who bought what, how much they paid, where the courier was, which product ran out in the warehouse. Throughout the course we'll work alongside NarMarket's data team and see every new concept through their real problems.
+
+      ## What you'll learn in this course
+
+      | Chapter | Topic |
+      | --- | --- |
+      | 1. Introduction | The data workflow, who a data engineer is, Big Data, data pipelines and ETL |
+      | 2. Storage | Data structures, SQL databases, data warehouses and data lakes |
+      | 3. Movement and processing | Data processing, scheduling, parallel computing, the cloud |
+      | 4. The profession | Tools, "a day as a data engineer" and the final test |
+
+      ## How you'll learn
+
+      1. **Lesson** — a video and a short text. Watch the video, then read the text: the key concepts and tables are collected there.
+      2. **Practice** — questions come after every lesson. Sometimes you'll choose the right answer, and sometimes you'll drag items into the right group.
+      3. **Mistakes are fine** — read the explanation after answering and try again. Every attempt teaches you something.
+
+      > 💡 Take the lessons in order: each chapter builds on the previous one. A final test awaits you at the end.
+  data-is-axini:
+    title: The data workflow
+    content: |
+      Data doesn't create value on its own. Raw data is just numbers and records. To draw decisions from it, data goes through several stages. This is called the **data workflow**.
+
+      ## Four stages
+
+      | # | Stage | What happens | NarMarket example |
+      | --- | --- | --- | --- |
+      | 1 | **Collection & storage** | Data is collected from various sources and stored | Orders from the app, transactions from the payment system, couriers' GPS |
+      | 2 | **Preparation** | Data is cleaned and put into a ready-to-use form | Duplicate orders are deleted, dates are standardized |
+      | 3 | **Exploration & visualization** | Trends are explored in the data, charts and dashboards are built | A "Which product sells the most?" dashboard |
+      | 4 | **Experimentation & prediction** | Hypotheses are tested, the future is forecast | The effect of a discount is tested with an A/B test, next week's orders are forecast |
+
+      ## Where does the data engineer fit in?
+
+      **The data engineer is responsible for the first stage.** They collect and store data and make it **ready and accessible** for the other stages. Sometimes they also take on part of the preparation stage (automatic cleaning, formatting).
+
+      **Data analysts** and **data scientists** work mainly in the remaining stages. But all of them depend on one thing: the foundation the data engineer has built. If data isn't collected, arrives late or is wrong, even the best analyst can't reach the right conclusion.
+
+      > 🍽️ **Analogy:** think of a restaurant. The data engineer is the supply chain and the storeroom: fresh produce must arrive on time and be stored properly. The chef (analyst, data scientist) cooks the food, and the waiter (dashboard) serves it to the customer. If supply breaks down, the kitchen stops.
+
+      ## A morning at NarMarket
+
+      At 09:00 the sales director opens the dashboard and wants to see yesterday's sales. For this to be possible, overnight:
+
+      1. all of yesterday's orders had to be collected from the app's database,
+      2. reconciled with the payment system,
+      3. cleaned and written to the analytics database.
+
+      The data engineer builds and monitors every link in this chain. The director only sees the end result — if everything works, the data engineer's work stays "invisible".
+
+      ## Quick summary
+
+      - The data workflow has 4 stages: collection and storage → preparation → exploration and visualization → experimentation and prediction.
+      - The data engineer owns the first stage and builds the foundation for all the work that follows.
+      - Analysts and data scientists work with the data the data engineer prepares.
+  kimin-isidir:
+    title: "Practice: Whose job is this?"
+    questions:
+      - text: |-
+          A list of tasks for NarMarket's data team is being drawn up. Which tasks are the **data engineer's** responsibility, and which belong to other roles?
+
+          Drag the items into the right group.
+        buckets:
+          - name: The data engineer's job
+            items:
+              - Building a system that automatically moves orders from the app into the analytics database
+              - Building a database to store data from different sources in one place
+              - Making sure data is stored reliably and is accessible
+              - Monitoring that the nightly data loads run on time
+          - name: Not the data engineer's job
+            items:
+              - Designing a dashboard that shows sales trends
+              - Testing the effect of a discount campaign with an A/B test
+              - Building a model that forecasts next month's orders
+              - Presenting quarterly results to management
+        explanation: A data engineer collects and stores data and makes it accessible. Dashboards, A/B tests, forecasting models and presentations are the work of analysts and data scientists — but they use the data the data engineer prepares.
+      - text: |-
+          In the morning, analyst Aysel can't refresh the dashboard: none of yesterday's orders made it into the analytics database.
+
+          **Which stage** of the data workflow is the problem in?
+        options:
+          - Exploration and visualization
+          - Collection and storage
+          - Experimentation and prediction
+          - There's no problem — the dashboard can show old data
+        explanation: The data never reached the database at all — so the chain broke at the first stage, collection and storage. This is a problem for the data engineer to investigate.
+  data-engineer-kimdir:
+    title: Who is a data engineer?
+    content: |
+      A **data engineer** is a specialist who builds and maintains the systems that collect, store and process data. Their main job can be summed up in one sentence:
+
+      > Deliver data **in the right form**, **to the right people**, **on time** and **efficiently**.
+
+      ## Main responsibilities
+
+      - **Building data pipelines** — systems that automatically carry data from its sources to where it's needed.
+      - **Managing databases** — designing the structure (schema) of tables and making sure they run fast.
+      - **Monitoring data quality** — duplicates, missing values and wrong formats must be caught in time.
+      - **Scaling** — the system mustn't fall over even when the data volume grows tenfold.
+      - **Security and access rights** — personal data must be protected, and everyone should reach only the data they need.
+
+      ## The water supply analogy 🚰
+
+      Think of a city's water system. The water sources (rivers, reservoirs) are the **data sources**: apps, websites, sensors. The pipes are the **data pipelines**. The treatment plant is **data processing**. And the taps in people's homes are the analysts' dashboards and reports.
+
+      The data engineer is the engineer and plumber of this system: they design the pipes, lay them and repair them when there's a leak. The person turning on the tap never sees the pipes — they just expect clean water to come out.
+
+      ## Roles on a data team
+
+      | | Data engineer | Data analyst | Data scientist |
+      | --- | --- | --- | --- |
+      | **Key question** | Does the data arrive reliably and on time? | What happened and why? | What will happen? |
+      | **Work** | Pipelines, databases, infrastructure | Reports, dashboards, analysis | Forecasting models, experiments |
+      | **Tools** | SQL, Python, Spark, Airflow, the cloud | Excel, SQL, Power BI, Tableau | Python, statistics, machine learning |
+      | **At NarMarket** | Loads the orders into the analytics database every night | "Which city did sales drop in?" | "How many couriers will we need next week?" |
+
+      > 📌 According to surveys, data scientists spend much of their time **finding and cleaning** data. A good data engineer cuts that time dramatically — and the data scientist can spend time on their real work: the models.
+
+      ## Big Data and the 5 Vs
+
+      Data engineering became more important with the rise of **Big Data**. Big Data means data so large and complex that it's hard to process with traditional methods. It's usually described with the **5 Vs**:
+
+      | V | Meaning | At NarMarket |
+      | --- | --- | --- |
+      | **Volume** | The amount of data | 18 million orders a year, billions of app events |
+      | **Velocity** | How fast data is created and processed | Couriers' GPS sends a location every 2 seconds |
+      | **Variety** | The kinds of data | Tables, JSON events, photos, review texts |
+      | **Veracity** | How accurate and high-quality the data is | Mistyped addresses, duplicate records |
+      | **Value** | The benefit gained from data | More accurate forecasts → less waste |
+
+      ## Quick summary
+
+      - A data engineer builds systems that deliver data in the right form, to the right people, on time.
+      - An analyst explains the past and a data scientist predicts the future — both depend on the data engineer's foundation.
+      - Big Data is described by the 5 Vs: volume, velocity, variety, veracity and value.
+  dogrusunu-de:
+    title: 'Practice: Tell the truth'
+    questions:
+      - text: |-
+          NarMarket's data scientist Leyla wants to build a model that predicts which products customers buy **together**. But the order data is stored in 3 different systems, in 3 different formats, and is combined by hand every time.
+
+          Who should solve this problem, and how?
+        options:
+          - A data analyst — by building a new dashboard
+          - A data engineer — by building an automatic pipeline that collects the data in one place, in one format
+          - Leyla — by starting to build the model without data
+          - A designer — by changing the app's interface
+        explanation: Collecting data from different systems and making it accessible in a single format is a data engineer's core job. After that, Leyla can spend her time on the model instead of on cleaning.
+      - text: Which statement is **true**?
+        options:
+          - Data engineers mainly build machine learning models
+          - Data engineers work only with Excel spreadsheets
+          - Data engineers collect and store data and make it accessible to analysts and data scientists
+          - Data scientists build the company's entire database architecture
+        explanation: 'A data engineer builds the "supply chain" of data: collection, storage and delivery. Models are mostly built by data scientists.'
+      - text: |-
+          NarMarket couriers' devices send their location **every 2 seconds**, and this data has to be processed immediately so customers can see the courier on the map.
+
+          Which "V" of Big Data is this most related to?
+        options:
+          - Volume
+          - Variety
+          - Velocity
+          - Value
+        explanation: Data that's created very quickly and needs to be processed immediately is about Velocity.
+  data-pipeline:
+    title: Data pipelines and ETL
+    content: |
+      At NarMarket, data comes from dozens of sources: the app, the website, the payment system, the warehouse software, couriers' devices. Gathering all this by hand every day would be both slow and full of mistakes. The solution is a **data pipeline**.
+
+      ## What is a data pipeline?
+
+      A **data pipeline** is a sequence of steps that takes data from its sources, processes it along the way and delivers it to its destination **automatically**. You can compare it to a conveyor belt in a factory: raw material goes in at one end, work is done on it at each station, and the finished product comes out at the other end.
+
+      NarMarket's order pipeline:
+
+      ```text
+      Mobile app ───┐
+      Website ──────┼──► Collect ──► Clean ──► Combine ──► Data warehouse ──► Dashboards
+      Payment system┘                                                   └─► Forecasting models
+      ```
+
+      ## ETL: Extract, Transform, Load
+
+      The most classic form of pipeline is **ETL**:
+
+      | Step | Meaning | At NarMarket |
+      | --- | --- | --- |
+      | **E — Extract** | Reading data from the source | Taking yesterday's orders from the app's database and transactions from the payment system |
+      | **T — Transform** | Cleaning, formatting and combining data | Deleting duplicates, standardizing dates, matching each order with its payment |
+      | **L — Load** | Writing the finished data to its destination | Writing the clean table to the data warehouse |
+
+      ### ETL vs. ELT
+
+      Because modern cloud warehouses are very powerful, **ELT** is often used: data is first **loaded** into the warehouse as it is, and then **transformed** inside the warehouse itself. The advantage: the raw data isn't lost, so it can be processed differently later.
+
+      ## Batch vs. streaming
+
+      | | Batch processing | Stream processing |
+      | --- | --- | --- |
+      | **How it works** | Data is collected and processed as one batch at a set time | Each record is processed the moment it's created |
+      | **When** | Daily reports, nightly loads | Fraud detection, live courier tracking |
+      | **Advantage** | Simple and cheap | Results are ready within seconds |
+
+      ## Why automate?
+
+      - **Speed** — the data is ready at the same time every day.
+      - **Reliability** — people get tired and make mistakes, while a pipeline repeats the same steps every time.
+      - **Monitoring** — when a pipeline breaks, the data engineer is alerted immediately and fixes the problem before the analysts even notice.
+
+      ## Quick summary
+
+      - A data pipeline is a sequence of steps that automatically carries data from its sources to its destination.
+      - ETL: extract → transform → load. In ELT, the transformation happens after loading, inside the warehouse.
+      - Batch — periodically, in batches; streaming — in real time.
+  pipeline-qur:
+    title: 'Practice: Build the pipeline'
+    questions:
+      - text: The tasks in NarMarket's nightly ETL pipeline have got mixed up. Place each task in the correct ETL step.
+        buckets:
+          - name: Extract
+            items:
+              - Reading yesterday's orders from the mobile app's database
+              - Taking transactions from the payment system's API
+          - name: Transform
+            items:
+              - 'Standardizing dates: 03.10.2026 → 2026-10-03'
+              - Deleting a duplicate record of the same order
+              - Converting payments in dollars to manats
+          - name: Load
+            items:
+              - Writing the finished table to the data warehouse
+              - Loading the cleaned data into the analysts' database
+        explanation: Extract — reading from the source; Transform — cleaning and formatting; Load — writing the finished data to its destination.
+      - text: Which task needs a **streaming** (real-time) pipeline?
+        options:
+          - Preparing the monthly financial report
+          - Analyzing last year's sales
+          - Blocking a suspicious card transaction at the moment of payment
+          - A weekly list of best-selling products
+        explanation: Fraud has to be detected at the moment of payment — a day later would be too late. Batch processing is enough for the other tasks.
+      - text: In the **ELT** approach, where does the data transformation happen?
+        options:
+          - Before the data is extracted from the source
+          - After the data is loaded into the data warehouse, inside the warehouse
+          - On the analyst's computer, in Excel
+          - There's no transformation step in ELT
+        explanation: In ELT, the raw data is first loaded into the warehouse and then transformed inside the powerful cloud warehouse.
