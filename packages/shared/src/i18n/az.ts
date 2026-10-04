@@ -243,7 +243,12 @@ export const az = {
     how3Title: 'Tapşırıq həll edin',
     how3Text: 'Hər addımda XP qazanın, seriyanı qoruyun, sertifikat alın.',
     coursesKicker: 'Kurslar',
-    coursesTitle: 'İndi başlaya biləcəyiniz kurslar',
+    coursesTitle: 'Kurs kataloqu bir baxışda',
+    coursesText:
+      'Hər istiqamətdə sıfırdan başlayan kurslar, real datasetlərlə tapşırıqlar və yekun layihələr.',
+    coursesMore: '+ daha {n} kurs',
+    coursesNote: 'Dərslər, tapşırıqlar və datasetlər pulsuz qeydiyyatdan sonra açılır.',
+    coursesCta: 'Pulsuz qeydiyyat — kursları aç',
     coursesAll: 'Bütün kurslar',
     pathsKicker: 'Roadmap',
     pathsTitle: 'Peşəyə aparan hazır marşrutlar',

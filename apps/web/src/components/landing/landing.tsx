@@ -17,9 +17,8 @@ import {
 import type { CourseCardDto, LevelLabels, PathCardDto, TrackDto } from '@dacy/shared';
 import { t, type TKey } from '@/lib/i18n';
 import { FEATURES as FLAGS } from '@/lib/features';
-import { fmtNum } from '@/lib/utils';
+import { fmtHours, fmtNum } from '@/lib/utils';
 import { Logo } from '@/components/app/logo';
-import { CourseCard } from '@/components/app/course-card';
 import { PathCard } from '@/components/app/path-card';
 import { TrackTile } from '@/components/app/track-icon';
 
@@ -44,6 +43,8 @@ const STEPS: Array<{ icon: typeof UserPlus; title: TKey; text: TKey }> = [
 ];
 
 const FAQ = [1, 2, 3, 4, 5] as const;
+/** xülasədə hər istiqamətdən göstərilən kurs adı sayı */
+const CAT_MAX = 5;
 
 /** Qonaq üçün tanışlıq səhifəsi: platformanı göstərir, yuxarı sağda «Daxil ol / Qeydiyyat» */
 export function Landing({
@@ -66,6 +67,12 @@ export function Landing({
     0,
   );
   const courseCount = (slug: string) => courses.filter((c) => c.track.slug === slug).length;
+  const catalog = tracks
+    .map((track) => {
+      const items = courses.filter((c) => c.track.slug === track.slug);
+      return { track, items, hours: items.reduce((h, c) => h + (c.estimatedHours ?? 0), 0) };
+    })
+    .filter((g) => g.items.length);
 
   return (
     <div className="ld">
@@ -202,19 +209,57 @@ export function Landing({
           </ol>
         </section>
 
-        {/* Kurslar */}
-        {courses.length ? (
+        {/* Kurslar — qısa xülasə: istiqamət üzrə yalnız ad, səviyyə, müddət (təsvir və məzmun girişdən sonra) */}
+        {catalog.length ? (
           <section className="ld-in ld-sec" aria-labelledby="ld-courses">
             <SectionHead
               id="ld-courses"
               kicker="landing.coursesKicker"
               title="landing.coursesTitle"
-              more={{ href: '/kurslar', label: 'landing.coursesAll' }}
+              text="landing.coursesText"
             />
-            <div className="cards">
-              {courses.slice(0, 6).map((c) => (
-                <CourseCard key={c.id} course={c} levels={levels} />
+            <div className="ld-cat">
+              {catalog.map(({ track, items, hours }) => (
+                <div
+                  key={track.slug}
+                  className="ld-cat-g"
+                  style={{ ['--c' as string]: track.color }}
+                >
+                  <div className="ld-cat-h">
+                    <TrackTile color={track.color} icon={track.icon} slug={track.slug} />
+                    <div>
+                      <h3>{track.title}</h3>
+                      <span>
+                        {t('landing.trackCourses', { n: items.length })}
+                        {hours ? ` · ${t('common.hours', { n: fmtHours(hours) ?? 0 })}` : ''}
+                      </span>
+                    </div>
+                  </div>
+                  <ul>
+                    {items.slice(0, CAT_MAX).map((c) => (
+                      <li key={c.id}>
+                        <Check aria-hidden />
+                        <span className="ld-cat-t">{c.title}</span>
+                        <span className="ld-cat-l">
+                          {levels?.[c.level] ?? t(`level.${c.level}`)}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                  {items.length > CAT_MAX ? (
+                    <p className="ld-cat-more">
+                      {t('landing.coursesMore', { n: items.length - CAT_MAX })}
+                    </p>
+                  ) : null}
+                </div>
               ))}
+            </div>
+            <div className="ld-cat-f">
+              <p>{t('landing.coursesNote')}</p>
+              <Link href="/qeydiyyat" className="b b-brand">
+                {t('landing.coursesCta')}
+                <ArrowRight aria-hidden />
+              </Link>
             </div>
           </section>
         ) : null}

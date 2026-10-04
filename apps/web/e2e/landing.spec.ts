@@ -10,6 +10,10 @@ test('qonaq: «/» tanışlıq səhifəsi → Qeydiyyat / Daxil ol', async ({ pa
   ).toBeVisible();
   for (const h of ['Hansı sahədə irəliləmək istəyirsiniz?', 'Üç addımda başlayın'])
     await expect(page.getByRole('heading', { name: h })).toBeVisible();
+  // kurslar yalnız qısa xülasə kimi: ad + səviyyə, kurs kartı (təsvir, «Başla») yoxdur
+  await expect(page.getByRole('heading', { name: 'Kurs kataloqu bir baxışda' })).toBeVisible();
+  await expect(page.locator('.ld-cat-g').first()).toBeVisible();
+  await expect(page.getByTestId('course-card')).toHaveCount(0);
   // sual-cavab açılır
   await page.getByText('Platforma pulsuzdurmu?').click();
   await expect(page.getByText(/Qeydiyyat və kurslara yazılma pulsuzdur/)).toBeVisible();

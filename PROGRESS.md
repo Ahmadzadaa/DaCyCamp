@@ -420,3 +420,4 @@ Mənbə: `Python_Day_1/2.pptx` (nəzəri) + `Python_Day_1/2.docx` (35 tapşırı
 
 - ✅ «Sayta qayıt» düyməsi (sağ yuxarı; mobil — loqo ilə bir sətirdə) qonağı tanışlıq səhifəsinə (`/`) aparır; e2e: `landing.spec.ts`.
 - ✅ Sol təqdimat paneli ekran hündürlüyünə sığır (yapışqan, `100dvh`): alçaq ekranlarda boşluq/şriftlər kiçilir, 760px-dən aşağı kod kartı gizlənir — tam ekran olmayan pəncərədə də aşağı hissə kəsilmir. 1000×560 … 1920×1080 və 390×844-də yoxlanılıb.
+- ✅ Tanışlıq səhifəsi: tam kurs kartları (təsvir, «Başla») əvəzinə «Kurs kataloqu bir baxışda» — istiqamət üzrə kurs adları, səviyyə və ümumi saat (hər istiqamətdən 5 ad, qalanı «+ daha N kurs»); məzmun qeydiyyatdan sonra. e2e: `landing.spec.ts`.

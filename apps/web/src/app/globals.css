@@ -5738,6 +5738,95 @@
     transform: translateX(3px);
   }
 
+  /* kurs kataloqu — qısa xülasə */
+  .ld-cat {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+  }
+  .ld-cat-g {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 24px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-card);
+    background: var(--card);
+    overflow: hidden;
+  }
+  .ld-cat-g::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto;
+    height: 4px;
+    background: var(--c);
+  }
+  .ld-cat-h {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .ld-cat-h h3 {
+    font-size: 1.1rem;
+  }
+  .ld-cat-h span {
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+  .ld-cat-g ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .ld-cat-g li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    line-height: 1.4;
+  }
+  .ld-cat-g li svg {
+    flex: none;
+    width: 16px;
+    height: 16px;
+    margin-top: 2px;
+    color: var(--c);
+  }
+  .ld-cat-t {
+    flex: 1;
+    min-width: 0;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .ld-cat-l {
+    flex: none;
+    font-size: 0.78rem;
+    color: var(--muted);
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--ink) 6%, transparent);
+  }
+  .ld-cat-more {
+    margin-top: auto;
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+  .ld-cat-f {
+    margin-top: 24px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .ld-cat-f p {
+    color: var(--muted);
+    max-width: 60ch;
+  }
+
   .ld-feats {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
