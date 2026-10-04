@@ -1,0 +1,54 @@
+type: python
+title: Aylıq faylları birləşdir
+xp: 40
+estimated_minutes: 10
+instructions: |
+  Gün 5 (3): müxtəlif aylara aid faylları bir cədvəldə birləşdir.
+tasks:
+- Üç aylıq faylı oxu və şaquli birləşdir (indeks 0-dan) → q1.
+- 'Aylar üzrə gəlir (Date-in ilk 7 simvolu: "2024-01"), 2 onluq → ay_gelir.'
+- q1-in ilk 3 sətrinin Date və Region sütunlarını axis=1 ilə yan-yana birləşdir → ufuqi.
+dataset:
+- datasets/satis_yanvar.csv
+- datasets/satis_fevral.csv
+- datasets/satis_mart.csv
+starter_code: |
+  import pandas as pd
+
+  yan = pd.read_csv("satis_yanvar.csv")
+  fev = pd.read_csv("satis_fevral.csv")
+  mar = pd.read_csv("satis_mart.csv")
+
+  q1 = ...
+  ay_gelir = ...
+  ufuqi = ...
+
+  print(len(q1))
+  ay_gelir
+solution: |
+  import pandas as pd
+
+  yan = pd.read_csv("satis_yanvar.csv")
+  fev = pd.read_csv("satis_fevral.csv")
+  mar = pd.read_csv("satis_mart.csv")
+
+  q1 = pd.concat([yan, fev, mar], axis=0, ignore_index=True)
+  ay_gelir = q1.groupby(q1["Date"].str[:7])["Total Revenue"].sum().round(2)
+  ufuqi = pd.concat([q1[["Date"]].head(3), q1[["Region"]].head(3)], axis=1)
+
+  print(len(q1))
+  ay_gelir
+tests: |
+  import pandas as _pd
+  _p = [_pd.read_csv(f"satis_{a}.csv") for a in ("yanvar", "fevral", "mart")]
+  _q = _pd.concat(_p, ignore_index=True)
+  assert isinstance(q1, _pd.DataFrame) and len(q1) == sum(len(p) for p in _p), f"q1 {len(_q)} sətir olmalıdır"
+  assert list(q1.index) == list(range(len(q1))), "ignore_index=True — indeks 0-dan başlamalıdır"
+  _a = _q.groupby(_q["Date"].str[:7])["Total Revenue"].sum().round(2)
+  assert ay_gelir.round(2).to_dict() == _a.to_dict(), f"ay_gelir {_a.to_dict()} olmalıdır"
+  assert isinstance(ufuqi, _pd.DataFrame) and ufuqi.shape == (3, 2) and list(ufuqi.columns) == ["Date", "Region"], "ufuqi — 3 sətir, Date və Region sütunları (axis=1)"
+  assert "pd.concat(" in dacy.code and "axis=1" in dacy.code, "pd.concat ilə həm şaquli, həm üfüqi birləşdir"
+hints:
+- pd.concat([yan, fev, mar], axis=0, ignore_index=True)
+- q1.groupby(q1["Date"].str[:7])["Total Revenue"].sum().round(2)
+- pd.concat([q1[["Date"]].head(3), q1[["Region"]].head(3)], axis=1)

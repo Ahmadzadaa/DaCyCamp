@@ -1,0 +1,48 @@
+type: python
+title: Gəliri 4 bərabər hissəyə böl (qcut)
+xp: 40
+estimated_minutes: 8
+instructions: |
+  Gün 5 (2): Total Revenue-ni 4 bərabər hissəyə ayır və «Q_Bin» sütunu yarat.
+tasks:
+- 'pd.qcut ilə "Q_Bin": q=4, labels=["Aşağı", "Orta", "Yaxşı", "Mükəmməl"].'
+- Hər Q_Bin üzrə orta gəlir, 2 onluq → orta_bin (groupby, observed=True).
+- Mükəmməl qrupun alt sərhədi (gəlirin 75% kvantili), 2 onluq → sərhəd75 → serhed75.
+dataset: datasets/satislar.csv
+starter_code: |
+  import pandas as pd
+
+  df = pd.read_csv("satislar.csv")
+
+  # df["Q_Bin"] = ...
+  orta_bin = ...
+  serhed75 = ...
+
+  print(orta_bin)
+  print(serhed75)
+solution: |
+  import pandas as pd
+
+  df = pd.read_csv("satislar.csv")
+
+  df["Q_Bin"] = pd.qcut(df["Total Revenue"], q=4, labels=["Aşağı", "Orta", "Yaxşı", "Mükəmməl"])
+  orta_bin = df.groupby("Q_Bin", observed=True)["Total Revenue"].mean().round(2)
+  serhed75 = round(df["Total Revenue"].quantile(0.75), 2)
+
+  print(orta_bin)
+  print(serhed75)
+tests: |
+  import pandas as _pd
+  import numpy as _np
+  _s = _pd.read_csv("satislar.csv")
+
+  _q = _pd.qcut(_s["Total Revenue"], q=4, labels=["Aşağı", "Orta", "Yaxşı", "Mükəmməl"])
+  assert "Q_Bin" in df.columns and list(df["Q_Bin"].astype(str)) == list(_q.astype(str)), "Q_Bin düzgün deyil"
+  _o = _s.groupby(_q, observed=True)["Total Revenue"].mean().round(2)
+  assert {str(k): v for k, v in orta_bin.to_dict().items()} == {str(k): v for k, v in _o.to_dict().items()}, "orta_bin düzgün deyil"
+  assert serhed75 == round(_s["Total Revenue"].quantile(0.75), 2), "serhed75 = round(df['Total Revenue'].quantile(0.75), 2)"
+  assert "pd.qcut(" in dacy.code, "pd.qcut istifadə et"
+hints:
+- pd.qcut(df["Total Revenue"], q=4, labels=["Aşağı", "Orta", "Yaxşı", "Mükəmməl"])
+- df.groupby("Q_Bin", observed=True)["Total Revenue"].mean().round(2)
+- df["Total Revenue"].quantile(0.75)

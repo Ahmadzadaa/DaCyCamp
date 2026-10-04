@@ -1,0 +1,50 @@
+type: python
+title: Unikal dəyərlər, tezliklər və dublikatlar
+xp: 40
+estimated_minutes: 10
+instructions: |
+  Gün 3 tapşırıqları 21–24: statistika, kateqoriyalar, ödəniş üsulları və təkrarlanan sətirlər.
+tasks:
+- Ədədi sütunların təsviri statistikası → statistika (describe()).
+- Product Category sütununda unikal kateqoriyaların sayı → kateqoriya_sayi.
+- Hər ödəniş üsulunun neçə dəfə istifadə olunduğu → odenis_sayi (value_counts).
+- Tam təkrarlanan sətirlərin sayı → dublikat.
+dataset: datasets/satislar_xam.csv
+starter_code: |
+  import pandas as pd
+
+  df = pd.read_csv("satislar_xam.csv")
+
+  statistika = ...
+  kateqoriya_sayi = ...
+  odenis_sayi = ...
+  dublikat = ...
+
+  print(kateqoriya_sayi, dublikat)
+  odenis_sayi
+solution: |
+  import pandas as pd
+
+  df = pd.read_csv("satislar_xam.csv")
+
+  statistika = df.describe()
+  kateqoriya_sayi = df["Product Category"].nunique()
+  odenis_sayi = df["Payment Method"].value_counts()
+  dublikat = df.duplicated().sum()
+
+  print(kateqoriya_sayi, dublikat)
+  odenis_sayi
+tests: |
+  import pandas as _pd
+  import numpy as _np
+  _x = _pd.read_csv("satislar_xam.csv")
+
+  assert isinstance(statistika, _pd.DataFrame) and statistika.round(4).equals(_x.describe().round(4)), "statistika = df.describe()"
+  assert kateqoriya_sayi == _x["Product Category"].nunique(), f"kateqoriya_sayi {_x['Product Category'].nunique()} olmalıdır, sənin nəticən: {kateqoriya_sayi!r}"
+  _v = _x["Payment Method"].value_counts()
+  assert isinstance(odenis_sayi, _pd.Series) and odenis_sayi.to_dict() == _v.to_dict(), f"odenis_sayi = df['Payment Method'].value_counts(). Gözlənilən: {_v.to_dict()}"
+  assert dublikat == _x.duplicated().sum(), f"dublikat {_x.duplicated().sum()} olmalıdır, sənin nəticən: {dublikat!r}"
+hints:
+- statistika = df.describe()
+- kateqoriya_sayi = df["Product Category"].nunique()
+- odenis_sayi = df["Payment Method"].value_counts(); dublikat = df.duplicated().sum()

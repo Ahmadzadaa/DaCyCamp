@@ -1,0 +1,53 @@
+type: python
+title: Sütun adlarını düzəlt
+xp: 40
+estimated_minutes: 8
+instructions: |
+  Gün 4 (15): sütun adlarındakı boşluqlar kodda narahatlıq yaradır. Adları səliqəyə sal.
+tasks:
+- 'df-in surətində (alt) bütün sütun adlarındakı boşluqları alt xətlə əvəz et: "Product Name" → "Product_Name".'
+- '"Total Revenue" → "Gelir", "Units Sold" → "Say" adlandır → ad (rename ilə).'
+- Transaction ID və Filial sütunlarını sil → qisa (drop ilə).
+dataset: datasets/satislar.csv
+starter_code: |
+  import pandas as pd
+
+  df = pd.read_csv("satislar.csv")
+
+  alt = df.copy()
+  # alt.columns = ...
+
+  ad = ...
+  qisa = ...
+
+  print(alt.columns.tolist())
+  print(ad.columns.tolist())
+  print(qisa.shape)
+solution: |
+  import pandas as pd
+
+  df = pd.read_csv("satislar.csv")
+
+  alt = df.copy()
+  alt.columns = alt.columns.str.replace(" ", "_")
+
+  ad = df.rename(columns={"Total Revenue": "Gelir", "Units Sold": "Say"})
+  qisa = df.drop(columns=["Transaction ID", "Filial"])
+
+  print(alt.columns.tolist())
+  print(ad.columns.tolist())
+  print(qisa.shape)
+tests: |
+  import pandas as _pd
+  import numpy as _np
+  _s = _pd.read_csv("satislar.csv")
+
+  assert alt.columns.tolist() == [c.replace(" ", "_") for c in _s.columns], f"alt-ın sütunları boşluqsuz olmalıdır, səndə: {alt.columns.tolist()}"
+  _a = _s.rename(columns={"Total Revenue": "Gelir", "Units Sold": "Say"})
+  assert isinstance(ad, _pd.DataFrame) and ad.columns.tolist() == _a.columns.tolist(), f"ad-ın sütunları: {_a.columns.tolist()}"
+  assert isinstance(qisa, _pd.DataFrame) and qisa.columns.tolist() == [c for c in _s.columns if c not in ("Transaction ID", "Filial")], "qisa = df.drop(columns=['Transaction ID', 'Filial'])"
+  assert df.columns.tolist() == _s.columns.tolist(), "Orijinal df dəyişməməlidir — rename/drop nəticəsini yeni dəyişənə yaz"
+hints:
+- alt.columns = alt.columns.str.replace(" ", "_")
+- 'df.rename(columns={"Total Revenue": "Gelir", "Units Sold": "Say"})'
+- df.drop(columns=["Transaction ID", "Filial"])

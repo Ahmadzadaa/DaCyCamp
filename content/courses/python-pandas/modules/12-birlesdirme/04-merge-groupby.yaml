@@ -1,0 +1,52 @@
+type: python
+title: Birləşdir və təhlil et
+xp: 40
+estimated_minutes: 10
+instructions: |
+  Join-dən sonra sual: hansı müştəri və hansı şəhər ən çox xərcləyir?
+tasks:
+- İki cədvəli inner join et → df.
+- Müştəri adına görə ümumi xərc, çoxdan aza → xerc.
+- Ən çox xərcləyən müştəri → en_cox_xerc.
+- Şəhərlər üzrə ümumi xərc → seher_xerc.
+dataset:
+- datasets/musteriler.csv
+- datasets/sifarisler_qisa.csv
+starter_code: |
+  import pandas as pd
+
+  m = pd.read_csv("musteriler.csv")
+  s = pd.read_csv("sifarisler_qisa.csv")
+
+  df = ...
+  xerc = ...
+  en_cox_xerc = ...
+  seher_xerc = ...
+
+  print(en_cox_xerc)
+  xerc
+solution: |
+  import pandas as pd
+
+  m = pd.read_csv("musteriler.csv")
+  s = pd.read_csv("sifarisler_qisa.csv")
+
+  df = pd.merge(s, m, on="MüştəriID", how="inner")
+  xerc = df.groupby("Ad")["Məbləğ"].sum().sort_values(ascending=False)
+  en_cox_xerc = xerc.idxmax()
+  seher_xerc = df.groupby("Şəhər")["Məbləğ"].sum()
+
+  print(en_cox_xerc)
+  xerc
+tests: |
+  import pandas as _pd
+  _m = _pd.read_csv("musteriler.csv"); _s = _pd.read_csv("sifarisler_qisa.csv")
+  _d = _pd.merge(_s, _m, on="MüştəriID")
+  _x = _d.groupby("Ad")["Məbləğ"].sum().sort_values(ascending=False)
+  assert isinstance(xerc, _pd.Series) and list(xerc.index) == list(_x.index) and _x.equals(xerc), f"xerc {_x.to_dict()} olmalıdır (çoxdan aza)"
+  assert en_cox_xerc == "Aysel", f'en_cox_xerc "Aysel" olmalıdır (1899 + 75), sənin nəticən: {en_cox_xerc!r}'
+  assert seher_xerc.to_dict() == _d.groupby("Şəhər")["Məbləğ"].sum().to_dict(), "seher_xerc düzgün deyil"
+hints:
+- df = pd.merge(s, m, on="MüştəriID", how="inner")
+- df.groupby("Ad")["Məbləğ"].sum().sort_values(ascending=False)
+- df.groupby("Şəhər")["Məbləğ"].sum()

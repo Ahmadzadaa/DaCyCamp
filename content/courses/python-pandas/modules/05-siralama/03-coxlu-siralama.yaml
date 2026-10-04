@@ -1,0 +1,54 @@
+type: python
+title: Bir neçə sütuna görə sıralama
+xp: 40
+estimated_minutes: 10
+instructions: |
+  Gün 4 (8): məhsulları qiymətə görə sırala və ən bahalı 3 məhsulu tap. Eyni məhsul çox satıldığı üçün əvvəlcə təkrarları atmaq lazımdır.
+tasks:
+- Əvvəlcə Region-a görə (A→Z), sonra hər regionun içində Total Revenue-yə görə (çoxdan aza) sırala → sirali.
+- Unit Price-a görə azalan sırala, hər məhsuldan yalnız birinci sətri saxla və ilk 3 məhsulun adını götür
+  → top3_qiymet.
+- Ən aşağı Unit Price-a malik 5 sətir → en_ucuz5 (nsmallest).
+dataset: datasets/satislar.csv
+starter_code: |
+  import pandas as pd
+
+  df = pd.read_csv("satislar.csv")
+
+  sirali = ...
+  top3_qiymet = ...
+  en_ucuz5 = ...
+
+  print(top3_qiymet)
+  sirali.head()
+solution: |
+  import pandas as pd
+
+  df = pd.read_csv("satislar.csv")
+
+  sirali = df.sort_values(["Region", "Total Revenue"], ascending=[True, False])
+  top3_qiymet = (
+      df.sort_values("Unit Price", ascending=False)
+      .drop_duplicates("Product Name")
+      .head(3)["Product Name"]
+      .tolist()
+  )
+  en_ucuz5 = df.nsmallest(5, "Unit Price")
+
+  print(top3_qiymet)
+  sirali.head()
+tests: |
+  import pandas as _pd
+  import numpy as _np
+  _s = _pd.read_csv("satislar.csv")
+
+  _sr = _s.sort_values(["Region", "Total Revenue"], ascending=[True, False])
+  assert isinstance(sirali, _pd.DataFrame) and list(sirali.index) == list(_sr.index), "sirali = df.sort_values(['Region', 'Total Revenue'], ascending=[True, False])"
+  _tq = _s.sort_values("Unit Price", ascending=False).drop_duplicates("Product Name").head(3)["Product Name"].tolist()
+  assert top3_qiymet == _tq, f"top3_qiymet {_tq} olmalıdır, sənin nəticən: {top3_qiymet!r}"
+  _u = _s.nsmallest(5, "Unit Price")
+  assert isinstance(en_ucuz5, _pd.DataFrame) and list(en_ucuz5["Unit Price"]) == list(_u["Unit Price"]), "en_ucuz5 = df.nsmallest(5, 'Unit Price')"
+hints:
+- 'ascending siyahı ola bilər: ascending=[True, False]'
+- Sırala → drop_duplicates("Product Name") → head(3) → ["Product Name"].tolist()
+- en_ucuz5 = df.nsmallest(5, "Unit Price")

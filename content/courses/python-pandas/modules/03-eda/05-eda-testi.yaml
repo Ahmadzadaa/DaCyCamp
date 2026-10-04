@@ -1,0 +1,44 @@
+type: quiz
+title: 'Test: datanı tanımaq'
+xp: 25
+estimated_minutes: 5
+pass_score: 66
+questions:
+- text: Hər kodu nə qaytardığına görə qruplaşdır.
+  type: classify
+  buckets:
+  - name: Hər sütun üçün bir dəyər (Series)
+    items:
+    - df.isnull().sum()
+    - df.dtypes
+    - df["Region"].value_counts()
+  - name: Cədvəl (DataFrame)
+    items:
+    - df.describe()
+    - df.isnull()
+    - df.head()
+  - name: Tək ədəd
+    items:
+    - df["Region"].nunique()
+    - df.duplicated().sum()
+    - len(df)
+  explanation: isnull().sum(), dtypes və value_counts() Series; describe(), isnull() və head() DataFrame;
+    nunique(), duplicated().sum() və len() isə tək ədəd qaytarır.
+- text: '`df.isnull().sum()` niyə boşluqları sayır?'
+  options:
+  - isnull() boşluqları silir
+  - isnull() True/False cədvəli qaytarır, True = 1 olduğu üçün sum() True-ları sayır
+  - sum() yalnız boş xanaları toplayır
+  - Bu kod boşluqları saymır
+  correct:
+  - 2
+  explanation: Boolean dəyərlər toplananda True 1, False 0 kimi sayılır.
+- text: '`describe()` nəticəsində `50%` sətri nəyi göstərir?'
+  options:
+  - Orta dəyəri
+  - Medianı
+  - Dəyərlərin yarısının boş olduğunu
+  - Maksimumun yarısını
+  correct:
+  - 2
+  explanation: '50% kvartil — mediandır: dəyərlərin yarısı ondan kiçik, yarısı böyükdür.'

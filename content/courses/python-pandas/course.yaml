@@ -1,0 +1,16 @@
+# Python Pandas — Python4Business Gün 3–6 (paketlər, import/export, EDA, filtrləmə, qruplaşdırma, join, apply,
+# cut/qcut, concat, pivot/melt/rank, mətn və regex). Datasetlər sintetikdir, sütun adları docx tapşırıqlarındakı kimidir.
+# Python addımları brauzerdə (Pyodide + pandas) işləyir.
+slug: python-pandas
+track: data-analytics
+title: Python Pandas
+level: intermediate
+description: Pandas ilə data emalı — real satış datası üzərində. DataFrame və Series, CSV/Excel oxuma
+  və yazma, datanı tanımaq, filtrləmə, sıralama, sütunlarla iş, apply və lambda, qruplaşdırma və aqreqasiya,
+  boş dəyərlər, tarixlər, merge/join/concat, pivot və melt, mətn sütunları və regex. Sonda tam satış təhlili
+  layihəsi.
+sequential: true
+estimated_hours: 16
+published: true
+topics:
+- python

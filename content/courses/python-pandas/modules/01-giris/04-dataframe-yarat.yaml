@@ -1,0 +1,57 @@
+type: python
+title: İlk DataFrame
+xp: 40
+estimated_minutes: 8
+instructions: |
+  Gün 3 slaydındakı nümunə: şəhərlər üzrə iqtisadi göstərici və əhali. Dictionary-dən DataFrame yarat və onu tanı.
+tasks:
+- data dictionary-sindən df yarat.
+- Sətir və sütun sayını shape ilə tap → setir, sutun.
+- Sütun adlarını siyahı kimi götür → sutunlar.
+- '"Əhalisi" sütununun cəmini tap → cem_ehali; ilk 2 sətri ilk_iki-yə yaz.'
+starter_code: |
+  import pandas as pd
+
+  data = {
+      "Şəhər": ["Bakı", "Gəncə", "Bakı", "Gəncə", "Bakı", "Sumqayıt"],
+      "İqtisadiyyat": [500, 300, 450, 350, 600, 250],
+      "Əhalisi": [3000, 1500, 3200, 1600, 3400, 2000],
+  }
+
+  df = ...
+  setir, sutun = 0, 0
+  sutunlar = ...
+  cem_ehali = ...
+  ilk_iki = ...
+
+  print(setir, sutun, sutunlar, cem_ehali)
+  ilk_iki
+solution: |
+  import pandas as pd
+
+  data = {
+      "Şəhər": ["Bakı", "Gəncə", "Bakı", "Gəncə", "Bakı", "Sumqayıt"],
+      "İqtisadiyyat": [500, 300, 450, 350, 600, 250],
+      "Əhalisi": [3000, 1500, 3200, 1600, 3400, 2000],
+  }
+
+  df = pd.DataFrame(data)
+  setir, sutun = df.shape
+  sutunlar = df.columns.tolist()
+  cem_ehali = df["Əhalisi"].sum()
+  ilk_iki = df.head(2)
+
+  print(setir, sutun, sutunlar, cem_ehali)
+  ilk_iki
+tests: |
+  import pandas as _pd
+  assert isinstance(df, _pd.DataFrame), "df DataFrame olmalıdır — pd.DataFrame(data)"
+  assert (setir, sutun) == (6, 3), f"setir, sutun = 6, 3 olmalıdır, sənin nəticən: {(setir, sutun)!r}"
+  assert sutunlar == ["Şəhər", "İqtisadiyyat", "Əhalisi"], f"sutunlar düzgün deyil: {sutunlar!r}"
+  assert cem_ehali == 14700, f"cem_ehali 14700 olmalıdır, sənin nəticən: {cem_ehali!r}"
+  assert isinstance(ilk_iki, _pd.DataFrame) and len(ilk_iki) == 2, "ilk_iki = df.head(2)"
+  assert ".shape" in dacy.code, "Sətir və sütun sayını df.shape ilə tap"
+hints:
+- df = pd.DataFrame(data)
+- setir, sutun = df.shape — shape mötərizəsiz yazılır.
+- sutunlar = df.columns.tolist(); cem_ehali = df["Əhalisi"].sum(); ilk_iki = df.head(2)

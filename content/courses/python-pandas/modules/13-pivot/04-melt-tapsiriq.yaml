@@ -1,0 +1,46 @@
+type: python
+title: Geniş formatdan uzuna və geri
+xp: 40
+estimated_minutes: 10
+instructions: |
+  `telebeler.csv`: hər fənn ayrıca sütundur. Onu uzun formata çevir, təhlil et və geri qaytar.
+tasks:
+- 'melt: id_vars=["Ad"], üç fənn sütunu, var_name="Fənn", value_name="Bal" → uzun.'
+- Fənlər üzrə orta bal, 2 onluq → fenn_orta.
+- Uzun formatı pivot ilə yenidən genişə çevir (index="Ad", columns="Fənn", values="Bal") → genis.
+dataset: datasets/telebeler.csv
+starter_code: |
+  import pandas as pd
+
+  t = pd.read_csv("telebeler.csv")
+
+  uzun = ...
+  fenn_orta = ...
+  genis = ...
+
+  print(uzun.shape)
+  fenn_orta
+solution: |
+  import pandas as pd
+
+  t = pd.read_csv("telebeler.csv")
+
+  uzun = pd.melt(t, id_vars=["Ad"], value_vars=["Riyaziyyat", "Fizika", "İngilis dili"],
+                 var_name="Fənn", value_name="Bal")
+  fenn_orta = uzun.groupby("Fənn")["Bal"].mean().round(2)
+  genis = uzun.pivot(index="Ad", columns="Fənn", values="Bal")
+
+  print(uzun.shape)
+  fenn_orta
+tests: |
+  import pandas as _pd
+  _t = _pd.read_csv("telebeler.csv")
+  assert isinstance(uzun, _pd.DataFrame) and uzun.shape == (len(_t) * 3, 3) and list(uzun.columns) == ["Ad", "Fənn", "Bal"], f"uzun {(len(_t) * 3, 3)} ölçülü olmalıdır, sütunlar Ad, Fənn, Bal"
+  _o = _t[["Riyaziyyat", "Fizika", "İngilis dili"]].mean().round(2)
+  assert fenn_orta.round(2).to_dict() == _o.to_dict(), f"fenn_orta {_o.to_dict()} olmalıdır"
+  assert isinstance(genis, _pd.DataFrame) and genis.shape == (len(_t), 3), "genis — hər tələbə bir sətir, hər fənn bir sütun"
+  assert genis.loc["Cavid", "Riyaziyyat"] == 88, "genis-də dəyərlər orijinal cədvəllə eyni olmalıdır"
+hints:
+- pd.melt(t, id_vars=["Ad"], value_vars=["Riyaziyyat", "Fizika", "İngilis dili"], var_name="Fənn", value_name="Bal")
+- uzun.groupby("Fənn")["Bal"].mean().round(2)
+- uzun.pivot(index="Ad", columns="Fənn", values="Bal")

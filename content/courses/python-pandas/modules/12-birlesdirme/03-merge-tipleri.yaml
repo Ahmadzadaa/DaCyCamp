@@ -1,0 +1,52 @@
+type: python
+title: merge tipləri
+xp: 40
+estimated_minutes: 10
+instructions: |
+  `musteriler.csv` (MüştəriID, Ad, Şəhər, Qeydiyyat) və `sifarisler_qisa.csv` (SifarişID, MüştəriID, Məhsul, Məbləğ) cədvəllərini birləşdir.
+tasks:
+- inner join → inner; neçə sətir → inner_say.
+- left join → left; sifarişi olmayan müştərilərin adları (əlifba sırası ilə) → sifarissiz.
+- outer join, indicator=True → outer; müştərilər cədvəlində olmayan müştərilərin sifariş sayı → namelum.
+dataset:
+- datasets/musteriler.csv
+- datasets/sifarisler_qisa.csv
+starter_code: |
+  import pandas as pd
+
+  m = pd.read_csv("musteriler.csv")
+  s = pd.read_csv("sifarisler_qisa.csv")
+
+  inner = ...
+  inner_say = ...
+  left = ...
+  sifarissiz = ...
+  outer = ...
+  namelum = ...
+
+  print(inner_say, sifarissiz, namelum)
+solution: |
+  import pandas as pd
+
+  m = pd.read_csv("musteriler.csv")
+  s = pd.read_csv("sifarisler_qisa.csv")
+
+  inner = pd.merge(m, s, on="MüştəriID", how="inner")
+  inner_say = len(inner)
+  left = pd.merge(m, s, on="MüştəriID", how="left")
+  sifarissiz = sorted(left[left["SifarişID"].isnull()]["Ad"])
+  outer = pd.merge(m, s, on="MüştəriID", how="outer", indicator=True)
+  namelum = (outer["_merge"] == "right_only").sum()
+
+  print(inner_say, sifarissiz, namelum)
+tests: |
+  import pandas as _pd
+  assert inner_say == 8, f"inner_say 8 olmalıdır, sənin nəticən: {inner_say!r}"
+  assert isinstance(left, _pd.DataFrame) and len(left) == 11, f"left 11 sətir olmalıdır (8 + sifarişsiz 3 müştəri), səndə {len(left) if hasattr(left, '__len__') else left!r}"
+  assert list(sifarissiz) == ["Nigar", "Rauf", "Tural"], f"sifarissiz ['Nigar', 'Rauf', 'Tural'] olmalıdır, sənin nəticən: {sifarissiz!r}"
+  assert "_merge" in outer.columns, "outer-də indicator=True olmalıdır"
+  assert namelum == 2, f"namelum 2 olmalıdır (MüştəriID 9 və 10), sənin nəticən: {namelum!r}"
+hints:
+- pd.merge(m, s, on="MüştəriID", how="inner")
+- 'left-də sağ tərəfdə tapılmayanların SifarişID-si NaN olur: left[left["SifarişID"].isnull()]["Ad"]'
+- indicator=True → _merge sütunu; (outer["_merge"] == "right_only").sum()

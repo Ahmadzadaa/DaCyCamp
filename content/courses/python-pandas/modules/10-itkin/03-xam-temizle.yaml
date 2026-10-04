@@ -1,0 +1,67 @@
+type: python
+title: Xam satış datasını təmizlə
+xp: 40
+estimated_minutes: 15
+instructions: |
+  Gün 6 (4) və EDA fəslində tapılan problemlər: `satislar_xam.csv`-ni analiz üçün hazırla. Addımları ardıcıl et.
+
+  Region yazılışları səliqəsizdir (`bakı`, `BAKI`, ` Bakı `). İ/ı problemi səbəbindən `title()` etibarlı deyil — starter-dəki **lüğətdən** istifadə et.
+tasks:
+- Tam dublikatları sil.
+- 'Region: kənar boşluqları sil, kiçik hərfə çevir və duzgun lüğəti ilə map et; Product Name-dən kənar
+  boşluqları sil.'
+- Payment Method boşluqlarını "Unknown" ilə doldur.
+- Unit Price boşluqlarını Total Revenue / Units Sold (2 onluq) ilə doldur.
+- Total Revenue 0 olan sətirlərin sayını sifir_say-a yaz, sonra onları Units Sold × Unit Price (2 onluq)
+  ilə əvəz et. İndeksi sıfırla → temiz.
+dataset: datasets/satislar_xam.csv
+starter_code: |
+  import pandas as pd
+
+  df = pd.read_csv("satislar_xam.csv")
+  duzgun = {"bakı": "Bakı", "baki": "Bakı", "gəncə": "Gəncə", "sumqayıt": "Sumqayıt",
+            "sumqayit": "Sumqayıt", "lənkəran": "Lənkəran", "şəki": "Şəki"}
+
+  sifir_say = ...
+  temiz = ...
+
+  print(sifir_say, len(temiz))
+solution: |
+  import pandas as pd
+
+  df = pd.read_csv("satislar_xam.csv")
+  duzgun = {"bakı": "Bakı", "baki": "Bakı", "gəncə": "Gəncə", "sumqayıt": "Sumqayıt",
+            "sumqayit": "Sumqayıt", "lənkəran": "Lənkəran", "şəki": "Şəki"}
+
+  df = df.drop_duplicates()
+  df["Region"] = df["Region"].str.strip().str.lower().map(duzgun)
+  df["Product Name"] = df["Product Name"].str.strip()
+  df["Payment Method"] = df["Payment Method"].fillna("Unknown")
+  df["Unit Price"] = df["Unit Price"].fillna((df["Total Revenue"] / df["Units Sold"]).round(2))
+  sifir = df["Total Revenue"] == 0
+  sifir_say = int(sifir.sum())
+  df.loc[sifir, "Total Revenue"] = (df.loc[sifir, "Units Sold"] * df.loc[sifir, "Unit Price"]).round(2)
+  temiz = df.reset_index(drop=True)
+
+  print(sifir_say, len(temiz))
+tests: |
+  import pandas as _pd
+  import numpy as _np
+  _x = _pd.read_csv("satislar_xam.csv")
+
+  _d = _x.drop_duplicates()
+  assert isinstance(temiz, _pd.DataFrame) and len(temiz) == len(_d), f"temiz {len(_d)} sətir olmalıdır (dublikatlar silinməlidir)"
+  assert list(temiz.index) == list(range(len(temiz))), "İndeksi sıfırla: reset_index(drop=True)"
+  assert set(temiz["Region"]) == {"Bakı", "Gəncə", "Sumqayıt", "Lənkəran", "Şəki"}, f"Region-da yalnız 5 düzgün ad olmalıdır, səndə: {sorted(map(str, set(temiz['Region'])))}"
+  assert not temiz["Product Name"].str.startswith(" ").any(), "Product Name-dən boşluqları sil (str.strip())"
+  assert temiz["Payment Method"].isnull().sum() == 0 and (temiz["Payment Method"] == "Unknown").sum() == _d["Payment Method"].isnull().sum(), "Payment Method boşluqları 'Unknown' olmalıdır"
+  assert temiz["Unit Price"].isnull().sum() == 0, "Unit Price-da boşluq qalmamalıdır"
+  assert sifir_say == int((_d["Total Revenue"] == 0).sum()), f"sifir_say {int((_d['Total Revenue'] == 0).sum())} olmalıdır"
+  assert (temiz["Total Revenue"] == 0).sum() == 0, "0 gəlirlər yenidən hesablanmalıdır"
+  _bad = (temiz["Total Revenue"] - (temiz["Units Sold"] * temiz["Unit Price"]).round(2)).abs() > 0.05
+  assert _bad.sum() == 0, "Total Revenue = Units Sold × Unit Price olmalıdır (düzəldilən sətirlərdə)"
+hints:
+- df = df.drop_duplicates(); df["Region"] = df["Region"].str.strip().str.lower().map(duzgun)
+- df["Unit Price"] = df["Unit Price"].fillna((df["Total Revenue"] / df["Units Sold"]).round(2))
+- sifir = df["Total Revenue"] == 0; df.loc[sifir, "Total Revenue"] = (df.loc[sifir, "Units Sold"] * df.loc[sifir,
+  "Unit Price"]).round(2)

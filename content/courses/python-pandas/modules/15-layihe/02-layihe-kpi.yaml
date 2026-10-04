@@ -1,0 +1,54 @@
+type: python
+title: 'Layihə 1: KPI-lar və top məhsullar'
+xp: 60
+estimated_minutes: 12
+instructions: |
+  Gün 3 (graded) və Gün 6 (9): əsas göstəricilər.
+tasks:
+- 'kpi dictionary-si: "gelir" (cəm, 2 onluq), "emeliyyat" (sətir sayı), "orta_cek" (orta gəlir, 2 onluq),
+  "eded" (Units Sold cəmi, int).'
+- Ümumi gəlirə görə ən çox gəlir gətirən 5 məhsulun adları → top5 (list).
+- Top 5 məhsulun ümumi gəlirdəki payı (faiz, 1 onluq) → top5_pay.
+dataset: datasets/satislar.csv
+starter_code: |
+  import pandas as pd
+
+  df = pd.read_csv("satislar.csv")
+
+  kpi = {}
+  top5 = ...
+  top5_pay = ...
+
+  print(kpi)
+  print(top5, top5_pay)
+solution: |
+  import pandas as pd
+
+  df = pd.read_csv("satislar.csv")
+
+  kpi = {
+      "gelir": round(df["Total Revenue"].sum(), 2),
+      "emeliyyat": len(df),
+      "orta_cek": round(df["Total Revenue"].mean(), 2),
+      "eded": int(df["Units Sold"].sum()),
+  }
+  mehsul = df.groupby("Product Name")["Total Revenue"].sum()
+  top5 = mehsul.nlargest(5).index.tolist()
+  top5_pay = round(mehsul.nlargest(5).sum() / mehsul.sum() * 100, 1)
+
+  print(kpi)
+  print(top5, top5_pay)
+tests: |
+  import pandas as _pd
+  import numpy as _np
+  _s = _pd.read_csv("satislar.csv")
+
+  _k = {"gelir": round(_s["Total Revenue"].sum(), 2), "emeliyyat": len(_s), "orta_cek": round(_s["Total Revenue"].mean(), 2), "eded": int(_s["Units Sold"].sum())}
+  assert kpi == _k, f"kpi {_k} olmalıdır, sənin nəticən: {kpi!r}"
+  _m = _s.groupby("Product Name")["Total Revenue"].sum()
+  assert top5 == _m.nlargest(5).index.tolist(), f"top5 {_m.nlargest(5).index.tolist()} olmalıdır"
+  assert top5_pay == round(_m.nlargest(5).sum() / _m.sum() * 100, 1), f"top5_pay {round(_m.nlargest(5).sum() / _m.sum() * 100, 1)} olmalıdır"
+hints:
+- 'kpi = {"gelir": round(df["Total Revenue"].sum(), 2), "emeliyyat": len(df), ...}'
+- mehsul = df.groupby("Product Name")["Total Revenue"].sum(); mehsul.nlargest(5).index.tolist()
+- top5_pay = round(mehsul.nlargest(5).sum() / mehsul.sum() * 100, 1)

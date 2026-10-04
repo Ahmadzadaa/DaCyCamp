@@ -1,0 +1,51 @@
+type: python
+title: 'İlk Series: həftəlik satış'
+xp: 40
+estimated_minutes: 8
+instructions: |
+  TechNar-ın Nizami filialında həftənin hər günü üzrə satış (₼) verilib. Series-in indeksi — həftənin günləridir.
+tasks:
+- Həftəlik ümumi satışı tap → cem.
+- Orta gündəlik satışı tap və 2 onluğa yuvarlaqlaşdır → orta.
+- Ən çox satış olan günü (indeksi) tap → en_yaxsi_gun (idxmax).
+- 2000 ₼-dan çox satış olan günlərin siyahısı → yuksek_gunler (list).
+starter_code: |
+  import pandas as pd
+
+  satis = pd.Series(
+      [1250, 980, 1430, 1710, 2210, 2650, 1890],
+      index=["B.e.", "Ç.a.", "Ç.", "C.a.", "C.", "Ş.", "B."],
+      name="Satış",
+  )
+
+  cem = ...
+  orta = ...
+  en_yaxsi_gun = ...
+  yuksek_gunler = ...
+
+  print(cem, orta, en_yaxsi_gun, yuksek_gunler)
+solution: |
+  import pandas as pd
+
+  satis = pd.Series(
+      [1250, 980, 1430, 1710, 2210, 2650, 1890],
+      index=["B.e.", "Ç.a.", "Ç.", "C.a.", "C.", "Ş.", "B."],
+      name="Satış",
+  )
+
+  cem = satis.sum()
+  orta = round(satis.mean(), 2)
+  en_yaxsi_gun = satis.idxmax()
+  yuksek_gunler = list(satis[satis > 2000].index)
+
+  print(cem, orta, en_yaxsi_gun, yuksek_gunler)
+tests: |
+  assert cem == 12120, f"cem 12120 olmalıdır, sənin nəticən: {cem!r}"
+  assert orta == 1731.43, f"orta 1731.43 olmalıdır, sənin nəticən: {orta!r}"
+  assert en_yaxsi_gun == "Ş.", f'en_yaxsi_gun "Ş." olmalıdır (2650 ₼), sənin nəticən: {en_yaxsi_gun!r}'
+  assert list(yuksek_gunler) == ["C.", "Ş."], f"yuksek_gunler ['C.', 'Ş.'] olmalıdır, sənin nəticən: {yuksek_gunler!r}"
+  assert ".idxmax()" in dacy.code, "idxmax() metodundan istifadə et"
+hints:
+- cem = satis.sum(); orta = round(satis.mean(), 2)
+- idxmax() ən böyük dəyərin indeksini (günü) qaytarır.
+- 'Filtr: satis[satis > 2000] — sonra .index ilə günləri götür və list() ilə siyahıya çevir.'

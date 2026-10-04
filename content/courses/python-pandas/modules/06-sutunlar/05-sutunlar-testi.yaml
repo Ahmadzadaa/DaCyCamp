@@ -1,0 +1,39 @@
+type: quiz
+title: 'Test: sütunlar'
+xp: 25
+estimated_minutes: 5
+pass_score: 66
+questions:
+- text: Metod orijinal DataFrame-i dəyişir, yoxsa yenisini qaytarır? (defolt parametrlərlə)
+  type: classify
+  buckets:
+  - name: Yerində dəyişir
+    items:
+    - df.insert(1, "Il", ...)
+    - del df["Filial"]
+    - df["Yeni"] = ...
+  - name: Yeni DataFrame qaytarır
+    items:
+    - df.rename(columns=...)
+    - df.drop(columns=...)
+    - df.assign(EDV=...)
+  explanation: insert, del və sütuna mənimsətmə df-i yerində dəyişir. rename, drop, assign isə yeni DataFrame
+    qaytarır — nəticəni dəyişənə yazmaq lazımdır.
+- text: '`df.drop("Filial", axis=1)` yazıb nəticəni heç yerə yazmadıq. Sonra `df.columns`-da Filial varmı?'
+  options:
+  - Xeyr, silinib
+  - Bəli, df dəyişməyib
+  - Xəta verir
+  - Yalnız indeks silinib
+  correct:
+  - 2
+  explanation: drop yeni DataFrame qaytarır; df = df.drop(...) yazmaq lazımdır.
+- text: '`df.eval("`Units Sold` * `Unit Price`")` Python-un `eval()`-indən nə ilə fərqlənir?'
+  options:
+  - Heç nə ilə
+  - Yalnız DataFrame sütunları ilə hesablama aparır və ixtiyari kod icra etmir
+  - Yalnız mətn sütunları ilə işləyir
+  - Nəticəni fayla yazır
+  correct:
+  - 2
+  explanation: df.eval sütun ifadələri üçündür; Python-un eval-i isə istənilən kodu icra edə bilər.

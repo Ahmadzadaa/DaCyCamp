@@ -1,0 +1,41 @@
+type: quiz
+title: 'Test: seçim və filtrləmə'
+xp: 25
+estimated_minutes: 5
+pass_score: 66
+questions:
+- text: Defolt indeksli df-də `df.loc[0:4]` neçə sətir qaytarır?
+  options:
+  - '4'
+  - '5'
+  - '3'
+  - '0'
+  correct:
+  - 2
+  explanation: 'loc etiketlə işləyir və kəsmənin sonu daxildir: 0, 1, 2, 3, 4.'
+- text: Hansı yazılış **düzgündür**?
+  options:
+  - df[df["Region"] == "Bakı" and df["Units Sold"] > 5]
+  - df[(df["Region"] == "Bakı") & (df["Units Sold"] > 5)]
+  - df[df["Region"] == "Bakı" & df["Units Sold"] > 5]
+  - df.filter(Region == "Bakı", Units Sold > 5)
+  correct:
+  - 2
+  explanation: Pandas-da & istifadə olunur və hər şərt mötərizədə olmalıdır.
+- text: Hər tapşırıq üçün uyğun aləti seç.
+  type: classify
+  buckets:
+  - name: isin()
+    items:
+    - Region Gəncə, Şəki və ya Lənkəran olanlar
+  - name: between()
+    items:
+    - Qiyməti 100 ilə 500 ₼ arasında olanlar
+  - name: isnull()
+    items:
+    - Ödəniş üsulu yazılmamış əməliyyatlar
+  - name: ~ (DEYİL)
+    items:
+    - Nağd ödənişdən başqa bütün əməliyyatlar
+  explanation: isin — siyahıdakı dəyərlərdən biri; between — aralıq; isnull — boş dəyərlər; ~ — şərtin
+    əksi.

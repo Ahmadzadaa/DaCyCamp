@@ -1,0 +1,59 @@
+type: python
+title: Məhsullar üzrə adlandırılmış aqreqasiya
+xp: 40
+estimated_minutes: 10
+instructions: |
+  Gün 4 (7, 13, 14) və Gün 3 (26).
+tasks:
+- 'Hər Product Name üçün: orta_say (Units Sold ortası), orta_qiymet (Unit Price ortası), emeliyyat (say)
+  — 2 onluq → mehsul.'
+- Hər Payment Method-un gətirdiyi orta gəlir, 2 onluq → odenis_orta.
+- Ən çox ədəd satılan məhsul → en_cox_satilan və onun satılan ədədi → en_cox_say.
+dataset: datasets/satislar.csv
+starter_code: |
+  import pandas as pd
+
+  df = pd.read_csv("satislar.csv")
+
+  mehsul = ...
+  odenis_orta = ...
+  en_cox_satilan = ...
+  en_cox_say = ...
+
+  print(en_cox_satilan, en_cox_say)
+  mehsul.head()
+solution: |
+  import pandas as pd
+
+  df = pd.read_csv("satislar.csv")
+
+  mehsul = df.groupby("Product Name").agg(
+      orta_say=("Units Sold", "mean"),
+      orta_qiymet=("Unit Price", "mean"),
+      emeliyyat=("Transaction ID", "count"),
+  ).round(2)
+  odenis_orta = df.groupby("Payment Method")["Total Revenue"].mean().round(2)
+  say = df.groupby("Product Name")["Units Sold"].sum()
+  en_cox_satilan = say.idxmax()
+  en_cox_say = say.max()
+
+  print(en_cox_satilan, en_cox_say)
+  mehsul.head()
+tests: |
+  import pandas as _pd
+  import numpy as _np
+  _s = _pd.read_csv("satislar.csv")
+
+  _m = _s.groupby("Product Name").agg(orta_say=("Units Sold", "mean"), orta_qiymet=("Unit Price", "mean"), emeliyyat=("Transaction ID", "count")).round(2)
+  assert isinstance(mehsul, _pd.DataFrame) and {"orta_say", "orta_qiymet", "emeliyyat"} <= set(mehsul.columns), "mehsul-da orta_say, orta_qiymet, emeliyyat sütunları olmalıdır"
+  assert (mehsul[["orta_say", "orta_qiymet"]].round(2) - _m[["orta_say", "orta_qiymet"]]).abs().max().max() < 0.011, "orta dəyərlər düzgün deyil"
+  assert mehsul["emeliyyat"].to_dict() == _m["emeliyyat"].to_dict(), "emeliyyat sayı düzgün deyil"
+  _o = _s.groupby("Payment Method")["Total Revenue"].mean().round(2)
+  assert (odenis_orta - _o).abs().max() < 0.011, "odenis_orta düzgün deyil"
+  _say = _s.groupby("Product Name")["Units Sold"].sum()
+  assert en_cox_satilan == _say.idxmax() and en_cox_say == _say.max(), f"en çox satılan: {_say.idxmax()} ({_say.max()} ədəd)"
+hints:
+- .agg(orta_say=("Units Sold", "mean"), orta_qiymet=("Unit Price", "mean"), emeliyyat=("Transaction ID",
+  "count")).round(2)
+- df.groupby("Payment Method")["Total Revenue"].mean().round(2)
+- say = df.groupby("Product Name")["Units Sold"].sum(); say.idxmax(), say.max()

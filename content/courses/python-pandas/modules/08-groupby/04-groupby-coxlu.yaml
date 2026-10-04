@@ -1,0 +1,53 @@
+type: python
+title: Bir neçə açar və agg
+xp: 40
+estimated_minutes: 10
+instructions: |
+  Gün 4 (4) və Gün 3 (28): kombinasiyalar üzrə qruplaşdırma.
+tasks:
+- Filial və Sales Employee kombinasiyası üzrə ümumi gəlir → filial_isci.
+- 'Region və Payment Method üzrə: Satis (Units Sold cəmi) və Gelir (Total Revenue cəmi) sütunları olan
+  cədvəl → region_odenis (agg, adlandırılmış).'
+- region_odenis-dən Bakı + Credit Card sətrinin gəliri (2 onluq) → baki_kart_gelir.
+dataset: datasets/satislar.csv
+starter_code: |
+  import pandas as pd
+
+  df = pd.read_csv("satislar.csv")
+
+  filial_isci = ...
+  region_odenis = ...
+  baki_kart_gelir = ...
+
+  print(baki_kart_gelir)
+  region_odenis.head()
+solution: |
+  import pandas as pd
+
+  df = pd.read_csv("satislar.csv")
+
+  filial_isci = df.groupby(["Filial", "Sales Employee"])["Total Revenue"].sum()
+  region_odenis = df.groupby(["Region", "Payment Method"]).agg(
+      Satis=("Units Sold", "sum"),
+      Gelir=("Total Revenue", "sum"),
+  )
+  baki_kart_gelir = round(region_odenis.loc[("Bakı", "Credit Card"), "Gelir"], 2)
+
+  print(baki_kart_gelir)
+  region_odenis.head()
+tests: |
+  import pandas as _pd
+  import numpy as _np
+  _s = _pd.read_csv("satislar.csv")
+
+  _f = _s.groupby(["Filial", "Sales Employee"])["Total Revenue"].sum()
+  assert isinstance(filial_isci, _pd.Series) and (filial_isci - _f).abs().max() < 0.01 and len(filial_isci) == len(_f), "filial_isci = df.groupby(['Filial', 'Sales Employee'])['Total Revenue'].sum()"
+  assert isinstance(region_odenis, _pd.DataFrame) and {"Satis", "Gelir"} <= set(region_odenis.columns), "region_odenis-də Satis və Gelir sütunları olmalıdır"
+  _g = _s.groupby(["Region", "Payment Method"])["Total Revenue"].sum()
+  assert (region_odenis["Gelir"] - _g).abs().max() < 0.01, "Gelir dəyərləri düzgün deyil"
+  assert (region_odenis["Satis"] - _s.groupby(["Region", "Payment Method"])["Units Sold"].sum()).abs().max() == 0, "Satis dəyərləri düzgün deyil"
+  assert baki_kart_gelir == round(_g.loc[("Bakı", "Credit Card")], 2), f"baki_kart_gelir {round(_g.loc[('Bakı', 'Credit Card')], 2)} olmalıdır"
+hints:
+- df.groupby(["Filial", "Sales Employee"])["Total Revenue"].sum()
+- .agg(Satis=("Units Sold", "sum"), Gelir=("Total Revenue", "sum"))
+- 'MultiIndex-də sətir tuple ilə: region_odenis.loc[("Bakı", "Credit Card"), "Gelir"]'

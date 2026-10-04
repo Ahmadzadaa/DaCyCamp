@@ -1,0 +1,107 @@
+type: quiz
+title: 'Yekun test: Python Pandas'
+xp: 50
+estimated_minutes: 12
+pass_score: 70
+questions:
+- text: '`df[["Region"]]` nə qaytarır?'
+  options:
+  - Series
+  - DataFrame
+  - list
+  - str
+  correct:
+  - 2
+  explanation: İki cüt mötərizə — DataFrame.
+- text: 'Boş dəyərlərin sütunlar üzrə sayı:'
+  options:
+  - df.isnull()
+  - df.isnull().sum()
+  - df.count()
+  - df.info
+  correct:
+  - 2
+  explanation: isnull() True/False verir, sum() onları sayır.
+- text: 'Bakıda 1000 ₼-dan çox olan satışlar:'
+  options:
+  - df[df["Region"] == "Bakı" and df["Total Revenue"] > 1000]
+  - df[(df["Region"] == "Bakı") & (df["Total Revenue"] > 1000)]
+  - df.filter("Bakı", 1000)
+  - df.loc["Bakı" > 1000]
+  correct:
+  - 2
+  explanation: '& və mötərizələr.'
+- text: 'Hər suala uyğun alət:'
+  type: classify
+  buckets:
+  - name: groupby
+    items:
+    - Hər regionun ümumi gəliri
+  - name: merge
+    items:
+    - Sifarişlərə müştəri adlarını əlavə etmək
+  - name: concat
+    items:
+    - Üç aylıq faylı bir cədvəldə yığmaq
+  - name: pivot_table
+    items:
+    - Region × kateqoriya cədvəli cəmlərlə
+  explanation: groupby — qrup üzrə hesablama, merge — açar üzrə birləşmə, concat — alt-alta yığma, pivot_table
+    — iki ölçülü xülasə.
+- text: '`pd.qcut(x, q=4)` nə edir?'
+  options:
+  - 4 bərabər enli aralıq
+  - Təxminən bərabər saylı 4 qrup
+  - 4 sətri silir
+  - x-i 4-ə bölür
+  correct:
+  - 2
+  explanation: qcut kvantillərə görə bölür.
+- text: '`df["Date"].dt.year` işləməsi üçün nə lazımdır?'
+  options:
+  - Heç nə
+  - Date sütunu datetime tipində olmalıdır
+  - Date indeks olmalıdır
+  - Excel faylı
+  correct:
+  - 2
+  explanation: pd.to_datetime və ya parse_dates.
+- text: '`rank(method="min")` ilə 95, 88, 88, 70 ballarının yerləri:'
+  options:
+  - 1, 2, 2, 4
+  - 1, 2, 2, 3
+  - 1, 2.5, 2.5, 4
+  - 1, 3, 3, 4
+  correct:
+  - 1
+  explanation: min — bərabərlərə kiçik yer, sonra boşluq.
+- text: Rename nəticəsini dəyişənə yazmasaq nə olur?
+  options:
+  - df dəyişir
+  - Dəyişiklik itir — rename yeni DataFrame qaytarır
+  - Xəta
+  - Fayl yenilənir
+  correct:
+  - 2
+  explanation: df = df.rename(...) yazılmalıdır.
+- text: Hansılar boş dəyərləri **doldurur**? (Bir neçə cavab)
+  type: multiple
+  options:
+  - fillna(0)
+  - ffill()
+  - dropna()
+  - bfill()
+  correct:
+  - 1
+  - 2
+  - 4
+  explanation: dropna sətirləri silir, digərləri doldurur.
+- text: '«Hər regionda ən çox gəlir gətirən məhsul» üçün düzgün yol:'
+  options:
+  - groupby("Region")["Product Name"].max()
+  - region × məhsul cəmi, sonra hər regionda idxmax
+  - value_counts().head(1)
+  - sort_values("Region").head(5)
+  correct:
+  - 2
+  explanation: Əvvəl cəmləmək, sonra qrup daxilində maksimumu tapmaq.

@@ -1,0 +1,39 @@
+type: quiz
+title: 'Test: tarixlər'
+xp: 25
+estimated_minutes: 5
+pass_score: 66
+questions:
+- text: CSV-dən oxunmuş `Date` sütununda `.dt.year` niyə xəta verir?
+  options:
+  - Tarix səhv formatdadır
+  - Sütun hələ mətndir (object) — əvvəlcə pd.to_datetime lazımdır
+  - .dt yalnız Excel-də işləyir
+  - year mövcud deyil
+  correct:
+  - 2
+  explanation: .dt yalnız datetime tipli sütunlarda işləyir.
+- text: 'Aylıq satışlar: 100, 120, 90. `pct_change()` nəticəsi nədir?'
+  options:
+  - '[NaN, 0.2, -0.25]'
+  - '[0, 20, -30]'
+  - '[100, 20, -30]'
+  - '[NaN, 20, 90]'
+  correct:
+  - 1
+  explanation: (120 − 100) / 100 = 0.2; (90 − 120) / 120 = −0.25; ilk dəyərin müqayisəsi yoxdur — NaN.
+- text: 'Hər koda uyğun nəticə:'
+  type: classify
+  buckets:
+  - name: Rəqəm
+    items:
+    - df["Date"].dt.month
+    - df["Date"].dt.quarter
+  - name: Mətn
+    items:
+    - df["Date"].dt.day_name()
+    - df["Date"].dt.strftime("%d.%m.%Y")
+  - name: Dövr (Period)
+    items:
+    - df["Date"].dt.to_period("M")
+  explanation: month/quarter ədəd, day_name/strftime mətn, to_period isə aylıq dövr qaytarır.

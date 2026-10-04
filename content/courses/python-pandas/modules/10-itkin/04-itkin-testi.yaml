@@ -1,0 +1,38 @@
+type: quiz
+title: 'Test: boş dəyərlər və tiplər'
+xp: 25
+estimated_minutes: 5
+pass_score: 66
+questions:
+- text: Hər yanaşmanı nəticəsinə görə qruplaşdır.
+  type: classify
+  buckets:
+  - name: Sətirlər silinir
+    items:
+    - df.dropna()
+    - df.dropna(subset=["Payment Method"])
+  - name: Boşluqlar doldurulur
+    items:
+    - df["Bonus"].fillna(0)
+    - df["Şəhər"].ffill()
+    - df["Yaş"].fillna(df["Yaş"].median())
+  explanation: dropna sətirləri atır, fillna/ffill/bfill isə boşluqları dəyərlə doldurur.
+- text: '`pd.to_numeric(s, errors="coerce")` çevrilə bilməyən dəyərlərlə nə edir?'
+  options:
+  - Xəta verir
+  - NaN edir
+  - 0 edir
+  - Olduğu kimi saxlayır
+  correct:
+  - 2
+  explanation: coerce — çevrilməyən dəyərlər NaN olur, sonra onları ayrıca araşdırmaq olar.
+- text: Niyə `"SUMQAYIT".title()` nəticəsi "Sumqayıt" deyil?
+  options:
+  - title() yalnız ilk hərfi dəyişir
+  - Python I hərfini ingilis qaydası ilə kiçik i-yə çevirir, ı-ya yox
+  - title() Azərbaycan hərflərini silir
+  - Nəticə "Sumqayıt"-dır
+  correct:
+  - 2
+  explanation: 'Python-un hərf çevirməsi dildən asılı deyil: I → i. Buna görə lüğətlə uyğunlaşdırmaq daha
+    etibarlıdır.'

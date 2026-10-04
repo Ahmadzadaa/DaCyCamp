@@ -1,0 +1,52 @@
+type: python
+title: Şərtlə filtrləmə
+xp: 40
+estimated_minutes: 10
+instructions: |
+  Gün 3 (13, 11), Gün 4 (10) və Gün 5 (7) tapşırıqları: şərtə uyğun sətirləri seç.
+tasks:
+- Product Category = "Electronics" olan məhsulların unikal adları → elektronika (sorted list).
+- Units Sold 5-dən çox olan əməliyyatlar → cox_satis (DataFrame).
+- Total Revenue sütununda 2000-dən böyük dəyər varmı? → var_mi (True/False).
+- Total Revenue 500-dən çox olan unikal məhsulların adları → bahali_mehsullar (sorted list).
+dataset: datasets/satislar.csv
+starter_code: |
+  import pandas as pd
+
+  df = pd.read_csv("satislar.csv")
+
+  elektronika = ...
+  cox_satis = ...
+  var_mi = ...
+  bahali_mehsullar = ...
+
+  print(elektronika)
+  print(len(cox_satis), var_mi)
+solution: |
+  import pandas as pd
+
+  df = pd.read_csv("satislar.csv")
+
+  elektronika = sorted(df[df["Product Category"] == "Electronics"]["Product Name"].unique())
+  cox_satis = df[df["Units Sold"] > 5]
+  var_mi = bool((df["Total Revenue"] > 2000).any())
+  bahali_mehsullar = sorted(df[df["Total Revenue"] > 500]["Product Name"].unique())
+
+  print(elektronika)
+  print(len(cox_satis), var_mi)
+tests: |
+  import pandas as _pd
+  import numpy as _np
+  _s = _pd.read_csv("satislar.csv")
+
+  _e = sorted(_s[_s["Product Category"] == "Electronics"]["Product Name"].unique())
+  assert list(elektronika) == _e, f"elektronika {_e} olmalıdır, sənin nəticən: {elektronika!r}"
+  _c = _s[_s["Units Sold"] > 5]
+  assert isinstance(cox_satis, _pd.DataFrame) and cox_satis.equals(_c), f"cox_satis Units Sold > 5 olan {len(_c)} sətir olmalıdır"
+  assert var_mi == bool((_s["Total Revenue"] > 2000).any()), "var_mi = (df['Total Revenue'] > 2000).any()"
+  _b = sorted(_s[_s["Total Revenue"] > 500]["Product Name"].unique())
+  assert list(bahali_mehsullar) == _b, f"bahali_mehsullar {len(_b)} məhsul olmalıdır: {_b}"
+hints:
+- df[df["Product Category"] == "Electronics"]["Product Name"].unique() — sonra sorted()
+- cox_satis = df[df["Units Sold"] > 5]
+- var_mi = (df["Total Revenue"] > 2000).any() — bool() ilə adi True/False et.

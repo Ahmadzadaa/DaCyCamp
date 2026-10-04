@@ -1,0 +1,44 @@
+type: python
+title: Excel faylı və vərəqlər
+xp: 40
+estimated_minutes: 10
+instructions: |
+  `satislar_2024q1.xlsx` faylında 2024-cü ilin ilk rübü üç vərəqdədir: **Yanvar, Fevral, Mart**.
+
+  > ⏳ İlk `read_excel` çağırışında `openpyxl` paketi quraşdırılır — bir neçə saniyə çəkə bilər.
+tasks:
+- '"Fevral" vərəqini oxu → fev.'
+- Bütün vərəqləri bir dəfəyə dictionary kimi oxu → vereqler (sheet_name=None).
+- Vərəq adlarının siyahısı → vereq_adlari; fevralın ümumi gəliri (2 onluq) → fev_gelir.
+dataset:
+- datasets/satislar_2024q1.xlsx
+- datasets/satis_fevral.csv
+starter_code: |
+  import pandas as pd
+
+  fev = ...
+  vereqler = ...
+  vereq_adlari = ...
+  fev_gelir = ...
+
+  print(vereq_adlari, fev_gelir)
+solution: |
+  import pandas as pd
+
+  fev = pd.read_excel("satislar_2024q1.xlsx", sheet_name="Fevral")
+  vereqler = pd.read_excel("satislar_2024q1.xlsx", sheet_name=None)
+  vereq_adlari = list(vereqler.keys())
+  fev_gelir = round(fev["Total Revenue"].sum(), 2)
+
+  print(vereq_adlari, fev_gelir)
+tests: |
+  import pandas as _pd
+  _fev = _pd.read_csv("satis_fevral.csv")
+  assert isinstance(fev, _pd.DataFrame) and len(fev) == len(_fev), f"fev 'Fevral' vərəqi olmalıdır ({len(_fev)} sətir)"
+  assert isinstance(vereqler, dict), "vereqler dictionary olmalıdır — sheet_name=None istifadə et"
+  assert vereq_adlari == ["Yanvar", "Fevral", "Mart"], f"vereq_adlari ['Yanvar', 'Fevral', 'Mart'] olmalıdır, sənin nəticən: {vereq_adlari!r}"
+  assert fev_gelir == round(_fev["Total Revenue"].sum(), 2), f"fev_gelir {round(_fev['Total Revenue'].sum(), 2)} olmalıdır, sənin nəticən: {fev_gelir!r}"
+hints:
+- fev = pd.read_excel("satislar_2024q1.xlsx", sheet_name="Fevral")
+- 'sheet_name=None bütün vərəqləri {ad: DataFrame} kimi qaytarır.'
+- vereq_adlari = list(vereqler.keys())

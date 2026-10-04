@@ -2458,4 +2458,1147 @@ m.quiz('itkin-testi', 'Test: boş dəyərlər və tiplər', [
     ),
 ])
 
-print(c.root, c.modules, 'modules', c.steps, 'steps (part 2)')
+
+# ───────────────────────────── 11 · Tarixlər ─────────────────────────────
+m = c.module('tarixler', 'Tarixlərlə iş',
+             'to_datetime, .dt (il, ay, gün, həftənin günü), tarixə görə filtr, aylıq qruplaşdırma və aydan-aya dəyişmə.')
+
+m.lesson('tarixler-ders', 'to_datetime və .dt', 9, '''
+    CSV-dən oxunan tarix əslində **mətndir** (`object`). Tarixlə hesablama aparmaq üçün onu `datetime` tipinə çevirmək lazımdır:
+
+    ```python
+    df["Date"] = pd.to_datetime(df["Date"])
+    # və ya oxuyanda: pd.read_csv("satislar.csv", parse_dates=["Date"])
+    ```
+
+    ## .dt — tarixin hissələri
+
+    | Kod | Nəticə |
+    | --- | --- |
+    | `df["Date"].dt.year` | 2024 |
+    | `df["Date"].dt.month` | 3 |
+    | `df["Date"].dt.day` | 15 |
+    | `df["Date"].dt.quarter` | 1 (rüb) |
+    | `df["Date"].dt.day_name()` | "Friday" |
+    | `df["Date"].dt.to_period("M")` | 2024-03 (ay dövrü) |
+    | `df["Date"].dt.strftime("%d.%m.%Y")` | "15.03.2024" |
+
+    ## Tarixə görə filtr
+
+    ```python
+    df[df["Date"].dt.year == 2024]
+    df[(df["Date"] >= "2024-01-01") & (df["Date"] < "2024-04-01")]   # I rüb
+    df[df["Date"].between("2024-06-01", "2024-08-31")]
+    ```
+
+    ## Aylıq qruplaşdırma
+
+    ```python
+    ayliq = df.groupby(df["Date"].dt.to_period("M"))["Total Revenue"].sum()
+    ```
+
+    ## Aydan-aya dəyişmə: pct_change
+
+    ```python
+    deyisme = ayliq.pct_change() * 100     # əvvəlki aya nisbətən %
+    ```
+
+    `pct_change()` hər dəyəri əvvəlki ilə müqayisə edir: `(cari − əvvəlki) / əvvəlki`. İlk dəyər `NaN` olur (müqayisə ediləcək əvvəlki ay yoxdur).
+
+    ## İki ölçülü cədvəl: unstack
+
+    ```python
+    region_ay = (df.groupby([df["Date"].dt.to_period("M"), "Region"])["Total Revenue"]
+                   .sum()
+                   .unstack(fill_value=0))
+    ```
+
+    `unstack()` ikinci səviyyəli indeksi sütunlara çevirir: sətirlər — aylar, sütunlar — regionlar. Bunu `pivot_table` ilə də etmək olar (növbəti fəsillərdən birində).
+''')
+
+m.python('dt-hisseler', 'Tarixi hissələrə ayır', 10, '''
+    Gün 3 (10): Date sütununu il, ay və gün hissələrinə ayır, sonra yenidən birləşdir.
+''', [
+    'Date sütununu datetime tipinə çevir.',
+    '"Il", "Ay", "Gun" sütunları yarat (.dt.year, .dt.month, .dt.day).',
+    'Tarixi yenidən "YYYY-MM-DD" mətninə çevir → "Birləşmiş" sütunu (dt.strftime).',
+    'Həftənin günü sütunu "Həftə günü" (day_name) və ən çox satış olan həftə günü → en_cox_gun.',
+], '''
+    import pandas as pd
+
+    df = pd.read_csv("satislar.csv")
+
+    # df["Date"] = ...
+    en_cox_gun = ...
+
+    df[["Date"]].head()
+''', '''
+    import pandas as pd
+
+    df = pd.read_csv("satislar.csv")
+
+    df["Date"] = pd.to_datetime(df["Date"])
+    df["Il"] = df["Date"].dt.year
+    df["Ay"] = df["Date"].dt.month
+    df["Gun"] = df["Date"].dt.day
+    df["Birləşmiş"] = df["Date"].dt.strftime("%Y-%m-%d")
+    df["Həftə günü"] = df["Date"].dt.day_name()
+    en_cox_gun = df["Həftə günü"].value_counts().idxmax()
+
+    df[["Date", "Il", "Ay", "Gun", "Birləşmiş", "Həftə günü"]].head()
+''', T + '''
+    _d = _pd.to_datetime(_s["Date"])
+    assert str(df["Date"].dtype).startswith("datetime64"), "Date-i pd.to_datetime ilə çevir"
+    assert list(df["Il"]) == list(_d.dt.year) and list(df["Ay"]) == list(_d.dt.month) and list(df["Gun"]) == list(_d.dt.day), "Il, Ay, Gun düzgün deyil"
+    assert list(df["Birləşmiş"]) == list(_s["Date"]), "Birləşmiş = df['Date'].dt.strftime('%Y-%m-%d') — orijinal mətnlə eyni olmalıdır"
+    assert list(df["Həftə günü"]) == list(_d.dt.day_name()), "Həftə günü = df['Date'].dt.day_name()"
+    assert en_cox_gun == _d.dt.day_name().value_counts().idxmax(), f"en_cox_gun {_d.dt.day_name().value_counts().idxmax()!r} olmalıdır"
+''', [
+    'df["Date"] = pd.to_datetime(df["Date"])',
+    'df["Il"] = df["Date"].dt.year (ay — .dt.month, gün — .dt.day)',
+    'df["Date"].dt.strftime("%Y-%m-%d"); df["Date"].dt.day_name()',
+], dataset=S)
+
+m.python('il-2024', '2024-cü ilin satışları', 10, '''
+    Gün 6 (5): yalnız 2024-cü il əməliyyatlarını seç və təhlil et.
+''', [
+    '2024-cü ilin ümumi gəliri, 2 onluq → gelir_2024.',
+    '2024-cü ilin aylar üzrə gəliri (indeks — ayın nömrəsi 1–12), 2 onluq → aylar_2024.',
+    '2024-də ən çox gəlir gətirən ayın nömrəsi → en_yaxsi_ay.',
+], '''
+    import pandas as pd
+
+    df = pd.read_csv("satislar.csv", parse_dates=["Date"])
+
+    gelir_2024 = ...
+    aylar_2024 = ...
+    en_yaxsi_ay = ...
+
+    print(gelir_2024, en_yaxsi_ay)
+    aylar_2024
+''', '''
+    import pandas as pd
+
+    df = pd.read_csv("satislar.csv", parse_dates=["Date"])
+
+    d24 = df[df["Date"].dt.year == 2024]
+    gelir_2024 = round(d24["Total Revenue"].sum(), 2)
+    aylar_2024 = d24.groupby(d24["Date"].dt.month)["Total Revenue"].sum().round(2)
+    en_yaxsi_ay = aylar_2024.idxmax()
+
+    print(gelir_2024, en_yaxsi_ay)
+    aylar_2024
+''', T + '''
+    _d = _s.assign(Date=_pd.to_datetime(_s["Date"]))
+    _y = _d[_d["Date"].dt.year == 2024]
+    assert gelir_2024 == round(_y["Total Revenue"].sum(), 2), f"gelir_2024 {round(_y['Total Revenue'].sum(), 2)} olmalıdır"
+    _a = _y.groupby(_y["Date"].dt.month)["Total Revenue"].sum().round(2)
+    assert isinstance(aylar_2024, _pd.Series) and list(aylar_2024.index) == list(range(1, 13)), "aylar_2024-ün indeksi 1–12 (ay nömrələri) olmalıdır — .dt.month ilə qruplaşdır"
+    assert (aylar_2024.round(2) - _a).abs().max() < 0.011, "aylar_2024 dəyərləri düzgün deyil"
+    assert en_yaxsi_ay == _a.idxmax(), f"en_yaxsi_ay {_a.idxmax()} olmalıdır"
+''', [
+    'd24 = df[df["Date"].dt.year == 2024]',
+    'd24.groupby(d24["Date"].dt.month)["Total Revenue"].sum().round(2)',
+    'en_yaxsi_ay = aylar_2024.idxmax()',
+], dataset=S)
+
+m.python('ayliq-deyisme', 'Aydan-aya dəyişmə və region × ay cədvəli', 12, '''
+    Gün 6 (3, 10): bu ayın satışlarını əvvəlki ayla müqayisə et və regionların aylıq cədvəlini qur.
+''', [
+    'Aylar üzrə ümumi gəlir (to_period("M")) → ayliq.',
+    'Aydan-aya dəyişmə faizi (pct_change × 100), 2 onluq → deyisme.',
+    'Son ayın əvvəlki aya nisbətən dəyişməsi, 2 onluq → son_ay_deyisme.',
+    'Sətirlər — aylar, sütunlar — regionlar olan gəlir cədvəli (boş xanalar 0) → region_ay (unstack).',
+], '''
+    import pandas as pd
+
+    df = pd.read_csv("satislar.csv", parse_dates=["Date"])
+
+    ayliq = ...
+    deyisme = ...
+    son_ay_deyisme = ...
+    region_ay = ...
+
+    print(son_ay_deyisme)
+    region_ay.tail()
+''', '''
+    import pandas as pd
+
+    df = pd.read_csv("satislar.csv", parse_dates=["Date"])
+
+    ayliq = df.groupby(df["Date"].dt.to_period("M"))["Total Revenue"].sum()
+    deyisme = (ayliq.pct_change() * 100).round(2)
+    son_ay_deyisme = round(deyisme.iloc[-1], 2)
+    region_ay = (
+        df.groupby([df["Date"].dt.to_period("M"), "Region"])["Total Revenue"]
+        .sum()
+        .unstack(fill_value=0)
+    )
+
+    print(son_ay_deyisme)
+    region_ay.tail()
+''', T + '''
+    _d = _s.assign(Date=_pd.to_datetime(_s["Date"]))
+    _m = _d.groupby(_d["Date"].dt.to_period("M"))["Total Revenue"].sum()
+    assert isinstance(ayliq, _pd.Series) and len(ayliq) == len(_m) and _np.allclose(ayliq.values, _m.values), "ayliq — aylar üzrə gəlir (24 ay)"
+    _c = (_m.pct_change() * 100).round(2)
+    assert _np.allclose(deyisme.values[1:], _c.values[1:], atol=0.011) and _pd.isna(deyisme.iloc[0]), "deyisme = (ayliq.pct_change() * 100).round(2)"
+    assert son_ay_deyisme == round(_c.iloc[-1], 2), f"son_ay_deyisme {round(_c.iloc[-1], 2)} olmalıdır"
+    _r = _d.groupby([_d["Date"].dt.to_period("M"), "Region"])["Total Revenue"].sum().unstack(fill_value=0)
+    assert isinstance(region_ay, _pd.DataFrame) and region_ay.shape == _r.shape and sorted(region_ay.columns) == sorted(_r.columns), f"region_ay {_r.shape} ölçülü olmalıdır (aylar × regionlar)"
+    assert _np.allclose(region_ay[_r.columns].values, _r.values), "region_ay dəyərləri düzgün deyil"
+''', [
+    'df.groupby(df["Date"].dt.to_period("M"))["Total Revenue"].sum()',
+    '(ayliq.pct_change() * 100).round(2); son dəyər — .iloc[-1]',
+    'groupby([ay, "Region"])["Total Revenue"].sum().unstack(fill_value=0)',
+], dataset=S)
+
+m.quiz('tarixler-testi', 'Test: tarixlər', [
+    single(
+        'CSV-dən oxunmuş `Date` sütununda `.dt.year` niyə xəta verir?',
+        ['Tarix səhv formatdadır', 'Sütun hələ mətndir (object) — əvvəlcə pd.to_datetime lazımdır', '.dt yalnız Excel-də işləyir', 'year mövcud deyil'],
+        2,
+        '.dt yalnız datetime tipli sütunlarda işləyir.',
+    ),
+    single(
+        'Aylıq satışlar: 100, 120, 90. `pct_change()` nəticəsi nədir?',
+        ['[NaN, 0.2, -0.25]', '[0, 20, -30]', '[100, 20, -30]', '[NaN, 20, 90]'],
+        1,
+        '(120 − 100) / 100 = 0.2; (90 − 120) / 120 = −0.25; ilk dəyərin müqayisəsi yoxdur — NaN.',
+    ),
+    classify(
+        'Hər koda uyğun nəticə:',
+        [
+            ('Rəqəm', ['df["Date"].dt.month', 'df["Date"].dt.quarter']),
+            ('Mətn', ['df["Date"].dt.day_name()', 'df["Date"].dt.strftime("%d.%m.%Y")']),
+            ('Dövr (Period)', ['df["Date"].dt.to_period("M")']),
+        ],
+        'month/quarter ədəd, day_name/strftime mətn, to_period isə aylıq dövr qaytarır.',
+    ),
+])
+
+# ───────────────────────────── 12 · merge, join, concat ─────────────────────────────
+m = c.module('birlesdirme', 'Cədvəlləri birləşdirmək: merge, join, concat',
+             'JOIN tipləri, ortaq sütun, indeksə görə join, şaquli və üfüqi birləşmə.')
+
+m.lesson('merge-ders', 'JOIN vaxtıdır: merge və join', 9, '''
+    Data çox vaxt bir neçə cədvəldə olur: müştərilər ayrıca, sifarişlər ayrıca. Onları ortaq sütun (açar) üzrə birləşdirmək — **join**-dir. Excel-də VLOOKUP, SQL-də JOIN, pandas-da `merge`.
+
+    ```python
+    musteriler = pd.DataFrame({"MüştəriID": [1, 2, 3], "Ad": ["Aysel", "Namiq", "Cavid"]})
+    sifarisler = pd.DataFrame({"MüştəriID": [2, 3, 4], "Sifariş": ["Kitab", "Telefon", "Komputer"]})
+    ```
+
+    ## Dörd tip
+
+    | `how=` | Nə saxlanılır | Nəticə |
+    | --- | --- | --- |
+    | `"inner"` | Yalnız hər iki cədvəldə olan açarlar | 2, 3 |
+    | `"left"` | Sol cədvəlin hamısı (sağda tapılmayan → NaN) | 1, 2, 3 |
+    | `"right"` | Sağ cədvəlin hamısı | 2, 3, 4 |
+    | `"outer"` | Hər ikisinin hamısı | 1, 2, 3, 4 |
+
+    ```python
+    pd.merge(musteriler, sifarisler, on="MüştəriID", how="inner")
+    ```
+
+    ## Əsas parametrlər
+
+    | Parametr | Mənası |
+    | --- | --- |
+    | `on` | Ortaq sütun(lar) |
+    | `left_on`, `right_on` | Adları fərqli olanda: `left_on="ID", right_on="MüştəriID"` |
+    | `suffixes` | Eyni adlı sütunlara sonluq (defolt `("_x", "_y")`) |
+    | `indicator=True` | `_merge` sütunu: `both`, `left_only`, `right_only` |
+    | `sort` | Nəticəni açara görə sırala |
+
+    `indicator=True` xüsusilə faydalıdır: «sifarişi olmayan müştərilər» (`left_only`) və ya «qeydiyyatda olmayan müştərinin sifarişləri» (`right_only`) dərhal görünür.
+
+    ## join — indeksə görə
+
+    ```python
+    df1 = pd.DataFrame({"Ad": ["Aysel", "Namiq", "Cavid"]}, index=[1, 2, 3])
+    df2 = pd.DataFrame({"Sifariş": ["Kitab", "Telefon", "Komputer"]}, index=[2, 3, 4])
+    df1.join(df2, how="left")
+    ```
+
+    `merge` — sütunlara görə (SQL üslubu), `join` — əsasən indeksə görə birləşdirir.
+
+    > ⚠️ Açarda təkrarlar varsa (bir müştərinin bir neçə sifarişi), nəticədə sətirlər çoxalır — bu normaldır. Amma hər iki tərəfdə təkrar olanda sətirlər gözlənilmədən partlaya bilər: birləşdirmədən əvvəl və sonra `len()`-ə bax.
+''')
+
+m.lesson('concat-ders', 'Şaquli və üfüqi birləşmə: concat', 6, '''
+    `merge` açar üzrə «yan-yana» birləşdirir. Bəzən isə eyni strukturlu cədvəlləri sadəcə **altına** və ya **yanına** qoymaq lazımdır.
+
+    ## Şaquli (row bind) — axis=0
+
+    Yanvar, fevral və mart satışları ayrı fayllardadır — hamısını bir cədvəldə yığırıq:
+
+    ```python
+    yan = pd.read_csv("satis_yanvar.csv")
+    fev = pd.read_csv("satis_fevral.csv")
+    mar = pd.read_csv("satis_mart.csv")
+
+    q1 = pd.concat([yan, fev, mar], axis=0, ignore_index=True)
+    ```
+
+    - Sütun adları uyğun olmalıdır — uyğun gəlməyənlər NaN ilə doldurulur.
+    - `ignore_index=True` — yeni indeks 0-dan başlayır (əks halda hər faylın 0, 1, 2… indeksi təkrarlanır).
+    - `keys=["Yanvar", "Fevral", "Mart"]` — hər sətrin hansı fayldan gəldiyini indeksə yazır.
+
+    ## Üfüqi (column bind) — axis=1
+
+    ```python
+    pd.concat([df1, df3], axis=1)
+    ```
+
+    Sətirlər indeksə görə yan-yana qoyulur. İndekslər uyğun gəlmirsə, NaN-lar yaranır.
+
+    | | `merge` | `concat` |
+    | --- | --- | --- |
+    | Necə | Açar sütun üzrə uyğunlaşdırır | Sadəcə altına/yanına qoyur |
+    | Nümunə | Sifarişə müştəri adını əlavə etmək | Aylıq faylları birləşdirmək |
+''')
+
+m.python('merge-tipleri', 'merge tipləri', 10, '''
+    `musteriler.csv` (MüştəriID, Ad, Şəhər, Qeydiyyat) və `sifarisler_qisa.csv` (SifarişID, MüştəriID, Məhsul, Məbləğ) cədvəllərini birləşdir.
+''', [
+    'inner join → inner; neçə sətir → inner_say.',
+    'left join → left; sifarişi olmayan müştərilərin adları (əlifba sırası ilə) → sifarissiz.',
+    'outer join, indicator=True → outer; müştərilər cədvəlində olmayan müştərilərin sifariş sayı → namelum.',
+], '''
+    import pandas as pd
+
+    m = pd.read_csv("musteriler.csv")
+    s = pd.read_csv("sifarisler_qisa.csv")
+
+    inner = ...
+    inner_say = ...
+    left = ...
+    sifarissiz = ...
+    outer = ...
+    namelum = ...
+
+    print(inner_say, sifarissiz, namelum)
+''', '''
+    import pandas as pd
+
+    m = pd.read_csv("musteriler.csv")
+    s = pd.read_csv("sifarisler_qisa.csv")
+
+    inner = pd.merge(m, s, on="MüştəriID", how="inner")
+    inner_say = len(inner)
+    left = pd.merge(m, s, on="MüştəriID", how="left")
+    sifarissiz = sorted(left[left["SifarişID"].isnull()]["Ad"])
+    outer = pd.merge(m, s, on="MüştəriID", how="outer", indicator=True)
+    namelum = (outer["_merge"] == "right_only").sum()
+
+    print(inner_say, sifarissiz, namelum)
+''', '''
+    import pandas as _pd
+    assert inner_say == 8, f"inner_say 8 olmalıdır, sənin nəticən: {inner_say!r}"
+    assert isinstance(left, _pd.DataFrame) and len(left) == 11, f"left 11 sətir olmalıdır (8 + sifarişsiz 3 müştəri), səndə {len(left) if hasattr(left, '__len__') else left!r}"
+    assert list(sifarissiz) == ["Nigar", "Rauf", "Tural"], f"sifarissiz ['Nigar', 'Rauf', 'Tural'] olmalıdır, sənin nəticən: {sifarissiz!r}"
+    assert "_merge" in outer.columns, "outer-də indicator=True olmalıdır"
+    assert namelum == 2, f"namelum 2 olmalıdır (MüştəriID 9 və 10), sənin nəticən: {namelum!r}"
+''', [
+    'pd.merge(m, s, on="MüştəriID", how="inner")',
+    'left-də sağ tərəfdə tapılmayanların SifarişID-si NaN olur: left[left["SifarişID"].isnull()]["Ad"]',
+    'indicator=True → _merge sütunu; (outer["_merge"] == "right_only").sum()',
+], dataset=['datasets/musteriler.csv', 'datasets/sifarisler_qisa.csv'])
+
+m.python('merge-groupby', 'Birləşdir və təhlil et', 10, '''
+    Join-dən sonra sual: hansı müştəri və hansı şəhər ən çox xərcləyir?
+''', [
+    'İki cədvəli inner join et → df.',
+    'Müştəri adına görə ümumi xərc, çoxdan aza → xerc.',
+    'Ən çox xərcləyən müştəri → en_cox_xerc.',
+    'Şəhərlər üzrə ümumi xərc → seher_xerc.',
+], '''
+    import pandas as pd
+
+    m = pd.read_csv("musteriler.csv")
+    s = pd.read_csv("sifarisler_qisa.csv")
+
+    df = ...
+    xerc = ...
+    en_cox_xerc = ...
+    seher_xerc = ...
+
+    print(en_cox_xerc)
+    xerc
+''', '''
+    import pandas as pd
+
+    m = pd.read_csv("musteriler.csv")
+    s = pd.read_csv("sifarisler_qisa.csv")
+
+    df = pd.merge(s, m, on="MüştəriID", how="inner")
+    xerc = df.groupby("Ad")["Məbləğ"].sum().sort_values(ascending=False)
+    en_cox_xerc = xerc.idxmax()
+    seher_xerc = df.groupby("Şəhər")["Məbləğ"].sum()
+
+    print(en_cox_xerc)
+    xerc
+''', '''
+    import pandas as _pd
+    _m = _pd.read_csv("musteriler.csv"); _s = _pd.read_csv("sifarisler_qisa.csv")
+    _d = _pd.merge(_s, _m, on="MüştəriID")
+    _x = _d.groupby("Ad")["Məbləğ"].sum().sort_values(ascending=False)
+    assert isinstance(xerc, _pd.Series) and list(xerc.index) == list(_x.index) and _x.equals(xerc), f"xerc {_x.to_dict()} olmalıdır (çoxdan aza)"
+    assert en_cox_xerc == "Aysel", f'en_cox_xerc "Aysel" olmalıdır (1899 + 75), sənin nəticən: {en_cox_xerc!r}'
+    assert seher_xerc.to_dict() == _d.groupby("Şəhər")["Məbləğ"].sum().to_dict(), "seher_xerc düzgün deyil"
+''', [
+    'df = pd.merge(s, m, on="MüştəriID", how="inner")',
+    'df.groupby("Ad")["Məbləğ"].sum().sort_values(ascending=False)',
+    'df.groupby("Şəhər")["Məbləğ"].sum()',
+], dataset=['datasets/musteriler.csv', 'datasets/sifarisler_qisa.csv'])
+
+m.python('concat-tapsiriq', 'Aylıq faylları birləşdir', 10, '''
+    Gün 5 (3): müxtəlif aylara aid faylları bir cədvəldə birləşdir.
+''', [
+    'Üç aylıq faylı oxu və şaquli birləşdir (indeks 0-dan) → q1.',
+    'Aylar üzrə gəlir (Date-in ilk 7 simvolu: "2024-01"), 2 onluq → ay_gelir.',
+    'q1-in ilk 3 sətrinin Date və Region sütunlarını axis=1 ilə yan-yana birləşdir → ufuqi.',
+], '''
+    import pandas as pd
+
+    yan = pd.read_csv("satis_yanvar.csv")
+    fev = pd.read_csv("satis_fevral.csv")
+    mar = pd.read_csv("satis_mart.csv")
+
+    q1 = ...
+    ay_gelir = ...
+    ufuqi = ...
+
+    print(len(q1))
+    ay_gelir
+''', '''
+    import pandas as pd
+
+    yan = pd.read_csv("satis_yanvar.csv")
+    fev = pd.read_csv("satis_fevral.csv")
+    mar = pd.read_csv("satis_mart.csv")
+
+    q1 = pd.concat([yan, fev, mar], axis=0, ignore_index=True)
+    ay_gelir = q1.groupby(q1["Date"].str[:7])["Total Revenue"].sum().round(2)
+    ufuqi = pd.concat([q1[["Date"]].head(3), q1[["Region"]].head(3)], axis=1)
+
+    print(len(q1))
+    ay_gelir
+''', '''
+    import pandas as _pd
+    _p = [_pd.read_csv(f"satis_{a}.csv") for a in ("yanvar", "fevral", "mart")]
+    _q = _pd.concat(_p, ignore_index=True)
+    assert isinstance(q1, _pd.DataFrame) and len(q1) == sum(len(p) for p in _p), f"q1 {len(_q)} sətir olmalıdır"
+    assert list(q1.index) == list(range(len(q1))), "ignore_index=True — indeks 0-dan başlamalıdır"
+    _a = _q.groupby(_q["Date"].str[:7])["Total Revenue"].sum().round(2)
+    assert ay_gelir.round(2).to_dict() == _a.to_dict(), f"ay_gelir {_a.to_dict()} olmalıdır"
+    assert isinstance(ufuqi, _pd.DataFrame) and ufuqi.shape == (3, 2) and list(ufuqi.columns) == ["Date", "Region"], "ufuqi — 3 sətir, Date və Region sütunları (axis=1)"
+    assert "pd.concat(" in dacy.code and "axis=1" in dacy.code, "pd.concat ilə həm şaquli, həm üfüqi birləşdir"
+''', [
+    'pd.concat([yan, fev, mar], axis=0, ignore_index=True)',
+    'q1.groupby(q1["Date"].str[:7])["Total Revenue"].sum().round(2)',
+    'pd.concat([q1[["Date"]].head(3), q1[["Region"]].head(3)], axis=1)',
+], dataset=['datasets/satis_yanvar.csv', 'datasets/satis_fevral.csv', 'datasets/satis_mart.csv'])
+
+m.quiz('birlesdirme-testi', 'Test: merge və concat', [
+    classify(
+        'Müştərilər: ID 1, 2, 3. Sifarişlər: ID 2, 3, 4. Hər JOIN tipinin nəticəsindəki ID-lər:',
+        [
+            ('inner → 2, 3', ['how="inner"']),
+            ('left → 1, 2, 3', ['how="left"']),
+            ('right → 2, 3, 4', ['how="right"']),
+            ('outer → 1, 2, 3, 4', ['how="outer"']),
+        ],
+        'inner — ortaq, left — sol cədvəlin hamısı, right — sağın hamısı, outer — hər ikisinin hamısı.',
+    ),
+    single(
+        'Aylıq satış fayllarını bir cədvəldə yığmaq üçün nə istifadə olunur?',
+        ['pd.merge(..., how="inner")', 'pd.concat([...], axis=0)', 'df.join(...)', 'df.pivot_table(...)'],
+        2,
+        'Eyni strukturlu cədvəllər concat ilə alt-alta birləşdirilir.',
+    ),
+    single(
+        '`indicator=True` nə əlavə edir?',
+        ['Sətir nömrələri', 'Hər sətrin hansı cədvəldən gəldiyini göstərən _merge sütunu', 'Boş dəyərlərin sayı', 'Sıralama'],
+        2,
+        '_merge: both, left_only, right_only.',
+    ),
+])
+
+# ───────────────────────────── 13 · Pivot, melt, rank ─────────────────────────────
+m = c.module('pivot', 'Pivot, melt və rank',
+             'pivot_table ilə aqreqasiya, melt ilə geniş → uzun format, rank metodları.')
+
+m.lesson('pivot-melt', 'pivot_table və melt', 9, '''
+    ## pivot_table — Excel-in pivot cədvəli
+
+    ```python
+    pivot = df.pivot_table(
+        index="Region",               # sətirlər
+        columns="Product Category",   # sütunlar
+        values="Total Revenue",       # hesablanacaq dəyər
+        aggfunc="sum",                # aqreqasiya
+        fill_value=0,                 # boş xanalar
+        margins=True,                 # cəmlər
+        margins_name="Cəm",           # cəm sətrinin/sütununun adı
+    )
+    ```
+
+    ```text
+    Product Category  Beauty  Clothing  Electronics  ...      Cəm
+    Region
+    Bakı               ...       ...        ...             ...
+    ...
+    Cəm                ...       ...        ...             ...
+    ```
+
+    `groupby([...]).sum().unstack()` ilə eyni nəticə, amma daha oxunaqlı və cəmlərlə.
+
+    ## melt — pivot-un əksi
+
+    **Geniş** formatda hər fənn ayrıca sütundur; **uzun** formatda isə bir sütunda fənn, birində bal:
+
+    ```text
+    Geniş:                         Uzun:
+    Ad     Riyaziyyat  Fizika      Ad     Fənn        Bal
+    Aysel  85          88          Aysel  Riyaziyyat  85
+    Namiq  90          92          Namiq  Riyaziyyat  90
+                                   Aysel  Fizika      88
+                                   Namiq  Fizika      92
+    ```
+
+    ```python
+    uzun = pd.melt(geniş, id_vars=["Ad"], value_vars=["Riyaziyyat", "Fizika"],
+                   var_name="Fənn", value_name="Bal")
+    ```
+
+    | Parametr | Mənası |
+    | --- | --- |
+    | `id_vars` | Dəyişməz qalan sütunlar |
+    | `value_vars` | Uzun formata çevriləcək sütunlar |
+    | `var_name` | Köhnə sütun adlarının yazılacağı yeni sütun |
+    | `value_name` | Dəyərlərin sütunu |
+
+    Uzun format qruplaşdırma və qrafiklər (seaborn) üçün çox rahatdır: `uzun.groupby("Fənn")["Bal"].mean()`. Geri qayıtmaq üçün: `uzun.pivot(index="Ad", columns="Fənn", values="Bal")`.
+''')
+
+m.lesson('rank', 'Rank: sıra yeri', 6, '''
+    `rank()` hər dəyərin sıradakı **yerini** verir — reytinq cədvəlləri üçün.
+
+    ```python
+    df["yer"] = df["Bal"].rank(ascending=False)     # ən böyük — 1-ci yer
+    ```
+
+    ## Bərabər dəyərlər necə sıralanır? `method`
+
+    Ballar: 95, 88, 88, 70 (ikisi bərabər):
+
+    | method | 95 | 88 | 88 | 70 | Mənası |
+    | --- | --- | --- | --- | --- | --- |
+    | `average` (defolt) | 1 | 2.5 | 2.5 | 4 | Orta yer |
+    | `min` | 1 | 2 | 2 | 4 | Kiçik yer (idman yarışları kimi) |
+    | `max` | 1 | 3 | 3 | 4 | Böyük yer |
+    | `first` | 1 | 2 | 3 | 4 | Datadakı sıraya görə |
+    | `dense` | 1 | 2 | 2 | 3 | Eyni yer, boşluq olmadan |
+
+    ## Digər parametrlər
+
+    - `ascending=False` — böyük dəyər 1-ci yer;
+    - `pct=True` — yer faizlə (0–1): «ən yaxşı 10%»;
+    - `na_option="keep" | "top" | "bottom"` — boş dəyərlərin yeri.
+
+    Qrup daxilində reytinq:
+
+    ```python
+    df["region_yeri"] = df.groupby("Region")["Total Revenue"].rank(ascending=False)
+    ```
+''')
+
+m.python('pivot-tapsiriq', 'Region × kateqoriya pivot cədvəli', 10, '''
+    Rəhbərlik regionlar və kateqoriyalar üzrə gəlir cədvəlini istəyir — cəmlərlə birlikdə.
+''', [
+    'pivot_table: index="Region", columns="Product Category", values="Total Revenue", aggfunc="sum", fill_value=0, margins=True, margins_name="Cəm" → pivot (2 onluq).',
+    'Ümumi cəm (sağ alt xana) → umumi.',
+    'Bakı + Electronics gəliri → baki_elektronika.',
+], '''
+    import pandas as pd
+
+    df = pd.read_csv("satislar.csv")
+
+    pivot = ...
+    umumi = ...
+    baki_elektronika = ...
+
+    print(umumi, baki_elektronika)
+    pivot
+''', '''
+    import pandas as pd
+
+    df = pd.read_csv("satislar.csv")
+
+    pivot = df.pivot_table(index="Region", columns="Product Category", values="Total Revenue",
+                           aggfunc="sum", fill_value=0, margins=True, margins_name="Cəm").round(2)
+    umumi = pivot.loc["Cəm", "Cəm"]
+    baki_elektronika = pivot.loc["Bakı", "Electronics"]
+
+    print(umumi, baki_elektronika)
+    pivot
+''', T + '''
+    _p = _s.pivot_table(index="Region", columns="Product Category", values="Total Revenue", aggfunc="sum", fill_value=0, margins=True, margins_name="Cəm").round(2)
+    assert isinstance(pivot, _pd.DataFrame) and "Cəm" in pivot.index and "Cəm" in pivot.columns, "margins=True, margins_name='Cəm' əlavə et"
+    assert pivot.shape == _p.shape, f"pivot {_p.shape} ölçülü olmalıdır"
+    assert abs(umumi - _p.loc["Cəm", "Cəm"]) < 0.02, f"umumi {_p.loc['Cəm', 'Cəm']} olmalıdır"
+    assert abs(baki_elektronika - _p.loc["Bakı", "Electronics"]) < 0.02, f"baki_elektronika {_p.loc['Bakı', 'Electronics']} olmalıdır"
+''', [
+    'df.pivot_table(index="Region", columns="Product Category", values="Total Revenue", aggfunc="sum", fill_value=0, margins=True, margins_name="Cəm")',
+    'umumi = pivot.loc["Cəm", "Cəm"]',
+    'baki_elektronika = pivot.loc["Bakı", "Electronics"]',
+], dataset=S)
+
+m.python('melt-tapsiriq', 'Geniş formatdan uzuna və geri', 10, '''
+    `telebeler.csv`: hər fənn ayrıca sütundur. Onu uzun formata çevir, təhlil et və geri qaytar.
+''', [
+    'melt: id_vars=["Ad"], üç fənn sütunu, var_name="Fənn", value_name="Bal" → uzun.',
+    'Fənlər üzrə orta bal, 2 onluq → fenn_orta.',
+    'Uzun formatı pivot ilə yenidən genişə çevir (index="Ad", columns="Fənn", values="Bal") → genis.',
+], '''
+    import pandas as pd
+
+    t = pd.read_csv("telebeler.csv")
+
+    uzun = ...
+    fenn_orta = ...
+    genis = ...
+
+    print(uzun.shape)
+    fenn_orta
+''', '''
+    import pandas as pd
+
+    t = pd.read_csv("telebeler.csv")
+
+    uzun = pd.melt(t, id_vars=["Ad"], value_vars=["Riyaziyyat", "Fizika", "İngilis dili"],
+                   var_name="Fənn", value_name="Bal")
+    fenn_orta = uzun.groupby("Fənn")["Bal"].mean().round(2)
+    genis = uzun.pivot(index="Ad", columns="Fənn", values="Bal")
+
+    print(uzun.shape)
+    fenn_orta
+''', '''
+    import pandas as _pd
+    _t = _pd.read_csv("telebeler.csv")
+    assert isinstance(uzun, _pd.DataFrame) and uzun.shape == (len(_t) * 3, 3) and list(uzun.columns) == ["Ad", "Fənn", "Bal"], f"uzun {(len(_t) * 3, 3)} ölçülü olmalıdır, sütunlar Ad, Fənn, Bal"
+    _o = _t[["Riyaziyyat", "Fizika", "İngilis dili"]].mean().round(2)
+    assert fenn_orta.round(2).to_dict() == _o.to_dict(), f"fenn_orta {_o.to_dict()} olmalıdır"
+    assert isinstance(genis, _pd.DataFrame) and genis.shape == (len(_t), 3), "genis — hər tələbə bir sətir, hər fənn bir sütun"
+    assert genis.loc["Cavid", "Riyaziyyat"] == 88, "genis-də dəyərlər orijinal cədvəllə eyni olmalıdır"
+''', [
+    'pd.melt(t, id_vars=["Ad"], value_vars=["Riyaziyyat", "Fizika", "İngilis dili"], var_name="Fənn", value_name="Bal")',
+    'uzun.groupby("Fənn")["Bal"].mean().round(2)',
+    'uzun.pivot(index="Ad", columns="Fənn", values="Bal")',
+], dataset='datasets/telebeler.csv')
+
+m.python('rank-tapsiriq', 'Reytinq: rank metodları', 10, '''
+    Riyaziyyatda Cavid və Nigarın balı eynidir (88). Fərqli `method`-ların bərabər balları necə sıraladığını gör.
+''', [
+    'Riyaziyyat üzrə yer (böyük bal — 1-ci): "rank_avg" (defolt), "rank_min" (method="min"), "rank_dense" (method="dense").',
+    'Cavidin rank_avg yeri → cavid_yer.',
+    'satislar.csv-də məhsulları ümumi gəlirə görə sırala (1 — ən çox) → mehsul_yeri (int); iPhone 15-in yeri → iphone_yeri.',
+], '''
+    import pandas as pd
+
+    t = pd.read_csv("telebeler.csv")
+    df = pd.read_csv("satislar.csv")
+
+    # t["rank_avg"] = ...
+    cavid_yer = ...
+    mehsul_yeri = ...
+    iphone_yeri = ...
+
+    t.sort_values("Riyaziyyat", ascending=False)
+''', '''
+    import pandas as pd
+
+    t = pd.read_csv("telebeler.csv")
+    df = pd.read_csv("satislar.csv")
+
+    t["rank_avg"] = t["Riyaziyyat"].rank(ascending=False)
+    t["rank_min"] = t["Riyaziyyat"].rank(ascending=False, method="min")
+    t["rank_dense"] = t["Riyaziyyat"].rank(ascending=False, method="dense")
+    cavid_yer = t.loc[t["Ad"] == "Cavid", "rank_avg"].iloc[0]
+
+    gelir = df.groupby("Product Name")["Total Revenue"].sum()
+    mehsul_yeri = gelir.rank(ascending=False).astype(int)
+    iphone_yeri = int(mehsul_yeri["iPhone 15"])
+
+    t.sort_values("Riyaziyyat", ascending=False)
+''', T + '''
+    _t = _pd.read_csv("telebeler.csv")
+    for _c, _m in (("rank_avg", "average"), ("rank_min", "min"), ("rank_dense", "dense")):
+        assert _c in t.columns and list(t[_c]) == list(_t["Riyaziyyat"].rank(ascending=False, method=_m)), f"{_c} düzgün deyil (method='{_m}', ascending=False)"
+    _cy = _t["Riyaziyyat"].rank(ascending=False)[_t["Ad"] == "Cavid"].iloc[0]
+    assert cavid_yer == _cy, f"cavid_yer {_cy} olmalıdır"
+    _g = _s.groupby("Product Name")["Total Revenue"].sum().rank(ascending=False).astype(int)
+    assert mehsul_yeri.to_dict() == _g.to_dict(), "mehsul_yeri düzgün deyil"
+    assert iphone_yeri == int(_g["iPhone 15"]), f"iphone_yeri {int(_g['iPhone 15'])} olmalıdır"
+''', [
+    't["Riyaziyyat"].rank(ascending=False, method="min")',
+    'cavid_yer = t.loc[t["Ad"] == "Cavid", "rank_avg"].iloc[0]',
+    'df.groupby("Product Name")["Total Revenue"].sum().rank(ascending=False).astype(int)',
+], dataset=['datasets/telebeler.csv', S])
+
+m.quiz('pivot-testi', 'Test: pivot, melt, rank', [
+    single(
+        'Ballar 95, 88, 88, 70. `rank(ascending=False, method="dense")` nəticəsi?',
+        ['1, 2, 2, 3', '1, 2.5, 2.5, 4', '1, 2, 2, 4', '1, 2, 3, 4'],
+        1,
+        'dense — eyni dəyərlərə eyni yer, sonrakı yer boşluqsuz davam edir.',
+    ),
+    classify(
+        'Hər əməliyyatın nəticəsi:',
+        [
+            ('Uzun → geniş', ['pivot_table(...)', 'pivot(...)', 'unstack()']),
+            ('Geniş → uzun', ['pd.melt(...)']),
+        ],
+        'pivot/pivot_table/unstack dəyərləri sütunlara yayır; melt sütunları sətirlərə yığır.',
+    ),
+    single(
+        '`margins=True` pivot_table-a nə əlavə edir?',
+        ['Boş xanaları 0 edir', 'Cəm sətri və sütunu', 'Faizləri', 'Sıralama'],
+        2,
+        'margins — sətir və sütun cəmləri (margins_name ilə adlandırılır).',
+    ),
+])
+
+# ───────────────────────────── 14 · Mətn və regex ─────────────────────────────
+m = c.module('metn', 'Mətn sütunları: .str və regex',
+             'str metodları, contains/extract/split, regex ilə məlumat çıxarmaq və Nike satışlarının təhlili.')
+
+m.lesson('str-ders', 'DataFrame-də mətn: .str metodları və regex', 9, '''
+    Python sətirlərinin metodları pandas sütunlarında `.str` vasitəsilə **bütün sütuna birdən** tətbiq olunur.
+
+    ```python
+    df["Product Name"].str.upper()
+    df["Product Name"].str.len()
+    df["Product Name"].str.strip()
+    df["Product Name"].str.replace("Pro", "PRO")
+    df["Product Name"].str.startswith("Nike")
+    ```
+
+    ## Regex ilə: contains, match, extract, findall, split
+
+    Gün 6 nümunəsi:
+
+    ```python
+    df = pd.DataFrame({
+        "name": ["Alice", "Bob", "Charlie", "David", "Eve"],
+        "email": ["alice@example.com", "bob123@example.com", "charlie@domain.com",
+                  "david@website.org", "eve@company.com"],
+    })
+    ```
+
+    | Metod | Nümunə | Nə edir |
+    | --- | --- | --- |
+    | `str.contains` | `df[df["email"].str.contains("example")]` | Nümunə varmı → True/False |
+    | `str.match` | `df[df["name"].str.match("^A")]` | Əvvəldən uyğun gəlirmi |
+    | `str.replace` | `.str.replace(r"example\\.com", "newdomain.com", regex=True)` | Əvəz etmək |
+    | `str.extract` | `.str.extract(r"([^@]+)")` | Qrupu ayrıca sütun kimi çıxarmaq |
+    | `str.findall` | `.str.findall(r"@(\\w+\\.\\w+)")` | Bütün uyğunluqlar (siyahı) |
+    | `str.split` | `.str.split("@", expand=True)` | Bölüb ayrı sütunlara yazmaq |
+
+    ```python
+    df["username"] = df["email"].str.extract(r"([^@]+)")
+    df[["user", "domain"]] = df["email"].str.split("@", expand=True)
+    ```
+
+    ## Faydalı fəndlər
+
+    ```python
+    df["Brend"] = df["Product Name"].str.split().str[0]          # ilk söz: "Nike", "iPhone"...
+    df[df["Product Name"].str.contains(r"\\d", regex=True)]      # adında rəqəm olanlar
+    df["Model"] = df["Product Name"].str.extract(r"(\\d+)").astype(float)
+    ```
+
+    > ⚠️ `str.contains` defolt olaraq regex kimi işləyir: nöqtə (`.`) «istənilən simvol» deməkdir. Adi mətn axtarırsansa `regex=False` yaz və ya xüsusi simvolları `\\` ilə qoru.
+''')
+
+m.python('str-tapsiriq', 'Adında rəqəm olan məhsullar və brendlər', 10, '''
+    Gün 6 (6, 8): məhsul adları üzərində təhlil.
+''', [
+    'Adında rəqəm olan məhsulların əməliyyatları → reqemli (str.contains(r"\\d")).',
+    'Onların orta gəliri, 2 onluq → reqemli_orta.',
+    '"Brend" sütunu — məhsul adının ilk sözü (str.split().str[0]).',
+    'Brendlər üzrə gəlir, çoxdan aza → brend_gelir; ən gəlirli brend → top_brend.',
+], '''
+    import pandas as pd
+
+    df = pd.read_csv("satislar.csv")
+
+    reqemli = ...
+    reqemli_orta = ...
+    # df["Brend"] = ...
+    brend_gelir = ...
+    top_brend = ...
+
+    print(reqemli_orta, top_brend)
+    brend_gelir.head()
+''', '''
+    import pandas as pd
+
+    df = pd.read_csv("satislar.csv")
+
+    reqemli = df[df["Product Name"].str.contains(r"\\d", regex=True)]
+    reqemli_orta = round(reqemli["Total Revenue"].mean(), 2)
+    df["Brend"] = df["Product Name"].str.split().str[0]
+    brend_gelir = df.groupby("Brend")["Total Revenue"].sum().sort_values(ascending=False)
+    top_brend = brend_gelir.idxmax()
+
+    print(reqemli_orta, top_brend)
+    brend_gelir.head()
+''', T + '''
+    _r = _s[_s["Product Name"].str.contains(r"\\d", regex=True)]
+    assert isinstance(reqemli, _pd.DataFrame) and len(reqemli) == len(_r), f"reqemli {len(_r)} sətir olmalıdır"
+    assert reqemli_orta == round(_r["Total Revenue"].mean(), 2), f"reqemli_orta {round(_r['Total Revenue'].mean(), 2)} olmalıdır"
+    assert "Brend" in df.columns and list(df["Brend"]) == list(_s["Product Name"].str.split().str[0]), "Brend = ilk söz"
+    _b = _s.groupby(_s["Product Name"].str.split().str[0])["Total Revenue"].sum().sort_values(ascending=False)
+    assert list(brend_gelir.index) == list(_b.index), "brend_gelir çoxdan aza sıralanmalıdır"
+    assert top_brend == _b.idxmax(), f"top_brend {_b.idxmax()!r} olmalıdır"
+''', [
+    'df[df["Product Name"].str.contains(r"\\d", regex=True)]',
+    'df["Product Name"].str.split().str[0]',
+    'df.groupby("Brend")["Total Revenue"].sum().sort_values(ascending=False)',
+], dataset=S)
+
+m.python('regex-email', 'E-poçtlardan məlumat çıxar', 10, '''
+    Gün 6-nın nümunə cədvəli: adlar və e-poçtlar. Regex metodları ilə məlumat çıxar.
+''', [
+    'E-poçtunda "example" olan sətirlər → example.',
+    'İstifadəçi adını str.extract(r"([^@]+)") ilə "username" sütununa yaz.',
+    'E-poçtu "@" üzrə "user" və "domain" sütunlarına böl (expand=True).',
+    'Adı "A" və ya "E" hərfi ilə başlayanlar → ae (str.match).',
+], '''
+    import pandas as pd
+
+    df = pd.DataFrame({
+        "name": ["Alice", "Bob", "Charlie", "David", "Eve"],
+        "email": ["alice@example.com", "bob123@example.com", "charlie@domain.com",
+                  "david@website.org", "eve@company.com"],
+        "age": [24, 30, 22, 28, 27],
+    })
+
+    example = ...
+    # df["username"] = ...
+    # df[["user", "domain"]] = ...
+    ae = ...
+
+    df
+''', '''
+    import pandas as pd
+
+    df = pd.DataFrame({
+        "name": ["Alice", "Bob", "Charlie", "David", "Eve"],
+        "email": ["alice@example.com", "bob123@example.com", "charlie@domain.com",
+                  "david@website.org", "eve@company.com"],
+        "age": [24, 30, 22, 28, 27],
+    })
+
+    example = df[df["email"].str.contains("example", regex=True)]
+    df["username"] = df["email"].str.extract(r"([^@]+)")
+    df[["user", "domain"]] = df["email"].str.split("@", expand=True)
+    ae = df[df["name"].str.match("^[AE]")]
+
+    df
+''', '''
+    import pandas as _pd
+    assert isinstance(example, _pd.DataFrame) and list(example["name"]) == ["Alice", "Bob"], "example — Alice və Bob"
+    assert list(df["username"]) == ["alice", "bob123", "charlie", "david", "eve"], "username düzgün deyil"
+    assert list(df["domain"]) == ["example.com", "example.com", "domain.com", "website.org", "company.com"], "domain düzgün deyil"
+    assert list(df["user"]) == list(df["username"]), "user — @-dan əvvəlki hissə"
+    assert isinstance(ae, _pd.DataFrame) and list(ae["name"]) == ["Alice", "Eve"], "ae — Alice və Eve"
+    assert ".str.extract(" in dacy.code and ".str.match(" in dacy.code and "expand=True" in dacy.code, "extract, match və split(expand=True) istifadə et"
+''', [
+    'df[df["email"].str.contains("example")]',
+    'df[["user", "domain"]] = df["email"].str.split("@", expand=True)',
+    'df[df["name"].str.match("^[AE]")] — [AE] A və ya E deməkdir.',
+])
+
+m.python('nike-analiz', 'Nike satışları azalıb?', 15, '''
+    Gün 6 (7): Nike satışların azaldığını bildirib. Data ilə yoxla: **satış azalıb? gəlir azalıb? hansı məhsula tələbat azalıb?**
+
+    2024-ün birinci yarısını (yanvar–iyun) ikinci yarısı (iyul–dekabr) ilə müqayisə et.
+''', [
+    'Nike məhsulları (adı "Nike" ilə başlayan) → nike.',
+    'Nike-ın rüblər üzrə satılan ədədi → rub (to_period("Q")).',
+    '2024 H1 və H2 ədədləri → h1, h2; satış azalıbmı → azalib (True/False).',
+    'Nike gəliri 2023 və 2024 → gelir_2023, gelir_2024 (2 onluq).',
+    'H2-də H1-ə nisbətən ədədi ən çox azalan Nike məhsulu → en_cox_dusen.',
+], '''
+    import pandas as pd
+
+    df = pd.read_csv("satislar.csv", parse_dates=["Date"])
+
+    nike = ...
+    rub = ...
+    h1, h2 = 0, 0
+    azalib = ...
+    gelir_2023, gelir_2024 = 0, 0
+    en_cox_dusen = ...
+
+    print(h1, h2, azalib, gelir_2023, gelir_2024, en_cox_dusen)
+    rub
+''', '''
+    import pandas as pd
+
+    df = pd.read_csv("satislar.csv", parse_dates=["Date"])
+
+    nike = df[df["Product Name"].str.startswith("Nike")]
+    rub = nike.groupby(nike["Date"].dt.to_period("Q"))["Units Sold"].sum()
+
+    n24 = nike[nike["Date"].dt.year == 2024]
+    birinci = n24[n24["Date"].dt.month <= 6]
+    ikinci = n24[n24["Date"].dt.month > 6]
+    h1, h2 = birinci["Units Sold"].sum(), ikinci["Units Sold"].sum()
+    azalib = bool(h2 < h1)
+
+    gelir_2023 = round(nike[nike["Date"].dt.year == 2023]["Total Revenue"].sum(), 2)
+    gelir_2024 = round(n24["Total Revenue"].sum(), 2)
+
+    ferq = (ikinci.groupby("Product Name")["Units Sold"].sum()
+            .sub(birinci.groupby("Product Name")["Units Sold"].sum(), fill_value=0))
+    en_cox_dusen = ferq.idxmin()
+
+    print(h1, h2, azalib, gelir_2023, gelir_2024, en_cox_dusen)
+    rub
+''', T + '''
+    _d = _s.assign(Date=_pd.to_datetime(_s["Date"]))
+    _n = _d[_d["Product Name"].str.startswith("Nike")]
+    assert isinstance(nike, _pd.DataFrame) and len(nike) == len(_n), f"nike {len(_n)} sətir olmalıdır"
+    _r = _n.groupby(_n["Date"].dt.to_period("Q"))["Units Sold"].sum()
+    assert list(rub.values) == list(_r.values), "rub — rüblər üzrə ədəd (to_period('Q'))"
+    _y = _n[_n["Date"].dt.year == 2024]
+    _a, _b = _y[_y["Date"].dt.month <= 6], _y[_y["Date"].dt.month > 6]
+    assert (h1, h2) == (_a["Units Sold"].sum(), _b["Units Sold"].sum()), f"h1, h2 = {_a['Units Sold'].sum()}, {_b['Units Sold'].sum()} olmalıdır"
+    assert azalib is True, "Data göstərir ki, satış azalıb — azalib True olmalıdır"
+    assert gelir_2023 == round(_n[_n["Date"].dt.year == 2023]["Total Revenue"].sum(), 2) and gelir_2024 == round(_y["Total Revenue"].sum(), 2), "gelir_2023 / gelir_2024 düzgün deyil"
+    _f = _b.groupby("Product Name")["Units Sold"].sum().sub(_a.groupby("Product Name")["Units Sold"].sum(), fill_value=0)
+    assert en_cox_dusen == _f.idxmin(), f"en_cox_dusen {_f.idxmin()!r} olmalıdır"
+''', [
+    'nike = df[df["Product Name"].str.startswith("Nike")]',
+    'n24 = nike[nike["Date"].dt.year == 2024]; H1 — month <= 6, H2 — month > 6',
+    'ferq = H2-nin məhsul cəmləri .sub(H1-in məhsul cəmləri, fill_value=0); en_cox_dusen = ferq.idxmin()',
+], dataset=S)
+
+m.quiz('metn-testi', 'Test: mətn sütunları', [
+    classify(
+        'Hər metodun qaytardığı nəticə:',
+        [
+            ('True/False Series (filtr üçün)', ['str.contains("x")', 'str.startswith("Nike")', 'str.match("^A")']),
+            ('Yeni mətn sütunu', ['str.upper()', 'str.replace("a", "b")', 'str.extract(r"(\\d+)")']),
+            ('Bir neçə sütun', ['str.split("@", expand=True)']),
+        ],
+        'contains/startswith/match maska, upper/replace/extract mətn, split(expand=True) isə ayrı sütunlar verir.',
+    ),
+    single(
+        '`df["Product Name"].str.contains("S10.")` niyə gözlənilməz sətirlər tapa bilər?',
+        ['contains böyük-kiçik hərfə baxmır', 'Defolt regex rejimində nöqtə istənilən simvoldur', 'contains yalnız rəqəmlər tapır', 'Tapa bilməz'],
+        2,
+        'regex=False və ya "S10\\." yazmaq lazımdır.',
+    ),
+])
+
+# ───────────────────────────── 15 · Yekun layihə ─────────────────────────────
+m = c.module('layihe', 'Yekun layihə: satış datasının tam təhlili',
+             'Gün 3 və Gün 6-nın qiymətləndirilən tapşırıqları: KPI-lar, liderlər, ödəniş vərdişləri, rüblük artım.')
+
+m.lesson('layihe-izah', 'Yekun layihə: TechNar-ın illik hesabatı', 5, '''
+    Kursun sonunda bütün alətləri bir hesabatda birləşdiririk. TechNar-ın rəhbərliyi 2023–2024 nəticələrini istəyir:
+
+    1. **Əsas göstəricilər (KPI):** ümumi gəlir, əməliyyat sayı, orta çek, satılan ədəd; ən çox gəlir gətirən 5 məhsul.
+    2. **Davranış:** hər regionda ən çox istifadə olunan ödəniş üsulu; hər kateqoriyada ən çox satılan 5 məhsul.
+    3. **Dinamika:** rüblər üzrə 2024-ün 2023-ə nisbətən artımı.
+
+    Bu tapşırıqlar Python4Business-in Gün 3 və Gün 6 qiymətləndirilən tapşırıqlarına əsaslanır.
+
+    > 💡 Hər addımda nəticəni ekrana çıxarıb məntiqli olub-olmadığını yoxla: gəlir mənfi ola bilməz, faizlər 100-ü keçməz və s. «Ağlabatanlıq yoxlaması» analitikin ən vacib vərdişlərindəndir.
+''')
+
+m.python('layihe-kpi', 'Layihə 1: KPI-lar və top məhsullar', 12, '''
+    Gün 3 (graded) və Gün 6 (9): əsas göstəricilər.
+''', [
+    'kpi dictionary-si: "gelir" (cəm, 2 onluq), "emeliyyat" (sətir sayı), "orta_cek" (orta gəlir, 2 onluq), "eded" (Units Sold cəmi, int).',
+    'Ümumi gəlirə görə ən çox gəlir gətirən 5 məhsulun adları → top5 (list).',
+    'Top 5 məhsulun ümumi gəlirdəki payı (faiz, 1 onluq) → top5_pay.',
+], '''
+    import pandas as pd
+
+    df = pd.read_csv("satislar.csv")
+
+    kpi = {}
+    top5 = ...
+    top5_pay = ...
+
+    print(kpi)
+    print(top5, top5_pay)
+''', '''
+    import pandas as pd
+
+    df = pd.read_csv("satislar.csv")
+
+    kpi = {
+        "gelir": round(df["Total Revenue"].sum(), 2),
+        "emeliyyat": len(df),
+        "orta_cek": round(df["Total Revenue"].mean(), 2),
+        "eded": int(df["Units Sold"].sum()),
+    }
+    mehsul = df.groupby("Product Name")["Total Revenue"].sum()
+    top5 = mehsul.nlargest(5).index.tolist()
+    top5_pay = round(mehsul.nlargest(5).sum() / mehsul.sum() * 100, 1)
+
+    print(kpi)
+    print(top5, top5_pay)
+''', T + '''
+    _k = {"gelir": round(_s["Total Revenue"].sum(), 2), "emeliyyat": len(_s), "orta_cek": round(_s["Total Revenue"].mean(), 2), "eded": int(_s["Units Sold"].sum())}
+    assert kpi == _k, f"kpi {_k} olmalıdır, sənin nəticən: {kpi!r}"
+    _m = _s.groupby("Product Name")["Total Revenue"].sum()
+    assert top5 == _m.nlargest(5).index.tolist(), f"top5 {_m.nlargest(5).index.tolist()} olmalıdır"
+    assert top5_pay == round(_m.nlargest(5).sum() / _m.sum() * 100, 1), f"top5_pay {round(_m.nlargest(5).sum() / _m.sum() * 100, 1)} olmalıdır"
+''', [
+    'kpi = {"gelir": round(df["Total Revenue"].sum(), 2), "emeliyyat": len(df), ...}',
+    'mehsul = df.groupby("Product Name")["Total Revenue"].sum(); mehsul.nlargest(5).index.tolist()',
+    'top5_pay = round(mehsul.nlargest(5).sum() / mehsul.sum() * 100, 1)',
+], dataset=S, xp=60)
+
+m.python('layihe-davranis', 'Layihə 2: ödəniş vərdişləri və kateqoriya liderləri', 12, '''
+    Gün 6 (11, 12): regionların ödəniş vərdişləri və hər kateqoriyanın top məhsulları.
+''', [
+    'Hər regionda ən çox istifadə olunan ödəniş üsulu → odenis_lider (dict: {region: üsul}).',
+    'Hər kateqoriyada satılan ədədə görə top 5 məhsul (Product Category, Product Name, Units Sold sütunları) → kat_top5.',
+    'Electronics kateqoriyasının ən çox satılan məhsulu → elektronika_1.',
+], '''
+    import pandas as pd
+
+    df = pd.read_csv("satislar.csv")
+
+    odenis_lider = ...
+    kat_top5 = ...
+    elektronika_1 = ...
+
+    print(odenis_lider)
+    kat_top5
+''', '''
+    import pandas as pd
+
+    df = pd.read_csv("satislar.csv")
+
+    odenis_lider = df.groupby("Region")["Payment Method"].agg(lambda s: s.value_counts().idxmax()).to_dict()
+
+    km = df.groupby(["Product Category", "Product Name"])["Units Sold"].sum().reset_index()
+    kat_top5 = (km.sort_values(["Product Category", "Units Sold"], ascending=[True, False])
+                .groupby("Product Category")
+                .head(5))
+    elektronika_1 = kat_top5[kat_top5["Product Category"] == "Electronics"].iloc[0]["Product Name"]
+
+    print(odenis_lider)
+    kat_top5
+''', T + '''
+    _o = _s.groupby("Region")["Payment Method"].agg(lambda s: s.value_counts().idxmax()).to_dict()
+    assert odenis_lider == _o, f"odenis_lider {_o} olmalıdır"
+    _km = _s.groupby(["Product Category", "Product Name"])["Units Sold"].sum().reset_index()
+    _t = _km.sort_values(["Product Category", "Units Sold"], ascending=[True, False]).groupby("Product Category").head(5)
+    assert isinstance(kat_top5, _pd.DataFrame) and len(kat_top5) == len(_t), f"kat_top5 {len(_t)} sətir olmalıdır (hər kateqoriyadan ən çox 5)"
+    assert set(zip(kat_top5["Product Category"], kat_top5["Product Name"])) == set(zip(_t["Product Category"], _t["Product Name"])), "kat_top5-də məhsullar düzgün deyil"
+    _e = _t[_t["Product Category"] == "Electronics"].iloc[0]["Product Name"]
+    assert elektronika_1 == _e, f"elektronika_1 {_e!r} olmalıdır"
+''', [
+    'df.groupby("Region")["Payment Method"].agg(lambda s: s.value_counts().idxmax())',
+    'Kateqoriya × məhsul cəmi, sonra sort_values(["Product Category", "Units Sold"], ascending=[True, False]).groupby("Product Category").head(5)',
+    'kat_top5[kat_top5["Product Category"] == "Electronics"].iloc[0]["Product Name"]',
+], dataset=S, xp=60)
+
+m.python('layihe-dinamika', 'Layihə 3: rüblük artım', 12, '''
+    Rəhbərlik soruşur: «2024-də hər rüb 2023-ün eyni rübünə nisbətən nə qədər böyüdük?» (Mövsümiliyə görə rübü əvvəlki rüblə yox, keçən ilin eyni rübü ilə müqayisə edirik.)
+''', [
+    'İl və rüb üzrə gəlir cədvəli: sətirlər — rüb (1–4), sütunlar — il (2023, 2024) → rub_cedvel (groupby + unstack).',
+    'Hər rüb üçün artım faizi: (2024 − 2023) / 2023 × 100, 1 onluq → artim (Series).',
+    'Ən çox böyüyən rüb → en_yaxsi_rub.',
+], '''
+    import pandas as pd
+
+    df = pd.read_csv("satislar.csv", parse_dates=["Date"])
+
+    rub_cedvel = ...
+    artim = ...
+    en_yaxsi_rub = ...
+
+    print(artim)
+    rub_cedvel
+''', '''
+    import pandas as pd
+
+    df = pd.read_csv("satislar.csv", parse_dates=["Date"])
+
+    rub_cedvel = (df.groupby([df["Date"].dt.quarter, df["Date"].dt.year])["Total Revenue"]
+                  .sum()
+                  .unstack())
+    artim = ((rub_cedvel[2024] - rub_cedvel[2023]) / rub_cedvel[2023] * 100).round(1)
+    en_yaxsi_rub = artim.idxmax()
+
+    print(artim)
+    rub_cedvel
+''', T + '''
+    _d = _s.assign(Date=_pd.to_datetime(_s["Date"]))
+    _r = _d.groupby([_d["Date"].dt.quarter, _d["Date"].dt.year])["Total Revenue"].sum().unstack()
+    assert isinstance(rub_cedvel, _pd.DataFrame) and rub_cedvel.shape == (4, 2) and list(rub_cedvel.columns) == [2023, 2024], "rub_cedvel — 4 rüb × 2 il (sütunlar 2023, 2024)"
+    assert _np.allclose(rub_cedvel.values, _r.values), "rub_cedvel dəyərləri düzgün deyil"
+    _a = ((_r[2024] - _r[2023]) / _r[2023] * 100).round(1)
+    assert list(artim.round(1)) == list(_a), f"artim {_a.to_dict()} olmalıdır"
+    assert en_yaxsi_rub == _a.idxmax(), f"en_yaxsi_rub {_a.idxmax()} olmalıdır"
+''', [
+    'df.groupby([df["Date"].dt.quarter, df["Date"].dt.year])["Total Revenue"].sum().unstack()',
+    'artim = ((rub_cedvel[2024] - rub_cedvel[2023]) / rub_cedvel[2023] * 100).round(1)',
+    'en_yaxsi_rub = artim.idxmax()',
+], dataset=S, xp=60)
+
+m.quiz('yekun-test', 'Yekun test: Python Pandas', [
+    single('`df[["Region"]]` nə qaytarır?', ['Series', 'DataFrame', 'list', 'str'], 2, 'İki cüt mötərizə — DataFrame.'),
+    single('Boş dəyərlərin sütunlar üzrə sayı:', ['df.isnull()', 'df.isnull().sum()', 'df.count()', 'df.info'], 2,
+           'isnull() True/False verir, sum() onları sayır.'),
+    single('Bakıda 1000 ₼-dan çox olan satışlar:',
+           ['df[df["Region"] == "Bakı" and df["Total Revenue"] > 1000]',
+            'df[(df["Region"] == "Bakı") & (df["Total Revenue"] > 1000)]',
+            'df.filter("Bakı", 1000)', 'df.loc["Bakı" > 1000]'], 2,
+           '& və mötərizələr.'),
+    classify(
+        'Hər suala uyğun alət:',
+        [
+            ('groupby', ['Hər regionun ümumi gəliri']),
+            ('merge', ['Sifarişlərə müştəri adlarını əlavə etmək']),
+            ('concat', ['Üç aylıq faylı bir cədvəldə yığmaq']),
+            ('pivot_table', ['Region × kateqoriya cədvəli cəmlərlə']),
+        ],
+        'groupby — qrup üzrə hesablama, merge — açar üzrə birləşmə, concat — alt-alta yığma, pivot_table — iki ölçülü xülasə.',
+    ),
+    single('`pd.qcut(x, q=4)` nə edir?', ['4 bərabər enli aralıq', 'Təxminən bərabər saylı 4 qrup', '4 sətri silir', 'x-i 4-ə bölür'], 2,
+           'qcut kvantillərə görə bölür.'),
+    single('`df["Date"].dt.year` işləməsi üçün nə lazımdır?', ['Heç nə', 'Date sütunu datetime tipində olmalıdır', 'Date indeks olmalıdır', 'Excel faylı'], 2,
+           'pd.to_datetime və ya parse_dates.'),
+    single('`rank(method="min")` ilə 95, 88, 88, 70 ballarının yerləri:', ['1, 2, 2, 4', '1, 2, 2, 3', '1, 2.5, 2.5, 4', '1, 3, 3, 4'], 1,
+           'min — bərabərlərə kiçik yer, sonra boşluq.'),
+    single('Rename nəticəsini dəyişənə yazmasaq nə olur?', ['df dəyişir', 'Dəyişiklik itir — rename yeni DataFrame qaytarır', 'Xəta', 'Fayl yenilənir'], 2,
+           'df = df.rename(...) yazılmalıdır.'),
+    multiple(
+        'Hansılar boş dəyərləri **doldurur**? (Bir neçə cavab)',
+        ['fillna(0)', 'ffill()', 'dropna()', 'bfill()'],
+        [1, 2, 4],
+        'dropna sətirləri silir, digərləri doldurur.',
+    ),
+    single('«Hər regionda ən çox gəlir gətirən məhsul» üçün düzgün yol:',
+           ['groupby("Region")["Product Name"].max()',
+            'region × məhsul cəmi, sonra hər regionda idxmax',
+            'value_counts().head(1)', 'sort_values("Region").head(5)'], 2,
+           'Əvvəl cəmləmək, sonra qrup daxilində maksimumu tapmaq.'),
+], xp=50, pass_score=70)
+
+print(c.root, c.modules, 'modules', c.steps, 'steps')

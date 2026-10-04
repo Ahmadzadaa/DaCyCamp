@@ -1,0 +1,58 @@
+type: python
+title: apply ilə öz funksiyan
+xp: 40
+estimated_minutes: 10
+instructions: |
+  Gün 5 (1): Total Revenue-yə əsasən «Kateqoriya» sütunu. Sərhədlər: **2000 ₼ və yuxarı — Yüksək**, **500–2000 — Orta**, **500-dən az — Aşağı**.
+tasks:
+- kateqoriya(gelir) funksiyasını yaz və apply ilə "Kateqoriya" sütunu yarat.
+- 'axis=1 ilə "Yer" sütunu: "Bakı - Nizami" formatında (Region - Filial).'
+- Hər kateqoriyanın sayı → say (value_counts).
+dataset: datasets/satislar.csv
+starter_code: |
+  import pandas as pd
+
+  df = pd.read_csv("satislar.csv")
+
+
+  def kateqoriya(gelir):
+      ...
+
+
+  # df["Kateqoriya"] = ...
+  # df["Yer"] = ...
+  say = ...
+  print(say)
+solution: |
+  import pandas as pd
+
+  df = pd.read_csv("satislar.csv")
+
+
+  def kateqoriya(gelir):
+      if gelir >= 2000:
+          return "Yüksək"
+      elif gelir >= 500:
+          return "Orta"
+      return "Aşağı"
+
+
+  df["Kateqoriya"] = df["Total Revenue"].apply(kateqoriya)
+  df["Yer"] = df.apply(lambda r: f"{r['Region']} - {r['Filial']}", axis=1)
+  say = df["Kateqoriya"].value_counts()
+  print(say)
+tests: |
+  import pandas as _pd
+  import numpy as _np
+  _s = _pd.read_csv("satislar.csv")
+
+  _k = _np.select([_s["Total Revenue"] >= 2000, _s["Total Revenue"] >= 500], ["Yüksək", "Orta"], default="Aşağı")
+  assert "Kateqoriya" in df.columns and list(df["Kateqoriya"]) == list(_k), "Kateqoriya düzgün deyil — sərhədləri yoxla (>= 2000, >= 500)"
+  assert kateqoriya(2000) == "Yüksək" and kateqoriya(1999.99) == "Orta" and kateqoriya(499) == "Aşağı", "kateqoriya() funksiyası sərhədlərdə səhvdir"
+  assert "Yer" in df.columns and list(df["Yer"]) == list(_s["Region"] + " - " + _s["Filial"]), "Yer 'Region - Filial' formatında olmalıdır"
+  assert isinstance(say, _pd.Series) and say.to_dict() == _pd.Series(_k).value_counts().to_dict(), "say = df['Kateqoriya'].value_counts()"
+  assert ".apply(" in dacy.code and "axis=1" in dacy.code, "apply və axis=1 istifadə et"
+hints:
+- 'if gelir >= 2000: return "Yüksək" / elif gelir >= 500: return "Orta" / return "Aşağı"'
+- df["Kateqoriya"] = df["Total Revenue"].apply(kateqoriya)
+- 'df.apply(lambda r: f"{r[''Region'']} - {r[''Filial'']}", axis=1)'

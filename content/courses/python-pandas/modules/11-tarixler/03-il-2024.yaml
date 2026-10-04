@@ -1,0 +1,50 @@
+type: python
+title: 2024-cü ilin satışları
+xp: 40
+estimated_minutes: 10
+instructions: |
+  Gün 6 (5): yalnız 2024-cü il əməliyyatlarını seç və təhlil et.
+tasks:
+- 2024-cü ilin ümumi gəliri, 2 onluq → gelir_2024.
+- 2024-cü ilin aylar üzrə gəliri (indeks — ayın nömrəsi 1–12), 2 onluq → aylar_2024.
+- 2024-də ən çox gəlir gətirən ayın nömrəsi → en_yaxsi_ay.
+dataset: datasets/satislar.csv
+starter_code: |
+  import pandas as pd
+
+  df = pd.read_csv("satislar.csv", parse_dates=["Date"])
+
+  gelir_2024 = ...
+  aylar_2024 = ...
+  en_yaxsi_ay = ...
+
+  print(gelir_2024, en_yaxsi_ay)
+  aylar_2024
+solution: |
+  import pandas as pd
+
+  df = pd.read_csv("satislar.csv", parse_dates=["Date"])
+
+  d24 = df[df["Date"].dt.year == 2024]
+  gelir_2024 = round(d24["Total Revenue"].sum(), 2)
+  aylar_2024 = d24.groupby(d24["Date"].dt.month)["Total Revenue"].sum().round(2)
+  en_yaxsi_ay = aylar_2024.idxmax()
+
+  print(gelir_2024, en_yaxsi_ay)
+  aylar_2024
+tests: |
+  import pandas as _pd
+  import numpy as _np
+  _s = _pd.read_csv("satislar.csv")
+
+  _d = _s.assign(Date=_pd.to_datetime(_s["Date"]))
+  _y = _d[_d["Date"].dt.year == 2024]
+  assert gelir_2024 == round(_y["Total Revenue"].sum(), 2), f"gelir_2024 {round(_y['Total Revenue'].sum(), 2)} olmalıdır"
+  _a = _y.groupby(_y["Date"].dt.month)["Total Revenue"].sum().round(2)
+  assert isinstance(aylar_2024, _pd.Series) and list(aylar_2024.index) == list(range(1, 13)), "aylar_2024-ün indeksi 1–12 (ay nömrələri) olmalıdır — .dt.month ilə qruplaşdır"
+  assert (aylar_2024.round(2) - _a).abs().max() < 0.011, "aylar_2024 dəyərləri düzgün deyil"
+  assert en_yaxsi_ay == _a.idxmax(), f"en_yaxsi_ay {_a.idxmax()} olmalıdır"
+hints:
+- d24 = df[df["Date"].dt.year == 2024]
+- d24.groupby(d24["Date"].dt.month)["Total Revenue"].sum().round(2)
+- en_yaxsi_ay = aylar_2024.idxmax()

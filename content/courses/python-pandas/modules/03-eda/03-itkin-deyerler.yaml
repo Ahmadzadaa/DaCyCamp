@@ -1,0 +1,51 @@
+type: python
+title: İtkin dəyərləri yoxla
+xp: 40
+estimated_minutes: 10
+instructions: |
+  Hansı sütunlarda boşluq var və nə qədər? (Gün 3 tapşırıqları 19–20)
+tasks:
+- Hər sütunda itkin dəyərlərin sayı → itkin (Series).
+- Hər sütunda itkin dəyərlərin faizi, 2 onluq → itkin_faiz.
+- Ən çox boşluq olan sütunun adı → en_cox_itkin.
+- Bütün cədvəldə boşluqların ümumi sayı → cemi_itkin (int).
+dataset: datasets/satislar_xam.csv
+starter_code: |
+  import pandas as pd
+
+  df = pd.read_csv("satislar_xam.csv")
+
+  itkin = ...
+  itkin_faiz = ...
+  en_cox_itkin = ...
+  cemi_itkin = ...
+
+  print(itkin_faiz)
+  print(en_cox_itkin, cemi_itkin)
+solution: |
+  import pandas as pd
+
+  df = pd.read_csv("satislar_xam.csv")
+
+  itkin = df.isnull().sum()
+  itkin_faiz = (df.isnull().sum() / len(df) * 100).round(2)
+  en_cox_itkin = itkin.idxmax()
+  cemi_itkin = int(itkin.sum())
+
+  print(itkin_faiz)
+  print(en_cox_itkin, cemi_itkin)
+tests: |
+  import pandas as _pd
+  import numpy as _np
+  _x = _pd.read_csv("satislar_xam.csv")
+
+  _i = _x.isnull().sum()
+  assert isinstance(itkin, _pd.Series) and itkin.to_dict() == _i.to_dict(), "itkin = df.isnull().sum()"
+  _f = (_i / len(_x) * 100).round(2)
+  assert isinstance(itkin_faiz, _pd.Series) and itkin_faiz.round(2).to_dict() == _f.to_dict(), f"itkin_faiz düzgün deyil. Gözlənilən (ilk 3): {_f.head(3).to_dict()}"
+  assert en_cox_itkin == _i.idxmax(), f"en_cox_itkin {_i.idxmax()!r} olmalıdır, sənin nəticən: {en_cox_itkin!r}"
+  assert cemi_itkin == int(_i.sum()), f"cemi_itkin {int(_i.sum())} olmalıdır, sənin nəticən: {cemi_itkin!r}"
+hints:
+- itkin = df.isnull().sum()
+- 'Faiz: (df.isnull().sum() / len(df) * 100).round(2)'
+- en_cox_itkin = itkin.idxmax(); cemi_itkin = int(itkin.sum())

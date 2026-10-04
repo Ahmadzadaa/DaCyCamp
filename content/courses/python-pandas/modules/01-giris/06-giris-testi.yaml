@@ -1,0 +1,45 @@
+type: quiz
+title: 'Test: Series və DataFrame'
+xp: 25
+estimated_minutes: 5
+pass_score: 66
+questions:
+- text: Hər ifadənin nəticəsi nədir?
+  type: classify
+  buckets:
+  - name: Series
+    items:
+    - df["Region"]
+    - df["Total Revenue"] * 2
+    - df.dtypes
+  - name: DataFrame
+    items:
+    - df[["Region"]]
+    - df.head()
+    - df[["Region", "Total Revenue"]]
+  - name: Tək dəyər və ya tuple
+    items:
+    - df.shape
+    - df["Units Sold"].sum()
+    - df.loc[0, "Region"]
+  explanation: Bir cüt mötərizə ilə bir sütun — Series, iki cüt mötərizə — DataFrame. shape tuple, sum()
+    və loc[sətir, sütun] isə tək dəyər qaytarır.
+- text: '`df.shape` nəticəsi `(1260, 11)`-dir. Bu nə deməkdir?'
+  options:
+  - 1260 sütun, 11 sətir
+  - 1260 sətir, 11 sütun
+  - 1260 unikal məhsul
+  - 11 boş dəyər
+  correct:
+  - 2
+  explanation: shape həmişə (sətir sayı, sütun sayı) qaytarır.
+- text: Kodun son sətri `df.head()`-dir və `print` yoxdur. DaCy-də (və Jupyter-də) nə baş verir?
+  options:
+  - Heç nə göstərilmir
+  - İlk 5 sətir konsolda göstərilir
+  - Xəta verir
+  - Bütün cədvəl göstərilir
+  correct:
+  - 2
+  explanation: Son sətir ifadədirsə, onun nəticəsi avtomatik göstərilir. Aradakı sətirlərdə isə print()
+    lazımdır.

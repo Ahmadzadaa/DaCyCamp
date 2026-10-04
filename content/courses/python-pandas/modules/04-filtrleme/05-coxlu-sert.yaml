@@ -1,0 +1,53 @@
+type: python
+title: 'Bir neçə şərt: &, |, isin, between, query'
+xp: 40
+estimated_minutes: 10
+instructions: |
+  Mürəkkəb filtrlər: bir neçə şərti birləşdir.
+tasks:
+- Bakı regionunda, Credit Card ilə və gəliri 1000 ₼-dan çox olan əməliyyatlar → baki_kart.
+- Gəncə və ya Şəki regionundakı əməliyyatlar → gence_seki (isin ilə).
+- Units Sold 10-dan az olan əməliyyatlar → az_satis (query ilə).
+- Unit Price 100 ilə 500 arasında (daxil) olan əməliyyatlar → orta_qiymet (between ilə).
+dataset: datasets/satislar.csv
+starter_code: |
+  import pandas as pd
+
+  df = pd.read_csv("satislar.csv")
+
+  baki_kart = ...
+  gence_seki = ...
+  az_satis = ...
+  orta_qiymet = ...
+
+  print(len(baki_kart), len(gence_seki), len(az_satis), len(orta_qiymet))
+solution: |
+  import pandas as pd
+
+  df = pd.read_csv("satislar.csv")
+
+  baki_kart = df[(df["Region"] == "Bakı") & (df["Payment Method"] == "Credit Card") & (df["Total Revenue"] > 1000)]
+  gence_seki = df[df["Region"].isin(["Gəncə", "Şəki"])]
+  az_satis = df.query("`Units Sold` < 10")
+  orta_qiymet = df[df["Unit Price"].between(100, 500)]
+
+  print(len(baki_kart), len(gence_seki), len(az_satis), len(orta_qiymet))
+tests: |
+  import pandas as _pd
+  import numpy as _np
+  _s = _pd.read_csv("satislar.csv")
+
+  _a = _s[(_s["Region"] == "Bakı") & (_s["Payment Method"] == "Credit Card") & (_s["Total Revenue"] > 1000)]
+  assert isinstance(baki_kart, _pd.DataFrame) and baki_kart.equals(_a), f"baki_kart {len(_a)} sətir olmalıdır (üç şərt & ilə, hər biri mötərizədə)"
+  _g = _s[_s["Region"].isin(["Gəncə", "Şəki"])]
+  assert isinstance(gence_seki, _pd.DataFrame) and gence_seki.equals(_g), f"gence_seki {len(_g)} sətir olmalıdır"
+  _z = _s[_s["Units Sold"] < 10]
+  assert isinstance(az_satis, _pd.DataFrame) and az_satis.equals(_z), f"az_satis {len(_z)} sətir olmalıdır"
+  _o = _s[_s["Unit Price"].between(100, 500)]
+  assert isinstance(orta_qiymet, _pd.DataFrame) and orta_qiymet.equals(_o), f"orta_qiymet {len(_o)} sətir olmalıdır"
+  for _w in (".isin(", ".query(", ".between("):
+      assert _w in dacy.code, f"{_w[1:-1]}() metodundan istifadə et"
+hints:
+- 'Hər şərt mötərizədə: (df["Region"] == "Bakı") & (df["Payment Method"] == "Credit Card") & (...)'
+- df[df["Region"].isin(["Gəncə", "Şəki"])]
+- df.query("`Units Sold` < 10") — boşluqlu ad backtick arasında; df[df["Unit Price"].between(100, 500)]

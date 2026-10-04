@@ -1,0 +1,33 @@
+type: quiz
+title: 'Test: mətn sütunları'
+xp: 20
+estimated_minutes: 4
+pass_score: 100
+questions:
+- text: 'Hər metodun qaytardığı nəticə:'
+  type: classify
+  buckets:
+  - name: True/False Series (filtr üçün)
+    items:
+    - str.contains("x")
+    - str.startswith("Nike")
+    - str.match("^A")
+  - name: Yeni mətn sütunu
+    items:
+    - str.upper()
+    - str.replace("a", "b")
+    - str.extract(r"(\d+)")
+  - name: Bir neçə sütun
+    items:
+    - str.split("@", expand=True)
+  explanation: contains/startswith/match maska, upper/replace/extract mətn, split(expand=True) isə ayrı
+    sütunlar verir.
+- text: '`df["Product Name"].str.contains("S10.")` niyə gözlənilməz sətirlər tapa bilər?'
+  options:
+  - contains böyük-kiçik hərfə baxmır
+  - Defolt regex rejimində nöqtə istənilən simvoldur
+  - contains yalnız rəqəmlər tapır
+  - Tapa bilməz
+  correct:
+  - 2
+  explanation: regex=False və ya "S10\." yazmaq lazımdır.

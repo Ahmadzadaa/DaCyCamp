@@ -1,0 +1,47 @@
+type: python
+title: np.where ilə şərtli sütun
+xp: 40
+estimated_minutes: 10
+instructions: |
+  Gün 3 (12) və Gün 5 (10): şərtə görə etiketlər.
+tasks:
+- Total Revenue 1000-dən böyükdürsə "High Revenue", əks halda "Low Revenue" — "Revenue Class" sütunu (np.where).
+- df.eval ilə Units Sold < 5 şərtini hesabla və np.where ilə "Low Sales" / "High Sales" — "Sales Category"
+  sütunu.
+- '"High Revenue" əməliyyatlarının sayı → high_say.'
+dataset: datasets/satislar.csv
+starter_code: |
+  import pandas as pd
+  import numpy as np
+
+  df = pd.read_csv("satislar.csv")
+
+  # df["Revenue Class"] = ...
+  # df["Sales Category"] = ...
+  high_say = ...
+
+  print(high_say)
+solution: |
+  import pandas as pd
+  import numpy as np
+
+  df = pd.read_csv("satislar.csv")
+
+  df["Revenue Class"] = np.where(df["Total Revenue"] > 1000, "High Revenue", "Low Revenue")
+  df["Sales Category"] = np.where(df.eval("`Units Sold` < 5"), "Low Sales", "High Sales")
+  high_say = (df["Revenue Class"] == "High Revenue").sum()
+
+  print(high_say)
+tests: |
+  import pandas as _pd
+  import numpy as _np
+  _s = _pd.read_csv("satislar.csv")
+
+  assert "Revenue Class" in df.columns and list(df["Revenue Class"]) == list(_np.where(_s["Total Revenue"] > 1000, "High Revenue", "Low Revenue")), "Revenue Class düzgün deyil"
+  assert "Sales Category" in df.columns and list(df["Sales Category"]) == list(_np.where(_s["Units Sold"] < 5, "Low Sales", "High Sales")), "Sales Category düzgün deyil"
+  assert high_say == (_s["Total Revenue"] > 1000).sum(), f"high_say {(_s['Total Revenue'] > 1000).sum()} olmalıdır"
+  assert "np.where(" in dacy.code and ".eval(" in dacy.code, "np.where və df.eval istifadə et"
+hints:
+- np.where(df["Total Revenue"] > 1000, "High Revenue", "Low Revenue")
+- np.where(df.eval("`Units Sold` < 5"), "Low Sales", "High Sales")
+- high_say = (df["Revenue Class"] == "High Revenue").sum()

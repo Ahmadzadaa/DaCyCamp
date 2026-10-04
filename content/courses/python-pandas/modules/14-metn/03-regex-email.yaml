@@ -1,0 +1,55 @@
+type: python
+title: E-poçtlardan məlumat çıxar
+xp: 40
+estimated_minutes: 10
+instructions: |
+  Gün 6-nın nümunə cədvəli: adlar və e-poçtlar. Regex metodları ilə məlumat çıxar.
+tasks:
+- E-poçtunda "example" olan sətirlər → example.
+- İstifadəçi adını str.extract(r"([^@]+)") ilə "username" sütununa yaz.
+- E-poçtu "@" üzrə "user" və "domain" sütunlarına böl (expand=True).
+- Adı "A" və ya "E" hərfi ilə başlayanlar → ae (str.match).
+starter_code: |
+  import pandas as pd
+
+  df = pd.DataFrame({
+      "name": ["Alice", "Bob", "Charlie", "David", "Eve"],
+      "email": ["alice@example.com", "bob123@example.com", "charlie@domain.com",
+                "david@website.org", "eve@company.com"],
+      "age": [24, 30, 22, 28, 27],
+  })
+
+  example = ...
+  # df["username"] = ...
+  # df[["user", "domain"]] = ...
+  ae = ...
+
+  df
+solution: |
+  import pandas as pd
+
+  df = pd.DataFrame({
+      "name": ["Alice", "Bob", "Charlie", "David", "Eve"],
+      "email": ["alice@example.com", "bob123@example.com", "charlie@domain.com",
+                "david@website.org", "eve@company.com"],
+      "age": [24, 30, 22, 28, 27],
+  })
+
+  example = df[df["email"].str.contains("example", regex=True)]
+  df["username"] = df["email"].str.extract(r"([^@]+)")
+  df[["user", "domain"]] = df["email"].str.split("@", expand=True)
+  ae = df[df["name"].str.match("^[AE]")]
+
+  df
+tests: |
+  import pandas as _pd
+  assert isinstance(example, _pd.DataFrame) and list(example["name"]) == ["Alice", "Bob"], "example — Alice və Bob"
+  assert list(df["username"]) == ["alice", "bob123", "charlie", "david", "eve"], "username düzgün deyil"
+  assert list(df["domain"]) == ["example.com", "example.com", "domain.com", "website.org", "company.com"], "domain düzgün deyil"
+  assert list(df["user"]) == list(df["username"]), "user — @-dan əvvəlki hissə"
+  assert isinstance(ae, _pd.DataFrame) and list(ae["name"]) == ["Alice", "Eve"], "ae — Alice və Eve"
+  assert ".str.extract(" in dacy.code and ".str.match(" in dacy.code and "expand=True" in dacy.code, "extract, match və split(expand=True) istifadə et"
+hints:
+- df[df["email"].str.contains("example")]
+- df[["user", "domain"]] = df["email"].str.split("@", expand=True)
+- df[df["name"].str.match("^[AE]")] — [AE] A və ya E deməkdir.

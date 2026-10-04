@@ -1,0 +1,48 @@
+type: python
+title: map və replace
+xp: 40
+estimated_minutes: 8
+instructions: |
+  Gün 5 (9) və Gün 3 (9): dəyərləri çevir və əvəz et.
+tasks:
+- Region sütununu map ilə böyük hərflərə çevir.
+- Payment Method-da "Credit Card" dəyərlərini "Visa Card" ilə əvəz et (replace).
+- az lüğəti ilə "Kateqoriya AZ" sütunu yarat (map).
+dataset: datasets/satislar.csv
+starter_code: |
+  import pandas as pd
+
+  df = pd.read_csv("satislar.csv")
+  az = {"Electronics": "Elektronika", "Clothing": "Geyim", "Sports": "İdman",
+        "Home Appliances": "Məişət texnikası", "Beauty": "Kosmetika"}
+
+  # df["Region"] = ...
+  # df["Payment Method"] = ...
+  # df["Kateqoriya AZ"] = ...
+
+  df[["Region", "Payment Method", "Kateqoriya AZ"]].head()
+solution: |
+  import pandas as pd
+
+  df = pd.read_csv("satislar.csv")
+  az = {"Electronics": "Elektronika", "Clothing": "Geyim", "Sports": "İdman",
+        "Home Appliances": "Məişət texnikası", "Beauty": "Kosmetika"}
+
+  df["Region"] = df["Region"].map(lambda x: x.upper())
+  df["Payment Method"] = df["Payment Method"].replace("Credit Card", "Visa Card")
+  df["Kateqoriya AZ"] = df["Product Category"].map(az)
+
+  df[["Region", "Payment Method", "Kateqoriya AZ"]].head()
+tests: |
+  import pandas as _pd
+  import numpy as _np
+  _s = _pd.read_csv("satislar.csv")
+
+  assert list(df["Region"]) == [r.upper() for r in _s["Region"]], "Region böyük hərflərlə olmalıdır"
+  assert "Credit Card" not in set(df["Payment Method"]) and (df["Payment Method"] == "Visa Card").sum() == (_s["Payment Method"] == "Credit Card").sum(), "Credit Card → Visa Card əvəz olunmalıdır"
+  assert "Kateqoriya AZ" in df.columns and df["Kateqoriya AZ"].notnull().all() and df.loc[0, "Kateqoriya AZ"] == az[_s.loc[0, "Product Category"]], "Kateqoriya AZ = df['Product Category'].map(az)"
+  assert ".map(" in dacy.code and ".replace(" in dacy.code, "map və replace istifadə et"
+hints:
+- 'df["Region"].map(lambda x: x.upper())'
+- df["Payment Method"].replace("Credit Card", "Visa Card")
+- df["Product Category"].map(az)

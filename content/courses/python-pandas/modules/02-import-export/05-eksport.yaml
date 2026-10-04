@@ -1,0 +1,58 @@
+type: python
+title: Nəticəni CSV və JSON kimi yaz
+xp: 40
+estimated_minutes: 10
+instructions: |
+  İlk 20 əməliyyatı mühasibatlığa göndərmək lazımdır: CSV (ayırıcı `;`) və JSON formatında. Yazdıqdan sonra faylı geri oxuyub yoxla.
+tasks:
+- 'İlk 20 sətri ilk20 dəyişəninə götür və ilk20.csv faylına yaz: ayırıcı ";", indeks yazılmasın.'
+- Faylı geri oxu (eyni ayırıcı ilə) → geri.
+- 'ilk20-ni ilk20.json faylına yaz: orient="records", force_ascii=False.'
+- JSON faylını pd.read_json ilə oxu və sətir sayını tap → json_say.
+dataset: datasets/satislar.csv
+starter_code: |
+  import pandas as pd
+
+  df = pd.read_csv("satislar.csv")
+  ilk20 = ...
+
+  # CSV yaz
+
+  geri = ...
+
+  # JSON yaz
+
+  json_say = ...
+  print(geri.shape, json_say)
+solution: |
+  import pandas as pd
+
+  df = pd.read_csv("satislar.csv")
+  ilk20 = df.head(20)
+
+  ilk20.to_csv("ilk20.csv", sep=";", index=False)
+  geri = pd.read_csv("ilk20.csv", sep=";")
+
+  ilk20.to_json("ilk20.json", orient="records", force_ascii=False)
+  json_say = len(pd.read_json("ilk20.json"))
+  print(geri.shape, json_say)
+tests: |
+  import pandas as _pd
+  import numpy as _np
+  _s = _pd.read_csv("satislar.csv")
+
+  import os as _os
+  assert _os.path.exists("ilk20.csv"), "ilk20.csv faylı yaradılmayıb"
+  _first = open("ilk20.csv", encoding="utf-8").readline()
+  assert ";" in _first, "CSV-də ayırıcı ';' olmalıdır — sep=';'"
+  assert not _first.startswith(";"), "İndeks fayla yazılıb — index=False əlavə et"
+  assert isinstance(geri, _pd.DataFrame) and geri.shape == (20, _s.shape[1]), f"geri 20 sətir və {_s.shape[1]} sütun olmalıdır (Unnamed sütunu olmamalıdır), səndə: {getattr(geri, 'shape', None)}"
+  assert _os.path.exists("ilk20.json"), "ilk20.json faylı yaradılmayıb"
+  _j = open("ilk20.json", encoding="utf-8").read()
+  assert _j.lstrip().startswith("[{"), "JSON orient='records' formatında olmalıdır: [{...}, {...}]"
+  assert "\\u" not in _j, "Azərbaycan hərfləri kodlaşdırılıb — force_ascii=False əlavə et"
+  assert json_say == 20, f"json_say 20 olmalıdır, sənin nəticən: {json_say!r}"
+hints:
+- ilk20 = df.head(20); ilk20.to_csv("ilk20.csv", sep=";", index=False)
+- 'Geri oxuyanda da ayırıcını göstər: pd.read_csv("ilk20.csv", sep=";")'
+- ilk20.to_json("ilk20.json", orient="records", force_ascii=False); json_say = len(pd.read_json("ilk20.json"))

@@ -1,0 +1,56 @@
+type: python
+title: 'Layihə 2: ödəniş vərdişləri və kateqoriya liderləri'
+xp: 60
+estimated_minutes: 12
+instructions: |
+  Gün 6 (11, 12): regionların ödəniş vərdişləri və hər kateqoriyanın top məhsulları.
+tasks:
+- 'Hər regionda ən çox istifadə olunan ödəniş üsulu → odenis_lider (dict: {region: üsul}).'
+- Hər kateqoriyada satılan ədədə görə top 5 məhsul (Product Category, Product Name, Units Sold sütunları)
+  → kat_top5.
+- Electronics kateqoriyasının ən çox satılan məhsulu → elektronika_1.
+dataset: datasets/satislar.csv
+starter_code: |
+  import pandas as pd
+
+  df = pd.read_csv("satislar.csv")
+
+  odenis_lider = ...
+  kat_top5 = ...
+  elektronika_1 = ...
+
+  print(odenis_lider)
+  kat_top5
+solution: |
+  import pandas as pd
+
+  df = pd.read_csv("satislar.csv")
+
+  odenis_lider = df.groupby("Region")["Payment Method"].agg(lambda s: s.value_counts().idxmax()).to_dict()
+
+  km = df.groupby(["Product Category", "Product Name"])["Units Sold"].sum().reset_index()
+  kat_top5 = (km.sort_values(["Product Category", "Units Sold"], ascending=[True, False])
+              .groupby("Product Category")
+              .head(5))
+  elektronika_1 = kat_top5[kat_top5["Product Category"] == "Electronics"].iloc[0]["Product Name"]
+
+  print(odenis_lider)
+  kat_top5
+tests: |
+  import pandas as _pd
+  import numpy as _np
+  _s = _pd.read_csv("satislar.csv")
+
+  _o = _s.groupby("Region")["Payment Method"].agg(lambda s: s.value_counts().idxmax()).to_dict()
+  assert odenis_lider == _o, f"odenis_lider {_o} olmalıdır"
+  _km = _s.groupby(["Product Category", "Product Name"])["Units Sold"].sum().reset_index()
+  _t = _km.sort_values(["Product Category", "Units Sold"], ascending=[True, False]).groupby("Product Category").head(5)
+  assert isinstance(kat_top5, _pd.DataFrame) and len(kat_top5) == len(_t), f"kat_top5 {len(_t)} sətir olmalıdır (hər kateqoriyadan ən çox 5)"
+  assert set(zip(kat_top5["Product Category"], kat_top5["Product Name"])) == set(zip(_t["Product Category"], _t["Product Name"])), "kat_top5-də məhsullar düzgün deyil"
+  _e = _t[_t["Product Category"] == "Electronics"].iloc[0]["Product Name"]
+  assert elektronika_1 == _e, f"elektronika_1 {_e!r} olmalıdır"
+hints:
+- 'df.groupby("Region")["Payment Method"].agg(lambda s: s.value_counts().idxmax())'
+- Kateqoriya × məhsul cəmi, sonra sort_values(["Product Category", "Units Sold"], ascending=[True, False]).groupby("Product
+  Category").head(5)
+- kat_top5[kat_top5["Product Category"] == "Electronics"].iloc[0]["Product Name"]

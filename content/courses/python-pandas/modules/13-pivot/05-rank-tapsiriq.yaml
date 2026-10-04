@@ -1,0 +1,60 @@
+type: python
+title: 'Reytinq: rank metodları'
+xp: 40
+estimated_minutes: 10
+instructions: |
+  Riyaziyyatda Cavid və Nigarın balı eynidir (88). Fərqli `method`-ların bərabər balları necə sıraladığını gör.
+tasks:
+- 'Riyaziyyat üzrə yer (böyük bal — 1-ci): "rank_avg" (defolt), "rank_min" (method="min"), "rank_dense"
+  (method="dense").'
+- Cavidin rank_avg yeri → cavid_yer.
+- satislar.csv-də məhsulları ümumi gəlirə görə sırala (1 — ən çox) → mehsul_yeri (int); iPhone 15-in yeri
+  → iphone_yeri.
+dataset:
+- datasets/telebeler.csv
+- datasets/satislar.csv
+starter_code: |
+  import pandas as pd
+
+  t = pd.read_csv("telebeler.csv")
+  df = pd.read_csv("satislar.csv")
+
+  # t["rank_avg"] = ...
+  cavid_yer = ...
+  mehsul_yeri = ...
+  iphone_yeri = ...
+
+  t.sort_values("Riyaziyyat", ascending=False)
+solution: |
+  import pandas as pd
+
+  t = pd.read_csv("telebeler.csv")
+  df = pd.read_csv("satislar.csv")
+
+  t["rank_avg"] = t["Riyaziyyat"].rank(ascending=False)
+  t["rank_min"] = t["Riyaziyyat"].rank(ascending=False, method="min")
+  t["rank_dense"] = t["Riyaziyyat"].rank(ascending=False, method="dense")
+  cavid_yer = t.loc[t["Ad"] == "Cavid", "rank_avg"].iloc[0]
+
+  gelir = df.groupby("Product Name")["Total Revenue"].sum()
+  mehsul_yeri = gelir.rank(ascending=False).astype(int)
+  iphone_yeri = int(mehsul_yeri["iPhone 15"])
+
+  t.sort_values("Riyaziyyat", ascending=False)
+tests: |
+  import pandas as _pd
+  import numpy as _np
+  _s = _pd.read_csv("satislar.csv")
+
+  _t = _pd.read_csv("telebeler.csv")
+  for _c, _m in (("rank_avg", "average"), ("rank_min", "min"), ("rank_dense", "dense")):
+      assert _c in t.columns and list(t[_c]) == list(_t["Riyaziyyat"].rank(ascending=False, method=_m)), f"{_c} düzgün deyil (method='{_m}', ascending=False)"
+  _cy = _t["Riyaziyyat"].rank(ascending=False)[_t["Ad"] == "Cavid"].iloc[0]
+  assert cavid_yer == _cy, f"cavid_yer {_cy} olmalıdır"
+  _g = _s.groupby("Product Name")["Total Revenue"].sum().rank(ascending=False).astype(int)
+  assert mehsul_yeri.to_dict() == _g.to_dict(), "mehsul_yeri düzgün deyil"
+  assert iphone_yeri == int(_g["iPhone 15"]), f"iphone_yeri {int(_g['iPhone 15'])} olmalıdır"
+hints:
+- t["Riyaziyyat"].rank(ascending=False, method="min")
+- cavid_yer = t.loc[t["Ad"] == "Cavid", "rank_avg"].iloc[0]
+- df.groupby("Product Name")["Total Revenue"].sum().rank(ascending=False).astype(int)

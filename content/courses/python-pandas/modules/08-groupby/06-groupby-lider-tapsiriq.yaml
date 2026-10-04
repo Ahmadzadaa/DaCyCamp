@@ -1,0 +1,57 @@
+type: python
+title: Hər qrupun lideri
+xp: 40
+estimated_minutes: 12
+instructions: |
+  Gün 3 (15), Gün 6 (1) və Gün 4 (11, 12): hər qrupda ən yaxşısı.
+tasks:
+- 'Hər regionda ən çox gəlir gətirən məhsul → region_lider (dict: {region: məhsul}).'
+- Hər filialda ən çox gəlir gətirən kateqoriya → filial_lider (dict).
+- Hər satıcının satdığı fərqli məhsulların sayı → isci_cesid (nunique).
+dataset: datasets/satislar.csv
+starter_code: |
+  import pandas as pd
+
+  df = pd.read_csv("satislar.csv")
+
+  region_lider = ...
+  filial_lider = ...
+  isci_cesid = ...
+
+  print(region_lider)
+  print(filial_lider)
+solution: |
+  import pandas as pd
+
+  df = pd.read_csv("satislar.csv")
+
+  pg = df.groupby(["Region", "Product Name"])["Total Revenue"].sum().reset_index()
+  top = pg.loc[pg.groupby("Region")["Total Revenue"].idxmax()]
+  region_lider = dict(zip(top["Region"], top["Product Name"]))
+
+  fk = df.groupby(["Filial", "Product Category"])["Total Revenue"].sum().reset_index()
+  top2 = fk.loc[fk.groupby("Filial")["Total Revenue"].idxmax()]
+  filial_lider = dict(zip(top2["Filial"], top2["Product Category"]))
+
+  isci_cesid = df.groupby("Sales Employee")["Product Name"].nunique()
+
+  print(region_lider)
+  print(filial_lider)
+tests: |
+  import pandas as _pd
+  import numpy as _np
+  _s = _pd.read_csv("satislar.csv")
+
+  _pg = _s.groupby(["Region", "Product Name"])["Total Revenue"].sum().reset_index()
+  _t = _pg.loc[_pg.groupby("Region")["Total Revenue"].idxmax()]
+  _rl = dict(zip(_t["Region"], _t["Product Name"]))
+  assert region_lider == _rl, f"region_lider {_rl} olmalıdır, sənin nəticən: {region_lider!r}"
+  _fk = _s.groupby(["Filial", "Product Category"])["Total Revenue"].sum().reset_index()
+  _t2 = _fk.loc[_fk.groupby("Filial")["Total Revenue"].idxmax()]
+  _fl = dict(zip(_t2["Filial"], _t2["Product Category"]))
+  assert filial_lider == _fl, f"filial_lider {_fl} olmalıdır"
+  assert isci_cesid.to_dict() == _s.groupby("Sales Employee")["Product Name"].nunique().to_dict(), "isci_cesid = df.groupby('Sales Employee')['Product Name'].nunique()"
+hints:
+- 'Əvvəl region × məhsul cəmi: df.groupby(["Region", "Product Name"])["Total Revenue"].sum().reset_index()'
+- 'Hər regionun maksimumu: pg.loc[pg.groupby("Region")["Total Revenue"].idxmax()]'
+- dict(zip(top["Region"], top["Product Name"]))

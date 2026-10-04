@@ -1,0 +1,46 @@
+type: python
+title: Hesablanmış sütunlar
+xp: 40
+estimated_minutes: 10
+instructions: |
+  Gün 3 tapşırıqları 3, 6, 7, 8: mövcud sütunlardan yeni sütunlar yarat.
+tasks:
+- Total Revenue-ni tam ədədə yuvarlaqlaşdıraraq "Revenue Rounded" sütunu yarat (round()).
+- Hər məhsul adının uzunluğu — "Name Length" (str.len()).
+- Məhsul adlarını böyük hərflərlə — "Product Upper" (str.upper()).
+- Vahid qiymətin kvadratı — "Price Squared".
+dataset: datasets/satislar.csv
+starter_code: |
+  import pandas as pd
+
+  df = pd.read_csv("satislar.csv")
+
+  # df["Revenue Rounded"] = ...
+
+  df[["Product Name", "Total Revenue"]].head()
+solution: |
+  import pandas as pd
+
+  df = pd.read_csv("satislar.csv")
+
+  df["Revenue Rounded"] = df["Total Revenue"].round()
+  df["Name Length"] = df["Product Name"].str.len()
+  df["Product Upper"] = df["Product Name"].str.upper()
+  df["Price Squared"] = df["Unit Price"] ** 2
+
+  df[["Product Name", "Name Length", "Product Upper", "Revenue Rounded", "Price Squared"]].head()
+tests: |
+  import pandas as _pd
+  import numpy as _np
+  _s = _pd.read_csv("satislar.csv")
+
+  for _c in ("Revenue Rounded", "Name Length", "Product Upper", "Price Squared"):
+      assert _c in df.columns, f"df-də '{_c}' sütunu yoxdur"
+  assert df["Revenue Rounded"].equals(_s["Total Revenue"].round()), "Revenue Rounded = df['Total Revenue'].round()"
+  assert df["Name Length"].equals(_s["Product Name"].str.len()), "Name Length = df['Product Name'].str.len()"
+  assert df["Product Upper"].equals(_s["Product Name"].str.upper()), "Product Upper = df['Product Name'].str.upper()"
+  assert (df["Price Squared"] - _s["Unit Price"] ** 2).abs().max() < 1e-6, "Price Squared = df['Unit Price'] ** 2"
+hints:
+- df["Revenue Rounded"] = df["Total Revenue"].round()
+- 'Mətn metodları .str ilə: df["Product Name"].str.len(), .str.upper()'
+- df["Price Squared"] = df["Unit Price"] ** 2

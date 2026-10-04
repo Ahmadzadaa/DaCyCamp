@@ -1,0 +1,40 @@
+type: quiz
+title: 'Test: merge və concat'
+xp: 25
+estimated_minutes: 5
+pass_score: 66
+questions:
+- text: 'Müştərilər: ID 1, 2, 3. Sifarişlər: ID 2, 3, 4. Hər JOIN tipinin nəticəsindəki ID-lər:'
+  type: classify
+  buckets:
+  - name: inner → 2, 3
+    items:
+    - how="inner"
+  - name: left → 1, 2, 3
+    items:
+    - how="left"
+  - name: right → 2, 3, 4
+    items:
+    - how="right"
+  - name: outer → 1, 2, 3, 4
+    items:
+    - how="outer"
+  explanation: inner — ortaq, left — sol cədvəlin hamısı, right — sağın hamısı, outer — hər ikisinin hamısı.
+- text: Aylıq satış fayllarını bir cədvəldə yığmaq üçün nə istifadə olunur?
+  options:
+  - pd.merge(..., how="inner")
+  - pd.concat([...], axis=0)
+  - df.join(...)
+  - df.pivot_table(...)
+  correct:
+  - 2
+  explanation: Eyni strukturlu cədvəllər concat ilə alt-alta birləşdirilir.
+- text: '`indicator=True` nə əlavə edir?'
+  options:
+  - Sətir nömrələri
+  - Hər sətrin hansı cədvəldən gəldiyini göstərən _merge sütunu
+  - Boş dəyərlərin sayı
+  - Sıralama
+  correct:
+  - 2
+  explanation: '_merge: both, left_only, right_only.'

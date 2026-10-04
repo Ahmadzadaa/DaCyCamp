@@ -1,0 +1,50 @@
+type: python
+title: Tarixi hissələrə ayır
+xp: 40
+estimated_minutes: 10
+instructions: |
+  Gün 3 (10): Date sütununu il, ay və gün hissələrinə ayır, sonra yenidən birləşdir.
+tasks:
+- Date sütununu datetime tipinə çevir.
+- '"Il", "Ay", "Gun" sütunları yarat (.dt.year, .dt.month, .dt.day).'
+- Tarixi yenidən "YYYY-MM-DD" mətninə çevir → "Birləşmiş" sütunu (dt.strftime).
+- Həftənin günü sütunu "Həftə günü" (day_name) və ən çox satış olan həftə günü → en_cox_gun.
+dataset: datasets/satislar.csv
+starter_code: |
+  import pandas as pd
+
+  df = pd.read_csv("satislar.csv")
+
+  # df["Date"] = ...
+  en_cox_gun = ...
+
+  df[["Date"]].head()
+solution: |
+  import pandas as pd
+
+  df = pd.read_csv("satislar.csv")
+
+  df["Date"] = pd.to_datetime(df["Date"])
+  df["Il"] = df["Date"].dt.year
+  df["Ay"] = df["Date"].dt.month
+  df["Gun"] = df["Date"].dt.day
+  df["Birləşmiş"] = df["Date"].dt.strftime("%Y-%m-%d")
+  df["Həftə günü"] = df["Date"].dt.day_name()
+  en_cox_gun = df["Həftə günü"].value_counts().idxmax()
+
+  df[["Date", "Il", "Ay", "Gun", "Birləşmiş", "Həftə günü"]].head()
+tests: |
+  import pandas as _pd
+  import numpy as _np
+  _s = _pd.read_csv("satislar.csv")
+
+  _d = _pd.to_datetime(_s["Date"])
+  assert str(df["Date"].dtype).startswith("datetime64"), "Date-i pd.to_datetime ilə çevir"
+  assert list(df["Il"]) == list(_d.dt.year) and list(df["Ay"]) == list(_d.dt.month) and list(df["Gun"]) == list(_d.dt.day), "Il, Ay, Gun düzgün deyil"
+  assert list(df["Birləşmiş"]) == list(_s["Date"]), "Birləşmiş = df['Date'].dt.strftime('%Y-%m-%d') — orijinal mətnlə eyni olmalıdır"
+  assert list(df["Həftə günü"]) == list(_d.dt.day_name()), "Həftə günü = df['Date'].dt.day_name()"
+  assert en_cox_gun == _d.dt.day_name().value_counts().idxmax(), f"en_cox_gun {_d.dt.day_name().value_counts().idxmax()!r} olmalıdır"
+hints:
+- df["Date"] = pd.to_datetime(df["Date"])
+- df["Il"] = df["Date"].dt.year (ay — .dt.month, gün — .dt.day)
+- df["Date"].dt.strftime("%Y-%m-%d"); df["Date"].dt.day_name()

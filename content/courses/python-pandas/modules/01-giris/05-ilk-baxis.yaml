@@ -1,0 +1,55 @@
+type: python
+title: satislar.csv-yə ilk baxış
+xp: 40
+estimated_minutes: 10
+instructions: |
+  Kurs boyu istifadə edəcəyimiz əsas datasetı oxu və onunla tanış ol.
+
+  > 📁 **Dataset — `satislar.csv`:** TechNar elektronika, geyim, idman, məişət texnikası və kosmetika mağazalar şəbəkəsinin 2023–2024 satışları (1260 əməliyyat). Sütunlar: `Transaction ID`, `Date`, `Region`, `Filial`, `Sales Employee`, `Product Name`, `Product Category`, `Units Sold`, `Unit Price`, `Total Revenue`, `Payment Method`.
+tasks:
+- satislar.csv faylını df-ə oxu və son sətirdə df.head() yaz — ilk 5 sətir konsolda görünəcək.
+- Sətir və sütun sayını tap → setir_sayi, sutun_sayi.
+- Sütun adlarını siyahı kimi götür → sutunlar.
+- İlk əməliyyatın məhsul adını tap → ilk_mehsul.
+- Bütün satışların ümumi gəlirini (Total Revenue cəmi) 2 onluğa yuvarlaqlaşdır → cem_gelir.
+dataset: datasets/satislar.csv
+starter_code: |
+  import pandas as pd
+
+  df = ...
+
+  setir_sayi, sutun_sayi = 0, 0
+  sutunlar = ...
+  ilk_mehsul = ...
+  cem_gelir = ...
+
+  print(setir_sayi, sutun_sayi)
+  print(ilk_mehsul, cem_gelir)
+solution: |
+  import pandas as pd
+
+  df = pd.read_csv("satislar.csv")
+
+  setir_sayi, sutun_sayi = df.shape
+  sutunlar = df.columns.tolist()
+  ilk_mehsul = df.loc[0, "Product Name"]
+  cem_gelir = round(df["Total Revenue"].sum(), 2)
+
+  print(setir_sayi, sutun_sayi)
+  print(ilk_mehsul, cem_gelir)
+  df.head()
+tests: |
+  import pandas as _pd
+  import numpy as _np
+  _s = _pd.read_csv("satislar.csv")
+
+  assert isinstance(df, _pd.DataFrame) and df.shape == _s.shape, "df = pd.read_csv(\"satislar.csv\")"
+  assert (setir_sayi, sutun_sayi) == _s.shape, f"setir_sayi, sutun_sayi = {_s.shape} olmalıdır, sənin nəticən: {(setir_sayi, sutun_sayi)!r}"
+  assert sutunlar == _s.columns.tolist(), f"sutunlar düzgün deyil: {sutunlar!r}"
+  assert ilk_mehsul == _s.loc[0, "Product Name"], f"ilk_mehsul {_s.loc[0, 'Product Name']!r} olmalıdır, sənin nəticən: {ilk_mehsul!r}"
+  assert cem_gelir == round(_s["Total Revenue"].sum(), 2), f"cem_gelir {round(_s['Total Revenue'].sum(), 2)} olmalıdır, sənin nəticən: {cem_gelir!r}"
+  assert ".head(" in dacy.code, "df.head() ilə ilk sətirlərə bax"
+hints:
+- df = pd.read_csv("satislar.csv")
+- ilk_mehsul = df.loc[0, "Product Name"] və ya df["Product Name"].iloc[0]
+- cem_gelir = round(df["Total Revenue"].sum(), 2); son sətirdə df.head() yaz.

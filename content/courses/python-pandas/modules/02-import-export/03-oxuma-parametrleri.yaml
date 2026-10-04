@@ -1,0 +1,45 @@
+type: python
+title: read_csv parametrləri
+xp: 40
+estimated_minutes: 10
+instructions: |
+  Böyük faylın hamısı həmişə lazım olmur. `read_csv` parametrləri ilə yalnız lazım olan hissəni oxu.
+tasks:
+- Yalnız Date, Region, Total Revenue sütunlarını və ilk 100 sətri oxu → df_qisa.
+- Faylı Date sütunu tarix kimi oxunmaqla oxu → df_tarix; Date sütununun tipini sətir kimi yaz → tarix_tipi
+  (str(...dtype)).
+- Başlıqdan sonrakı ilk 10 sətri keçərək oxu → df_kecid (skiprows=range(1, 11)).
+dataset: datasets/satislar.csv
+starter_code: |
+  import pandas as pd
+
+  df_qisa = ...
+  df_tarix = ...
+  tarix_tipi = ...
+  df_kecid = ...
+
+  print(df_qisa.shape, tarix_tipi, len(df_kecid))
+solution: |
+  import pandas as pd
+
+  df_qisa = pd.read_csv("satislar.csv", usecols=["Date", "Region", "Total Revenue"], nrows=100)
+  df_tarix = pd.read_csv("satislar.csv", parse_dates=["Date"])
+  tarix_tipi = str(df_tarix["Date"].dtype)
+  df_kecid = pd.read_csv("satislar.csv", skiprows=range(1, 11))
+
+  print(df_qisa.shape, tarix_tipi, len(df_kecid))
+tests: |
+  import pandas as _pd
+  import numpy as _np
+  _s = _pd.read_csv("satislar.csv")
+
+  assert isinstance(df_qisa, _pd.DataFrame) and df_qisa.shape == (100, 3), f"df_qisa 100 sətir və 3 sütun olmalıdır, səndə: {getattr(df_qisa, 'shape', df_qisa)!r}"
+  assert sorted(df_qisa.columns) == ["Date", "Region", "Total Revenue"], f"df_qisa-nın sütunları düzgün deyil: {list(df_qisa.columns)}"
+  assert str(tarix_tipi).startswith("datetime64"), f"tarix_tipi datetime64 olmalıdır — parse_dates=['Date'] istifadə et, sənin nəticən: {tarix_tipi!r}"
+  assert len(df_kecid) == len(_s) - 10, f"df_kecid {len(_s) - 10} sətir olmalıdır, səndə {len(df_kecid)}"
+  assert df_kecid.iloc[0]["Transaction ID"] == _s.iloc[10]["Transaction ID"], "skiprows=range(1, 11) — başlıq (0-cı sətir) qalmalı, sonrakı 10 sətir keçilməlidir"
+  assert "usecols" in dacy.code and "nrows" in dacy.code, "usecols və nrows parametrlərindən istifadə et"
+hints:
+- pd.read_csv("satislar.csv", usecols=["Date", "Region", "Total Revenue"], nrows=100)
+- parse_dates=["Date"] → tarix_tipi = str(df_tarix["Date"].dtype)
+- skiprows=range(1, 11) — 0-cı sətir başlıqdır, 1..10 keçilir.

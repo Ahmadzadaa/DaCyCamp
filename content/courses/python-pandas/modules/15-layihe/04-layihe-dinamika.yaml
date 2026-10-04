@@ -1,0 +1,52 @@
+type: python
+title: 'Layihə 3: rüblük artım'
+xp: 60
+estimated_minutes: 12
+instructions: |
+  Rəhbərlik soruşur: «2024-də hər rüb 2023-ün eyni rübünə nisbətən nə qədər böyüdük?» (Mövsümiliyə görə rübü əvvəlki rüblə yox, keçən ilin eyni rübü ilə müqayisə edirik.)
+tasks:
+- 'İl və rüb üzrə gəlir cədvəli: sətirlər — rüb (1–4), sütunlar — il (2023, 2024) → rub_cedvel (groupby
+  + unstack).'
+- 'Hər rüb üçün artım faizi: (2024 − 2023) / 2023 × 100, 1 onluq → artim (Series).'
+- Ən çox böyüyən rüb → en_yaxsi_rub.
+dataset: datasets/satislar.csv
+starter_code: |
+  import pandas as pd
+
+  df = pd.read_csv("satislar.csv", parse_dates=["Date"])
+
+  rub_cedvel = ...
+  artim = ...
+  en_yaxsi_rub = ...
+
+  print(artim)
+  rub_cedvel
+solution: |
+  import pandas as pd
+
+  df = pd.read_csv("satislar.csv", parse_dates=["Date"])
+
+  rub_cedvel = (df.groupby([df["Date"].dt.quarter, df["Date"].dt.year])["Total Revenue"]
+                .sum()
+                .unstack())
+  artim = ((rub_cedvel[2024] - rub_cedvel[2023]) / rub_cedvel[2023] * 100).round(1)
+  en_yaxsi_rub = artim.idxmax()
+
+  print(artim)
+  rub_cedvel
+tests: |
+  import pandas as _pd
+  import numpy as _np
+  _s = _pd.read_csv("satislar.csv")
+
+  _d = _s.assign(Date=_pd.to_datetime(_s["Date"]))
+  _r = _d.groupby([_d["Date"].dt.quarter, _d["Date"].dt.year])["Total Revenue"].sum().unstack()
+  assert isinstance(rub_cedvel, _pd.DataFrame) and rub_cedvel.shape == (4, 2) and list(rub_cedvel.columns) == [2023, 2024], "rub_cedvel — 4 rüb × 2 il (sütunlar 2023, 2024)"
+  assert _np.allclose(rub_cedvel.values, _r.values), "rub_cedvel dəyərləri düzgün deyil"
+  _a = ((_r[2024] - _r[2023]) / _r[2023] * 100).round(1)
+  assert list(artim.round(1)) == list(_a), f"artim {_a.to_dict()} olmalıdır"
+  assert en_yaxsi_rub == _a.idxmax(), f"en_yaxsi_rub {_a.idxmax()} olmalıdır"
+hints:
+- df.groupby([df["Date"].dt.quarter, df["Date"].dt.year])["Total Revenue"].sum().unstack()
+- artim = ((rub_cedvel[2024] - rub_cedvel[2023]) / rub_cedvel[2023] * 100).round(1)
+- en_yaxsi_rub = artim.idxmax()

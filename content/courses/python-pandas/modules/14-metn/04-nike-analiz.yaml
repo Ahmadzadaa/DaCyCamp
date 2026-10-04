@@ -1,0 +1,73 @@
+type: python
+title: Nike satışları azalıb?
+xp: 40
+estimated_minutes: 15
+instructions: |
+  Gün 6 (7): Nike satışların azaldığını bildirib. Data ilə yoxla: **satış azalıb? gəlir azalıb? hansı məhsula tələbat azalıb?**
+
+  2024-ün birinci yarısını (yanvar–iyun) ikinci yarısı (iyul–dekabr) ilə müqayisə et.
+tasks:
+- Nike məhsulları (adı "Nike" ilə başlayan) → nike.
+- Nike-ın rüblər üzrə satılan ədədi → rub (to_period("Q")).
+- 2024 H1 və H2 ədədləri → h1, h2; satış azalıbmı → azalib (True/False).
+- Nike gəliri 2023 və 2024 → gelir_2023, gelir_2024 (2 onluq).
+- H2-də H1-ə nisbətən ədədi ən çox azalan Nike məhsulu → en_cox_dusen.
+dataset: datasets/satislar.csv
+starter_code: |
+  import pandas as pd
+
+  df = pd.read_csv("satislar.csv", parse_dates=["Date"])
+
+  nike = ...
+  rub = ...
+  h1, h2 = 0, 0
+  azalib = ...
+  gelir_2023, gelir_2024 = 0, 0
+  en_cox_dusen = ...
+
+  print(h1, h2, azalib, gelir_2023, gelir_2024, en_cox_dusen)
+  rub
+solution: |
+  import pandas as pd
+
+  df = pd.read_csv("satislar.csv", parse_dates=["Date"])
+
+  nike = df[df["Product Name"].str.startswith("Nike")]
+  rub = nike.groupby(nike["Date"].dt.to_period("Q"))["Units Sold"].sum()
+
+  n24 = nike[nike["Date"].dt.year == 2024]
+  birinci = n24[n24["Date"].dt.month <= 6]
+  ikinci = n24[n24["Date"].dt.month > 6]
+  h1, h2 = birinci["Units Sold"].sum(), ikinci["Units Sold"].sum()
+  azalib = bool(h2 < h1)
+
+  gelir_2023 = round(nike[nike["Date"].dt.year == 2023]["Total Revenue"].sum(), 2)
+  gelir_2024 = round(n24["Total Revenue"].sum(), 2)
+
+  ferq = (ikinci.groupby("Product Name")["Units Sold"].sum()
+          .sub(birinci.groupby("Product Name")["Units Sold"].sum(), fill_value=0))
+  en_cox_dusen = ferq.idxmin()
+
+  print(h1, h2, azalib, gelir_2023, gelir_2024, en_cox_dusen)
+  rub
+tests: |
+  import pandas as _pd
+  import numpy as _np
+  _s = _pd.read_csv("satislar.csv")
+
+  _d = _s.assign(Date=_pd.to_datetime(_s["Date"]))
+  _n = _d[_d["Product Name"].str.startswith("Nike")]
+  assert isinstance(nike, _pd.DataFrame) and len(nike) == len(_n), f"nike {len(_n)} sətir olmalıdır"
+  _r = _n.groupby(_n["Date"].dt.to_period("Q"))["Units Sold"].sum()
+  assert list(rub.values) == list(_r.values), "rub — rüblər üzrə ədəd (to_period('Q'))"
+  _y = _n[_n["Date"].dt.year == 2024]
+  _a, _b = _y[_y["Date"].dt.month <= 6], _y[_y["Date"].dt.month > 6]
+  assert (h1, h2) == (_a["Units Sold"].sum(), _b["Units Sold"].sum()), f"h1, h2 = {_a['Units Sold'].sum()}, {_b['Units Sold'].sum()} olmalıdır"
+  assert azalib is True, "Data göstərir ki, satış azalıb — azalib True olmalıdır"
+  assert gelir_2023 == round(_n[_n["Date"].dt.year == 2023]["Total Revenue"].sum(), 2) and gelir_2024 == round(_y["Total Revenue"].sum(), 2), "gelir_2023 / gelir_2024 düzgün deyil"
+  _f = _b.groupby("Product Name")["Units Sold"].sum().sub(_a.groupby("Product Name")["Units Sold"].sum(), fill_value=0)
+  assert en_cox_dusen == _f.idxmin(), f"en_cox_dusen {_f.idxmin()!r} olmalıdır"
+hints:
+- nike = df[df["Product Name"].str.startswith("Nike")]
+- n24 = nike[nike["Date"].dt.year == 2024]; H1 — month <= 6, H2 — month > 6
+- ferq = H2-nin məhsul cəmləri .sub(H1-in məhsul cəmləri, fill_value=0); en_cox_dusen = ferq.idxmin()

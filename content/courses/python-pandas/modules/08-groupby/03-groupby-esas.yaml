@@ -1,0 +1,52 @@
+type: python
+title: Region, kateqoriya və ödəniş üzrə
+xp: 40
+estimated_minutes: 10
+instructions: |
+  Gün 4 (1–3) və Gün 3 (25, 27).
+tasks:
+- Hər region üzrə Total Revenue cəmi, çoxdan aza sıralı → region_gelir.
+- Ən çox gəlir gətirən region → en_cox_region.
+- Hər Product Category üzrə satılan ümumi Units Sold → kateqoriya_say.
+- Hər Payment Method üzrə əməliyyat sayı → odenis_say (size()).
+dataset: datasets/satislar.csv
+starter_code: |
+  import pandas as pd
+
+  df = pd.read_csv("satislar.csv")
+
+  region_gelir = ...
+  en_cox_region = ...
+  kateqoriya_say = ...
+  odenis_say = ...
+
+  print(en_cox_region)
+  region_gelir
+solution: |
+  import pandas as pd
+
+  df = pd.read_csv("satislar.csv")
+
+  region_gelir = df.groupby("Region")["Total Revenue"].sum().sort_values(ascending=False)
+  en_cox_region = region_gelir.idxmax()
+  kateqoriya_say = df.groupby("Product Category")["Units Sold"].sum()
+  odenis_say = df.groupby("Payment Method").size()
+
+  print(en_cox_region)
+  region_gelir
+tests: |
+  import pandas as _pd
+  import numpy as _np
+  _s = _pd.read_csv("satislar.csv")
+
+  _r = _s.groupby("Region")["Total Revenue"].sum().sort_values(ascending=False)
+  assert isinstance(region_gelir, _pd.Series) and list(region_gelir.index) == list(_r.index), f"region_gelir çoxdan aza sıralanmalıdır: {list(_r.index)}"
+  assert (region_gelir - _r).abs().max() < 0.01, "region_gelir dəyərləri düzgün deyil"
+  assert en_cox_region == _r.idxmax(), f"en_cox_region {_r.idxmax()!r} olmalıdır"
+  assert kateqoriya_say.to_dict() == _s.groupby("Product Category")["Units Sold"].sum().to_dict(), "kateqoriya_say düzgün deyil"
+  assert odenis_say.to_dict() == _s.groupby("Payment Method").size().to_dict(), "odenis_say düzgün deyil"
+  assert "groupby(" in dacy.code, "groupby istifadə et"
+hints:
+- df.groupby("Region")["Total Revenue"].sum().sort_values(ascending=False)
+- en_cox_region = region_gelir.idxmax()
+- df.groupby("Payment Method").size()

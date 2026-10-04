@@ -1,0 +1,57 @@
+type: python
+title: Təkrarlanan sətirlər
+xp: 40
+estimated_minutes: 10
+instructions: |
+  Xam datada sistem xətası səbəbindən bəzi əməliyyatlar iki dəfə yazılıb (Gün 3: 24, 30).
+tasks:
+- satislar_xam.csv-də tam təkrarlanan sətirlərin sayı → dublikat_say.
+- Təkrarları sil və indeksi yenidən 0-dan başlat → temiz (drop_duplicates + reset_index(drop=True)).
+- Transaction ID-yə görə təkrarlanan ID-lərin sayı → id_tekrar.
+- satislar.csv-də ən azı 2 dəfə satılan məhsulların sayı → tekrar_mehsul_sayi (value_counts ilə).
+dataset:
+- datasets/satislar.csv
+- datasets/satislar_xam.csv
+starter_code: |
+  import pandas as pd
+
+  xam = pd.read_csv("satislar_xam.csv")
+  df = pd.read_csv("satislar.csv")
+
+  dublikat_say = ...
+  temiz = ...
+  id_tekrar = ...
+  tekrar_mehsul_sayi = ...
+
+  print(dublikat_say, len(temiz), id_tekrar, tekrar_mehsul_sayi)
+solution: |
+  import pandas as pd
+
+  xam = pd.read_csv("satislar_xam.csv")
+  df = pd.read_csv("satislar.csv")
+
+  dublikat_say = xam.duplicated().sum()
+  temiz = xam.drop_duplicates().reset_index(drop=True)
+  id_tekrar = xam["Transaction ID"].duplicated().sum()
+  say = df["Product Name"].value_counts()
+  tekrar_mehsul_sayi = (say >= 2).sum()
+
+  print(dublikat_say, len(temiz), id_tekrar, tekrar_mehsul_sayi)
+tests: |
+  import pandas as _pd
+  import numpy as _np
+  _s = _pd.read_csv("satislar.csv")
+
+  _x = _pd.read_csv("satislar_xam.csv")
+
+  assert dublikat_say == _x.duplicated().sum(), f"dublikat_say {_x.duplicated().sum()} olmalıdır, sənin nəticən: {dublikat_say!r}"
+  _t = _x.drop_duplicates().reset_index(drop=True)
+  assert isinstance(temiz, _pd.DataFrame) and temiz.equals(_t), f"temiz {len(_t)} sətir olmalıdır və indeksi 0-dan başlamalıdır — reset_index(drop=True)"
+  assert id_tekrar == _x["Transaction ID"].duplicated().sum(), f"id_tekrar {_x['Transaction ID'].duplicated().sum()} olmalıdır"
+  _v = _s["Product Name"].value_counts()
+  assert tekrar_mehsul_sayi == (_v >= 2).sum(), f"tekrar_mehsul_sayi {(_v >= 2).sum()} olmalıdır, sənin nəticən: {tekrar_mehsul_sayi!r}"
+hints:
+- dublikat_say = xam.duplicated().sum()
+- temiz = xam.drop_duplicates().reset_index(drop=True)
+- id_tekrar = xam["Transaction ID"].duplicated().sum(); say = df["Product Name"].value_counts(); (say
+  >= 2).sum()

@@ -1,0 +1,38 @@
+type: quiz
+title: 'Test: sıralama və dublikatlar'
+xp: 25
+estimated_minutes: 5
+pass_score: 66
+questions:
+- text: '`df.sort_values(["Region", "Total Revenue"], ascending=[True, False])` necə sıralayır?'
+  options:
+  - Hər iki sütun üzrə azalan
+  - Region A→Z, hər regionun içində gəlir çoxdan aza
+  - Gəlir çoxdan aza, sonra Region A→Z
+  - Yalnız Region-a görə
+  correct:
+  - 2
+  explanation: Siyahıdakı birinci sütun əsas, ikinci isə bərabər dəyərlər içində sıralamanı təyin edir.
+- text: '`drop_duplicates(subset=["Transaction ID"], keep=False)` nə edir?'
+  options:
+  - Hər ID-dən ilk sətri saxlayır
+  - Hər ID-dən sonuncu sətri saxlayır
+  - Təkrarlanan ID-lərin bütün sətirlərini silir (heç birini saxlamır)
+  - Heç nəyi silmir
+  correct:
+  - 3
+  explanation: keep=False — təkrarlanan qrupun heç bir sətri saxlanmır.
+- text: 'Hər əməliyyatın nəticəsi:'
+  type: classify
+  buckets:
+  - name: Sətirlərin sırası dəyişir, sayı eyni qalır
+    items:
+    - sort_values()
+    - sort_index()
+  - name: Sətirlərin sayı azala bilər
+    items:
+    - drop_duplicates()
+    - nlargest(5, ...)
+    - head(10)
+  explanation: Sıralama sətirləri yerdəyişir; drop_duplicates, nlargest və head isə sətirlərin bir hissəsini
+    saxlayır.

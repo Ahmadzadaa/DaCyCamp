@@ -1,0 +1,46 @@
+type: quiz
+title: 'Test: qruplaşdırma'
+xp: 30
+estimated_minutes: 6
+pass_score: 75
+questions:
+- text: '`df.groupby("Region")["Total Revenue"].sum()` nəyi qaytarır?'
+  options:
+  - Bir ədəd — ümumi gəlir
+  - İndeksi region olan Series — hər regionun gəliri
+  - Yalnız Bakının gəliri
+  - Sıralanmış DataFrame
+  correct:
+  - 2
+  explanation: Hər qrup üçün bir dəyər — indeksi qrup açarları olan Series.
+- text: 'count() və size() fərqi:'
+  type: classify
+  buckets:
+  - name: count()
+    items:
+    - Boş (NaN) dəyərləri saymır
+    - Hər sütun üçün ayrıca say verir
+  - name: size()
+    items:
+    - Qrupdakı bütün sətirləri sayır (boşlar daxil)
+    - Hər qrup üçün bir ədəd qaytarır
+  explanation: count yalnız boş olmayan dəyərləri sayır; size qrupun sətir sayını verir.
+- text: Adlandırılmış aqreqasiyada `orta=("Units Sold", "mean")` nə deməkdir?
+  options:
+  - '"orta" sütununu silmək'
+  - Units Sold-un ortasını "orta" adlı sütunda hesablamaq
+  - Units Sold-u "mean" adlandırmaq
+  - Qrupları ortaya görə sıralamaq
+  correct:
+  - 2
+  explanation: yeni_ad=("sütun", "funksiya") formatıdır.
+- text: «Hər regionda ən çox satılan məhsul» üçün hansı yanaşma düzgündür?
+  options:
+  - df.groupby("Region")["Product Name"].max()
+  - Əvvəl region × məhsul üzrə cəm, sonra hər regionda idxmax
+  - df["Product Name"].value_counts().head(1)
+  - df.sort_values("Region").head()
+  correct:
+  - 2
+  explanation: max() mətndə əlifba sırası ilə sonuncunu verir. Düzgün yol — əvvəl cəmləmək, sonra hər
+    qrupda maksimumu tapmaq.

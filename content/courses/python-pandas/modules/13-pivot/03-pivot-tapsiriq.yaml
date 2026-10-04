@@ -1,0 +1,50 @@
+type: python
+title: Region × kateqoriya pivot cədvəli
+xp: 40
+estimated_minutes: 10
+instructions: |
+  Rəhbərlik regionlar və kateqoriyalar üzrə gəlir cədvəlini istəyir — cəmlərlə birlikdə.
+tasks:
+- 'pivot_table: index="Region", columns="Product Category", values="Total Revenue", aggfunc="sum", fill_value=0,
+  margins=True, margins_name="Cəm" → pivot (2 onluq).'
+- Ümumi cəm (sağ alt xana) → umumi.
+- Bakı + Electronics gəliri → baki_elektronika.
+dataset: datasets/satislar.csv
+starter_code: |
+  import pandas as pd
+
+  df = pd.read_csv("satislar.csv")
+
+  pivot = ...
+  umumi = ...
+  baki_elektronika = ...
+
+  print(umumi, baki_elektronika)
+  pivot
+solution: |
+  import pandas as pd
+
+  df = pd.read_csv("satislar.csv")
+
+  pivot = df.pivot_table(index="Region", columns="Product Category", values="Total Revenue",
+                         aggfunc="sum", fill_value=0, margins=True, margins_name="Cəm").round(2)
+  umumi = pivot.loc["Cəm", "Cəm"]
+  baki_elektronika = pivot.loc["Bakı", "Electronics"]
+
+  print(umumi, baki_elektronika)
+  pivot
+tests: |
+  import pandas as _pd
+  import numpy as _np
+  _s = _pd.read_csv("satislar.csv")
+
+  _p = _s.pivot_table(index="Region", columns="Product Category", values="Total Revenue", aggfunc="sum", fill_value=0, margins=True, margins_name="Cəm").round(2)
+  assert isinstance(pivot, _pd.DataFrame) and "Cəm" in pivot.index and "Cəm" in pivot.columns, "margins=True, margins_name='Cəm' əlavə et"
+  assert pivot.shape == _p.shape, f"pivot {_p.shape} ölçülü olmalıdır"
+  assert abs(umumi - _p.loc["Cəm", "Cəm"]) < 0.02, f"umumi {_p.loc['Cəm', 'Cəm']} olmalıdır"
+  assert abs(baki_elektronika - _p.loc["Bakı", "Electronics"]) < 0.02, f"baki_elektronika {_p.loc['Bakı', 'Electronics']} olmalıdır"
+hints:
+- df.pivot_table(index="Region", columns="Product Category", values="Total Revenue", aggfunc="sum", fill_value=0,
+  margins=True, margins_name="Cəm")
+- umumi = pivot.loc["Cəm", "Cəm"]
+- baki_elektronika = pivot.loc["Bakı", "Electronics"]

@@ -1,0 +1,36 @@
+type: quiz
+title: 'Test: pivot, melt, rank'
+xp: 25
+estimated_minutes: 5
+pass_score: 66
+questions:
+- text: Ballar 95, 88, 88, 70. `rank(ascending=False, method="dense")` nəticəsi?
+  options:
+  - 1, 2, 2, 3
+  - 1, 2.5, 2.5, 4
+  - 1, 2, 2, 4
+  - 1, 2, 3, 4
+  correct:
+  - 1
+  explanation: dense — eyni dəyərlərə eyni yer, sonrakı yer boşluqsuz davam edir.
+- text: 'Hər əməliyyatın nəticəsi:'
+  type: classify
+  buckets:
+  - name: Uzun → geniş
+    items:
+    - pivot_table(...)
+    - pivot(...)
+    - unstack()
+  - name: Geniş → uzun
+    items:
+    - pd.melt(...)
+  explanation: pivot/pivot_table/unstack dəyərləri sütunlara yayır; melt sütunları sətirlərə yığır.
+- text: '`margins=True` pivot_table-a nə əlavə edir?'
+  options:
+  - Boş xanaları 0 edir
+  - Cəm sətri və sütunu
+  - Faizləri
+  - Sıralama
+  correct:
+  - 2
+  explanation: margins — sətir və sütun cəmləri (margins_name ilə adlandırılır).

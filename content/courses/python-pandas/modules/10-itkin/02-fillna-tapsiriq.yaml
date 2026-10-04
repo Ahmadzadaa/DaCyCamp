@@ -1,0 +1,48 @@
+type: python
+title: İşçilər cədvəlində boşluqlar
+xp: 40
+estimated_minutes: 10
+instructions: |
+  `isciler.csv` — kiçik HR cədvəli: bəzi bonuslar, yaşlar və şəhərlər yazılmayıb.
+tasks:
+- Bonus boşluqlarını 0 ilə doldur.
+- Yaş boşluqlarını yaşların ortası ilə (tam ədədə yuvarlaqlaşdırılmış) doldur.
+- Şəhər boşluqlarını "Bilinmir" ilə doldur.
+- '"Ümumi" sütunu = Əməkhaqqı + Bonus; cədvəldə qalan boşluqların sayı → qalan (0 olmalıdır).'
+dataset: datasets/isciler.csv
+starter_code: |
+  import pandas as pd
+
+  df = pd.read_csv("isciler.csv")
+  print(df.isnull().sum())
+
+  # doldur
+
+  qalan = ...
+  df
+solution: |
+  import pandas as pd
+
+  df = pd.read_csv("isciler.csv")
+  print(df.isnull().sum())
+
+  df["Bonus"] = df["Bonus"].fillna(0)
+  df["Yaş"] = df["Yaş"].fillna(round(df["Yaş"].mean()))
+  df["Şəhər"] = df["Şəhər"].fillna("Bilinmir")
+  df["Ümumi"] = df["Əməkhaqqı"] + df["Bonus"]
+
+  qalan = int(df.isnull().sum().sum())
+  df
+tests: |
+  import pandas as _pd
+  _i = _pd.read_csv("isciler.csv")
+  assert df["Bonus"].isnull().sum() == 0 and (df["Bonus"] == _i["Bonus"].fillna(0)).all(), "Bonus boşluqları 0 ilə doldurulmalıdır"
+  _y = round(_i["Yaş"].mean())
+  assert (df["Yaş"] == _i["Yaş"].fillna(_y)).all(), f"Yaş boşluqları {_y} (orta, yuvarlaqlaşdırılmış) ilə doldurulmalıdır"
+  assert (df["Şəhər"] == _i["Şəhər"].fillna("Bilinmir")).all(), "Şəhər boşluqları 'Bilinmir' olmalıdır"
+  assert "Ümumi" in df.columns and (df["Ümumi"] == _i["Əməkhaqqı"] + _i["Bonus"].fillna(0)).all(), "Ümumi = Əməkhaqqı + Bonus (doldurulmuş)"
+  assert qalan == 0, f"qalan 0 olmalıdır, sənin nəticən: {qalan!r}"
+hints:
+- df["Bonus"] = df["Bonus"].fillna(0)
+- df["Yaş"].fillna(round(df["Yaş"].mean()))
+- 'qalan = int(df.isnull().sum().sum()) — iki dəfə sum: sütunlar, sonra cəmi.'

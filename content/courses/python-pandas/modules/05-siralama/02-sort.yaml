@@ -1,0 +1,49 @@
+type: python
+title: Ən gəlirli əməliyyatlar
+xp: 40
+estimated_minutes: 10
+instructions: |
+  Gün 3 (29) və Gün 4 (5, 6) tapşırıqları: sıralama və ən böyük dəyərlər.
+tasks:
+- Total Revenue-yə görə azalan sırala və ilk 3 əməliyyatın məhsul adlarını siyahı kimi götür → top3.
+- Satışları tarixə görə artan sırala və ilk 5 əməliyyatı götür → ilk5.
+- Total Revenue-yə görə ən bahalı əməliyyatın sətri → en_baha (Series, idxmax + loc).
+dataset: datasets/satislar.csv
+starter_code: |
+  import pandas as pd
+
+  df = pd.read_csv("satislar.csv")
+
+  top3 = ...
+  ilk5 = ...
+  en_baha = ...
+
+  print(top3)
+  en_baha
+solution: |
+  import pandas as pd
+
+  df = pd.read_csv("satislar.csv")
+
+  top3 = df.sort_values("Total Revenue", ascending=False).head(3)["Product Name"].tolist()
+  ilk5 = df.sort_values("Date").head(5)
+  en_baha = df.loc[df["Total Revenue"].idxmax()]
+
+  print(top3)
+  en_baha
+tests: |
+  import pandas as _pd
+  import numpy as _np
+  _s = _pd.read_csv("satislar.csv")
+
+  _t = _s.sort_values("Total Revenue", ascending=False).head(3)["Product Name"].tolist()
+  assert top3 == _t, f"top3 {_t} olmalıdır, sənin nəticən: {top3!r}"
+  _i5 = _s.sort_values("Date").head(5)
+  assert isinstance(ilk5, _pd.DataFrame) and len(ilk5) == 5 and list(ilk5["Date"]) == list(_i5["Date"]), "ilk5 = df.sort_values('Date').head(5)"
+  _eb = _s.loc[_s["Total Revenue"].idxmax()]
+  assert isinstance(en_baha, _pd.Series) and en_baha.equals(_eb), "en_baha = df.loc[df['Total Revenue'].idxmax()]"
+  assert "sort_values(" in dacy.code, "sort_values() istifadə et"
+hints:
+- df.sort_values("Total Revenue", ascending=False).head(3)["Product Name"].tolist()
+- 'Tarixlər YYYY-MM-DD formatında olduğu üçün mətn kimi də düzgün sıralanır: df.sort_values("Date").head(5)'
+- en_baha = df.loc[df["Total Revenue"].idxmax()]

@@ -1,0 +1,58 @@
+type: python
+title: Aydan-aya dəyişmə və region × ay cədvəli
+xp: 40
+estimated_minutes: 12
+instructions: |
+  Gün 6 (3, 10): bu ayın satışlarını əvvəlki ayla müqayisə et və regionların aylıq cədvəlini qur.
+tasks:
+- Aylar üzrə ümumi gəlir (to_period("M")) → ayliq.
+- Aydan-aya dəyişmə faizi (pct_change × 100), 2 onluq → deyisme.
+- Son ayın əvvəlki aya nisbətən dəyişməsi, 2 onluq → son_ay_deyisme.
+- Sətirlər — aylar, sütunlar — regionlar olan gəlir cədvəli (boş xanalar 0) → region_ay (unstack).
+dataset: datasets/satislar.csv
+starter_code: |
+  import pandas as pd
+
+  df = pd.read_csv("satislar.csv", parse_dates=["Date"])
+
+  ayliq = ...
+  deyisme = ...
+  son_ay_deyisme = ...
+  region_ay = ...
+
+  print(son_ay_deyisme)
+  region_ay.tail()
+solution: |
+  import pandas as pd
+
+  df = pd.read_csv("satislar.csv", parse_dates=["Date"])
+
+  ayliq = df.groupby(df["Date"].dt.to_period("M"))["Total Revenue"].sum()
+  deyisme = (ayliq.pct_change() * 100).round(2)
+  son_ay_deyisme = round(deyisme.iloc[-1], 2)
+  region_ay = (
+      df.groupby([df["Date"].dt.to_period("M"), "Region"])["Total Revenue"]
+      .sum()
+      .unstack(fill_value=0)
+  )
+
+  print(son_ay_deyisme)
+  region_ay.tail()
+tests: |
+  import pandas as _pd
+  import numpy as _np
+  _s = _pd.read_csv("satislar.csv")
+
+  _d = _s.assign(Date=_pd.to_datetime(_s["Date"]))
+  _m = _d.groupby(_d["Date"].dt.to_period("M"))["Total Revenue"].sum()
+  assert isinstance(ayliq, _pd.Series) and len(ayliq) == len(_m) and _np.allclose(ayliq.values, _m.values), "ayliq — aylar üzrə gəlir (24 ay)"
+  _c = (_m.pct_change() * 100).round(2)
+  assert _np.allclose(deyisme.values[1:], _c.values[1:], atol=0.011) and _pd.isna(deyisme.iloc[0]), "deyisme = (ayliq.pct_change() * 100).round(2)"
+  assert son_ay_deyisme == round(_c.iloc[-1], 2), f"son_ay_deyisme {round(_c.iloc[-1], 2)} olmalıdır"
+  _r = _d.groupby([_d["Date"].dt.to_period("M"), "Region"])["Total Revenue"].sum().unstack(fill_value=0)
+  assert isinstance(region_ay, _pd.DataFrame) and region_ay.shape == _r.shape and sorted(region_ay.columns) == sorted(_r.columns), f"region_ay {_r.shape} ölçülü olmalıdır (aylar × regionlar)"
+  assert _np.allclose(region_ay[_r.columns].values, _r.values), "region_ay dəyərləri düzgün deyil"
+hints:
+- df.groupby(df["Date"].dt.to_period("M"))["Total Revenue"].sum()
+- (ayliq.pct_change() * 100).round(2); son dəyər — .iloc[-1]
+- groupby([ay, "Region"])["Total Revenue"].sum().unstack(fill_value=0)

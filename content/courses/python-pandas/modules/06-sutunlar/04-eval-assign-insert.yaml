@@ -1,0 +1,51 @@
+type: python
+title: eval, assign və insert
+xp: 40
+estimated_minutes: 10
+instructions: |
+  Gün 5 (8): Total Revenue sütununu `Units Sold × Unit Price` kimi `eval()` ilə yenidən hesabla və mövcud dəyərlərlə müqayisə et.
+tasks:
+- 'df.eval ilə "Hesab" sütunu yarat: `Units Sold` * `Unit Price`.'
+- Hesab (2 onluq) Total Revenue ilə hər sətirdə eynidirmi? → eynidir (True/False).
+- assign ilə 18% ƏDV sütunu "EDV" olan yeni DataFrame → edvli (df dəyişməsin).
+- insert ilə 1-ci mövqeyə ilin özünü ("2023"/"2024") "Il" sütunu kimi əlavə et (Date-in ilk 4 simvolu).
+dataset: datasets/satislar.csv
+starter_code: |
+  import pandas as pd
+
+  df = pd.read_csv("satislar.csv")
+
+  df["Hesab"] = ...
+  eynidir = ...
+  edvli = ...
+  # insert
+
+  df.head()
+solution: |
+  import pandas as pd
+
+  df = pd.read_csv("satislar.csv")
+
+  df["Hesab"] = df.eval("`Units Sold` * `Unit Price`")
+  eynidir = bool((df["Hesab"].round(2) == df["Total Revenue"].round(2)).all())
+  edvli = df.assign(EDV=df["Total Revenue"] * 0.18)
+  df.insert(1, "Il", df["Date"].str[:4])
+
+  df.head()
+tests: |
+  import pandas as _pd
+  import numpy as _np
+  _s = _pd.read_csv("satislar.csv")
+
+  assert "Hesab" in df.columns and (df["Hesab"] - _s["Units Sold"] * _s["Unit Price"]).abs().max() < 1e-6, "Hesab = df.eval('`Units Sold` * `Unit Price`')"
+  _e = bool(((_s["Units Sold"] * _s["Unit Price"]).round(2) == _s["Total Revenue"].round(2)).all())
+  assert eynidir == _e, f"eynidir {_e} olmalıdır"
+  assert isinstance(edvli, _pd.DataFrame) and "EDV" in edvli.columns, "edvli = df.assign(EDV=df['Total Revenue'] * 0.18)"
+  assert (edvli["EDV"] - _s["Total Revenue"] * 0.18).abs().max() < 1e-6, "EDV = Total Revenue × 0.18"
+  assert "EDV" not in df.columns, "assign df-i dəyişməməlidir"
+  assert df.columns[1] == "Il" and df["Il"].equals(_s["Date"].str[:4]), "df.insert(1, 'Il', df['Date'].str[:4])"
+  assert ".eval(" in dacy.code and ".assign(" in dacy.code and ".insert(" in dacy.code, "eval, assign və insert istifadə et"
+hints:
+- df.eval("`Units Sold` * `Unit Price`") — boşluqlu adlar backtick arasında.
+- eynidir = bool((df["Hesab"].round(2) == df["Total Revenue"].round(2)).all())
+- df.insert(1, "Il", df["Date"].str[:4]) — insert heç nə qaytarmır, df-i dəyişir.

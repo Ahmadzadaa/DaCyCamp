@@ -1,0 +1,54 @@
+type: python
+title: Adında rəqəm olan məhsullar və brendlər
+xp: 40
+estimated_minutes: 10
+instructions: |
+  Gün 6 (6, 8): məhsul adları üzərində təhlil.
+tasks:
+- Adında rəqəm olan məhsulların əməliyyatları → reqemli (str.contains(r"\d")).
+- Onların orta gəliri, 2 onluq → reqemli_orta.
+- '"Brend" sütunu — məhsul adının ilk sözü (str.split().str[0]).'
+- Brendlər üzrə gəlir, çoxdan aza → brend_gelir; ən gəlirli brend → top_brend.
+dataset: datasets/satislar.csv
+starter_code: |
+  import pandas as pd
+
+  df = pd.read_csv("satislar.csv")
+
+  reqemli = ...
+  reqemli_orta = ...
+  # df["Brend"] = ...
+  brend_gelir = ...
+  top_brend = ...
+
+  print(reqemli_orta, top_brend)
+  brend_gelir.head()
+solution: |
+  import pandas as pd
+
+  df = pd.read_csv("satislar.csv")
+
+  reqemli = df[df["Product Name"].str.contains(r"\d", regex=True)]
+  reqemli_orta = round(reqemli["Total Revenue"].mean(), 2)
+  df["Brend"] = df["Product Name"].str.split().str[0]
+  brend_gelir = df.groupby("Brend")["Total Revenue"].sum().sort_values(ascending=False)
+  top_brend = brend_gelir.idxmax()
+
+  print(reqemli_orta, top_brend)
+  brend_gelir.head()
+tests: |
+  import pandas as _pd
+  import numpy as _np
+  _s = _pd.read_csv("satislar.csv")
+
+  _r = _s[_s["Product Name"].str.contains(r"\d", regex=True)]
+  assert isinstance(reqemli, _pd.DataFrame) and len(reqemli) == len(_r), f"reqemli {len(_r)} sətir olmalıdır"
+  assert reqemli_orta == round(_r["Total Revenue"].mean(), 2), f"reqemli_orta {round(_r['Total Revenue'].mean(), 2)} olmalıdır"
+  assert "Brend" in df.columns and list(df["Brend"]) == list(_s["Product Name"].str.split().str[0]), "Brend = ilk söz"
+  _b = _s.groupby(_s["Product Name"].str.split().str[0])["Total Revenue"].sum().sort_values(ascending=False)
+  assert list(brend_gelir.index) == list(_b.index), "brend_gelir çoxdan aza sıralanmalıdır"
+  assert top_brend == _b.idxmax(), f"top_brend {_b.idxmax()!r} olmalıdır"
+hints:
+- df[df["Product Name"].str.contains(r"\d", regex=True)]
+- df["Product Name"].str.split().str[0]
+- df.groupby("Brend")["Total Revenue"].sum().sort_values(ascending=False)

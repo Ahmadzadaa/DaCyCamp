@@ -1,0 +1,42 @@
+type: quiz
+title: 'Test: apply və şərtlər'
+xp: 25
+estimated_minutes: 5
+pass_score: 66
+questions:
+- text: Hər tapşırıq üçün ən uyğun aləti seç.
+  type: classify
+  buckets:
+  - name: np.where
+    items:
+    - Gəlir > 1000 → "High", əks halda "Low"
+  - name: np.select
+    items:
+    - 'Üç səviyyə: Yüksək / Orta / Aşağı (bir neçə şərt)'
+  - name: map(lüğət)
+    items:
+    - İngiliscə kateqoriya adlarını Azərbaycancaya çevirmək
+  - name: apply(..., axis=1)
+    items:
+    - Region və Filial sütunlarını bir mətndə birləşdirmək
+  explanation: İki variant — np.where; çox şərt — np.select; lüğətlə çevirmə — map; bir neçə sütundan
+    istifadə — apply(axis=1).
+- text: '`df["K"].map({"a": 1, "b": 2})` — sütunda "c" dəyəri varsa nəticə nə olur?'
+  options:
+  - '"c" olduğu kimi qalır'
+  - NaN olur
+  - Xəta verir
+  - 0 olur
+  correct:
+  - 2
+  explanation: map lüğətdə olmayan dəyərlər üçün NaN qaytarır. Dəyərləri saxlamaq üçün replace istifadə
+    olunur.
+- text: '`apply` niyə böyük datada `np.where`-dən yavaşdır?'
+  options:
+  - apply hər dəyər üçün ayrıca Python funksiyası çağırır
+  - apply datanı diskə yazır
+  - np.where daha az dəqiqdir
+  - Fərq yoxdur
+  correct:
+  - 1
+  explanation: np.where bütün sütunu bir dəfəyə (vektor) emal edir.

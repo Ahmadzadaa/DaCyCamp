@@ -1,0 +1,27 @@
+type: quiz
+title: 'Test: cut və qcut'
+xp: 20
+estimated_minutes: 4
+pass_score: 100
+questions:
+- text: Hər tapşırıq üçün cut, yoxsa qcut?
+  type: classify
+  buckets:
+  - name: pd.cut
+    items:
+    - Yaşı 0–18, 18–35, 35+ qruplarına bölmək
+    - Qiyməti 0–100, 100–500, 500+ ₼ səviyyələrinə bölmək
+  - name: pd.qcut
+    items:
+    - Müştəriləri xərcə görə 4 bərabər qrupa bölmək
+    - «Ən yaxşı 10%» satıcıları seçmək
+  explanation: Sərhədlər məlumdursa — cut; bərabər sayda qruplar lazımdırsa — qcut.
+- text: '`pd.cut(x, bins=[0, 18, 35], right=False)` 18 yaşı hansı qrupa salır?'
+  options:
+  - '[0, 18)'
+  - '[18, 35)'
+  - Heç birinə
+  - Hər ikisinə
+  correct:
+  - 2
+  explanation: 'right=False — sol sərhəd daxildir, sağ yox: 18 ikinci aralığa düşür.'

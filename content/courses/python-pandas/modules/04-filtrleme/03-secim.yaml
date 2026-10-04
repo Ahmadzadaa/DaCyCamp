@@ -1,0 +1,49 @@
+type: python
+title: loc və iloc ilə seçim
+xp: 40
+estimated_minutes: 8
+instructions: |
+  Datanın müxtəlif hissələrini seç.
+tasks:
+- Yalnız Product Name və Total Revenue sütunları → iki_sutun.
+- İndeksi 10-dan 14-ə qədər olan sətirlərin Date, Region, Total Revenue sütunları → loc_hisse (loc ilə;
+  5 sətir).
+- Sonuncu sətir → son_setir (iloc).
+- İlk 3 sətir və ilk 3 sütun → kunc (iloc).
+dataset: datasets/satislar.csv
+starter_code: |
+  import pandas as pd
+
+  df = pd.read_csv("satislar.csv")
+
+  iki_sutun = ...
+  loc_hisse = ...
+  son_setir = ...
+  kunc = ...
+
+  loc_hisse
+solution: |
+  import pandas as pd
+
+  df = pd.read_csv("satislar.csv")
+
+  iki_sutun = df[["Product Name", "Total Revenue"]]
+  loc_hisse = df.loc[10:14, ["Date", "Region", "Total Revenue"]]
+  son_setir = df.iloc[-1]
+  kunc = df.iloc[:3, :3]
+
+  loc_hisse
+tests: |
+  import pandas as _pd
+  import numpy as _np
+  _s = _pd.read_csv("satislar.csv")
+
+  assert isinstance(iki_sutun, _pd.DataFrame) and list(iki_sutun.columns) == ["Product Name", "Total Revenue"] and len(iki_sutun) == len(_s), "iki_sutun = df[['Product Name', 'Total Revenue']]"
+  assert isinstance(loc_hisse, _pd.DataFrame) and loc_hisse.equals(_s.loc[10:14, ["Date", "Region", "Total Revenue"]]), "loc_hisse = df.loc[10:14, ['Date', 'Region', 'Total Revenue']] — loc-da 14 daxildir (5 sətir)"
+  assert isinstance(son_setir, _pd.Series) and son_setir.equals(_s.iloc[-1]), "son_setir = df.iloc[-1]"
+  assert isinstance(kunc, _pd.DataFrame) and kunc.equals(_s.iloc[:3, :3]), "kunc = df.iloc[:3, :3]"
+  assert ".loc[" in dacy.code and ".iloc[" in dacy.code, "loc və iloc-dan istifadə et"
+hints:
+- 'İki sütun üçün iki cüt mötərizə: df[["Product Name", "Total Revenue"]]'
+- loc_hisse = df.loc[10:14, ["Date", "Region", "Total Revenue"]]
+- son_setir = df.iloc[-1]; kunc = df.iloc[:3, :3]

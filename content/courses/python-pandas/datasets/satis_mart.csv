@@ -1,0 +1,62 @@
+Transaction ID,Date,Region,Filial,Sales Employee,Product Name,Product Category,Units Sold,Unit Price,Total Revenue,Payment Method
+101374,2024-03-01,Şəki,Şəki,Ramin Cəfərov,Xiaomi Robot Vacuum S10,Home Appliances,1,616.97,616.97,Debit Card
+101377,2024-03-02,Bakı,Xətai,Leyla Hüseynova,H&M Hoodie,Clothing,1,71.07,71.07,Credit Card
+101378,2024-03-02,Bakı,28 May,Günel Rəhimova,Nivea Soft 200ml,Beauty,6,11.74,70.44,Debit Card
+101380,2024-03-03,Bakı,Gənclik,Murad Quliyev,Samsung Galaxy S24,Electronics,1,2161.97,2161.97,Credit Card
+101383,2024-03-05,Bakı,28 May,Günel Rəhimova,Xiaomi Redmi Note 13,Electronics,2,565.47,1130.94,Cash
+101386,2024-03-05,Sumqayıt,Sumqayıt Mərkəz,Fidan Abbasova,Xiaomi Robot Vacuum S10,Home Appliances,1,616.97,616.97,Credit Card
+101387,2024-03-05,Gəncə,Gəncə Mərkəz,Səbinə Kərimova,Dyson V15,Home Appliances,1,1543.97,1543.97,Cash
+101388,2024-03-06,Bakı,28 May,Günel Rəhimova,Nike Tech Fleece,Clothing,4,256.47,1025.88,Mobile Wallet
+101391,2024-03-06,Lənkəran,Lənkəran,Aynur Səfərova,Xiaomi Redmi Note 13,Electronics,3,565.47,1696.41,Credit Card
+101394,2024-03-06,Bakı,Nizami,Rauf Həsənov,Philips Air Fryer XL,Home Appliances,2,338.87,677.74,Credit Card
+101395,2024-03-07,Bakı,Gənclik,Nigar Əliyeva,Dior Sauvage 100ml,Beauty,2,321.93,643.86,Credit Card
+101397,2024-03-07,Bakı,Nizami,Rauf Həsənov,iPhone 15,Electronics,2,2347.42,4694.84,Debit Card
+101400,2024-03-08,Lənkəran,Lənkəran,Aynur Səfərova,Samsung Galaxy S24,Electronics,3,2161.97,6485.91,Cash
+101403,2024-03-08,Bakı,28 May,Günel Rəhimova,L'Oréal Revitalift,Beauty,1,46.35,46.35,Debit Card
+101405,2024-03-09,Bakı,28 May,Tural Babayev,iPhone 15,Electronics,1,2347.42,2347.42,Credit Card
+101408,2024-03-09,Bakı,Gənclik,Murad Quliyev,Dyson V15,Home Appliances,2,1466.77,2933.54,Credit Card
+101410,2024-03-10,Lənkəran,Lənkəran,Aynur Səfərova,Nike Air Max 90,Sports,3,297.67,893.01,Debit Card
+101413,2024-03-10,Bakı,28 May,Tural Babayev,Nike Air Max 90,Sports,3,297.67,893.01,Debit Card
+101416,2024-03-11,Gəncə,Gəncə Mərkəz,Elvin Nəsirov,Dyson V15,Home Appliances,2,1543.97,3087.94,Credit Card
+101419,2024-03-11,Bakı,Gənclik,Murad Quliyev,Nivea Soft 200ml,Beauty,9,11.12,100.08,Cash
+101422,2024-03-12,Sumqayıt,Sumqayıt Mərkəz,Fidan Abbasova,Adidas Ultraboost 22,Sports,3,328.57,985.71,Mobile Wallet
+101424,2024-03-13,Bakı,Gənclik,Nigar Əliyeva,Nivea Soft 200ml,Beauty,8,12.36,98.88,Credit Card
+101426,2024-03-13,Lənkəran,Lənkəran,Aynur Səfərova,AirPods Pro 2,Electronics,2,586.12,1172.24,Credit Card
+101427,2024-03-13,Sumqayıt,Sumqayıt Mərkəz,Fidan Abbasova,Zara Basic T-Shirt,Clothing,7,40.17,281.19,Mobile Wallet
+101428,2024-03-14,Gəncə,Gəncə Mərkəz,Səbinə Kərimova,Levi's 501 Jeans,Clothing,3,175.15,525.45,Credit Card
+101431,2024-03-14,Bakı,Xətai,Kamran İsmayılov,H&M Hoodie,Clothing,6,71.07,426.42,Cash
+101432,2024-03-14,Sumqayıt,Sumqayıt Mərkəz,Fidan Abbasova,Sony WH-1000XM5,Electronics,1,740.67,740.67,Credit Card
+101435,2024-03-16,Şəki,Şəki,Ramin Cəfərov,H&M Hoodie,Clothing,2,63.96,127.92,Credit Card
+101438,2024-03-17,Sumqayıt,Sumqayıt Mərkəz,Fidan Abbasova,Samsung Galaxy S24,Electronics,1,2053.87,2053.87,Credit Card
+101439,2024-03-17,Bakı,Nizami,Rauf Həsənov,Nike Air Max 90,Sports,1,282.79,282.79,Credit Card
+101442,2024-03-19,Bakı,Gənclik,Murad Quliyev,iPad 10,Electronics,2,1234.97,2469.94,Debit Card
+101445,2024-03-19,Gəncə,Gəncə Mərkəz,Səbinə Kərimova,Nike Air Max 90,Sports,1,297.67,297.67,Debit Card
+101446,2024-03-19,Bakı,Gənclik,Nigar Əliyeva,AirPods Pro 2,Electronics,2,616.97,1233.94,Credit Card
+101447,2024-03-20,Bakı,Gənclik,Nigar Əliyeva,Sony WH-1000XM5,Electronics,2,822.97,1645.94,Debit Card
+101448,2024-03-20,Bakı,28 May,Tural Babayev,iPhone 14,Electronics,2,1760.37,3520.74,Mobile Wallet
+101449,2024-03-21,Bakı,Gənclik,Murad Quliyev,AirPods Pro 2,Electronics,4,616.97,2467.88,Mobile Wallet
+101452,2024-03-21,Gəncə,Gəncə Mərkəz,Səbinə Kərimova,iPhone 14,Electronics,2,1858.17,3716.34,Mobile Wallet
+101453,2024-03-21,Bakı,Gənclik,Murad Quliyev,Xiaomi Redmi Note 13,Electronics,4,508.92,2035.68,Credit Card
+101456,2024-03-22,Bakı,Xətai,Kamran İsmayılov,Xiaomi Redmi Note 13,Electronics,3,537.2,1611.6,Credit Card
+101457,2024-03-22,Gəncə,Gəncə Mərkəz,Elvin Nəsirov,Yoga Mat Pro,Sports,2,54.69,109.38,Cash
+101458,2024-03-22,Sumqayıt,Sumqayıt Mərkəz,Orxan Vəliyev,Yoga Mat Pro,Sports,4,60.77,243.08,Debit Card
+101461,2024-03-23,Şəki,Şəki,Ramin Cəfərov,Bosch Serie 4 Washer,Home Appliances,1,1173.22,1173.22,Cash
+101463,2024-03-23,Gəncə,Gəncə Mərkəz,Səbinə Kərimova,Nivea Soft 200ml,Beauty,12,12.36,148.32,Debit Card
+101466,2024-03-24,Gəncə,Gəncə Mərkəz,Elvin Nəsirov,Zara Basic T-Shirt,Clothing,8,40.17,321.36,Credit Card
+101468,2024-03-24,Lənkəran,Lənkəran,Aynur Səfərova,iPhone 14,Electronics,2,1760.37,3520.74,Credit Card
+101470,2024-03-25,Bakı,Nizami,Rauf Həsənov,Sony WH-1000XM5,Electronics,1,822.97,822.97,Debit Card
+101471,2024-03-25,Bakı,28 May,Tural Babayev,Nike Air Max 90,Sports,1,297.67,297.67,Debit Card
+101474,2024-03-25,Bakı,Nizami,Aysel Məmmədova,Nike Pegasus 40,Sports,1,277.07,277.07,Credit Card
+101476,2024-03-25,Şəki,Şəki,Ramin Cəfərov,L'Oréal Revitalift,Beauty,5,46.35,231.75,Credit Card
+101479,2024-03-26,Bakı,Gənclik,Murad Quliyev,Nike Air Max 90,Sports,2,297.67,595.34,Debit Card
+101482,2024-03-26,Sumqayıt,Sumqayıt Mərkəz,Orxan Vəliyev,Nivea Soft 200ml,Beauty,3,12.36,37.08,Credit Card
+101483,2024-03-26,Şəki,Şəki,Ramin Cəfərov,Nivea Soft 200ml,Beauty,9,12.36,111.24,Credit Card
+101484,2024-03-27,Lənkəran,Lənkəran,Aynur Səfərova,Nivea Soft 200ml,Beauty,12,12.36,148.32,Cash
+101485,2024-03-27,Gəncə,Gəncə Mərkəz,Səbinə Kərimova,Samsung Galaxy S24,Electronics,2,2161.97,4323.94,Credit Card
+101487,2024-03-28,Bakı,Nizami,Aysel Məmmədova,MacBook Air M2,Electronics,1,2836.67,2836.67,Credit Card
+101488,2024-03-28,Şəki,Şəki,Ramin Cəfərov,Bosch Serie 4 Washer,Home Appliances,1,1234.97,1234.97,Debit Card
+101490,2024-03-28,Bakı,Xətai,Kamran İsmayılov,Nike Pegasus 40,Sports,3,277.07,831.21,Mobile Wallet
+101493,2024-03-29,Bakı,Gənclik,Nigar Əliyeva,L'Oréal Revitalift,Beauty,5,41.72,208.6,Debit Card
+101494,2024-03-30,Bakı,Nizami,Aysel Məmmədova,iPhone 15,Electronics,3,2470.97,7412.91,Debit Card
+101496,2024-03-31,Bakı,28 May,Tural Babayev,Yoga Mat Pro,Sports,7,60.77,425.39,Cash
+101497,2024-03-31,Bakı,Xətai,Leyla Hüseynova,Dior Sauvage 100ml,Beauty,2,338.87,677.74,Debit Card

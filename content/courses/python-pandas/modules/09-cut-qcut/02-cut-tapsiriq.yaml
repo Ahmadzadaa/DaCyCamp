@@ -1,0 +1,49 @@
+type: python
+title: Qiymət səviyyələri (cut)
+xp: 40
+estimated_minutes: 8
+instructions: |
+  Məhsulları qiymət səviyyələrinə böl: **0–100 Ucuz, 100–500 Orta, 500–1500 Baha, 1500+ Premium** (sağ sərhəd daxil — defolt).
+tasks:
+- 'pd.cut ilə "Qiymət qrupu" sütunu: bins=[0, 100, 500, 1500, float("inf")], labels=["Ucuz", "Orta", "Baha",
+  "Premium"].'
+- Hər qrupda neçə əməliyyat var → qrup_say (value_counts).
+- Premium qrupun ümumi gəliri, 2 onluq → premium_gelir.
+dataset: datasets/satislar.csv
+starter_code: |
+  import pandas as pd
+
+  df = pd.read_csv("satislar.csv")
+
+  # df["Qiymət qrupu"] = ...
+  qrup_say = ...
+  premium_gelir = ...
+
+  print(qrup_say)
+  print(premium_gelir)
+solution: |
+  import pandas as pd
+
+  df = pd.read_csv("satislar.csv")
+
+  df["Qiymət qrupu"] = pd.cut(df["Unit Price"], bins=[0, 100, 500, 1500, float("inf")],
+                              labels=["Ucuz", "Orta", "Baha", "Premium"])
+  qrup_say = df["Qiymət qrupu"].value_counts()
+  premium_gelir = round(df[df["Qiymət qrupu"] == "Premium"]["Total Revenue"].sum(), 2)
+
+  print(qrup_say)
+  print(premium_gelir)
+tests: |
+  import pandas as _pd
+  import numpy as _np
+  _s = _pd.read_csv("satislar.csv")
+
+  _q = _pd.cut(_s["Unit Price"], bins=[0, 100, 500, 1500, float("inf")], labels=["Ucuz", "Orta", "Baha", "Premium"])
+  assert "Qiymət qrupu" in df.columns and list(df["Qiymət qrupu"].astype(str)) == list(_q.astype(str)), "Qiymət qrupu düzgün deyil — bins və labels-i yoxla"
+  assert {str(k): v for k, v in qrup_say.to_dict().items()} == {str(k): v for k, v in _q.value_counts().to_dict().items()}, "qrup_say = df['Qiymət qrupu'].value_counts()"
+  assert premium_gelir == round(_s[_q == "Premium"]["Total Revenue"].sum(), 2), "premium_gelir düzgün deyil"
+  assert "pd.cut(" in dacy.code, "pd.cut istifadə et"
+hints:
+- pd.cut(df["Unit Price"], bins=[0, 100, 500, 1500, float("inf")], labels=["Ucuz", "Orta", "Baha", "Premium"])
+- qrup_say = df["Qiymət qrupu"].value_counts()
+- df[df["Qiymət qrupu"] == "Premium"]["Total Revenue"].sum()

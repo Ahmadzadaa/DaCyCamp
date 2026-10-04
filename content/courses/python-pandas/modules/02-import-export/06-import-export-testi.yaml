@@ -1,0 +1,42 @@
+type: quiz
+title: 'Test: import və export'
+xp: 25
+estimated_minutes: 5
+pass_score: 66
+questions:
+- text: Hər parametri uyğun funksiyaya yerləşdir.
+  type: classify
+  buckets:
+  - name: Oxuma (read_csv / read_excel)
+    items:
+    - usecols
+    - nrows
+    - skiprows
+    - parse_dates
+    - sheet_name=None
+  - name: Yazma (to_csv / to_excel / to_json)
+    items:
+    - index=False
+    - startrow
+    - orient="records"
+    - force_ascii=False
+  explanation: usecols, nrows, skiprows, parse_dates oxunacaq hissəni seçir; index=False, startrow, orient,
+    force_ascii isə faylın necə yazılacağını müəyyən edir.
+- text: CSV-ni `index=False` olmadan yazıb geri oxuduqda hansı problem yaranır?
+  options:
+  - Fayl açılmır
+  - '«Unnamed: 0» adlı artıq sütun yaranır'
+  - Bütün rəqəmlər mətnə çevrilir
+  - Başlıqlar itir
+  correct:
+  - 2
+  explanation: 'İndeks də sütun kimi yazılır; geri oxuyanda adsız sütun «Unnamed: 0» görünür.'
+- text: '`pd.read_excel("fayl.xlsx", sheet_name=None)` nə qaytarır?'
+  options:
+  - Yalnız birinci vərəqi
+  - 'Bütün vərəqləri {vərəq adı: DataFrame} dictionary-si kimi'
+  - Vərəq adlarının siyahısını
+  - Xəta verir
+  correct:
+  - 2
+  explanation: sheet_name=None bütün vərəqləri oxuyur və dictionary qaytarır.

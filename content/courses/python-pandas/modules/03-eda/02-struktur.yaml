@@ -1,0 +1,47 @@
+type: python
+title: Datanın strukturu
+xp: 40
+estimated_minutes: 8
+instructions: |
+  `satislar_xam.csv` faylını oxu və strukturunu öyrən (Gün 3 tapşırıqları 16–18).
+tasks:
+- Faylı df-ə oxu. Sətir və sütun sayını tap → setir, sutun.
+- Sütun adlarını siyahı kimi qaytar → sutunlar.
+- Məlumat tiplərini tap → tipler (df.dtypes).
+- Yalnız ədədi sütunların adları → eded_sutunlari (select_dtypes("number")).
+dataset: datasets/satislar_xam.csv
+starter_code: |
+  import pandas as pd
+
+  df = ...
+  setir, sutun = 0, 0
+  sutunlar = ...
+  tipler = ...
+  eded_sutunlari = ...
+
+  print(setir, sutun)
+  print(tipler)
+solution: |
+  import pandas as pd
+
+  df = pd.read_csv("satislar_xam.csv")
+  setir, sutun = df.shape
+  sutunlar = df.columns.tolist()
+  tipler = df.dtypes
+  eded_sutunlari = df.select_dtypes("number").columns.tolist()
+
+  print(setir, sutun)
+  print(tipler)
+tests: |
+  import pandas as _pd
+  import numpy as _np
+  _x = _pd.read_csv("satislar_xam.csv")
+
+  assert (setir, sutun) == _x.shape, f"setir, sutun = {_x.shape} olmalıdır, sənin nəticən: {(setir, sutun)!r}"
+  assert sutunlar == _x.columns.tolist(), "sutunlar = df.columns.tolist()"
+  assert isinstance(tipler, _pd.Series) and tipler.equals(_x.dtypes), "tipler = df.dtypes"
+  assert eded_sutunlari == _x.select_dtypes("number").columns.tolist(), f"eded_sutunlari {_x.select_dtypes('number').columns.tolist()} olmalıdır, sənin nəticən: {eded_sutunlari!r}"
+hints:
+- df = pd.read_csv("satislar_xam.csv"); setir, sutun = df.shape
+- tipler = df.dtypes
+- eded_sutunlari = df.select_dtypes("number").columns.tolist()
