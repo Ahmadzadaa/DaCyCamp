@@ -1,0 +1,162 @@
+title: Creating, renaming and deleting columns
+description: New columns, rename, columns.str.replace, drop/del, insert, assign and eval.
+steps:
+  sutunlar-ders:
+    title: Working with columns
+    content: |
+      ## Creating and changing a column
+
+      `df["Column"] = value/expression` — if the column doesn't exist, it's created; if it does, it's overwritten:
+
+      ```python
+      df["Total_Salary"] = df["Salary"] + df["Bonus"]
+      df["Total_Salary"] = df["Total_Salary"] + 50      # change an existing one
+      df["Revenue Rounded"] = df["Total Revenue"].round()
+      df["Name Length"] = df["Product Name"].str.len()
+      ```
+
+      The operation is applied to the whole column at once — there's no need to write a loop (this is called **vectorization**).
+
+      ## Renaming
+
+      ```python
+      df.columns = ["a", "b", "c"]                                    # give all of them again
+      df = df.rename(columns={"Total Revenue": "Gelir"})              # selected ones
+      df.columns = df.columns.str.replace(" ", "_")                   # space → underscore
+      ```
+
+      ## Deleting
+
+      ```python
+      df = df.drop("Filial", axis=1)               # or columns="Filial"
+      df = df.drop(columns=["Filial", "Transaction ID"])
+      del df["Filial"]                             # deletes in place
+      ```
+
+      > ⚠️ Most methods (`rename`, `drop`, `assign`) return a **new** DataFrame — if you don't store the result in a variable, the change is lost: `df = df.drop(...)`.
+
+      ## insert — a column at a specific position
+
+      ```python
+      df.insert(1, "Il", df["Date"].str[:4])      # at position 1 (the second column)
+      ```
+
+      `insert` changes df **in place** and returns nothing.
+
+      ## assign — with a new DataFrame
+
+      ```python
+      df_yeni = df.assign(EDV=df["Total Revenue"] * 0.18)
+      ```
+
+      The original `df` doesn't change — handy in chained code.
+
+      ## eval — a column expression as a string
+
+      ```python
+      df["Hesab"] = df.eval("`Units Sold` * `Unit Price`")
+      ```
+
+      Unlike Python's `eval()` function, `df.eval()` only performs calculations with columns and is safe. Names with spaces are written between `` ` ``.
+  adlandirma:
+    title: Fix the column names
+    instructions: |
+      Day 4 (15): spaces in column names are a nuisance in code. Tidy up the names.
+    tasks:
+      - 'In a copy of df (alt), replace the spaces in all the column names with underscores: "Product Name" → "Product_Name".'
+      - 'Rename "Total Revenue" → "Gelir" (revenue) and "Units Sold" → "Say" (units) → ad (with rename).'
+      - Delete the Transaction ID and Filial columns → qisa (with drop).
+    hints:
+      - alt.columns = alt.columns.str.replace(" ", "_")
+      - 'df.rename(columns={"Total Revenue": "Gelir", "Units Sold": "Say"})'
+      - df.drop(columns=["Transaction ID", "Filial"])
+    tests: |
+      import pandas as _pd
+      import numpy as _np
+      _s = _pd.read_csv("satislar.csv")
+
+      assert alt.columns.tolist() == [c.replace(" ", "_") for c in _s.columns], f"The columns of alt should have no spaces, yours: {alt.columns.tolist()}"
+      _a = _s.rename(columns={"Total Revenue": "Gelir", "Units Sold": "Say"})
+      assert isinstance(ad, _pd.DataFrame) and ad.columns.tolist() == _a.columns.tolist(), f"The columns of ad: {_a.columns.tolist()}"
+      assert isinstance(qisa, _pd.DataFrame) and qisa.columns.tolist() == [c for c in _s.columns if c not in ("Transaction ID", "Filial")], "qisa = df.drop(columns=['Transaction ID', 'Filial'])"
+      assert df.columns.tolist() == _s.columns.tolist(), "The original df shouldn't change — store the result of rename/drop in a new variable"
+  yeni-sutunlar:
+    title: Calculated columns
+    instructions: |
+      Day 3 exercises 3, 6, 7 and 8: create new columns from existing ones.
+    tasks:
+      - Create a "Revenue Rounded" column by rounding Total Revenue to a whole number (round()).
+      - The length of each product name — "Name Length" (str.len()).
+      - The product names in uppercase — "Product Upper" (str.upper()).
+      - The square of the unit price — "Price Squared".
+    hints:
+      - df["Revenue Rounded"] = df["Total Revenue"].round()
+      - 'Text methods go through .str: df["Product Name"].str.len(), .str.upper()'
+      - df["Price Squared"] = df["Unit Price"] ** 2
+    tests: |
+      import pandas as _pd
+      import numpy as _np
+      _s = _pd.read_csv("satislar.csv")
+
+      for _c in ("Revenue Rounded", "Name Length", "Product Upper", "Price Squared"):
+          assert _c in df.columns, f"df has no '{_c}' column"
+      assert df["Revenue Rounded"].equals(_s["Total Revenue"].round()), "Revenue Rounded = df['Total Revenue'].round()"
+      assert df["Name Length"].equals(_s["Product Name"].str.len()), "Name Length = df['Product Name'].str.len()"
+      assert df["Product Upper"].equals(_s["Product Name"].str.upper()), "Product Upper = df['Product Name'].str.upper()"
+      assert (df["Price Squared"] - _s["Unit Price"] ** 2).abs().max() < 1e-6, "Price Squared = df['Unit Price'] ** 2"
+  eval-assign-insert:
+    title: eval, assign and insert
+    instructions: |
+      Day 5 (8): recalculate the Total Revenue column as `Units Sold × Unit Price` with `eval()` and compare it with the existing values.
+    tasks:
+      - 'With df.eval, create the "Hesab" (calculation) column: `Units Sold` * `Unit Price`.'
+      - Is Hesab (2 decimal places) the same as Total Revenue in every row? → eynidir (True/False).
+      - With assign, a new DataFrame with an 18% VAT column named "EDV" → edvli (df shouldn't change).
+      - With insert, add the year itself ("2023"/"2024") at position 1 as the "Il" (year) column (the first 4 characters of Date).
+    hints:
+      - df.eval("`Units Sold` * `Unit Price`") — names with spaces go between backticks.
+      - eynidir = bool((df["Hesab"].round(2) == df["Total Revenue"].round(2)).all())
+      - df.insert(1, "Il", df["Date"].str[:4]) — insert returns nothing; it changes df.
+    tests: |
+      import pandas as _pd
+      import numpy as _np
+      _s = _pd.read_csv("satislar.csv")
+
+      assert "Hesab" in df.columns and (df["Hesab"] - _s["Units Sold"] * _s["Unit Price"]).abs().max() < 1e-6, "Hesab = df.eval('`Units Sold` * `Unit Price`')"
+      _e = bool(((_s["Units Sold"] * _s["Unit Price"]).round(2) == _s["Total Revenue"].round(2)).all())
+      assert eynidir == _e, f"eynidir should be {_e}"
+      assert isinstance(edvli, _pd.DataFrame) and "EDV" in edvli.columns, "edvli = df.assign(EDV=df['Total Revenue'] * 0.18)"
+      assert (edvli["EDV"] - _s["Total Revenue"] * 0.18).abs().max() < 1e-6, "EDV = Total Revenue × 0.18"
+      assert "EDV" not in df.columns, "assign shouldn't change df"
+      assert df.columns[1] == "Il" and df["Il"].equals(_s["Date"].str[:4]), "df.insert(1, 'Il', df['Date'].str[:4])"
+      assert ".eval(" in dacy.code and ".assign(" in dacy.code and ".insert(" in dacy.code, "Use eval, assign and insert"
+  sutunlar-testi:
+    title: 'Quiz: Columns'
+    questions:
+      - text: Does the method change the original DataFrame, or return a new one? (with the default parameters)
+        buckets:
+          - name: Changes it in place
+            items:
+              - df.insert(1, "Il", ...)
+              - del df["Filial"]
+              - df["Yeni"] = ...
+          - name: Returns a new DataFrame
+            items:
+              - df.rename(columns=...)
+              - df.drop(columns=...)
+              - df.assign(EDV=...)
+        explanation: insert, del and assigning to a column change df in place. rename, drop and assign return a new DataFrame — you need to store the result in a variable.
+      - text: We wrote `df.drop("Filial", axis=1)` and didn't store the result anywhere. Is Filial still in `df.columns` afterwards?
+        options:
+          - No, it's been deleted
+          - Yes, df hasn't changed
+          - It raises an error
+          - Only the index has been deleted
+        explanation: drop returns a new DataFrame; you need to write df = df.drop(...).
+      - text: How does ``df.eval("`Units Sold` * `Unit Price`")`` differ from Python's `eval()`?
+        options:
+          - It doesn't
+          - It only performs calculations with DataFrame columns and doesn't execute arbitrary code
+          - It only works with text columns
+          - It writes the result to a file
+        explanation: df.eval is for column expressions; Python's eval can execute any code.

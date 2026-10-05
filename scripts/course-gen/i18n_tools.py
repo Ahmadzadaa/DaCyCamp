@@ -146,6 +146,7 @@ def az_left(node, path, out, code=False):
                 if path.endswith('.tests') and m:
                     # mesajın içində dırnaqlı data ("Aysel Məmmədova") icazəlidir
                     inner = re.sub(r'\\?"[^"\n]{1,60}?\\?"', '', m.group(1)[1:-1])
+                    inner = re.sub(r"\[[^\]\n]*\]|'[^'\s]{1,30}'", '', inner)
                     if AZ.search(inner):
                         out.append(f'{path}: assert mesajı — {m.group(1).strip()[:70]}')
         elif AZ.search(strip_code(node)):

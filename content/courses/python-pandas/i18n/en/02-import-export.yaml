@@ -1,0 +1,216 @@
+title: Reading and writing data
+description: The parameters of read_csv and read_excel, display options, exporting with to_csv / to_excel / to_json.
+steps:
+  oxumaq:
+    title: Reading CSV and Excel files
+    content: |
+      Static data (files) is brought into pandas with the `read_...` functions.
+
+      ## read_csv
+
+      ```python
+      df = pd.read_csv(
+          "satislar.csv",
+          sep=",",                                  # the separator (often ";" in European files)
+          usecols=["Date", "Region", "Total Revenue"],   # only these columns
+          nrows=100,                                # only the first 100 rows
+          skiprows=range(1, 11),                    # skip the 10 rows after the header
+          parse_dates=["Date"],                     # read the Date column as dates
+          encoding="utf-8",
+      )
+      ```
+
+      | Parameter | What it does |
+      | --- | --- |
+      | `sep` | The column separator: `","`, `";"`, `"\t"` |
+      | `usecols` | The columns to read |
+      | `nrows` | How many rows to read |
+      | `skiprows` | The rows to skip (a number or a list) |
+      | `header` | The header row (default `0`; `None` if there's no header) |
+      | `index_col` | The column to use as the index |
+      | `parse_dates` | The columns to convert to dates |
+
+      ## read_excel
+
+      ```python
+      fev = pd.read_excel(
+          "satislar_2024q1.xlsx",
+          sheet_name="Fevral",     # the sheet's name or number (0 — the first)
+          usecols="A:D",           # Excel letters work too
+          header=0,
+          skiprows=0,
+          nrows=50,
+      )
+
+      hamisi = pd.read_excel("satislar_2024q1.xlsx", sheet_name=None)
+      # {"Yanvar": DataFrame, "Fevral": DataFrame, "Mart": DataFrame}
+      ```
+
+      `sheet_name=None` returns **all the sheets** as a dictionary: the key is the sheet's name, and the value is a DataFrame.
+
+      > 💻 Excel files need the `openpyxl` package. On DaCy, it's installed automatically on the first `read_excel` call.
+
+      ## Display options
+
+      When a large table is printed, pandas shortens the middle with `...`. You can control this with options:
+
+      ```python
+      pd.options.display.max_rows = 100        # how many rows to show
+      pd.options.display.max_columns = 20      # how many columns
+      pd.options.display.width = 120           # the screen width (characters)
+      pd.options.display.colheader_justify = "center"   # centered headers
+      ```
+  yazmaq:
+    title: Writing the result to a file (export)
+    content: |
+      To pass the result of an analysis on to others, a DataFrame is written to a file:
+
+      | Method | Format |
+      | --- | --- |
+      | `to_csv()` | CSV |
+      | `to_excel()` | Excel |
+      | `to_json()` | JSON |
+      | `to_parquet()` | Parquet (a compressed format for large data) |
+      | `to_html()` | An HTML table |
+      | `to_sql()` | A database table |
+
+      ## The key parameters
+
+      ```python
+      df.to_csv(
+          "hesabat.csv",
+          sep=";",            # the separator
+          index=False,        # don't write the index (0, 1, 2…)
+          header=True,        # write the column names
+          columns=["Region", "Total Revenue"],   # only these columns
+      )
+
+      df.to_excel("hesabat.xlsx", sheet_name="Sales", startrow=2, startcol=1, index=False)
+      df.to_json("hesabat.json", orient="records", force_ascii=False)
+      ```
+
+      > ⚠️ If you forget `index=False`, an extra unnamed column appears in the file, and when you read it back you'll see a column called `Unnamed: 0`. It's a very common mistake.
+
+      ## Several sheets in one Excel file
+
+      ```python
+      with pd.ExcelWriter("monthly.xlsx") as yazici:
+          yanvar.to_excel(yazici, sheet_name="January", index=False)
+          fevral.to_excel(yazici, sheet_name="February", index=False)
+      ```
+
+      ## The `orient` parameter of JSON
+
+      `orient="records"` writes each row as a separate object — the most convenient form for APIs:
+
+      ```json
+      [{"Region": "Bakı", "Total Revenue": 2399.0}, {"Region": "Gəncə", "Total Revenue": 549.0}]
+      ```
+
+      `force_ascii=False` keeps Azerbaijani letters as they are.
+  oxuma-parametrleri:
+    title: The parameters of read_csv
+    instructions: |
+      You don't always need all of a large file. Read only the part you need with the parameters of `read_csv`.
+    tasks:
+      - Read only the Date, Region and Total Revenue columns and the first 100 rows → df_qisa.
+      - Read the file with the Date column read as dates → df_tarix; write the type of the Date column as a string → tarix_tipi (str(...dtype)).
+      - Read the file skipping the first 10 rows after the header → df_kecid (skiprows=range(1, 11)).
+    hints:
+      - pd.read_csv("satislar.csv", usecols=["Date", "Region", "Total Revenue"], nrows=100)
+      - parse_dates=["Date"] → tarix_tipi = str(df_tarix["Date"].dtype)
+      - skiprows=range(1, 11) — row 0 is the header, and rows 1..10 are skipped.
+    tests: |
+      import pandas as _pd
+      import numpy as _np
+      _s = _pd.read_csv("satislar.csv")
+
+      assert isinstance(df_qisa, _pd.DataFrame) and df_qisa.shape == (100, 3), f"df_qisa should have 100 rows and 3 columns, yours has: {getattr(df_qisa, 'shape', df_qisa)!r}"
+      assert sorted(df_qisa.columns) == ["Date", "Region", "Total Revenue"], f"The columns of df_qisa aren't correct: {list(df_qisa.columns)}"
+      assert str(tarix_tipi).startswith("datetime64"), f"tarix_tipi should be datetime64 — use parse_dates=['Date'], your result: {tarix_tipi!r}"
+      assert len(df_kecid) == len(_s) - 10, f"df_kecid should have {len(_s) - 10} rows, yours has {len(df_kecid)}"
+      assert df_kecid.iloc[0]["Transaction ID"] == _s.iloc[10]["Transaction ID"], "skiprows=range(1, 11) — the header (row 0) should stay, and the next 10 rows should be skipped"
+      assert "usecols" in dacy.code and "nrows" in dacy.code, "Use the usecols and nrows parameters"
+  excel-oxu:
+    title: An Excel file and its sheets
+    instructions: |
+      The file `satislar_2024q1.xlsx` holds the first quarter of 2024 in three sheets, named in Azerbaijani: **Yanvar** (January), **Fevral** (February) and **Mart** (March).
+
+      > ⏳ The first `read_excel` call installs the `openpyxl` package — it may take a few seconds.
+    tasks:
+      - 'Read the "Fevral" (February) sheet → fev.'
+      - Read all the sheets at once as a dictionary → vereqler (sheet_name=None).
+      - The list of sheet names → vereq_adlari; February's total revenue (2 decimal places) → fev_gelir.
+    hints:
+      - fev = pd.read_excel("satislar_2024q1.xlsx", sheet_name="Fevral")
+      - 'sheet_name=None returns all the sheets as {name: DataFrame}.'
+      - vereq_adlari = list(vereqler.keys())
+    tests: |
+      import pandas as _pd
+      _fev = _pd.read_csv("satis_fevral.csv")
+      assert isinstance(fev, _pd.DataFrame) and len(fev) == len(_fev), f"fev should be the 'Fevral' sheet ({len(_fev)} rows)"
+      assert isinstance(vereqler, dict), "vereqler should be a dictionary — use sheet_name=None"
+      assert vereq_adlari == ["Yanvar", "Fevral", "Mart"], f"vereq_adlari should be ['Yanvar', 'Fevral', 'Mart'], your result: {vereq_adlari!r}"
+      assert fev_gelir == round(_fev["Total Revenue"].sum(), 2), f"fev_gelir should be {round(_fev['Total Revenue'].sum(), 2)}, your result: {fev_gelir!r}"
+  eksport:
+    title: Write the result as CSV and JSON
+    instructions: |
+      The first 20 transactions need to be sent to the accounting department in CSV (with a `;` separator) and JSON format. After writing them, read the file back to check it.
+    tasks:
+      - 'Take the first 20 rows into the variable ilk20 and write them to the file ilk20.csv: separator ";", without the index.'
+      - Read the file back (with the same separator) → geri.
+      - 'Write ilk20 to the file ilk20.json: orient="records", force_ascii=False.'
+      - Read the JSON file with pd.read_json and find the number of rows → json_say.
+    hints:
+      - ilk20 = df.head(20); ilk20.to_csv("ilk20.csv", sep=";", index=False)
+      - 'Specify the separator when reading it back, too: pd.read_csv("ilk20.csv", sep=";")'
+      - ilk20.to_json("ilk20.json", orient="records", force_ascii=False); json_say = len(pd.read_json("ilk20.json"))
+    tests: |
+      import pandas as _pd
+      import numpy as _np
+      _s = _pd.read_csv("satislar.csv")
+
+      import os as _os
+      assert _os.path.exists("ilk20.csv"), "The file ilk20.csv hasn't been created"
+      _first = open("ilk20.csv", encoding="utf-8").readline()
+      assert ";" in _first, "The separator in the CSV should be ';' — sep=';'"
+      assert not _first.startswith(";"), "The index has been written to the file — add index=False"
+      assert isinstance(geri, _pd.DataFrame) and geri.shape == (20, _s.shape[1]), f"geri should have 20 rows and {_s.shape[1]} columns (with no Unnamed column), yours has: {getattr(geri, 'shape', None)}"
+      assert _os.path.exists("ilk20.json"), "The file ilk20.json hasn't been created"
+      _j = open("ilk20.json", encoding="utf-8").read()
+      assert _j.lstrip().startswith("[{"), "The JSON should be in orient='records' format: [{...}, {...}]"
+      assert "\\u" not in _j, "The Azerbaijani letters are escaped — add force_ascii=False"
+      assert json_say == 20, f"json_say should be 20, your result: {json_say!r}"
+  import-export-testi:
+    title: 'Quiz: Import and export'
+    questions:
+      - text: Place each parameter under the matching function.
+        buckets:
+          - name: Reading (read_csv / read_excel)
+            items:
+              - usecols
+              - nrows
+              - skiprows
+              - parse_dates
+              - sheet_name=None
+          - name: Writing (to_csv / to_excel / to_json)
+            items:
+              - index=False
+              - startrow
+              - orient="records"
+              - force_ascii=False
+        explanation: usecols, nrows, skiprows and parse_dates select the part to read; index=False, startrow, orient and force_ascii determine how the file is written.
+      - text: What problem appears when you write a CSV without `index=False` and read it back?
+        options:
+          - The file won't open
+          - 'An extra column named "Unnamed: 0" appears'
+          - All the numbers turn into text
+          - The headers are lost
+        explanation: 'The index is also written as a column; when you read the file back, the unnamed column shows up as "Unnamed: 0".'
+      - text: What does `pd.read_excel("fayl.xlsx", sheet_name=None)` return?
+        options:
+          - Only the first sheet
+          - 'All the sheets as a {sheet name: DataFrame} dictionary'
+          - A list of sheet names
+          - It raises an error
+        explanation: sheet_name=None reads all the sheets and returns a dictionary.

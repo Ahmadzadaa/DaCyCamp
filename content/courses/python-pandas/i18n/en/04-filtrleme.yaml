@@ -1,0 +1,207 @@
+title: Selecting columns and rows, filtering
+description: loc and iloc, filters with comparison operators, & and |, isin, isnull, between and query.
+steps:
+  loc-iloc:
+    title: 'Selecting columns and rows: loc and iloc'
+    content: |
+      ## Columns
+
+      ```python
+      df["Region"]                          # one column → a Series
+      df[["Product Name", "Total Revenue"]] # several columns → a DataFrame
+      ```
+
+      ## loc — by label
+
+      `df.loc[rows, columns]` — by the row **index label** and the column **name**:
+
+      ```python
+      df.loc[10]                                  # the row with index 10
+      df.loc[10:14, ["Date", "Total Revenue"]]    # from 10 to 14 (14 INCLUDED!)
+      df.loc[:, "Region"]                         # all rows, one column
+      ```
+
+      ## iloc — by position
+
+      `df.iloc[rows, columns]` — by the **position number** of the row and column (like an ordinary Python slice):
+
+      ```python
+      df.iloc[0]          # the first row
+      df.iloc[-1]         # the last row
+      df.iloc[:3, :3]     # the first 3 rows, the first 3 columns (3 NOT included)
+      ```
+
+      | | `loc` | `iloc` |
+      | --- | --- | --- |
+      | By | Label (index, column name) | Position (0, 1, 2…) |
+      | End of a slice | Included | Not included |
+      | Example | `df.loc[0:4, "Region"]` → 5 rows | `df.iloc[0:4, 2]` → 4 rows |
+
+      > 💡 Because the default index is 0, 1, 2…, `loc` and `iloc` often look the same. The difference shows up after filtering or sorting: the index labels stay, but the positions change.
+
+      ## A single cell
+
+      ```python
+      df.loc[0, "Product Name"]
+      df.iloc[0, 5]
+      df.at[0, "Product Name"]      # a fast option for a single value
+      ```
+  filtrler:
+    title: 'Filtering: conditions, isin, query'
+    content: |
+      In Python, filtering isn't done with a special function but with **comparison operators**. A condition returns True/False for each row, and the DataFrame keeps only the rows that are True.
+
+      ```python
+      df["Total Revenue"] > 2000          # a True/False Series (a mask)
+      df[df["Total Revenue"] > 2000]      # only the rows that are True
+      ```
+
+      ## Operators
+
+      | Operator | Example |
+      | --- | --- |
+      | `==`, `!=` | `df[df["Region"] == "Bakı"]` |
+      | `>`, `<`, `>=`, `<=` | `df[df["Units Sold"] > 5]` |
+      | `isin([...])` | `df[df["Region"].isin(["Gəncə", "Şəki"])]` |
+      | `isnull()`, `notnull()` | `df[df["Payment Method"].isnull()]` |
+      | `between(a, b)` | `df[df["Unit Price"].between(100, 500)]` (a and b included) |
+
+      ## Several conditions: `&`, `|`, `~`
+
+      ```python
+      df[(df["Region"] == "Bakı") & (df["Total Revenue"] > 1000)]       # AND
+      df[(df["Region"] == "Gəncə") | (df["Region"] == "Şəki")]          # OR
+      df[~(df["Payment Method"] == "Cash")]                             # NOT
+      ```
+
+      > ⚠️ In pandas, you write `&` / `|`, not `and` / `or`, and **each condition must be in parentheses**. Without parentheses, `df["A"] > 1 & df["B"] < 2` gives a wrong result or an error.
+
+      ## query() — a readable alternative
+
+      ```python
+      df.query("`Units Sold` < 10 and Region == 'Bakı'")
+      ```
+
+      Columns whose names contain spaces are written between `` ` `` (backticks).
+
+      ## Filtering + selecting columns
+
+      ```python
+      df[df["Product Category"] == "Electronics"]["Product Name"].unique()
+      df.loc[df["Product Category"] == "Electronics", "Product Name"]    # the same, with loc
+      ```
+
+      ## "Is there at least one?" — any() and all()
+
+      ```python
+      (df["Total Revenue"] > 2000).any()   # at least one row? → True/False
+      (df["Units Sold"] > 0).all()         # all of them?
+      ```
+  secim:
+    title: Selecting with loc and iloc
+    instructions: |
+      Select different parts of the data.
+    tasks:
+      - Only the Product Name and Total Revenue columns → iki_sutun.
+      - The Date, Region and Total Revenue columns of the rows with index 10 to 14 → loc_hisse (with loc; 5 rows).
+      - The last row → son_setir (iloc).
+      - The first 3 rows and the first 3 columns → kunc (iloc).
+    hints:
+      - 'Two pairs of brackets for two columns: df[["Product Name", "Total Revenue"]]'
+      - loc_hisse = df.loc[10:14, ["Date", "Region", "Total Revenue"]]
+      - son_setir = df.iloc[-1]; kunc = df.iloc[:3, :3]
+    tests: |
+      import pandas as _pd
+      import numpy as _np
+      _s = _pd.read_csv("satislar.csv")
+
+      assert isinstance(iki_sutun, _pd.DataFrame) and list(iki_sutun.columns) == ["Product Name", "Total Revenue"] and len(iki_sutun) == len(_s), "iki_sutun = df[['Product Name', 'Total Revenue']]"
+      assert isinstance(loc_hisse, _pd.DataFrame) and loc_hisse.equals(_s.loc[10:14, ["Date", "Region", "Total Revenue"]]), "loc_hisse = df.loc[10:14, ['Date', 'Region', 'Total Revenue']] — with loc, 14 is included (5 rows)"
+      assert isinstance(son_setir, _pd.Series) and son_setir.equals(_s.iloc[-1]), "son_setir = df.iloc[-1]"
+      assert isinstance(kunc, _pd.DataFrame) and kunc.equals(_s.iloc[:3, :3]), "kunc = df.iloc[:3, :3]"
+      assert ".loc[" in dacy.code and ".iloc[" in dacy.code, "Use loc and iloc"
+  filtr:
+    title: Filtering with a condition
+    instructions: |
+      Exercises from Day 3 (13, 11), Day 4 (10) and Day 5 (7): select the rows that meet a condition.
+    tasks:
+      - The unique names of the products where Product Category = "Electronics" → elektronika (a sorted list).
+      - The transactions where Units Sold is greater than 5 → cox_satis (a DataFrame).
+      - Is there a value greater than 2000 in the Total Revenue column? → var_mi (True/False).
+      - The unique names of the products with Total Revenue greater than 500 → bahali_mehsullar (a sorted list).
+    hints:
+      - df[df["Product Category"] == "Electronics"]["Product Name"].unique() — then sorted()
+      - cox_satis = df[df["Units Sold"] > 5]
+      - var_mi = (df["Total Revenue"] > 2000).any() — make it a plain True/False with bool().
+    tests: |
+      import pandas as _pd
+      import numpy as _np
+      _s = _pd.read_csv("satislar.csv")
+
+      _e = sorted(_s[_s["Product Category"] == "Electronics"]["Product Name"].unique())
+      assert list(elektronika) == _e, f"elektronika should be {_e}, your result: {elektronika!r}"
+      _c = _s[_s["Units Sold"] > 5]
+      assert isinstance(cox_satis, _pd.DataFrame) and cox_satis.equals(_c), f"cox_satis should be the {len(_c)} rows where Units Sold > 5"
+      assert var_mi == bool((_s["Total Revenue"] > 2000).any()), "var_mi = (df['Total Revenue'] > 2000).any()"
+      _b = sorted(_s[_s["Total Revenue"] > 500]["Product Name"].unique())
+      assert list(bahali_mehsullar) == _b, f"bahali_mehsullar should be {len(_b)} products: {_b}"
+  coxlu-sert:
+    title: 'Several conditions: &, |, isin, between, query'
+    instructions: |
+      Complex filters: combine several conditions.
+    tasks:
+      - The transactions in the "Bakı" region, paid by Credit Card, with revenue above 1,000 AZN → baki_kart.
+      - The transactions in the "Gəncə" or "Şəki" region → gence_seki (with isin).
+      - The transactions where Units Sold is less than 10 → az_satis (with query).
+      - The transactions where Unit Price is between 100 and 500 (inclusive) → orta_qiymet (with between).
+    hints:
+      - 'Each condition in parentheses: (df["Region"] == "Bakı") & (df["Payment Method"] == "Credit Card") & (...)'
+      - df[df["Region"].isin(["Gəncə", "Şəki"])]
+      - df.query("`Units Sold` < 10") — a name with spaces goes between backticks; df[df["Unit Price"].between(100, 500)]
+    tests: |
+      import pandas as _pd
+      import numpy as _np
+      _s = _pd.read_csv("satislar.csv")
+
+      _a = _s[(_s["Region"] == "Bakı") & (_s["Payment Method"] == "Credit Card") & (_s["Total Revenue"] > 1000)]
+      assert isinstance(baki_kart, _pd.DataFrame) and baki_kart.equals(_a), f"baki_kart should be {len(_a)} rows (three conditions with &, each in parentheses)"
+      _g = _s[_s["Region"].isin(["Gəncə", "Şəki"])]
+      assert isinstance(gence_seki, _pd.DataFrame) and gence_seki.equals(_g), f"gence_seki should be {len(_g)} rows"
+      _z = _s[_s["Units Sold"] < 10]
+      assert isinstance(az_satis, _pd.DataFrame) and az_satis.equals(_z), f"az_satis should be {len(_z)} rows"
+      _o = _s[_s["Unit Price"].between(100, 500)]
+      assert isinstance(orta_qiymet, _pd.DataFrame) and orta_qiymet.equals(_o), f"orta_qiymet should be {len(_o)} rows"
+      for _w in (".isin(", ".query(", ".between("):
+          assert _w in dacy.code, f"Use the {_w[1:-1]}() method"
+  filtrleme-testi:
+    title: 'Quiz: Selecting and filtering'
+    questions:
+      - text: In a df with the default index, how many rows does `df.loc[0:4]` return?
+        options:
+          - '4'
+          - '5'
+          - '3'
+          - '0'
+        explanation: 'loc works with labels, and the end of the slice is included: 0, 1, 2, 3, 4.'
+      - text: Which form is **correct**?
+        options:
+          - df[df["Region"] == "Bakı" and df["Units Sold"] > 5]
+          - df[(df["Region"] == "Bakı") & (df["Units Sold"] > 5)]
+          - df[df["Region"] == "Bakı" & df["Units Sold"] > 5]
+          - df.filter(Region == "Bakı", Units Sold > 5)
+        explanation: pandas uses &, and each condition must be in parentheses.
+      - text: Choose the right tool for each task.
+        buckets:
+          - name: isin()
+            items:
+              - Rows whose Region is "Gəncə", "Şəki" or "Lənkəran"
+          - name: between()
+            items:
+              - Rows priced between 100 and 500 AZN
+          - name: isnull()
+            items:
+              - Transactions with no payment method recorded
+          - name: ~ (NOT)
+            items:
+              - All transactions except cash payments
+        explanation: isin — one of the values in a list; between — a range; isnull — empty values; ~ — the opposite of a condition.

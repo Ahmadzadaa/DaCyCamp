@@ -1,0 +1,162 @@
+title: Missing values and data types
+description: fillna, dropna, ffill/bfill, astype, to_numeric and cleaning raw data.
+steps:
+  itkin-ders:
+    title: Filling in missing values and fixing types
+    content: |
+      ## Finding missing values
+
+      ```python
+      df.isnull().sum()               # per column
+      df[df["Şəhər"].isnull()]        # the rows where it's empty
+      ```
+
+      ## fillna — filling in
+
+      ```python
+      df["Ad"] = df["Ad"].fillna("Unknown")                # a fixed value
+      df["Bonus"] = df["Bonus"].fillna(0)
+      df["Yaş"] = df["Yaş"].fillna(df["Yaş"].mean())       # with the mean
+      df["Yaş"] = df["Yaş"].fillna(df["Yaş"].median())     # with the median (robust to outliers)
+      df["Şəhər"] = df["Şəhər"].ffill()                    # with the previous value (forward fill)
+      df["Şəhər"] = df["Şəhər"].bfill()                    # with the next value (backward fill)
+      df["Şəhər"] = df["Şəhər"].fillna(df["Ad"])           # with another column
+      ```
+
+      > 📝 The old form `fillna(method="ffill")` is no longer recommended — use `ffill()` / `bfill()`.
+
+      ## dropna — deleting
+
+      ```python
+      df.dropna()                          # delete the rows with at least one gap
+      df.dropna(subset=["Payment Method"]) # only if this column is empty
+      df.dropna(how="all")                 # the rows where every value is empty
+      ```
+
+      **When should you fill in, and when should you delete?** If there are few gaps and they're random, you can delete them. If there are many, or the information is important, fill them in with a sensible value and make a note of it.
+
+      ## Types: dtypes, astype, to_numeric
+
+      ```python
+      df["Age"] = df["Age"].astype(int)
+      df["Mebleg"] = pd.to_numeric(df["Mebleg"], errors="coerce")   # values that can't be converted → NaN
+      df["Date"] = pd.to_datetime(df["Date"])
+      ```
+
+      ## Cleaning text
+
+      ```python
+      df["Region"] = df["Region"].str.strip()          # the spaces at both ends
+      df["Region"] = df["Region"].str.lower().map(lugat)   # one consistent spelling
+      ```
+
+      ⚠️ **The `İ`/`ı` problem:** in Python, `"BAKI".lower()` → `"baki"` (a dotted i), and although `"Sumqayıt".title()` looks fine, `"SUMQAYIT".title()` gives `"Sumqayit"`. The Azerbaijani letters `ı`/`İ` are converted by English rules. That's why it's more reliable to map messy spellings to the correct form with a **dictionary**.
+
+      ## 0 doesn't always mean "zero"
+
+      Because of a system error, revenue may be recorded as 0. Values like these need to be found and replaced with the correct calculation:
+
+      ```python
+      sehv = df["Total Revenue"] == 0
+      df.loc[sehv, "Total Revenue"] = df.loc[sehv, "Units Sold"] * df.loc[sehv, "Unit Price"]
+      ```
+  fillna-tapsiriq:
+    title: Gaps in the employees table
+    instructions: |
+      `isciler.csv` is a small HR table: some bonuses, ages and cities weren't recorded.
+
+      The column names are Azerbaijani: `Ad` (name), `Yaş` (age), `Şəhər` (city), `Əməkhaqqı` (salary) and `Bonus`.
+    tasks:
+      - Fill the Bonus gaps with 0.
+      - Fill the "Yaş" (age) gaps with the mean age (rounded to a whole number).
+      - Fill the "Şəhər" (city) gaps with "Unknown".
+      - 'The "Ümumi" (total) column = "Əməkhaqqı" + "Bonus"; the number of gaps left in the table → qalan (should be 0).'
+    hints:
+      - df["Bonus"] = df["Bonus"].fillna(0)
+      - df["Yaş"].fillna(round(df["Yaş"].mean()))
+      - 'qalan = int(df.isnull().sum().sum()) — sum twice: per column, then the total.'
+    solution: |
+      import pandas as pd
+
+      df = pd.read_csv("isciler.csv")
+      print(df.isnull().sum())
+
+      df["Bonus"] = df["Bonus"].fillna(0)
+      df["Yaş"] = df["Yaş"].fillna(round(df["Yaş"].mean()))
+      df["Şəhər"] = df["Şəhər"].fillna("Unknown")
+      df["Ümumi"] = df["Əməkhaqqı"] + df["Bonus"]
+
+      qalan = int(df.isnull().sum().sum())
+      df
+    tests: |
+      # i18n-superset: the Azerbaijani fill value ("Bilinmir") is accepted too
+      import pandas as _pd
+      _i = _pd.read_csv("isciler.csv")
+      assert df["Bonus"].isnull().sum() == 0 and (df["Bonus"] == _i["Bonus"].fillna(0)).all(), "The Bonus gaps should be filled with 0"
+      _y = round(_i["Yaş"].mean())
+      assert (df["Yaş"] == _i["Yaş"].fillna(_y)).all(), f'The "Yaş" gaps should be filled with {_y} (the mean, rounded)'
+      _fill = "Bilinmir" if (df["Şəhər"] == "Bilinmir").any() else "Unknown"
+      assert (df["Şəhər"] == _i["Şəhər"].fillna(_fill)).all(), 'The "Şəhər" gaps should be "Unknown"'
+      assert "Ümumi" in df.columns and (df["Ümumi"] == _i["Əməkhaqqı"] + _i["Bonus"].fillna(0)).all(), 'df["Ümumi"] = df["Əməkhaqqı"] + df["Bonus"] (filled in)'
+      assert qalan == 0, f"qalan should be 0, your result: {qalan!r}"
+  xam-temizle:
+    title: Clean the raw sales data
+    instructions: |
+      Day 6 (4) and the problems found in the EDA chapter: prepare `satislar_xam.csv` for analysis. Do the steps in order.
+
+      The Region spellings are messy (`bakı`, `BAKI`, ` Bakı `). Because of the `İ`/`ı` problem, `title()` isn't reliable — use the **dictionary** in the starter code.
+    tasks:
+      - Remove the full duplicates.
+      - 'Region: remove the spaces at both ends, convert to lowercase and map with the duzgun (correct) dictionary; remove the spaces at both ends of Product Name.'
+      - Fill the Payment Method gaps with "Unknown".
+      - Fill the Unit Price gaps with Total Revenue / Units Sold (2 decimal places).
+      - Store the number of rows where Total Revenue is 0 in sifir_say, then replace them with Units Sold × Unit Price (2 decimal places). Reset the index → temiz.
+    hints:
+      - df = df.drop_duplicates(); df["Region"] = df["Region"].str.strip().str.lower().map(duzgun)
+      - df["Unit Price"] = df["Unit Price"].fillna((df["Total Revenue"] / df["Units Sold"]).round(2))
+      - sifir = df["Total Revenue"] == 0; df.loc[sifir, "Total Revenue"] = (df.loc[sifir, "Units Sold"] * df.loc[sifir, "Unit Price"]).round(2)
+    tests: |
+      import pandas as _pd
+      import numpy as _np
+      _x = _pd.read_csv("satislar_xam.csv")
+
+      _d = _x.drop_duplicates()
+      assert isinstance(temiz, _pd.DataFrame) and len(temiz) == len(_d), f"temiz should have {len(_d)} rows (the duplicates should be removed)"
+      assert list(temiz.index) == list(range(len(temiz))), "Reset the index: reset_index(drop=True)"
+      assert set(temiz["Region"]) == {"Bakı", "Gəncə", "Sumqayıt", "Lənkəran", "Şəki"}, f"Region should contain only the 5 correct names, yours has: {sorted(map(str, set(temiz['Region'])))}"
+      assert not temiz["Product Name"].str.startswith(" ").any(), "Remove the spaces from Product Name (str.strip())"
+      assert temiz["Payment Method"].isnull().sum() == 0 and (temiz["Payment Method"] == "Unknown").sum() == _d["Payment Method"].isnull().sum(), "The Payment Method gaps should be 'Unknown'"
+      assert temiz["Unit Price"].isnull().sum() == 0, "There shouldn't be any gaps left in Unit Price"
+      assert sifir_say == int((_d["Total Revenue"] == 0).sum()), f"sifir_say should be {int((_d['Total Revenue'] == 0).sum())}"
+      assert (temiz["Total Revenue"] == 0).sum() == 0, "The zero revenues should be recalculated"
+      _bad = (temiz["Total Revenue"] - (temiz["Units Sold"] * temiz["Unit Price"]).round(2)).abs() > 0.05
+      assert _bad.sum() == 0, "Total Revenue should equal Units Sold × Unit Price (in the corrected rows)"
+  itkin-testi:
+    title: 'Quiz: Missing values and types'
+    questions:
+      - text: Group each approach by its result.
+        buckets:
+          - name: Rows are deleted
+            items:
+              - df.dropna()
+              - df.dropna(subset=["Payment Method"])
+          - name: Gaps are filled in
+            items:
+              - df["Bonus"].fillna(0)
+              - df["Şəhər"].ffill()
+              - df["Yaş"].fillna(df["Yaş"].median())
+        explanation: dropna drops rows, while fillna/ffill/bfill fill the gaps with a value.
+      - text: What does `pd.to_numeric(s, errors="coerce")` do with values that can't be converted?
+        options:
+          - It raises an error
+          - It turns them into NaN
+          - It turns them into 0
+          - It keeps them as they are
+        explanation: coerce — values that can't be converted become NaN, and you can then investigate them separately.
+      - text: Why isn't the result of `"SUMQAYIT".title()` "Sumqayıt"?
+        options:
+          - title() only changes the first letter
+          - Python converts the letter "I" to a lowercase "i" by English rules, not to "ı"
+          - title() deletes Azerbaijani letters
+          - The result is "Sumqayıt"
+        explanation: 'Python''s case conversion doesn''t depend on the language: I → i. That''s why mapping with a dictionary is more reliable.'

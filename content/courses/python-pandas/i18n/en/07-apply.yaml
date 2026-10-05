@@ -1,0 +1,195 @@
+title: apply, lambda, map and conditional columns
+description: Applying a function to a column, "IF" with np.where and np.select, map and replace.
+steps:
+  apply-ders:
+    title: '"IF" in a DataFrame: apply, np.where, map'
+    content: |
+      In Excel, we write `=IF(D2>1000; "High"; "Low")`. pandas has several ways to do this.
+
+      ## np.where — two options
+
+      ```python
+      import numpy as np
+      df["Revenue Class"] = np.where(df["Total Revenue"] > 1000, "High Revenue", "Low Revenue")
+      ```
+
+      `np.where(condition, if_true, if_false)` — fast, over the whole column at once.
+
+      ## np.select — many options
+
+      ```python
+      sertler = [df["Total Revenue"] >= 2000, df["Total Revenue"] >= 500]
+      deyerler = ["High", "Medium"]
+      df["Kateqoriya"] = np.select(sertler, deyerler, default="Low")
+      ```
+
+      The conditions are checked in order — the first true one wins.
+
+      ## apply + a function
+
+      ```python
+      def qiymetlendir(ball):
+          if ball >= 90:
+              return "Excellent"
+          elif ball >= 75:
+              return "Good"
+          elif ball >= 60:
+              return "Satisfactory"
+          return "Fail"
+
+      df["Grade"] = df["Score"].apply(qiymetlendir)
+      df["Age Group"] = df["Age"].apply(lambda x: "Adult" if x > 30 else "Young")
+      ```
+
+      `apply` applies the function to each value separately — you can write any logic.
+
+      ## apply by row: axis=1
+
+      ```python
+      df["Yer"] = df.apply(lambda r: f"{r['Region']} - {r['Filial']}", axis=1)
+      ```
+
+      `axis=1` — the function receives a whole **row** and uses several of its columns.
+
+      ## map — transform values
+
+      ```python
+      df["A"] = df["A"].map(lambda x: x + 2)
+      az = {"Electronics": "Elektronika", "Clothing": "Geyim"}
+      df["Kateqoriya AZ"] = df["Product Category"].map(az)   # not in the dictionary → NaN
+      ```
+
+      ## replace — replace a specific value
+
+      ```python
+      df["Payment Method"] = df["Payment Method"].replace("Credit Card", "Visa Card")
+      ```
+
+      | Tool | When |
+      | --- | --- |
+      | `np.where` | A two-option condition — the fastest |
+      | `np.select` | Several conditions |
+      | `apply(function)` | Complex logic, your own function |
+      | `apply(..., axis=1)` | Using several columns |
+      | `map(dict)` | Transforming values using a dictionary |
+      | `replace` | Replacing specific values |
+
+      > 💡 On large data, `np.where` and vector operations are many times faster than `apply` — because `apply` calls a Python function for every row.
+  np-where:
+    title: A conditional column with np.where
+    instructions: |
+      Day 3 (12) and Day 5 (10): labels based on a condition.
+    tasks:
+      - If Total Revenue is greater than 1000, "High Revenue", otherwise "Low Revenue" — the "Revenue Class" column (np.where).
+      - Calculate the condition Units Sold < 5 with df.eval and use np.where for "Low Sales" / "High Sales" — the "Sales Category" column.
+      - The number of "High Revenue" transactions → high_say.
+    hints:
+      - np.where(df["Total Revenue"] > 1000, "High Revenue", "Low Revenue")
+      - np.where(df.eval("`Units Sold` < 5"), "Low Sales", "High Sales")
+      - high_say = (df["Revenue Class"] == "High Revenue").sum()
+    tests: |
+      import pandas as _pd
+      import numpy as _np
+      _s = _pd.read_csv("satislar.csv")
+
+      assert "Revenue Class" in df.columns and list(df["Revenue Class"]) == list(_np.where(_s["Total Revenue"] > 1000, "High Revenue", "Low Revenue")), "Revenue Class isn't correct"
+      assert "Sales Category" in df.columns and list(df["Sales Category"]) == list(_np.where(_s["Units Sold"] < 5, "Low Sales", "High Sales")), "Sales Category isn't correct"
+      assert high_say == (_s["Total Revenue"] > 1000).sum(), f"high_say should be {(_s['Total Revenue'] > 1000).sum()}"
+      assert "np.where(" in dacy.code and ".eval(" in dacy.code, "Use np.where and df.eval"
+  apply-funksiya:
+    title: Your own function with apply
+    instructions: |
+      Day 5 (1): a "Kateqoriya" (category) column based on Total Revenue. The boundaries: **2,000 AZN and above — High**, **500–2,000 — Medium**, **below 500 — Low**.
+    tasks:
+      - Write the function kateqoriya(gelir) and create the "Kateqoriya" column with apply.
+      - 'A "Yer" (location) column with axis=1: in the "Bakı - Nizami" format (Region - Filial).'
+      - The number of each category → say (value_counts).
+    hints:
+      - 'if gelir >= 2000: return "High" / elif gelir >= 500: return "Medium" / return "Low"'
+      - df["Kateqoriya"] = df["Total Revenue"].apply(kateqoriya)
+      - 'df.apply(lambda r: f"{r[''Region'']} - {r[''Filial'']}", axis=1)'
+    solution: |
+      import pandas as pd
+
+      df = pd.read_csv("satislar.csv")
+
+
+      def kateqoriya(gelir):
+          if gelir >= 2000:
+              return "High"
+          elif gelir >= 500:
+              return "Medium"
+          return "Low"
+
+
+      df["Kateqoriya"] = df["Total Revenue"].apply(kateqoriya)
+      df["Yer"] = df.apply(lambda r: f"{r['Region']} - {r['Filial']}", axis=1)
+      say = df["Kateqoriya"].value_counts()
+      print(say)
+    tests: |
+      # i18n-superset: the Azerbaijani labels ("Yüksək", "Orta", "Aşağı") are accepted too
+      import pandas as _pd
+      import numpy as _np
+      _s = _pd.read_csv("satislar.csv")
+
+      _az = "Kateqoriya" in df.columns and df["Kateqoriya"].isin(["Yüksək", "Orta", "Aşağı"]).all()
+      _lab = ["Yüksək", "Orta", "Aşağı"] if _az else ["High", "Medium", "Low"]
+      _k = _np.select([_s["Total Revenue"] >= 2000, _s["Total Revenue"] >= 500], _lab[:2], default=_lab[2])
+      assert "Kateqoriya" in df.columns and list(df["Kateqoriya"]) == list(_k), 'Kateqoriya isn\'t correct — use the labels "High", "Medium" and "Low" and check the boundaries (>= 2000, >= 500)'
+      assert kateqoriya(2000) == _lab[0] and kateqoriya(1999.99) == _lab[1] and kateqoriya(499) == _lab[2], "The kateqoriya() function is wrong at the boundaries"
+      assert "Yer" in df.columns and list(df["Yer"]) == list(_s["Region"] + " - " + _s["Filial"]), "Yer should be in the 'Region - Filial' format"
+      assert isinstance(say, _pd.Series) and say.to_dict() == _pd.Series(_k).value_counts().to_dict(), "say = df['Kateqoriya'].value_counts()"
+      assert ".apply(" in dacy.code and "axis=1" in dacy.code, "Use apply and axis=1"
+  map-replace:
+    title: map and replace
+    instructions: |
+      Day 5 (9) and Day 3 (9): transform and replace values.
+    tasks:
+      - Convert the Region column to uppercase with map.
+      - In Payment Method, replace the "Credit Card" values with "Visa Card" (replace).
+      - Create a "Kateqoriya AZ" column with the Azerbaijani category names from the az dictionary (map).
+    hints:
+      - 'df["Region"].map(lambda x: x.upper())'
+      - df["Payment Method"].replace("Credit Card", "Visa Card")
+      - df["Product Category"].map(az)
+    tests: |
+      import pandas as _pd
+      import numpy as _np
+      _s = _pd.read_csv("satislar.csv")
+
+      assert list(df["Region"]) == [r.upper() for r in _s["Region"]], "Region should be in uppercase"
+      assert "Credit Card" not in set(df["Payment Method"]) and (df["Payment Method"] == "Visa Card").sum() == (_s["Payment Method"] == "Credit Card").sum(), "Credit Card → Visa Card should be replaced"
+      assert "Kateqoriya AZ" in df.columns and df["Kateqoriya AZ"].notnull().all() and df.loc[0, "Kateqoriya AZ"] == az[_s.loc[0, "Product Category"]], "Kateqoriya AZ = df['Product Category'].map(az)"
+      assert ".map(" in dacy.code and ".replace(" in dacy.code, "Use map and replace"
+  apply-testi:
+    title: 'Quiz: apply and conditions'
+    questions:
+      - text: Choose the most suitable tool for each task.
+        buckets:
+          - name: np.where
+            items:
+              - Revenue > 1000 → "High", otherwise "Low"
+          - name: np.select
+            items:
+              - 'Three levels: High / Medium / Low (several conditions)'
+          - name: map(dictionary)
+            items:
+              - Translating English category names into Azerbaijani
+          - name: apply(..., axis=1)
+            items:
+              - Combining the Region and Filial columns into one text
+        explanation: Two options — np.where; many conditions — np.select; translating with a dictionary — map; using several columns — apply(axis=1).
+      - text: '`df["K"].map({"a": 1, "b": 2})` — what happens if the column contains the value "c"?'
+        options:
+          - '"c" stays as it is'
+          - It becomes NaN
+          - It raises an error
+          - It becomes 0
+        explanation: map returns NaN for values that aren't in the dictionary. To keep the values, use replace.
+      - text: Why is `apply` slower than `np.where` on large data?
+        options:
+          - apply calls a separate Python function for every value
+          - apply writes the data to disk
+          - np.where is less accurate
+          - There's no difference
+        explanation: np.where processes the whole column at once (as a vector).

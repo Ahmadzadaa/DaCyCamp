@@ -1,0 +1,150 @@
+title: 'Binning into categories: cut and qcut'
+description: 'Splitting a numeric column into ranges (bins): fixed boundaries (cut) and equal shares (qcut).'
+steps:
+  cut-qcut-ders:
+    title: 'Bins and labels: cut and qcut'
+    content: |
+      You often need to split age into "Young / Middle-aged / Adult" groups, or prices into "Cheap / Medium / Expensive" levels.
+
+      ## pd.cut — you set the boundaries
+
+      ```python
+      bins = [0, 18, 35, 50, 100]
+      labels = ["Young", "Middle-aged", "Adult", "Senior"]
+      df["Category"] = pd.cut(df["Age"], bins=bins, labels=labels, right=False)
+      ```
+
+      - `bins` — the boundaries; 4 ranges need 5 boundaries.
+      - `labels` — the names of the ranges (as many as there are ranges).
+      - `right=False` — the range is `[0, 18)`: the left end is included, the right one isn't. The default `right=True`: `(0, 18]`.
+      - An infinite upper boundary: `float("inf")`.
+
+      If no labels are given, the result shows the ranges themselves: `[0, 18)`, `[18, 35)`…
+
+      ## pd.qcut — equal shares (quantiles)
+
+      ```python
+      df["Q_Bin"] = pd.qcut(df["Score"], q=4, labels=["Low", "Medium", "Good", "Excellent"])
+      ```
+
+      `qcut` chooses the boundaries based on the data itself, so that each group has roughly **the same number** of rows. `q=4` — quartiles, `q=5` — quintiles, `q=10` — deciles.
+
+      | | `cut` | `qcut` |
+      | --- | --- | --- |
+      | Boundaries | You set them | Based on the data |
+      | Group sizes | Can differ | Roughly equal |
+      | Example | Price levels (0–100–500 AZN) | "The top 25%" |
+
+      The result has the **category** type. When grouping, `observed=True` hides empty categories:
+
+      ```python
+      df.groupby("Q_Bin", observed=True)["Total Revenue"].mean()
+      ```
+  cut-tapsiriq:
+    title: Price levels (cut)
+    instructions: |
+      Split the products into price levels: **0–100 Cheap, 100–500 Medium, 500–1,500 Expensive, 1,500+ Premium** (the right boundary included — the default).
+    tasks:
+      - 'With pd.cut, the "Qiymət qrupu" (price group) column: bins=[0, 100, 500, 1500, float("inf")], labels=["Cheap", "Medium", "Expensive", "Premium"].'
+      - How many transactions are in each group → qrup_say (value_counts).
+      - The total revenue of the Premium group, 2 decimal places → premium_gelir.
+    hints:
+      - pd.cut(df["Unit Price"], bins=[0, 100, 500, 1500, float("inf")], labels=["Cheap", "Medium", "Expensive", "Premium"])
+      - qrup_say = df["Qiymət qrupu"].value_counts()
+      - df[df["Qiymət qrupu"] == "Premium"]["Total Revenue"].sum()
+    starter_code: |
+      import pandas as pd
+
+      df = pd.read_csv("satislar.csv")
+
+      # df["Qiymət qrupu"] = ...
+      qrup_say = ...
+      premium_gelir = ...
+
+      print(qrup_say)
+      print(premium_gelir)
+    solution: |
+      import pandas as pd
+
+      df = pd.read_csv("satislar.csv")
+
+      df["Qiymət qrupu"] = pd.cut(df["Unit Price"], bins=[0, 100, 500, 1500, float("inf")],
+                                  labels=["Cheap", "Medium", "Expensive", "Premium"])
+      qrup_say = df["Qiymət qrupu"].value_counts()
+      premium_gelir = round(df[df["Qiymət qrupu"] == "Premium"]["Total Revenue"].sum(), 2)
+
+      print(qrup_say)
+      print(premium_gelir)
+    tests: |
+      # i18n-superset: the Azerbaijani labels ("Ucuz", "Orta", "Baha", "Premium") are accepted too
+      import pandas as _pd
+      import numpy as _np
+      _s = _pd.read_csv("satislar.csv")
+
+      assert "Qiymət qrupu" in df.columns, 'df has no "Qiymət qrupu" column'
+      _col = df["Qiymət qrupu"].astype(str)
+      _lab = ["Ucuz", "Orta", "Baha", "Premium"] if _col.isin(["Ucuz", "Orta", "Baha"]).any() else ["Cheap", "Medium", "Expensive", "Premium"]
+      _q = _pd.cut(_s["Unit Price"], bins=[0, 100, 500, 1500, float("inf")], labels=_lab)
+      assert list(_col) == list(_q.astype(str)), 'Qiymət qrupu isn\'t correct — check bins and labels (["Cheap", "Medium", "Expensive", "Premium"])'
+      assert {str(k): v for k, v in qrup_say.to_dict().items()} == {str(k): v for k, v in _q.value_counts().to_dict().items()}, "qrup_say = df['Qiymət qrupu'].value_counts()"
+      assert premium_gelir == round(_s[_q == "Premium"]["Total Revenue"].sum(), 2), "premium_gelir isn't correct"
+      assert "pd.cut(" in dacy.code, "Use pd.cut"
+  qcut-tapsiriq:
+    title: Split revenue into 4 equal parts (qcut)
+    instructions: |
+      Day 5 (2): split Total Revenue into 4 equal parts and create a "Q_Bin" column.
+    tasks:
+      - 'With pd.qcut, "Q_Bin": q=4, labels=["Low", "Medium", "Good", "Excellent"].'
+      - The average revenue per Q_Bin, 2 decimal places → orta_bin (groupby, observed=True).
+      - The lower boundary of the Excellent group (the 75% quantile of revenue), 2 decimal places → serhed75.
+    hints:
+      - pd.qcut(df["Total Revenue"], q=4, labels=["Low", "Medium", "Good", "Excellent"])
+      - df.groupby("Q_Bin", observed=True)["Total Revenue"].mean().round(2)
+      - df["Total Revenue"].quantile(0.75)
+    solution: |
+      import pandas as pd
+
+      df = pd.read_csv("satislar.csv")
+
+      df["Q_Bin"] = pd.qcut(df["Total Revenue"], q=4, labels=["Low", "Medium", "Good", "Excellent"])
+      orta_bin = df.groupby("Q_Bin", observed=True)["Total Revenue"].mean().round(2)
+      serhed75 = round(df["Total Revenue"].quantile(0.75), 2)
+
+      print(orta_bin)
+      print(serhed75)
+    tests: |
+      # i18n-superset: the Azerbaijani labels ("Aşağı", "Orta", "Yaxşı", "Mükəmməl") are accepted too
+      import pandas as _pd
+      import numpy as _np
+      _s = _pd.read_csv("satislar.csv")
+
+      assert "Q_Bin" in df.columns, 'df has no "Q_Bin" column'
+      _col = df["Q_Bin"].astype(str)
+      _lab = ["Aşağı", "Orta", "Yaxşı", "Mükəmməl"] if _col.isin(["Aşağı", "Yaxşı", "Mükəmməl"]).any() else ["Low", "Medium", "Good", "Excellent"]
+      _q = _pd.qcut(_s["Total Revenue"], q=4, labels=_lab)
+      assert list(_col) == list(_q.astype(str)), 'Q_Bin isn\'t correct — q=4, labels=["Low", "Medium", "Good", "Excellent"]'
+      _o = _s.groupby(_q, observed=True)["Total Revenue"].mean().round(2)
+      assert {str(k): v for k, v in orta_bin.to_dict().items()} == {str(k): v for k, v in _o.to_dict().items()}, "orta_bin isn't correct"
+      assert serhed75 == round(_s["Total Revenue"].quantile(0.75), 2), "serhed75 = round(df['Total Revenue'].quantile(0.75), 2)"
+      assert "pd.qcut(" in dacy.code, "Use pd.qcut"
+  cut-qcut-testi:
+    title: 'Quiz: cut and qcut'
+    questions:
+      - text: cut or qcut for each task?
+        buckets:
+          - name: pd.cut
+            items:
+              - Splitting age into 0–18, 18–35 and 35+ groups
+              - Splitting prices into 0–100, 100–500 and 500+ AZN levels
+          - name: pd.qcut
+            items:
+              - Splitting customers into 4 equal groups by spending
+              - Selecting the "top 10%" of salespeople
+        explanation: If the boundaries are known — cut; if you need groups of equal size — qcut.
+      - text: Which group does `pd.cut(x, bins=[0, 18, 35], right=False)` put the age 18 in?
+        options:
+          - '[0, 18)'
+          - '[18, 35)'
+          - Neither
+          - Both
+        explanation: 'right=False — the left boundary is included, the right one isn''t: 18 falls into the second range.'

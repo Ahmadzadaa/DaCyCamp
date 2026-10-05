@@ -1,0 +1,177 @@
+title: Getting to know your data (EDA)
+description: Structure, types, missing values, descriptive statistics, unique values and duplicates.
+steps:
+  eda-ders:
+    title: 'Your first functions: getting to know the data'
+    content: |
+      Before starting an analysis, you need to **get to know** the data: how many rows are there, which columns, are the types correct, are there gaps or duplicates? This is called **EDA** (Exploratory Data Analysis).
+
+      > 📁 In this chapter, we work with `satislar_xam.csv` — the **uncleaned** version of the same sales data, just as it came from the system.
+
+      ## The "first functions" of Day 3
+
+      | Code | What it shows |
+      | --- | --- |
+      | `df.shape` | How many rows and how many columns |
+      | `df.columns.tolist()` | The column names (a list) |
+      | `df.dtypes` | The data types |
+      | `df.info()` | A summary: the number of rows, the number of non-null values in each column, the types, memory |
+      | `df.isnull().sum()` | The number of missing (empty) values in each column |
+      | `(df.isnull().sum() / len(df)) * 100` | The percentage of missing values |
+      | `df.describe(include="all")` | Descriptive statistics: count, mean, std, min, quartiles, max (for text columns: unique, the most frequent value) |
+      | `df[col].nunique()` | The number of unique values |
+      | `df[col].value_counts()` | How many times each value occurs |
+      | `df.duplicated().sum()` | The number of fully duplicated rows |
+
+      ## How does isnull() work?
+
+      `df.isnull()` returns a **True/False** copy of the table with the same shape: an empty cell is `True`. Since `True` = 1 and `False` = 0 in Python, `.sum()` counts the gaps in each column.
+
+      ```python
+      df.isnull().sum()
+      ```
+
+      ```text
+      Transaction ID     0
+      Date               0
+      Sales Employee     9
+      Unit Price         7
+      Payment Method    14
+      ...
+      ```
+
+      ## describe()
+
+      ```python
+      df.describe()                 # numeric columns only
+      df.describe(include="all")    # all of them
+      ```
+
+      | Row | Meaning |
+      | --- | --- |
+      | `count` | The number of non-null values |
+      | `mean` | The mean |
+      | `std` | The standard deviation |
+      | `min`, `max` | The smallest and the largest |
+      | `25%`, `50%`, `75%` | The quartiles (`50%` — the median) |
+
+      ## value_counts() and nunique()
+
+      ```python
+      df["Payment Method"].value_counts()
+      ```
+
+      ```text
+      Credit Card      528
+      Debit Card       356
+      Cash             230
+      Mobile Wallet    144
+      ```
+
+      `value_counts()` sorts the result from most to least. If you add `normalize=True`, it returns percentages (shares).
+
+      > 💡 The questions that come out of EDA give you the cleaning plan: which columns have gaps, should we remove duplicates, are the types correct? We'll do the cleaning in the coming chapters.
+  struktur:
+    title: The structure of the data
+    instructions: |
+      Read the file `satislar_xam.csv` and study its structure (Day 3 exercises 16–18).
+    tasks:
+      - Read the file into df. Find the number of rows and columns → setir, sutun.
+      - Return the column names as a list → sutunlar.
+      - Find the data types → tipler (df.dtypes).
+      - The names of the numeric columns only → eded_sutunlari (select_dtypes("number")).
+    hints:
+      - df = pd.read_csv("satislar_xam.csv"); setir, sutun = df.shape
+      - tipler = df.dtypes
+      - eded_sutunlari = df.select_dtypes("number").columns.tolist()
+    tests: |
+      import pandas as _pd
+      import numpy as _np
+      _x = _pd.read_csv("satislar_xam.csv")
+
+      assert (setir, sutun) == _x.shape, f"setir, sutun should be {_x.shape}, your result: {(setir, sutun)!r}"
+      assert sutunlar == _x.columns.tolist(), "sutunlar = df.columns.tolist()"
+      assert isinstance(tipler, _pd.Series) and tipler.equals(_x.dtypes), "tipler = df.dtypes"
+      assert eded_sutunlari == _x.select_dtypes("number").columns.tolist(), f"eded_sutunlari should be {_x.select_dtypes('number').columns.tolist()}, your result: {eded_sutunlari!r}"
+  itkin-deyerler:
+    title: Check for missing values
+    instructions: |
+      Which columns have gaps, and how many? (Day 3 exercises 19–20)
+    tasks:
+      - The number of missing values in each column → itkin (a Series).
+      - The percentage of missing values in each column, to 2 decimal places → itkin_faiz.
+      - The name of the column with the most gaps → en_cox_itkin.
+      - The total number of gaps in the whole table → cemi_itkin (an int).
+    hints:
+      - itkin = df.isnull().sum()
+      - 'Percentage: (df.isnull().sum() / len(df) * 100).round(2)'
+      - en_cox_itkin = itkin.idxmax(); cemi_itkin = int(itkin.sum())
+    tests: |
+      import pandas as _pd
+      import numpy as _np
+      _x = _pd.read_csv("satislar_xam.csv")
+
+      _i = _x.isnull().sum()
+      assert isinstance(itkin, _pd.Series) and itkin.to_dict() == _i.to_dict(), "itkin = df.isnull().sum()"
+      _f = (_i / len(_x) * 100).round(2)
+      assert isinstance(itkin_faiz, _pd.Series) and itkin_faiz.round(2).to_dict() == _f.to_dict(), f"itkin_faiz isn't correct. Expected (first 3): {_f.head(3).to_dict()}"
+      assert en_cox_itkin == _i.idxmax(), f"en_cox_itkin should be {_i.idxmax()!r}, your result: {en_cox_itkin!r}"
+      assert cemi_itkin == int(_i.sum()), f"cemi_itkin should be {int(_i.sum())}, your result: {cemi_itkin!r}"
+  unikal-dublikat:
+    title: Unique values, frequencies and duplicates
+    instructions: |
+      Day 3 exercises 21–24: statistics, categories, payment methods and duplicated rows.
+    tasks:
+      - Descriptive statistics for the numeric columns → statistika (describe()).
+      - The number of unique categories in the Product Category column → kateqoriya_sayi.
+      - How many times each payment method was used → odenis_sayi (value_counts).
+      - The number of fully duplicated rows → dublikat.
+    hints:
+      - statistika = df.describe()
+      - kateqoriya_sayi = df["Product Category"].nunique()
+      - odenis_sayi = df["Payment Method"].value_counts(); dublikat = df.duplicated().sum()
+    tests: |
+      import pandas as _pd
+      import numpy as _np
+      _x = _pd.read_csv("satislar_xam.csv")
+
+      assert isinstance(statistika, _pd.DataFrame) and statistika.round(4).equals(_x.describe().round(4)), "statistika = df.describe()"
+      assert kateqoriya_sayi == _x["Product Category"].nunique(), f"kateqoriya_sayi should be {_x['Product Category'].nunique()}, your result: {kateqoriya_sayi!r}"
+      _v = _x["Payment Method"].value_counts()
+      assert isinstance(odenis_sayi, _pd.Series) and odenis_sayi.to_dict() == _v.to_dict(), f"odenis_sayi = df['Payment Method'].value_counts(). Expected: {_v.to_dict()}"
+      assert dublikat == _x.duplicated().sum(), f"dublikat should be {_x.duplicated().sum()}, your result: {dublikat!r}"
+  eda-testi:
+    title: 'Quiz: Getting to know your data'
+    questions:
+      - text: Group each piece of code by what it returns.
+        buckets:
+          - name: One value per column (a Series)
+            items:
+              - df.isnull().sum()
+              - df.dtypes
+              - df["Region"].value_counts()
+          - name: A table (a DataFrame)
+            items:
+              - df.describe()
+              - df.isnull()
+              - df.head()
+          - name: A single number
+            items:
+              - df["Region"].nunique()
+              - df.duplicated().sum()
+              - len(df)
+        explanation: isnull().sum(), dtypes and value_counts() return a Series; describe(), isnull() and head() a DataFrame; and nunique(), duplicated().sum() and len() a single number.
+      - text: Why does `df.isnull().sum()` count the gaps?
+        options:
+          - isnull() deletes the gaps
+          - isnull() returns a True/False table, and since True = 1, sum() counts the Trues
+          - sum() only adds up the empty cells
+          - This code doesn't count the gaps
+        explanation: When Boolean values are added up, True counts as 1 and False as 0.
+      - text: In the result of `describe()`, what does the `50%` row show?
+        options:
+          - The mean
+          - The median
+          - That half of the values are empty
+          - Half of the maximum
+        explanation: 'The 50% quartile is the median: half of the values are smaller than it and half are larger.'

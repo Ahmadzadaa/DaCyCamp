@@ -1,0 +1,167 @@
+title: 'Final project: a complete analysis of the sales data'
+description: 'The graded exercises of Day 3 and Day 6: KPIs, leaders, payment habits, quarterly growth.'
+steps:
+  layihe-izah:
+    title: 'Final project: TechNar''s annual report'
+    content: |
+      At the end of the course, we bring all the tools together in one report. TechNar's management wants the results for 2023–2024:
+
+      1. **Key indicators (KPIs):** total revenue, the number of transactions, the average receipt, units sold; the 5 products that bring in the most revenue.
+      2. **Behavior:** the most used payment method in each region; the 5 best-selling products in each category.
+      3. **Dynamics:** 2024's growth compared with 2023, by quarter.
+
+      These exercises are based on the graded exercises of Python4Business Day 3 and Day 6.
+
+      > 💡 At every step, print the result and check whether it makes sense: revenue can't be negative, percentages don't exceed 100, and so on. A "sanity check" is one of an analyst's most important habits.
+  layihe-kpi:
+    title: 'Project 1: KPIs and top products'
+    instructions: |
+      Day 3 (graded) and Day 6 (9): the key indicators.
+    tasks:
+      - 'The kpi dictionary: "gelir" (revenue — the sum, 2 decimal places), "emeliyyat" (transactions — the number of rows), "orta_cek" (the average receipt — the mean revenue, 2 decimal places), "eded" (units — the sum of Units Sold, an int).'
+      - The names of the 5 products that bring in the most total revenue → top5 (a list).
+      - The share of the top 5 products in total revenue (a percentage, 1 decimal place) → top5_pay.
+    hints:
+      - 'kpi = {"gelir": round(df["Total Revenue"].sum(), 2), "emeliyyat": len(df), ...}'
+      - mehsul = df.groupby("Product Name")["Total Revenue"].sum(); mehsul.nlargest(5).index.tolist()
+      - top5_pay = round(mehsul.nlargest(5).sum() / mehsul.sum() * 100, 1)
+    tests: |
+      import pandas as _pd
+      import numpy as _np
+      _s = _pd.read_csv("satislar.csv")
+
+      _k = {"gelir": round(_s["Total Revenue"].sum(), 2), "emeliyyat": len(_s), "orta_cek": round(_s["Total Revenue"].mean(), 2), "eded": int(_s["Units Sold"].sum())}
+      assert kpi == _k, f"kpi should be {_k}, your result: {kpi!r}"
+      _m = _s.groupby("Product Name")["Total Revenue"].sum()
+      assert top5 == _m.nlargest(5).index.tolist(), f"top5 should be {_m.nlargest(5).index.tolist()}"
+      assert top5_pay == round(_m.nlargest(5).sum() / _m.sum() * 100, 1), f"top5_pay should be {round(_m.nlargest(5).sum() / _m.sum() * 100, 1)}"
+  layihe-davranis:
+    title: 'Project 2: payment habits and category leaders'
+    instructions: |
+      Day 6 (11, 12): the payment habits of the regions and the top products of each category.
+    tasks:
+      - 'The most used payment method in each region → odenis_lider (a dict: {region: method}).'
+      - The top 5 products by units sold in each category (the Product Category, Product Name and Units Sold columns) → kat_top5.
+      - The best-selling product of the Electronics category → elektronika_1.
+    hints:
+      - 'df.groupby("Region")["Payment Method"].agg(lambda s: s.value_counts().idxmax())'
+      - The sum by category × product, then sort_values(["Product Category", "Units Sold"], ascending=[True, False]).groupby("Product Category").head(5)
+      - kat_top5[kat_top5["Product Category"] == "Electronics"].iloc[0]["Product Name"]
+    tests: |
+      import pandas as _pd
+      import numpy as _np
+      _s = _pd.read_csv("satislar.csv")
+
+      _o = _s.groupby("Region")["Payment Method"].agg(lambda s: s.value_counts().idxmax()).to_dict()
+      assert odenis_lider == _o, f"odenis_lider should be {_o}"
+      _km = _s.groupby(["Product Category", "Product Name"])["Units Sold"].sum().reset_index()
+      _t = _km.sort_values(["Product Category", "Units Sold"], ascending=[True, False]).groupby("Product Category").head(5)
+      assert isinstance(kat_top5, _pd.DataFrame) and len(kat_top5) == len(_t), f"kat_top5 should have {len(_t)} rows (at most 5 from each category)"
+      assert set(zip(kat_top5["Product Category"], kat_top5["Product Name"])) == set(zip(_t["Product Category"], _t["Product Name"])), "The products in kat_top5 aren't correct"
+      _e = _t[_t["Product Category"] == "Electronics"].iloc[0]["Product Name"]
+      assert elektronika_1 == _e, f"elektronika_1 should be {_e!r}"
+  layihe-dinamika:
+    title: 'Project 3: quarterly growth'
+    instructions: |
+      Management asks: "In 2024, how much did we grow each quarter compared with the same quarter of 2023?" (Because of seasonality, we compare a quarter not with the previous quarter but with the same quarter last year.)
+    tasks:
+      - 'A table of revenue by year and quarter: rows — the quarter (1–4), columns — the year (2023, 2024) → rub_cedvel (groupby + unstack).'
+      - 'The growth percentage for each quarter: (2024 − 2023) / 2023 × 100, 1 decimal place → artim (a Series).'
+      - The quarter with the most growth → en_yaxsi_rub.
+    hints:
+      - df.groupby([df["Date"].dt.quarter, df["Date"].dt.year])["Total Revenue"].sum().unstack()
+      - artim = ((rub_cedvel[2024] - rub_cedvel[2023]) / rub_cedvel[2023] * 100).round(1)
+      - en_yaxsi_rub = artim.idxmax()
+    tests: |
+      import pandas as _pd
+      import numpy as _np
+      _s = _pd.read_csv("satislar.csv")
+
+      _d = _s.assign(Date=_pd.to_datetime(_s["Date"]))
+      _r = _d.groupby([_d["Date"].dt.quarter, _d["Date"].dt.year])["Total Revenue"].sum().unstack()
+      assert isinstance(rub_cedvel, _pd.DataFrame) and rub_cedvel.shape == (4, 2) and list(rub_cedvel.columns) == [2023, 2024], "rub_cedvel — 4 quarters × 2 years (the columns 2023, 2024)"
+      assert _np.allclose(rub_cedvel.values, _r.values), "The values of rub_cedvel aren't correct"
+      _a = ((_r[2024] - _r[2023]) / _r[2023] * 100).round(1)
+      assert list(artim.round(1)) == list(_a), f"artim should be {_a.to_dict()}"
+      assert en_yaxsi_rub == _a.idxmax(), f"en_yaxsi_rub should be {_a.idxmax()}"
+  yekun-test:
+    title: 'Final test: Python Pandas'
+    questions:
+      - text: What does `df[["Region"]]` return?
+        options:
+          - Series
+          - DataFrame
+          - list
+          - str
+        explanation: Two pairs of brackets — a DataFrame.
+      - text: 'The number of empty values per column:'
+        options:
+          - df.isnull()
+          - df.isnull().sum()
+          - df.count()
+          - df.info
+        explanation: isnull() gives True/False, and sum() counts them.
+      - text: 'The sales in Baku above 1,000 AZN:'
+        options:
+          - df[df["Region"] == "Bakı" and df["Total Revenue"] > 1000]
+          - df[(df["Region"] == "Bakı") & (df["Total Revenue"] > 1000)]
+          - df.filter("Bakı", 1000)
+          - df.loc["Bakı" > 1000]
+        explanation: '& and parentheses.'
+      - text: 'The right tool for each question:'
+        buckets:
+          - name: groupby
+            items:
+              - The total revenue of each region
+          - name: merge
+            items:
+              - Adding customer names to orders
+          - name: concat
+            items:
+              - Gathering three monthly files into one table
+          - name: pivot_table
+            items:
+              - A region × category table with totals
+        explanation: groupby — calculating per group, merge — combining on a key, concat — stacking one below another, pivot_table — a two-dimensional summary.
+      - text: What does `pd.qcut(x, q=4)` do?
+        options:
+          - 4 ranges of equal width
+          - 4 groups of roughly equal size
+          - It deletes 4 rows
+          - It divides x by 4
+        explanation: qcut splits by quantiles.
+      - text: What is needed for `df["Date"].dt.year` to work?
+        options:
+          - Nothing
+          - The Date column must be of the datetime type
+          - Date must be the index
+          - An Excel file
+        explanation: pd.to_datetime or parse_dates.
+      - text: 'The positions of the scores 95, 88, 88, 70 with `rank(method="min")`:'
+        options:
+          - 1, 2, 2, 4
+          - 1, 2, 2, 3
+          - 1, 2.5, 2.5, 4
+          - 1, 3, 3, 4
+        explanation: min — equal values get the lower position, followed by a gap.
+      - text: What happens if we don't store the result of rename in a variable?
+        options:
+          - df changes
+          - The change is lost — rename returns a new DataFrame
+          - An error
+          - The file is updated
+        explanation: You need to write df = df.rename(...).
+      - text: Which of these **fill in** empty values? (Select all that apply)
+        options:
+          - fillna(0)
+          - ffill()
+          - dropna()
+          - bfill()
+        explanation: dropna deletes rows; the others fill in values.
+      - text: 'The right way to find "the product that brings in the most revenue in each region":'
+        options:
+          - groupby("Region")["Product Name"].max()
+          - The sum by region × product, then idxmax in each region
+          - value_counts().head(1)
+          - sort_values("Region").head(5)
+        explanation: First sum, then find the maximum within each group.

@@ -1,0 +1,234 @@
+title: 'Introduction to pandas: Series and DataFrames'
+description: What pandas is, Series and DataFrames, your first dataset and a first look at it.
+steps:
+  pandas-nedir:
+    title: What is pandas, and why do you need it?
+    content: |
+      Working with a 1,000-row table in Excel is easy. But what about 1 million rows? What if you have to repeat the same report by hand every month? Or combine 5 different files? The answer to these questions is **pandas**.
+
+      **pandas** is the most popular Python library for working with tabular data: reading it, cleaning it, filtering it, grouping it, combining it and writing out the result.
+
+      ```python
+      import pandas as pd      # the accepted alias — pd
+      ```
+
+      ## Compared with Excel
+
+      | Excel | pandas |
+      | --- | --- |
+      | Sheet | `DataFrame` |
+      | Column | `Series` |
+      | Filter | `df[df["Region"] == "Bakı"]` |
+      | Pivot table | `df.pivot_table(...)` / `df.groupby(...)` |
+      | VLOOKUP | `pd.merge(...)` |
+      | Steps repeated by hand | Code written once that can be rerun at any time |
+
+      ## The two main objects
+
+      A **Series** is one column: values + their **index** (labels).
+
+      ```python
+      satis = pd.Series([1250, 980, 1430], index=["Mon", "Tue", "Wed"])
+      ```
+
+      ```text
+      Mon    1250
+      Tue     980
+      Wed    1430
+      dtype: int64
+      ```
+
+      A **DataFrame** is a table: several Series (columns) that share the same index.
+
+      ```python
+      df = pd.DataFrame({
+          "City": ["Bakı", "Gəncə", "Sumqayıt"],
+          "Sales": [5200, 1800, 1400],
+      })
+      ```
+
+      ```text
+             City  Sales
+      0      Bakı   5200
+      1     Gəncə   1800
+      2  Sumqayıt   1400
+      ```
+
+      The `0, 1, 2` on the left is the **index**. By default, it's a sequence of numbers starting at 0, but it can be any labels.
+
+      ## Throughout the course: TechNar
+
+      Throughout the course, we'll work with realistic sales data from the fictional **TechNar** chain of stores: 5 regions, 8 branches, 26 products, 2 years. All the Day 3–6 exercises of the Python4Business program are built on this data.
+
+      > 💻 On DaCy, pandas runs in the browser: the first `import pandas` takes a few seconds (the library is loading), and later runs are fast. If the **last line** of the code is an expression (e.g. `df.head()`), its result is shown in the console just like in Jupyter.
+  dataframe-esaslari:
+    title: First steps with a DataFrame
+    content: |
+      > 📁 **Dataset — `satislar.csv`:** sales for 2023–2024 from TechNar, a chain of electronics, clothing, sports, home appliance and cosmetics stores (1,260 transactions). Columns: `Transaction ID`, `Date`, `Region`, `Filial` (branch), `Sales Employee`, `Product Name`, `Product Category`, `Units Sold`, `Unit Price`, `Total Revenue`, `Payment Method`.
+
+
+      ## Reading the file
+
+      ```python
+      import pandas as pd
+      df = pd.read_csv("satislar.csv")
+      ```
+
+      ## A first look
+
+      | Code | What it shows |
+      | --- | --- |
+      | `df.head()` | The first 5 rows (`df.head(10)` — the first 10) |
+      | `df.tail()` | The last 5 rows |
+      | `df.sample(3)` | 3 random rows |
+      | `df.shape` | `(number of rows, number of columns)` — no parentheses; it's an attribute |
+      | `df.columns` | The column names (`df.columns.tolist()` — as a list) |
+      | `df.dtypes` | The type of each column |
+      | `len(df)` | The number of rows |
+
+      ```python
+      df.shape          # (1260, 11)
+      setir, sutun = df.shape
+      ```
+
+      ## Selecting columns
+
+      ```python
+      df["Total Revenue"]        # a Series
+      df[["Region", "Total Revenue"]]   # a DataFrame (two pairs of brackets!)
+      ```
+
+      > ⚠️ If a column name contains a space (`Total Revenue`), only the `df["Total Revenue"]` form works. The short form `df.Region` is only possible for names without spaces.
+
+      ## Calculations on a Series
+
+      ```python
+      df["Total Revenue"].sum()     # total revenue
+      df["Units Sold"].mean()       # average units sold
+      df["Unit Price"].max()        # the highest price
+      df["Region"].unique()         # the unique values
+      df["Total Revenue"].idxmax()  # the index of the largest value
+      ```
+
+      ## Accessing a single value
+
+      ```python
+      df.loc[0, "Product Name"]     # the product name in the row with index 0
+      df["Product Name"].iloc[0]    # the same result
+      ```
+
+      `loc` accesses by **label**, and `iloc` by **position number**. We'll look at the difference in detail in the coming chapters.
+
+      ## Data types (dtype)
+
+      | dtype | Meaning | Example column |
+      | --- | --- | --- |
+      | `int64` | Integer | `Units Sold` |
+      | `float64` | Decimal number | `Unit Price`, `Total Revenue` |
+      | `object` | Text (or mixed) | `Region`, `Product Name` |
+      | `datetime64` | Date | `Date` (after conversion) |
+      | `bool` | True/False | the results of conditions |
+  series-yarat:
+    title: 'Your first Series: weekly sales'
+    instructions: |
+      You're given the sales (AZN) for each day of the week at TechNar's Nizami branch. The Series' index is the days of the week, abbreviated in Azerbaijani: `B.e.` (Mon), `Ç.a.` (Tue), `Ç.` (Wed), `C.a.` (Thu), `C.` (Fri), `Ş.` (Sat), `B.` (Sun).
+    tasks:
+      - Find the total weekly sales → cem.
+      - Find the average daily sales and round to 2 decimal places → orta.
+      - Find the day (the index) with the most sales → en_yaxsi_gun (idxmax).
+      - The list of days with sales above 2,000 AZN → yuksek_gunler (a list).
+    hints:
+      - cem = satis.sum(); orta = round(satis.mean(), 2)
+      - idxmax() returns the index (the day) of the largest value.
+      - 'A filter: satis[satis > 2000] — then take the days with .index and turn them into a list with list().'
+    tests: |
+      assert cem == 12120, f"cem should be 12120, your result: {cem!r}"
+      assert orta == 1731.43, f"orta should be 1731.43, your result: {orta!r}"
+      assert en_yaxsi_gun == "Ş.", f'en_yaxsi_gun should be "Ş." (Saturday, 2,650 AZN), your result: {en_yaxsi_gun!r}'
+      assert list(yuksek_gunler) == ["C.", "Ş."], f"yuksek_gunler should be ['C.', 'Ş.'], your result: {yuksek_gunler!r}"
+      assert ".idxmax()" in dacy.code, "Use the idxmax() method"
+  dataframe-yarat:
+    title: Your first DataFrame
+    instructions: |
+      An example from the Day 3 slides: an economic indicator and the population by city. Create a DataFrame from a dictionary and get to know it.
+
+      The column names are Azerbaijani: `"Şəhər"` (city), `"İqtisadiyyat"` (economy) and `"Əhalisi"` (population).
+    tasks:
+      - Create df from the dictionary data.
+      - Find the number of rows and columns with shape → setir, sutun.
+      - Get the column names as a list → sutunlar.
+      - 'Find the sum of the "Əhalisi" (population) column → cem_ehali; store the first 2 rows in ilk_iki.'
+    hints:
+      - df = pd.DataFrame(data)
+      - setir, sutun = df.shape — shape is written without parentheses.
+      - sutunlar = df.columns.tolist(); cem_ehali = df["Əhalisi"].sum(); ilk_iki = df.head(2)
+    tests: |
+      import pandas as _pd
+      assert isinstance(df, _pd.DataFrame), "df should be a DataFrame — pd.DataFrame(data)"
+      assert (setir, sutun) == (6, 3), f"setir, sutun should be 6, 3, your result: {(setir, sutun)!r}"
+      assert sutunlar == ["Şəhər", "İqtisadiyyat", "Əhalisi"], f"sutunlar isn't correct: {sutunlar!r}"
+      assert cem_ehali == 14700, f"cem_ehali should be 14700, your result: {cem_ehali!r}"
+      assert isinstance(ilk_iki, _pd.DataFrame) and len(ilk_iki) == 2, "ilk_iki = df.head(2)"
+      assert ".shape" in dacy.code, "Find the number of rows and columns with df.shape"
+  ilk-baxis:
+    title: A first look at satislar.csv
+    instructions: |
+      Read the main dataset we'll use throughout the course and get to know it.
+
+      > 📁 **Dataset — `satislar.csv`:** sales for 2023–2024 from TechNar, a chain of electronics, clothing, sports, home appliance and cosmetics stores (1,260 transactions). Columns: `Transaction ID`, `Date`, `Region`, `Filial` (branch), `Sales Employee`, `Product Name`, `Product Category`, `Units Sold`, `Unit Price`, `Total Revenue`, `Payment Method`.
+    tasks:
+      - Read the file satislar.csv into df and write df.head() on the last line — the first 5 rows will appear in the console.
+      - Find the number of rows and columns → setir_sayi, sutun_sayi.
+      - Get the column names as a list → sutunlar.
+      - Find the product name of the first transaction → ilk_mehsul.
+      - Round the total revenue of all sales (the sum of Total Revenue) to 2 decimal places → cem_gelir.
+    hints:
+      - df = pd.read_csv("satislar.csv")
+      - ilk_mehsul = df.loc[0, "Product Name"] or df["Product Name"].iloc[0]
+      - cem_gelir = round(df["Total Revenue"].sum(), 2); write df.head() on the last line.
+    tests: |
+      import pandas as _pd
+      import numpy as _np
+      _s = _pd.read_csv("satislar.csv")
+
+      assert isinstance(df, _pd.DataFrame) and df.shape == _s.shape, "df = pd.read_csv(\"satislar.csv\")"
+      assert (setir_sayi, sutun_sayi) == _s.shape, f"setir_sayi, sutun_sayi should be {_s.shape}, your result: {(setir_sayi, sutun_sayi)!r}"
+      assert sutunlar == _s.columns.tolist(), f"sutunlar isn't correct: {sutunlar!r}"
+      assert ilk_mehsul == _s.loc[0, "Product Name"], f"ilk_mehsul should be {_s.loc[0, 'Product Name']!r}, your result: {ilk_mehsul!r}"
+      assert cem_gelir == round(_s["Total Revenue"].sum(), 2), f"cem_gelir should be {round(_s['Total Revenue'].sum(), 2)}, your result: {cem_gelir!r}"
+      assert ".head(" in dacy.code, "Look at the first rows with df.head()"
+  giris-testi:
+    title: 'Quiz: Series and DataFrames'
+    questions:
+      - text: What is the result of each expression?
+        buckets:
+          - name: Series
+            items:
+              - df["Region"]
+              - df["Total Revenue"] * 2
+              - df.dtypes
+          - name: DataFrame
+            items:
+              - df[["Region"]]
+              - df.head()
+              - df[["Region", "Total Revenue"]]
+          - name: A single value or a tuple
+            items:
+              - df.shape
+              - df["Units Sold"].sum()
+              - df.loc[0, "Region"]
+        explanation: One column with one pair of brackets is a Series; with two pairs of brackets, a DataFrame. shape returns a tuple, and sum() and loc[row, column] return a single value.
+      - text: The result of `df.shape` is `(1260, 11)`. What does this mean?
+        options:
+          - 1,260 columns, 11 rows
+          - 1,260 rows, 11 columns
+          - 1,260 unique products
+          - 11 missing values
+        explanation: shape always returns (number of rows, number of columns).
+      - text: The last line of the code is `df.head()`, and there's no `print`. What happens on DaCy (and in Jupyter)?
+        options:
+          - Nothing is shown
+          - The first 5 rows are shown in the console
+          - It raises an error
+          - The whole table is shown
+        explanation: If the last line is an expression, its result is shown automatically. For the lines in between, you need print().

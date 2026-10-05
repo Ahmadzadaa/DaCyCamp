@@ -1,0 +1,156 @@
+title: 'Text columns: .str and regex'
+description: str methods, contains/extract/split, extracting information with regex and an analysis of Nike sales.
+steps:
+  str-ders:
+    title: 'Text in a DataFrame: .str methods and regex'
+    content: |
+      The methods of Python strings are applied to pandas columns through `.str` — **to the whole column at once**.
+
+      ```python
+      df["Product Name"].str.upper()
+      df["Product Name"].str.len()
+      df["Product Name"].str.strip()
+      df["Product Name"].str.replace("Pro", "PRO")
+      df["Product Name"].str.startswith("Nike")
+      ```
+
+      ## With regex: contains, match, extract, findall, split
+
+      The Day 6 example:
+
+      ```python
+      df = pd.DataFrame({
+          "name": ["Alice", "Bob", "Charlie", "David", "Eve"],
+          "email": ["alice@example.com", "bob123@example.com", "charlie@domain.com",
+                    "david@website.org", "eve@company.com"],
+      })
+      ```
+
+      | Method | Example | What it does |
+      | --- | --- | --- |
+      | `str.contains` | `df[df["email"].str.contains("example")]` | Is the pattern there → True/False |
+      | `str.match` | `df[df["name"].str.match("^A")]` | Does it match from the start |
+      | `str.replace` | `.str.replace(r"example\.com", "newdomain.com", regex=True)` | Replacing |
+      | `str.extract` | `.str.extract(r"([^@]+)")` | Extracting a group as a separate column |
+      | `str.findall` | `.str.findall(r"@(\w+\.\w+)")` | All the matches (a list) |
+      | `str.split` | `.str.split("@", expand=True)` | Splitting into separate columns |
+
+      ```python
+      df["username"] = df["email"].str.extract(r"([^@]+)")
+      df[["user", "domain"]] = df["email"].str.split("@", expand=True)
+      ```
+
+      ## Useful tricks
+
+      ```python
+      df["Brend"] = df["Product Name"].str.split().str[0]          # the first word: "Nike", "iPhone"...
+      df[df["Product Name"].str.contains(r"\d", regex=True)]      # names that contain a digit
+      df["Model"] = df["Product Name"].str.extract(r"(\d+)").astype(float)
+      ```
+
+      > ⚠️ By default, `str.contains` works as a regex: a dot (`.`) means "any character". If you're searching for plain text, write `regex=False` or escape the special characters with `\`.
+  str-tapsiriq:
+    title: Products with a digit in their name, and brands
+    instructions: |
+      Day 6 (6, 8): an analysis of the product names.
+    tasks:
+      - The transactions of products whose name contains a digit → reqemli (str.contains(r"\d")).
+      - Their average revenue, 2 decimal places → reqemli_orta.
+      - 'The "Brend" (brand) column — the first word of the product name (str.split().str[0]).'
+      - The revenue per brand, from highest to lowest → brend_gelir; the highest-revenue brand → top_brend.
+    hints:
+      - df[df["Product Name"].str.contains(r"\d", regex=True)]
+      - df["Product Name"].str.split().str[0]
+      - df.groupby("Brend")["Total Revenue"].sum().sort_values(ascending=False)
+    tests: |
+      import pandas as _pd
+      import numpy as _np
+      _s = _pd.read_csv("satislar.csv")
+
+      _r = _s[_s["Product Name"].str.contains(r"\d", regex=True)]
+      assert isinstance(reqemli, _pd.DataFrame) and len(reqemli) == len(_r), f"reqemli should have {len(_r)} rows"
+      assert reqemli_orta == round(_r["Total Revenue"].mean(), 2), f"reqemli_orta should be {round(_r['Total Revenue'].mean(), 2)}"
+      assert "Brend" in df.columns and list(df["Brend"]) == list(_s["Product Name"].str.split().str[0]), "Brend = the first word"
+      _b = _s.groupby(_s["Product Name"].str.split().str[0])["Total Revenue"].sum().sort_values(ascending=False)
+      assert list(brend_gelir.index) == list(_b.index), "brend_gelir should be sorted from highest to lowest"
+      assert top_brend == _b.idxmax(), f"top_brend should be {_b.idxmax()!r}"
+  regex-email:
+    title: Extract information from email addresses
+    instructions: |
+      The example table from Day 6: names and email addresses. Extract information with the regex methods.
+    tasks:
+      - The rows whose email contains "example" → example.
+      - Write the username to the "username" column with str.extract(r"([^@]+)").
+      - Split the email on "@" into the "user" and "domain" columns (expand=True).
+      - The people whose name starts with the letter "A" or "E" → ae (str.match).
+    hints:
+      - df[df["email"].str.contains("example")]
+      - df[["user", "domain"]] = df["email"].str.split("@", expand=True)
+      - df[df["name"].str.match("^[AE]")] — [AE] means A or E.
+    tests: |
+      import pandas as _pd
+      assert isinstance(example, _pd.DataFrame) and list(example["name"]) == ["Alice", "Bob"], "example — Alice and Bob"
+      assert list(df["username"]) == ["alice", "bob123", "charlie", "david", "eve"], "username isn't correct"
+      assert list(df["domain"]) == ["example.com", "example.com", "domain.com", "website.org", "company.com"], "domain isn't correct"
+      assert list(df["user"]) == list(df["username"]), "user — the part before the @"
+      assert isinstance(ae, _pd.DataFrame) and list(ae["name"]) == ["Alice", "Eve"], "ae — Alice and Eve"
+      assert ".str.extract(" in dacy.code and ".str.match(" in dacy.code and "expand=True" in dacy.code, "Use extract, match and split(expand=True)"
+  nike-analiz:
+    title: Have Nike sales gone down?
+    instructions: |
+      Day 6 (7): Nike has reported that its sales have gone down. Check it with the data: **have sales gone down? has revenue gone down? demand for which product has fallen?**
+
+      Compare the first half of 2024 (January–June) with the second half (July–December).
+    tasks:
+      - The Nike products (whose name starts with "Nike") → nike.
+      - The units of Nike sold per quarter → rub (to_period("Q")).
+      - The units in 2024 H1 and H2 → h1, h2; have sales gone down → azalib (True/False).
+      - Nike's revenue in 2023 and 2024 → gelir_2023, gelir_2024 (2 decimal places).
+      - The Nike product whose units fell the most in H2 compared with H1 → en_cox_dusen.
+    hints:
+      - nike = df[df["Product Name"].str.startswith("Nike")]
+      - n24 = nike[nike["Date"].dt.year == 2024]; H1 — month <= 6, H2 — month > 6
+      - ferq = H2's totals per product .sub(H1's totals per product, fill_value=0); en_cox_dusen = ferq.idxmin()
+    tests: |
+      import pandas as _pd
+      import numpy as _np
+      _s = _pd.read_csv("satislar.csv")
+
+      _d = _s.assign(Date=_pd.to_datetime(_s["Date"]))
+      _n = _d[_d["Product Name"].str.startswith("Nike")]
+      assert isinstance(nike, _pd.DataFrame) and len(nike) == len(_n), f"nike should have {len(_n)} rows"
+      _r = _n.groupby(_n["Date"].dt.to_period("Q"))["Units Sold"].sum()
+      assert list(rub.values) == list(_r.values), "rub — the units per quarter (to_period('Q'))"
+      _y = _n[_n["Date"].dt.year == 2024]
+      _a, _b = _y[_y["Date"].dt.month <= 6], _y[_y["Date"].dt.month > 6]
+      assert (h1, h2) == (_a["Units Sold"].sum(), _b["Units Sold"].sum()), f"h1, h2 should be {_a['Units Sold'].sum()}, {_b['Units Sold'].sum()}"
+      assert azalib is True, "The data shows that sales have gone down — azalib should be True"
+      assert gelir_2023 == round(_n[_n["Date"].dt.year == 2023]["Total Revenue"].sum(), 2) and gelir_2024 == round(_y["Total Revenue"].sum(), 2), "gelir_2023 / gelir_2024 aren't correct"
+      _f = _b.groupby("Product Name")["Units Sold"].sum().sub(_a.groupby("Product Name")["Units Sold"].sum(), fill_value=0)
+      assert en_cox_dusen == _f.idxmin(), f"en_cox_dusen should be {_f.idxmin()!r}"
+  metn-testi:
+    title: 'Quiz: Text columns'
+    questions:
+      - text: 'The result each method returns:'
+        buckets:
+          - name: A True/False Series (for filtering)
+            items:
+              - str.contains("x")
+              - str.startswith("Nike")
+              - str.match("^A")
+          - name: A new text column
+            items:
+              - str.upper()
+              - str.replace("a", "b")
+              - str.extract(r"(\d+)")
+          - name: Several columns
+            items:
+              - str.split("@", expand=True)
+        explanation: contains/startswith/match give a mask, upper/replace/extract give text, and split(expand=True) gives separate columns.
+      - text: Why might `df["Product Name"].str.contains("S10.")` find unexpected rows?
+        options:
+          - contains ignores upper and lower case
+          - In the default regex mode, a dot means any character
+          - contains only finds digits
+          - It can't
+        explanation: You need to write regex=False or "S10\.".

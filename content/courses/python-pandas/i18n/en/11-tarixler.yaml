@@ -1,0 +1,162 @@
+title: Working with dates
+description: to_datetime, .dt (year, month, day, day of the week), filtering by date, grouping by month and month-over-month change.
+steps:
+  tarixler-ders:
+    title: to_datetime and .dt
+    content: |
+      A date read from a CSV is actually **text** (`object`). To calculate with dates, you need to convert it to the `datetime` type:
+
+      ```python
+      df["Date"] = pd.to_datetime(df["Date"])
+      # or while reading: pd.read_csv("satislar.csv", parse_dates=["Date"])
+      ```
+
+      ## .dt — the parts of a date
+
+      | Code | Result |
+      | --- | --- |
+      | `df["Date"].dt.year` | 2024 |
+      | `df["Date"].dt.month` | 3 |
+      | `df["Date"].dt.day` | 15 |
+      | `df["Date"].dt.quarter` | 1 (the quarter) |
+      | `df["Date"].dt.day_name()` | "Friday" |
+      | `df["Date"].dt.to_period("M")` | 2024-03 (a monthly period) |
+      | `df["Date"].dt.strftime("%d.%m.%Y")` | "15.03.2024" |
+
+      ## Filtering by date
+
+      ```python
+      df[df["Date"].dt.year == 2024]
+      df[(df["Date"] >= "2024-01-01") & (df["Date"] < "2024-04-01")]   # Q1
+      df[df["Date"].between("2024-06-01", "2024-08-31")]
+      ```
+
+      ## Grouping by month
+
+      ```python
+      ayliq = df.groupby(df["Date"].dt.to_period("M"))["Total Revenue"].sum()
+      ```
+
+      ## Month-over-month change: pct_change
+
+      ```python
+      deyisme = ayliq.pct_change() * 100     # % compared with the previous month
+      ```
+
+      `pct_change()` compares each value with the previous one: `(current − previous) / previous`. The first value is `NaN` (there's no previous month to compare with).
+
+      ## A two-dimensional table: unstack
+
+      ```python
+      region_ay = (df.groupby([df["Date"].dt.to_period("M"), "Region"])["Total Revenue"]
+                     .sum()
+                     .unstack(fill_value=0))
+      ```
+
+      `unstack()` turns the second level of the index into columns: the rows are months and the columns are regions. You can also do this with `pivot_table` (in one of the coming chapters).
+  dt-hisseler:
+    title: Split a date into parts
+    instructions: |
+      Day 3 (10): split the Date column into year, month and day parts, then combine them again.
+    tasks:
+      - Convert the Date column to the datetime type.
+      - 'Create the "Il" (year), "Ay" (month) and "Gun" (day) columns (.dt.year, .dt.month, .dt.day).'
+      - Convert the date back to "YYYY-MM-DD" text → the "Birləşmiş" (combined) column (dt.strftime).
+      - The day-of-the-week column "Həftə günü" (day_name), and the day of the week with the most sales → en_cox_gun.
+    hints:
+      - df["Date"] = pd.to_datetime(df["Date"])
+      - df["Il"] = df["Date"].dt.year (month — .dt.month, day — .dt.day)
+      - df["Date"].dt.strftime("%Y-%m-%d"); df["Date"].dt.day_name()
+    tests: |
+      import pandas as _pd
+      import numpy as _np
+      _s = _pd.read_csv("satislar.csv")
+
+      _d = _pd.to_datetime(_s["Date"])
+      assert str(df["Date"].dtype).startswith("datetime64"), "Convert Date with pd.to_datetime"
+      assert list(df["Il"]) == list(_d.dt.year) and list(df["Ay"]) == list(_d.dt.month) and list(df["Gun"]) == list(_d.dt.day), "Il, Ay and Gun aren't correct"
+      assert list(df["Birləşmiş"]) == list(_s["Date"]), 'df["Birləşmiş"] = df["Date"].dt.strftime("%Y-%m-%d") — it should match the original text'
+      assert list(df["Həftə günü"]) == list(_d.dt.day_name()), 'df["Həftə günü"] = df["Date"].dt.day_name()'
+      assert en_cox_gun == _d.dt.day_name().value_counts().idxmax(), f"en_cox_gun should be {_d.dt.day_name().value_counts().idxmax()!r}"
+  il-2024:
+    title: The sales of 2024
+    instructions: |
+      Day 6 (5): select only the transactions of 2024 and analyze them.
+    tasks:
+      - The total revenue of 2024, 2 decimal places → gelir_2024.
+      - The revenue of 2024 by month (index — the month number 1–12), 2 decimal places → aylar_2024.
+      - The number of the month that brought in the most revenue in 2024 → en_yaxsi_ay.
+    hints:
+      - d24 = df[df["Date"].dt.year == 2024]
+      - d24.groupby(d24["Date"].dt.month)["Total Revenue"].sum().round(2)
+      - en_yaxsi_ay = aylar_2024.idxmax()
+    tests: |
+      import pandas as _pd
+      import numpy as _np
+      _s = _pd.read_csv("satislar.csv")
+
+      _d = _s.assign(Date=_pd.to_datetime(_s["Date"]))
+      _y = _d[_d["Date"].dt.year == 2024]
+      assert gelir_2024 == round(_y["Total Revenue"].sum(), 2), f"gelir_2024 should be {round(_y['Total Revenue'].sum(), 2)}"
+      _a = _y.groupby(_y["Date"].dt.month)["Total Revenue"].sum().round(2)
+      assert isinstance(aylar_2024, _pd.Series) and list(aylar_2024.index) == list(range(1, 13)), "The index of aylar_2024 should be 1–12 (the month numbers) — group by .dt.month"
+      assert (aylar_2024.round(2) - _a).abs().max() < 0.011, "The values of aylar_2024 aren't correct"
+      assert en_yaxsi_ay == _a.idxmax(), f"en_yaxsi_ay should be {_a.idxmax()}"
+  ayliq-deyisme:
+    title: Month-over-month change and a region × month table
+    instructions: |
+      Day 6 (3, 10): compare this month's sales with the previous month and build a monthly table of the regions.
+    tasks:
+      - The total revenue by month (to_period("M")) → ayliq.
+      - The month-over-month change in percent (pct_change × 100), 2 decimal places → deyisme.
+      - The change of the last month compared with the previous one, 2 decimal places → son_ay_deyisme.
+      - A revenue table with months as rows and regions as columns (empty cells 0) → region_ay (unstack).
+    hints:
+      - df.groupby(df["Date"].dt.to_period("M"))["Total Revenue"].sum()
+      - (ayliq.pct_change() * 100).round(2); the last value — .iloc[-1]
+      - groupby([month, "Region"])["Total Revenue"].sum().unstack(fill_value=0)
+    tests: |
+      import pandas as _pd
+      import numpy as _np
+      _s = _pd.read_csv("satislar.csv")
+
+      _d = _s.assign(Date=_pd.to_datetime(_s["Date"]))
+      _m = _d.groupby(_d["Date"].dt.to_period("M"))["Total Revenue"].sum()
+      assert isinstance(ayliq, _pd.Series) and len(ayliq) == len(_m) and _np.allclose(ayliq.values, _m.values), "ayliq — the revenue by month (24 months)"
+      _c = (_m.pct_change() * 100).round(2)
+      assert _np.allclose(deyisme.values[1:], _c.values[1:], atol=0.011) and _pd.isna(deyisme.iloc[0]), "deyisme = (ayliq.pct_change() * 100).round(2)"
+      assert son_ay_deyisme == round(_c.iloc[-1], 2), f"son_ay_deyisme should be {round(_c.iloc[-1], 2)}"
+      _r = _d.groupby([_d["Date"].dt.to_period("M"), "Region"])["Total Revenue"].sum().unstack(fill_value=0)
+      assert isinstance(region_ay, _pd.DataFrame) and region_ay.shape == _r.shape and sorted(region_ay.columns) == sorted(_r.columns), f"region_ay should have the shape {_r.shape} (months × regions)"
+      assert _np.allclose(region_ay[_r.columns].values, _r.values), "The values of region_ay aren't correct"
+  tarixler-testi:
+    title: 'Quiz: Dates'
+    questions:
+      - text: Why does `.dt.year` raise an error on a `Date` column read from a CSV?
+        options:
+          - The date is in the wrong format
+          - The column is still text (object) — you need pd.to_datetime first
+          - .dt only works in Excel
+          - year doesn't exist
+        explanation: .dt only works on columns of the datetime type.
+      - text: 'Monthly sales: 100, 120, 90. What is the result of `pct_change()`?'
+        options:
+          - '[NaN, 0.2, -0.25]'
+          - '[0, 20, -30]'
+          - '[100, 20, -30]'
+          - '[NaN, 20, 90]'
+        explanation: (120 − 100) / 100 = 0.2; (90 − 120) / 120 = −0.25; the first value has nothing to compare with — NaN.
+      - text: 'The result that matches each piece of code:'
+        buckets:
+          - name: A number
+            items:
+              - df["Date"].dt.month
+              - df["Date"].dt.quarter
+          - name: Text
+            items:
+              - df["Date"].dt.day_name()
+              - df["Date"].dt.strftime("%d.%m.%Y")
+          - name: A period
+            items:
+              - df["Date"].dt.to_period("M")
+        explanation: month/quarter return a number, day_name/strftime return text, and to_period returns a monthly period.

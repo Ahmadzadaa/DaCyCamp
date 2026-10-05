@@ -1,0 +1,160 @@
+title: Sorting and removing duplicates
+description: sort_values (one and several columns), nlargest, idxmax, drop_duplicates and its parameters.
+steps:
+  siralama-ders:
+    title: Sorting and duplicates
+    content: |
+      ## sort_values
+
+      ```python
+      df.sort_values(by="Total Revenue", ascending=True)     # ascending
+      df.sort_values(by="Total Revenue", ascending=False)    # descending
+
+      # first Region (A→Z), then Total Revenue within each region (highest to lowest)
+      df.sort_values(by=["Region", "Total Revenue"], ascending=[True, False])
+      ```
+
+      Sorting **doesn't change** the index — the rows move around together with their labels. If you need a fresh 0, 1, 2… index: `.reset_index(drop=True)`.
+
+      ## The largest / the smallest
+
+      ```python
+      df.nlargest(3, "Total Revenue")     # the 3 largest rows
+      df.nsmallest(5, "Unit Price")       # the 5 smallest
+      df.loc[df["Total Revenue"].idxmax()]   # the row with the highest revenue itself
+      ```
+
+      ## Duplicates: duplicated and drop_duplicates
+
+      ```python
+      df.duplicated().sum()              # the number of fully duplicated rows
+      df.drop_duplicates()               # a new DataFrame with the duplicates removed
+      ```
+
+      The parameters of `drop_duplicates()`:
+
+      | Parameter | Default | Meaning |
+      | --- | --- | --- |
+      | `subset` | `None` (all columns) | Which columns define a duplicate: `subset=["Transaction ID"]` |
+      | `keep` | `"first"` | Which one to keep: `"first"` — the first, `"last"` — the last, `False` — none |
+      | `inplace` | `False` | `True` — the original DataFrame changes; no new one is created |
+      | `ignore_index` | `False` | `True` — the new index starts at 0 |
+
+      ```python
+      df.drop_duplicates(subset=["Product Name"])        # one row per product
+      df.drop_duplicates(subset=["Transaction ID"], keep="last")
+      ```
+
+      ## The "most expensive of each product" technique
+
+      Sort, then keep the first row of each group:
+
+      ```python
+      (df.sort_values("Unit Price", ascending=False)
+         .drop_duplicates("Product Name")
+         .head(3))
+      ```
+
+      > 💡 Writing methods line by line inside parentheses (method chaining) makes long operations easier to read.
+  sort:
+    title: The highest-revenue transactions
+    instructions: |
+      Exercises from Day 3 (29) and Day 4 (5, 6): sorting and the largest values.
+    tasks:
+      - Sort by Total Revenue in descending order and take the product names of the first 3 transactions as a list → top3.
+      - Sort the sales by date in ascending order and take the first 5 transactions → ilk5.
+      - The row of the most expensive transaction by Total Revenue → en_baha (a Series, idxmax + loc).
+    hints:
+      - df.sort_values("Total Revenue", ascending=False).head(3)["Product Name"].tolist()
+      - 'Because the dates are in YYYY-MM-DD format, they also sort correctly as text: df.sort_values("Date").head(5)'
+      - en_baha = df.loc[df["Total Revenue"].idxmax()]
+    tests: |
+      import pandas as _pd
+      import numpy as _np
+      _s = _pd.read_csv("satislar.csv")
+
+      _t = _s.sort_values("Total Revenue", ascending=False).head(3)["Product Name"].tolist()
+      assert top3 == _t, f"top3 should be {_t}, your result: {top3!r}"
+      _i5 = _s.sort_values("Date").head(5)
+      assert isinstance(ilk5, _pd.DataFrame) and len(ilk5) == 5 and list(ilk5["Date"]) == list(_i5["Date"]), "ilk5 = df.sort_values('Date').head(5)"
+      _eb = _s.loc[_s["Total Revenue"].idxmax()]
+      assert isinstance(en_baha, _pd.Series) and en_baha.equals(_eb), "en_baha = df.loc[df['Total Revenue'].idxmax()]"
+      assert "sort_values(" in dacy.code, "Use sort_values()"
+  coxlu-siralama:
+    title: Sorting by several columns
+    instructions: |
+      Day 4 (8): sort the products by price and find the 3 most expensive products. Because the same product is sold many times, you first need to drop the duplicates.
+    tasks:
+      - Sort first by Region (A→Z), then by Total Revenue within each region (highest to lowest) → sirali.
+      - Sort by Unit Price in descending order, keep only the first row of each product and take the names of the first 3 products → top3_qiymet.
+      - The 5 rows with the lowest Unit Price → en_ucuz5 (nsmallest).
+    hints:
+      - 'ascending can be a list: ascending=[True, False]'
+      - Sort → drop_duplicates("Product Name") → head(3) → ["Product Name"].tolist()
+      - en_ucuz5 = df.nsmallest(5, "Unit Price")
+    tests: |
+      import pandas as _pd
+      import numpy as _np
+      _s = _pd.read_csv("satislar.csv")
+
+      _sr = _s.sort_values(["Region", "Total Revenue"], ascending=[True, False])
+      assert isinstance(sirali, _pd.DataFrame) and list(sirali.index) == list(_sr.index), "sirali = df.sort_values(['Region', 'Total Revenue'], ascending=[True, False])"
+      _tq = _s.sort_values("Unit Price", ascending=False).drop_duplicates("Product Name").head(3)["Product Name"].tolist()
+      assert top3_qiymet == _tq, f"top3_qiymet should be {_tq}, your result: {top3_qiymet!r}"
+      _u = _s.nsmallest(5, "Unit Price")
+      assert isinstance(en_ucuz5, _pd.DataFrame) and list(en_ucuz5["Unit Price"]) == list(_u["Unit Price"]), "en_ucuz5 = df.nsmallest(5, 'Unit Price')"
+  dublikatlar:
+    title: Duplicated rows
+    instructions: |
+      Because of a system error, some transactions were recorded twice in the raw data (Day 3: 24, 30).
+    tasks:
+      - The number of fully duplicated rows in satislar_xam.csv → dublikat_say.
+      - Remove the duplicates and restart the index from 0 → temiz (drop_duplicates + reset_index(drop=True)).
+      - The number of duplicated IDs by Transaction ID → id_tekrar.
+      - The number of products in satislar.csv that were sold at least 2 times → tekrar_mehsul_sayi (with value_counts).
+    hints:
+      - dublikat_say = xam.duplicated().sum()
+      - temiz = xam.drop_duplicates().reset_index(drop=True)
+      - id_tekrar = xam["Transaction ID"].duplicated().sum(); say = df["Product Name"].value_counts(); (say >= 2).sum()
+    tests: |
+      import pandas as _pd
+      import numpy as _np
+      _s = _pd.read_csv("satislar.csv")
+
+      _x = _pd.read_csv("satislar_xam.csv")
+
+      assert dublikat_say == _x.duplicated().sum(), f"dublikat_say should be {_x.duplicated().sum()}, your result: {dublikat_say!r}"
+      _t = _x.drop_duplicates().reset_index(drop=True)
+      assert isinstance(temiz, _pd.DataFrame) and temiz.equals(_t), f"temiz should have {len(_t)} rows, and its index should start at 0 — reset_index(drop=True)"
+      assert id_tekrar == _x["Transaction ID"].duplicated().sum(), f"id_tekrar should be {_x['Transaction ID'].duplicated().sum()}"
+      _v = _s["Product Name"].value_counts()
+      assert tekrar_mehsul_sayi == (_v >= 2).sum(), f"tekrar_mehsul_sayi should be {(_v >= 2).sum()}, your result: {tekrar_mehsul_sayi!r}"
+  siralama-testi:
+    title: 'Quiz: Sorting and duplicates'
+    questions:
+      - text: How does `df.sort_values(["Region", "Total Revenue"], ascending=[True, False])` sort?
+        options:
+          - Descending by both columns
+          - Region A→Z, and revenue from highest to lowest within each region
+          - Revenue from highest to lowest, then Region A→Z
+          - By Region only
+        explanation: The first column in the list is the main sort; the second determines the order among equal values.
+      - text: What does `drop_duplicates(subset=["Transaction ID"], keep=False)` do?
+        options:
+          - It keeps the first row of each ID
+          - It keeps the last row of each ID
+          - It removes all the rows of duplicated IDs (keeps none of them)
+          - It removes nothing
+        explanation: keep=False — none of the rows of a duplicated group is kept.
+      - text: 'The result of each operation:'
+        buckets:
+          - name: The order of the rows changes; their number stays the same
+            items:
+              - sort_values()
+              - sort_index()
+          - name: The number of rows can go down
+            items:
+              - drop_duplicates()
+              - nlargest(5, ...)
+              - head(10)
+        explanation: Sorting moves rows around; drop_duplicates, nlargest and head keep only some of the rows.

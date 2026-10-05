@@ -1,0 +1,180 @@
+title: 'Combining tables: merge, join, concat'
+description: The types of JOIN, a common column, joining on the index, combining vertically and horizontally.
+steps:
+  merge-ders:
+    title: 'Time for a JOIN: merge and join'
+    content: |
+      Data is often spread across several tables: customers in one, orders in another. Combining them on a common column (a key) is a **join**. In Excel it's VLOOKUP, in SQL it's JOIN, and in pandas it's `merge`.
+
+      ```python
+      musteriler = pd.DataFrame({"MüştəriID": [1, 2, 3], "Ad": ["Aysel", "Namiq", "Cavid"]})
+      sifarisler = pd.DataFrame({"MüştəriID": [2, 3, 4], "Sifariş": ["Book", "Phone", "Computer"]})
+      ```
+
+      (`MüştəriID` — customer ID, `Ad` — name, `Sifariş` — order.)
+
+      ## The four types
+
+      | `how=` | What's kept | Result |
+      | --- | --- | --- |
+      | `"inner"` | Only the keys found in both tables | 2, 3 |
+      | `"left"` | All of the left table (not found on the right → NaN) | 1, 2, 3 |
+      | `"right"` | All of the right table | 2, 3, 4 |
+      | `"outer"` | All of both | 1, 2, 3, 4 |
+
+      ```python
+      pd.merge(musteriler, sifarisler, on="MüştəriID", how="inner")
+      ```
+
+      ## The key parameters
+
+      | Parameter | Meaning |
+      | --- | --- |
+      | `on` | The common column(s) |
+      | `left_on`, `right_on` | When the names differ: `left_on="ID", right_on="MüştəriID"` |
+      | `suffixes` | Suffixes for columns with the same name (default `("_x", "_y")`) |
+      | `indicator=True` | A `_merge` column: `both`, `left_only`, `right_only` |
+      | `sort` | Sort the result by the key |
+
+      `indicator=True` is especially useful: "customers without orders" (`left_only`) or "orders from customers who aren't registered" (`right_only`) show up right away.
+
+      ## join — on the index
+
+      ```python
+      df1 = pd.DataFrame({"Ad": ["Aysel", "Namiq", "Cavid"]}, index=[1, 2, 3])
+      df2 = pd.DataFrame({"Sifariş": ["Book", "Phone", "Computer"]}, index=[2, 3, 4])
+      df1.join(df2, how="left")
+      ```
+
+      `merge` combines on columns (SQL style), and `join` mainly on the index.
+
+      > ⚠️ If the key has duplicates (one customer with several orders), the number of rows in the result grows — that's normal. But when there are duplicates on both sides, the rows can multiply unexpectedly: check `len()` before and after combining.
+  concat-ders:
+    title: 'Combining vertically and horizontally: concat'
+    content: |
+      `merge` combines "side by side" on a key. Sometimes, though, you just need to put tables with the same structure **below** or **next to** each other.
+
+      ## Vertically (row bind) — axis=0
+
+      The January, February and March sales are in separate files — we gather them all into one table:
+
+      ```python
+      yan = pd.read_csv("satis_yanvar.csv")
+      fev = pd.read_csv("satis_fevral.csv")
+      mar = pd.read_csv("satis_mart.csv")
+
+      q1 = pd.concat([yan, fev, mar], axis=0, ignore_index=True)
+      ```
+
+      - The column names must match — the ones that don't are filled with NaN.
+      - `ignore_index=True` — the new index starts at 0 (otherwise each file's 0, 1, 2… index repeats).
+      - `keys=["January", "February", "March"]` — writes the file each row came from into the index.
+
+      ## Horizontally (column bind) — axis=1
+
+      ```python
+      pd.concat([df1, df3], axis=1)
+      ```
+
+      The rows are placed side by side by index. If the indexes don't match, NaNs appear.
+
+      | | `merge` | `concat` |
+      | --- | --- | --- |
+      | How | Matches rows on a key column | Just puts them below/next to each other |
+      | Example | Adding the customer's name to an order | Combining monthly files |
+  merge-tipleri:
+    title: Types of merge
+    instructions: |
+      Combine the tables `musteriler.csv` (`MüştəriID`, `Ad`, `Şəhər`, `Qeydiyyat`) and `sifarisler_qisa.csv` (`SifarişID`, `MüştəriID`, `Məhsul`, `Məbləğ`).
+
+      The column names are Azerbaijani: customer ID, name, city and registration date; order ID, customer ID, product and amount.
+    tasks:
+      - An inner join → inner; how many rows → inner_say.
+      - A left join → left; the names of the customers without orders (in alphabetical order) → sifarissiz.
+      - An outer join with indicator=True → outer; the number of orders from customers who aren't in the customers table → namelum.
+    hints:
+      - pd.merge(m, s, on="MüştəriID", how="inner")
+      - 'In left, the "SifarişID" of the rows not found on the right is NaN: left[left["SifarişID"].isnull()]["Ad"]'
+      - indicator=True → the _merge column; (outer["_merge"] == "right_only").sum()
+    tests: |
+      import pandas as _pd
+      assert inner_say == 8, f"inner_say should be 8, your result: {inner_say!r}"
+      assert isinstance(left, _pd.DataFrame) and len(left) == 11, f"left should have 11 rows (8 + 3 customers without orders), yours has {len(left) if hasattr(left, '__len__') else left!r}"
+      assert list(sifarissiz) == ["Nigar", "Rauf", "Tural"], f"sifarissiz should be ['Nigar', 'Rauf', 'Tural'], your result: {sifarissiz!r}"
+      assert "_merge" in outer.columns, "outer should use indicator=True"
+      assert namelum == 2, f"namelum should be 2 (customer IDs 9 and 10), your result: {namelum!r}"
+  merge-groupby:
+    title: Combine and analyze
+    instructions: |
+      The question after the join: which customer and which city spend the most?
+    tasks:
+      - Inner join the two tables → df.
+      - The total spending per customer name, from highest to lowest → xerc.
+      - The customer who spends the most → en_cox_xerc.
+      - The total spending per city → seher_xerc.
+    hints:
+      - df = pd.merge(s, m, on="MüştəriID", how="inner")
+      - df.groupby("Ad")["Məbləğ"].sum().sort_values(ascending=False)
+      - df.groupby("Şəhər")["Məbləğ"].sum()
+    tests: |
+      import pandas as _pd
+      _m = _pd.read_csv("musteriler.csv"); _s = _pd.read_csv("sifarisler_qisa.csv")
+      _d = _pd.merge(_s, _m, on="MüştəriID")
+      _x = _d.groupby("Ad")["Məbləğ"].sum().sort_values(ascending=False)
+      assert isinstance(xerc, _pd.Series) and list(xerc.index) == list(_x.index) and _x.equals(xerc), f"xerc should be {_x.to_dict()} (from highest to lowest)"
+      assert en_cox_xerc == "Aysel", f'en_cox_xerc should be "Aysel" (1899 + 75), your result: {en_cox_xerc!r}'
+      assert seher_xerc.to_dict() == _d.groupby("Şəhər")["Məbləğ"].sum().to_dict(), "seher_xerc isn't correct"
+  concat-tapsiriq:
+    title: Combine the monthly files
+    instructions: |
+      Day 5 (3): combine the files for different months into one table.
+    tasks:
+      - Read the three monthly files and combine them vertically (index from 0) → q1.
+      - 'The revenue by month (the first 7 characters of Date: "2024-01"), 2 decimal places → ay_gelir.'
+      - Combine the Date and Region columns of the first 3 rows of q1 side by side with axis=1 → ufuqi.
+    hints:
+      - pd.concat([yan, fev, mar], axis=0, ignore_index=True)
+      - q1.groupby(q1["Date"].str[:7])["Total Revenue"].sum().round(2)
+      - pd.concat([q1[["Date"]].head(3), q1[["Region"]].head(3)], axis=1)
+    tests: |
+      import pandas as _pd
+      _p = [_pd.read_csv(f"satis_{a}.csv") for a in ("yanvar", "fevral", "mart")]
+      _q = _pd.concat(_p, ignore_index=True)
+      assert isinstance(q1, _pd.DataFrame) and len(q1) == sum(len(p) for p in _p), f"q1 should have {len(_q)} rows"
+      assert list(q1.index) == list(range(len(q1))), "ignore_index=True — the index should start at 0"
+      _a = _q.groupby(_q["Date"].str[:7])["Total Revenue"].sum().round(2)
+      assert ay_gelir.round(2).to_dict() == _a.to_dict(), f"ay_gelir should be {_a.to_dict()}"
+      assert isinstance(ufuqi, _pd.DataFrame) and ufuqi.shape == (3, 2) and list(ufuqi.columns) == ["Date", "Region"], "ufuqi — 3 rows, the Date and Region columns (axis=1)"
+      assert "pd.concat(" in dacy.code and "axis=1" in dacy.code, "Combine both vertically and horizontally with pd.concat"
+  birlesdirme-testi:
+    title: 'Quiz: merge and concat'
+    questions:
+      - text: 'Customers: IDs 1, 2, 3. Orders: IDs 2, 3, 4. The IDs in the result of each JOIN type:'
+        buckets:
+          - name: inner → 2, 3
+            items:
+              - how="inner"
+          - name: left → 1, 2, 3
+            items:
+              - how="left"
+          - name: right → 2, 3, 4
+            items:
+              - how="right"
+          - name: outer → 1, 2, 3, 4
+            items:
+              - how="outer"
+        explanation: inner — the common keys, left — all of the left table, right — all of the right, outer — all of both.
+      - text: What is used to gather monthly sales files into one table?
+        options:
+          - pd.merge(..., how="inner")
+          - pd.concat([...], axis=0)
+          - df.join(...)
+          - df.pivot_table(...)
+        explanation: Tables with the same structure are stacked one below another with concat.
+      - text: What does `indicator=True` add?
+        options:
+          - Row numbers
+          - A _merge column showing which table each row came from
+          - The number of empty values
+          - Sorting
+        explanation: '_merge: both, left_only, right_only.'

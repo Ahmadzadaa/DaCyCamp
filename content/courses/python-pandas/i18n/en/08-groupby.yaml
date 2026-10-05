@@ -1,0 +1,236 @@
+title: Grouping and aggregation
+description: Sums, means and counts per group with groupby; several keys, agg, the leader of each group.
+steps:
+  groupby-ders:
+    title: 'groupby: split, apply, combine'
+    content: |
+      "Revenue per region", "the average sales of each product", "the number of sales by each employee" — these questions require **grouping**. In Excel it's a pivot table, in SQL it's `GROUP BY`, and in pandas it's `groupby`.
+
+      ## Split → apply → combine
+
+      ```python
+      df.groupby("Region")["Total Revenue"].sum()
+      ```
+
+      1. **Split:** the rows are split into groups by their Region value.
+      2. **Apply:** Total Revenue is summed within each group.
+      3. **Combine:** the result is a Series whose index is the regions.
+
+      ## Aggregation functions
+
+      | Function | What it calculates |
+      | --- | --- |
+      | `sum()` | The sum |
+      | `mean()` | The mean |
+      | `count()` | The number of non-null values |
+      | `size()` | The number of rows in the group |
+      | `min()`, `max()` | The smallest, the largest |
+      | `nunique()` | The number of unique values |
+      | `agg([...])` | Several functions at once |
+
+      ```python
+      df.groupby("Region")["Total Revenue"].agg(["sum", "mean", "count"])
+      ```
+
+      ## Several keys
+
+      ```python
+      df.groupby(["Region", "Payment Method"])["Total Revenue"].sum()
+      ```
+
+      The index of the result has two levels (a MultiIndex). If you need an ordinary table — `.reset_index()`.
+
+      ## Named aggregation
+
+      ```python
+      df.groupby("Product Name").agg(
+          orta_say=("Units Sold", "mean"),
+          orta_qiymet=("Unit Price", "mean"),
+          emeliyyat=("Transaction ID", "count"),
+      )
+      ```
+
+      The format: `new_name=("column", "function")` — you choose the names of the result columns yourself (here: `orta_say` — average units, `orta_qiymet` — average price, `emeliyyat` — transactions).
+
+      ## Working with the result
+
+      ```python
+      gelir = df.groupby("Region")["Total Revenue"].sum().sort_values(ascending=False)
+      gelir.idxmax()        # the region with the most revenue
+      gelir.head(3)         # the top 3
+      ```
+  groupby-lider:
+    title: The leader of each group and other techniques
+    content: |
+      ## "The product that brings in the most revenue in each region"
+
+      This is a two-step question: first the sum by region × product, then the maximum in each region.
+
+      ```python
+      pg = df.groupby(["Region", "Product Name"])["Total Revenue"].sum().reset_index()
+      liderler = pg.loc[pg.groupby("Region")["Total Revenue"].idxmax()]
+      ```
+
+      `pg.groupby("Region")["Total Revenue"].idxmax()` returns the **index** of the largest row in each region, and `loc` takes those rows.
+
+      An alternative — sort and keep the first row of each group:
+
+      ```python
+      pg.sort_values("Total Revenue", ascending=False).drop_duplicates("Region")
+      ```
+
+      ## How many different values in a group?
+
+      ```python
+      df.groupby("Sales Employee")["Product Name"].nunique()   # how many different products each employee sold
+      ```
+
+      ## transform — return the group result to every row
+
+      ```python
+      df["Region Share"] = df["Total Revenue"] / df.groupby("Region")["Total Revenue"].transform("sum")
+      ```
+
+      `transform` spreads the result over every row of the group — for questions like "what percentage of the region's revenue is this transaction?".
+
+      ## The result as a dictionary
+
+      ```python
+      dict(zip(liderler["Region"], liderler["Product Name"]))
+      # {"Bakı": "iPhone 15", "Gəncə": ...}
+      ```
+  groupby-esas:
+    title: By region, category and payment
+    instructions: |
+      Day 4 (1–3) and Day 3 (25, 27).
+    tasks:
+      - The sum of Total Revenue per region, sorted from highest to lowest → region_gelir.
+      - The region that brings in the most revenue → en_cox_region.
+      - The total Units Sold per Product Category → kateqoriya_say.
+      - The number of transactions per Payment Method → odenis_say (size()).
+    hints:
+      - df.groupby("Region")["Total Revenue"].sum().sort_values(ascending=False)
+      - en_cox_region = region_gelir.idxmax()
+      - df.groupby("Payment Method").size()
+    tests: |
+      import pandas as _pd
+      import numpy as _np
+      _s = _pd.read_csv("satislar.csv")
+
+      _r = _s.groupby("Region")["Total Revenue"].sum().sort_values(ascending=False)
+      assert isinstance(region_gelir, _pd.Series) and list(region_gelir.index) == list(_r.index), f"region_gelir should be sorted from highest to lowest: {list(_r.index)}"
+      assert (region_gelir - _r).abs().max() < 0.01, "The values of region_gelir aren't correct"
+      assert en_cox_region == _r.idxmax(), f"en_cox_region should be {_r.idxmax()!r}"
+      assert kateqoriya_say.to_dict() == _s.groupby("Product Category")["Units Sold"].sum().to_dict(), "kateqoriya_say isn't correct"
+      assert odenis_say.to_dict() == _s.groupby("Payment Method").size().to_dict(), "odenis_say isn't correct"
+      assert "groupby(" in dacy.code, "Use groupby"
+  groupby-coxlu:
+    title: Several keys and agg
+    instructions: |
+      Day 4 (4) and Day 3 (28): grouping by combinations.
+    tasks:
+      - The total revenue per combination of Filial and Sales Employee → filial_isci.
+      - 'By Region and Payment Method: a table with the columns Satis (the sum of Units Sold) and Gelir (the sum of Total Revenue) → region_odenis (named agg).'
+      - The revenue of the "Bakı" + Credit Card row of region_odenis (2 decimal places) → baki_kart_gelir.
+    hints:
+      - df.groupby(["Filial", "Sales Employee"])["Total Revenue"].sum()
+      - .agg(Satis=("Units Sold", "sum"), Gelir=("Total Revenue", "sum"))
+      - 'In a MultiIndex, a row is a tuple: region_odenis.loc[("Bakı", "Credit Card"), "Gelir"]'
+    tests: |
+      import pandas as _pd
+      import numpy as _np
+      _s = _pd.read_csv("satislar.csv")
+
+      _f = _s.groupby(["Filial", "Sales Employee"])["Total Revenue"].sum()
+      assert isinstance(filial_isci, _pd.Series) and (filial_isci - _f).abs().max() < 0.01 and len(filial_isci) == len(_f), "filial_isci = df.groupby(['Filial', 'Sales Employee'])['Total Revenue'].sum()"
+      assert isinstance(region_odenis, _pd.DataFrame) and {"Satis", "Gelir"} <= set(region_odenis.columns), "region_odenis should have the Satis and Gelir columns"
+      _g = _s.groupby(["Region", "Payment Method"])["Total Revenue"].sum()
+      assert (region_odenis["Gelir"] - _g).abs().max() < 0.01, "The Gelir values aren't correct"
+      assert (region_odenis["Satis"] - _s.groupby(["Region", "Payment Method"])["Units Sold"].sum()).abs().max() == 0, "The Satis values aren't correct"
+      assert baki_kart_gelir == round(_g.loc[("Bakı", "Credit Card")], 2), f"baki_kart_gelir should be {round(_g.loc[('Bakı', 'Credit Card')], 2)}"
+  groupby-mehsul:
+    title: Named aggregation by product
+    instructions: |
+      Day 4 (7, 13, 14) and Day 3 (26).
+    tasks:
+      - 'For each Product Name: orta_say (the mean of Units Sold), orta_qiymet (the mean of Unit Price), emeliyyat (the count) — 2 decimal places → mehsul.'
+      - The average revenue brought in by each Payment Method, 2 decimal places → odenis_orta.
+      - The product with the most units sold → en_cox_satilan, and its number of units sold → en_cox_say.
+    hints:
+      - .agg(orta_say=("Units Sold", "mean"), orta_qiymet=("Unit Price", "mean"), emeliyyat=("Transaction ID", "count")).round(2)
+      - df.groupby("Payment Method")["Total Revenue"].mean().round(2)
+      - say = df.groupby("Product Name")["Units Sold"].sum(); say.idxmax(), say.max()
+    tests: |
+      import pandas as _pd
+      import numpy as _np
+      _s = _pd.read_csv("satislar.csv")
+
+      _m = _s.groupby("Product Name").agg(orta_say=("Units Sold", "mean"), orta_qiymet=("Unit Price", "mean"), emeliyyat=("Transaction ID", "count")).round(2)
+      assert isinstance(mehsul, _pd.DataFrame) and {"orta_say", "orta_qiymet", "emeliyyat"} <= set(mehsul.columns), "mehsul should have the orta_say, orta_qiymet and emeliyyat columns"
+      assert (mehsul[["orta_say", "orta_qiymet"]].round(2) - _m[["orta_say", "orta_qiymet"]]).abs().max().max() < 0.011, "The mean values aren't correct"
+      assert mehsul["emeliyyat"].to_dict() == _m["emeliyyat"].to_dict(), "The emeliyyat counts aren't correct"
+      _o = _s.groupby("Payment Method")["Total Revenue"].mean().round(2)
+      assert (odenis_orta - _o).abs().max() < 0.011, "odenis_orta isn't correct"
+      _say = _s.groupby("Product Name")["Units Sold"].sum()
+      assert en_cox_satilan == _say.idxmax() and en_cox_say == _say.max(), f"The best-selling product: {_say.idxmax()} ({_say.max()} units)"
+  groupby-lider-tapsiriq:
+    title: The leader of each group
+    instructions: |
+      Day 3 (15), Day 6 (1) and Day 4 (11, 12): the best in each group.
+    tasks:
+      - 'The product that brings in the most revenue in each region → region_lider (a dict: {region: product}).'
+      - The category that brings in the most revenue in each branch → filial_lider (a dict).
+      - The number of different products sold by each salesperson → isci_cesid (nunique).
+    hints:
+      - 'First the sum by region × product: df.groupby(["Region", "Product Name"])["Total Revenue"].sum().reset_index()'
+      - 'The maximum of each region: pg.loc[pg.groupby("Region")["Total Revenue"].idxmax()]'
+      - dict(zip(top["Region"], top["Product Name"]))
+    tests: |
+      import pandas as _pd
+      import numpy as _np
+      _s = _pd.read_csv("satislar.csv")
+
+      _pg = _s.groupby(["Region", "Product Name"])["Total Revenue"].sum().reset_index()
+      _t = _pg.loc[_pg.groupby("Region")["Total Revenue"].idxmax()]
+      _rl = dict(zip(_t["Region"], _t["Product Name"]))
+      assert region_lider == _rl, f"region_lider should be {_rl}, your result: {region_lider!r}"
+      _fk = _s.groupby(["Filial", "Product Category"])["Total Revenue"].sum().reset_index()
+      _t2 = _fk.loc[_fk.groupby("Filial")["Total Revenue"].idxmax()]
+      _fl = dict(zip(_t2["Filial"], _t2["Product Category"]))
+      assert filial_lider == _fl, f"filial_lider should be {_fl}"
+      assert isci_cesid.to_dict() == _s.groupby("Sales Employee")["Product Name"].nunique().to_dict(), "isci_cesid = df.groupby('Sales Employee')['Product Name'].nunique()"
+  groupby-testi:
+    title: 'Quiz: Grouping'
+    questions:
+      - text: What does `df.groupby("Region")["Total Revenue"].sum()` return?
+        options:
+          - A single number — the total revenue
+          - A Series whose index is the regions — the revenue of each region
+          - Only Baku's revenue
+          - A sorted DataFrame
+        explanation: One value per group — a Series whose index is the group keys.
+      - text: 'The difference between count() and size():'
+        buckets:
+          - name: count()
+            items:
+              - Doesn't count empty (NaN) values
+              - Gives a separate count for each column
+          - name: size()
+            items:
+              - Counts all the rows in the group (empty values included)
+              - Returns one number per group
+        explanation: count counts only non-null values; size gives the number of rows in the group.
+      - text: In named aggregation, what does `orta=("Units Sold", "mean")` mean?
+        options:
+          - Delete the "orta" column
+          - Calculate the mean of Units Sold in a column named "orta"
+          - Rename Units Sold to "mean"
+          - Sort the groups by their mean
+        explanation: It's the new_name=("column", "function") format.
+      - text: 'Which approach is correct for "the best-selling product in each region"?'
+        options:
+          - df.groupby("Region")["Product Name"].max()
+          - First the sum by region × product, then idxmax in each region
+          - df["Product Name"].value_counts().head(1)
+          - df.sort_values("Region").head()
+        explanation: With text, max() gives the last value in alphabetical order. The right way is to sum first, then find the maximum in each group.

@@ -1,0 +1,199 @@
+title: Pivot, melt and rank
+description: Aggregation with pivot_table, wide → long format with melt, the rank methods.
+steps:
+  pivot-melt:
+    title: pivot_table and melt
+    content: |
+      ## pivot_table — Excel's pivot table
+
+      ```python
+      pivot = df.pivot_table(
+          index="Region",               # the rows
+          columns="Product Category",   # the columns
+          values="Total Revenue",       # the value to calculate
+          aggfunc="sum",                # the aggregation
+          fill_value=0,                 # empty cells
+          margins=True,                 # totals
+          margins_name="Total",         # the name of the total row/column
+      )
+      ```
+
+      ```text
+      Product Category  Beauty  Clothing  Electronics  ...    Total
+      Region
+      Bakı               ...       ...        ...             ...
+      ...
+      Total              ...       ...        ...             ...
+      ```
+
+      The same result as `groupby([...]).sum().unstack()`, but more readable and with totals.
+
+      ## melt — the opposite of pivot
+
+      In the **wide** format, each subject is a separate column; in the **long** format, one column holds the subject and another the score:
+
+      ```text
+      Wide:                          Long:
+      Ad     Riyaziyyat  Fizika      Ad     Fənn        Bal
+      Aysel  85          88          Aysel  Riyaziyyat  85
+      Namiq  90          92          Namiq  Riyaziyyat  90
+                                     Aysel  Fizika      88
+                                     Namiq  Fizika      92
+      ```
+
+      (`Ad` — name, `Riyaziyyat` — math, `Fizika` — physics, `Fənn` — subject, `Bal` — score.)
+
+      ```python
+      uzun = pd.melt(geniş, id_vars=["Ad"], value_vars=["Riyaziyyat", "Fizika"],
+                     var_name="Fənn", value_name="Bal")
+      ```
+
+      | Parameter | Meaning |
+      | --- | --- |
+      | `id_vars` | The columns that stay unchanged |
+      | `value_vars` | The columns to convert to the long format |
+      | `var_name` | The new column that will hold the old column names |
+      | `value_name` | The column for the values |
+
+      The long format is very handy for grouping and for charts (seaborn): `uzun.groupby("Fənn")["Bal"].mean()`. To go back: `uzun.pivot(index="Ad", columns="Fənn", values="Bal")`.
+  rank:
+    title: 'Rank: position in order'
+    content: |
+      `rank()` gives the **position** of each value in order — for leaderboards.
+
+      ```python
+      df["yer"] = df["Bal"].rank(ascending=False)     # the largest — 1st place
+      ```
+
+      ## How are equal values ranked? `method`
+
+      Scores: 95, 88, 88, 70 (two are equal):
+
+      | method | 95 | 88 | 88 | 70 | Meaning |
+      | --- | --- | --- | --- | --- | --- |
+      | `average` (default) | 1 | 2.5 | 2.5 | 4 | The average position |
+      | `min` | 1 | 2 | 2 | 4 | The lower position (as in sports competitions) |
+      | `max` | 1 | 3 | 3 | 4 | The higher position |
+      | `first` | 1 | 2 | 3 | 4 | By the order in the data |
+      | `dense` | 1 | 2 | 2 | 3 | The same position, with no gaps |
+
+      ## Other parameters
+
+      - `ascending=False` — the largest value gets 1st place;
+      - `pct=True` — the position as a percentage (0–1): "the top 10%";
+      - `na_option="keep" | "top" | "bottom"` — where empty values go.
+
+      Ranking within a group:
+
+      ```python
+      df["region_yeri"] = df.groupby("Region")["Total Revenue"].rank(ascending=False)
+      ```
+  pivot-tapsiriq:
+    title: A region × category pivot table
+    instructions: |
+      Management wants a revenue table by region and category — with totals.
+    tasks:
+      - 'pivot_table: index="Region", columns="Product Category", values="Total Revenue", aggfunc="sum", fill_value=0, margins=True, margins_name="Total" → pivot (2 decimal places).'
+      - The grand total (the bottom-right cell) → umumi.
+      - The revenue of "Bakı" + Electronics → baki_elektronika.
+    hints:
+      - df.pivot_table(index="Region", columns="Product Category", values="Total Revenue", aggfunc="sum", fill_value=0, margins=True, margins_name="Total")
+      - umumi = pivot.loc["Total", "Total"]
+      - baki_elektronika = pivot.loc["Bakı", "Electronics"]
+    solution: |
+      import pandas as pd
+
+      df = pd.read_csv("satislar.csv")
+
+      pivot = df.pivot_table(index="Region", columns="Product Category", values="Total Revenue",
+                             aggfunc="sum", fill_value=0, margins=True, margins_name="Total").round(2)
+      umumi = pivot.loc["Total", "Total"]
+      baki_elektronika = pivot.loc["Bakı", "Electronics"]
+
+      print(umumi, baki_elektronika)
+      pivot
+    tests: |
+      # i18n-superset: the Azerbaijani margins_name ("Cəm") is accepted too
+      import pandas as _pd
+      import numpy as _np
+      _s = _pd.read_csv("satislar.csv")
+
+      _mn = "Cəm" if isinstance(pivot, _pd.DataFrame) and "Cəm" in pivot.index else "Total"
+      _p = _s.pivot_table(index="Region", columns="Product Category", values="Total Revenue", aggfunc="sum", fill_value=0, margins=True, margins_name=_mn).round(2)
+      assert isinstance(pivot, _pd.DataFrame) and _mn in pivot.index and _mn in pivot.columns, "Add margins=True, margins_name='Total'"
+      assert pivot.shape == _p.shape, f"pivot should have the shape {_p.shape}"
+      assert abs(umumi - _p.loc[_mn, _mn]) < 0.02, f"umumi should be {_p.loc[_mn, _mn]}"
+      assert abs(baki_elektronika - _p.loc["Bakı", "Electronics"]) < 0.02, f"baki_elektronika should be {_p.loc['Bakı', 'Electronics']}"
+  melt-tapsiriq:
+    title: From wide to long format and back
+    instructions: |
+      `telebeler.csv`: each subject is a separate column (`Riyaziyyat` — math, `Fizika` — physics, `İngilis dili` — English). Convert it to the long format, analyze it and convert it back.
+    tasks:
+      - 'melt: id_vars=["Ad"], the three subject columns, var_name="Fənn" (subject), value_name="Bal" (score) → uzun.'
+      - The average score per subject, 2 decimal places → fenn_orta.
+      - Convert the long format back to wide with pivot (index="Ad", columns="Fənn", values="Bal") → genis.
+    hints:
+      - pd.melt(t, id_vars=["Ad"], value_vars=["Riyaziyyat", "Fizika", "İngilis dili"], var_name="Fənn", value_name="Bal")
+      - uzun.groupby("Fənn")["Bal"].mean().round(2)
+      - uzun.pivot(index="Ad", columns="Fənn", values="Bal")
+    tests: |
+      import pandas as _pd
+      _t = _pd.read_csv("telebeler.csv")
+      assert isinstance(uzun, _pd.DataFrame) and uzun.shape == (len(_t) * 3, 3) and list(uzun.columns) == ["Ad", "Fənn", "Bal"], f'uzun should have the shape {(len(_t) * 3, 3)}, with the columns "Ad", "Fənn", "Bal"'
+      _o = _t[["Riyaziyyat", "Fizika", "İngilis dili"]].mean().round(2)
+      assert fenn_orta.round(2).to_dict() == _o.to_dict(), f"fenn_orta should be {_o.to_dict()}"
+      assert isinstance(genis, _pd.DataFrame) and genis.shape == (len(_t), 3), "genis — one row per student, one column per subject"
+      assert genis.loc["Cavid", "Riyaziyyat"] == 88, "The values in genis should match the original table"
+  rank-tapsiriq:
+    title: 'Leaderboard: the rank methods'
+    instructions: |
+      In math (`Riyaziyyat`), Cavid and Nigar have the same score (88). See how different `method`s rank equal scores.
+    tasks:
+      - 'The position in math (the highest score — 1st): "rank_avg" (the default), "rank_min" (method="min"), "rank_dense" (method="dense").'
+      - Cavid's rank_avg position → cavid_yer.
+      - In satislar.csv, rank the products by total revenue (1 — the most) → mehsul_yeri (int); the position of iPhone 15 → iphone_yeri.
+    hints:
+      - t["Riyaziyyat"].rank(ascending=False, method="min")
+      - cavid_yer = t.loc[t["Ad"] == "Cavid", "rank_avg"].iloc[0]
+      - df.groupby("Product Name")["Total Revenue"].sum().rank(ascending=False).astype(int)
+    tests: |
+      import pandas as _pd
+      import numpy as _np
+      _s = _pd.read_csv("satislar.csv")
+
+      _t = _pd.read_csv("telebeler.csv")
+      for _c, _m in (("rank_avg", "average"), ("rank_min", "min"), ("rank_dense", "dense")):
+          assert _c in t.columns and list(t[_c]) == list(_t["Riyaziyyat"].rank(ascending=False, method=_m)), f"{_c} isn't correct (method='{_m}', ascending=False)"
+      _cy = _t["Riyaziyyat"].rank(ascending=False)[_t["Ad"] == "Cavid"].iloc[0]
+      assert cavid_yer == _cy, f"cavid_yer should be {_cy}"
+      _g = _s.groupby("Product Name")["Total Revenue"].sum().rank(ascending=False).astype(int)
+      assert mehsul_yeri.to_dict() == _g.to_dict(), "mehsul_yeri isn't correct"
+      assert iphone_yeri == int(_g["iPhone 15"]), f"iphone_yeri should be {int(_g['iPhone 15'])}"
+  pivot-testi:
+    title: 'Quiz: pivot, melt, rank'
+    questions:
+      - text: Scores 95, 88, 88, 70. What is the result of `rank(ascending=False, method="dense")`?
+        options:
+          - 1, 2, 2, 3
+          - 1, 2.5, 2.5, 4
+          - 1, 2, 2, 4
+          - 1, 2, 3, 4
+        explanation: dense — equal values get the same position, and the next position continues with no gap.
+      - text: 'The result of each operation:'
+        buckets:
+          - name: Long → wide
+            items:
+              - pivot_table(...)
+              - pivot(...)
+              - unstack()
+          - name: Wide → long
+            items:
+              - pd.melt(...)
+        explanation: pivot/pivot_table/unstack spread the values into columns; melt gathers the columns into rows.
+      - text: What does `margins=True` add to pivot_table?
+        options:
+          - It turns empty cells into 0
+          - A total row and column
+          - Percentages
+          - Sorting
+        explanation: margins — row and column totals (named with margins_name).
