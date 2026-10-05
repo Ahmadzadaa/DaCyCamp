@@ -1,0 +1,89 @@
+title: 'Interactive visualization: Plotly'
+description: 'plotly.express and graph_objects: histogram, scatter, bar, box, scatter_matrix, line charts.'
+steps:
+  plotly-ders:
+    title: Interactive charts with Plotly
+    content: |
+      Matplotlib and seaborn draw **static** images. **Plotly**, on the other hand, creates interactive charts: when you hover the mouse over a point, its value appears (hover), and you can zoom in and hide series from the legend. It's ideal for web dashboards (Dash, Streamlit) and reports.
+
+      ## plotly.express — the quick way
+
+      ```python
+      import plotly.express as px
+
+      fig = px.histogram(df, x="Total Revenue", nbins=20, title="Revenue distribution",
+                         color_discrete_sequence=["blue"], opacity=0.5)
+      fig.show()
+
+      fig = px.scatter(df, x="Units Sold", y="Total Revenue", color="Product Category",
+                       size="Unit Price", hover_data=["Product Name"], title="Units and revenue")
+
+      fig = px.bar(df, x="Region", y="Total Revenue", color="Payment Method", title="Region and payment")
+
+      fig = px.box(df, x="Region", y="Total Revenue", color="Region")
+
+      fig = px.scatter_matrix(o, dimensions=["Sales", "Quantity", "Discount", "Profit"], color="Category")
+      ```
+
+      Just like in seaborn: `color` — color by group (seaborn's `hue`), `size` — the size of the points, `hover_data` — extra columns shown on hover.
+
+      ## graph_objects — full control
+
+      ```python
+      import plotly.graph_objects as go
+
+      fig = go.Figure(data=go.Scatter(x=[1, 2, 3, 4, 5], y=[10, 12, 14, 16, 18],
+                                      mode="lines", name="Line"))
+      fig.update_layout(title="Interactive line chart", xaxis_title="X value", yaxis_title="Y value")
+      fig.show()
+      ```
+
+      ## Saving to a file
+
+      ```python
+      fig.write_html("dashboard.html")    # an interactive file that opens in the browser — you can send it by email
+      ```
+
+      | | matplotlib / seaborn | plotly |
+      | --- | --- | --- |
+      | Result | An image (PNG, PDF) | Interactive HTML |
+      | Strength | Print, articles, slides | Exploration, the web, dashboards |
+      | Code | Lots of detail | Interactivity with little code |
+
+      > 💻 DaCy's browser environment shows charts as images, so we don't run Plotly charts here. Try the code in **Google Colab** or **Jupyter** — there, `fig.show()` displays the interactive chart right away. This chapter's quiz checks the concepts.
+  plotly-testi:
+    title: 'Quiz: Plotly'
+    questions:
+      - text: Which library suits each feature better?
+        buckets:
+          - name: Plotly
+            items:
+              - Seeing a value on hover
+              - Zooming and hiding series
+              - HTML for a web dashboard
+          - name: Matplotlib / seaborn
+            items:
+              - A static PNG for an article or slide
+              - A printed report
+        explanation: Plotly is interactive and produces HTML; matplotlib/seaborn are for static images.
+      - text: '`px.scatter(df, x="A", y="B", color="Category")` — which seaborn parameter does `color` correspond to?'
+        options:
+          - palette
+          - hue
+          - style
+          - size
+        explanation: color colors by group — like seaborn's hue.
+      - text: What is the easiest way to send an interactive Plotly chart to a colleague?
+        options:
+          - fig.show()
+          - fig.write_html("file.html")
+          - plt.savefig()
+          - print(fig)
+        explanation: The HTML file opens interactively in the browser.
+      - text: What does `go.Scatter(..., mode="lines")` draw?
+        options:
+          - Points
+          - A line
+          - Bars
+          - A histogram
+        explanation: mode="lines" — a line, "markers" — points, "lines+markers" — both.

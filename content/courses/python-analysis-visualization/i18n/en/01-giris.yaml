@@ -1,0 +1,207 @@
+title: 'Introduction to visualization: pandas charts'
+description: 'Why visualize, df.plot() and the chart types: hist, line, bar, pie.'
+steps:
+  niye-vizual:
+    title: Why visualize? Your first charts with pandas
+    content: |
+      It's hard to look at a 1,260-row table and answer the question "are sales going up or down?". A line chart shows the answer in a second. Visualization means making data **visible**: trends, distributions, comparisons, outliers.
+
+      ## Python's charting libraries
+
+      | Library | Used for |
+      | --- | --- |
+      | **pandas `.plot()`** | The fastest way — straight from a DataFrame/Series |
+      | **matplotlib** | The foundation library: every detail can be controlled |
+      | **seaborn** | Built on matplotlib: statistical charts, a nice look, little code |
+      | **plotly** | Interactive charts (hover, zoom) — for the web and dashboards |
+
+      pandas and seaborn use matplotlib under the hood — so knowing the basics of matplotlib helps with all of them.
+
+      ## Charts with pandas: `.plot(kind=...)`
+
+      ```python
+      df["Total Revenue"].plot(kind="hist", bins=20, title="Revenue distribution")
+      ayliq.plot(kind="line", title="Monthly revenue")
+      df["Product Category"].value_counts().plot(kind="bar", title="Category frequency")
+      region.plot(kind="pie", autopct="%1.1f%%", title="Regions")
+      df["Total Revenue"].plot(kind="hist", bins=5, color="lightgreen")
+      ```
+
+      | `kind=` | Chart | When |
+      | --- | --- | --- |
+      | `"line"` | Line | Change over time |
+      | `"bar"` / `"barh"` | Bar / horizontal bar | Comparing categories |
+      | `"hist"` | Histogram | A distribution |
+      | `"pie"` | Pie | The parts of a whole |
+      | `"box"` | Box | Spread and outliers |
+      | `"scatter"` | Scatter | The relationship between two numbers (`df.plot(kind="scatter", x=..., y=...)`) |
+
+      ## Several charts — several "figures"
+
+      Consecutive `.plot()` calls are drawn on top of the **same** chart. To keep each chart separate, open a new window (figure) first:
+
+      ```python
+      import matplotlib.pyplot as plt
+
+      plt.figure()
+      df["Total Revenue"].plot(kind="hist", bins=20, title="Revenue distribution")
+
+      plt.figure()
+      df["Product Category"].value_counts().plot(kind="bar", title="Category frequency")
+      ```
+
+      > 💻 On DaCy, charts appear in the **"Chart"** tab after the code runs. You can write `plt.show()`, but you don't have to. If text has also been printed to the console, a "Console •" marker appears.
+  pandas-qrafikler:
+    title: Three charts with pandas
+    instructions: |
+      Day 6 (simple visualization): three basic charts from the sales data. Write `plt.figure()` before each chart so they're drawn separately. **The titles must be exactly as in the tasks** — the tests find the charts by their titles.
+    tasks:
+      - 'A histogram of Total Revenue: bins=20, title="Revenue distribution".'
+      - 'A line chart of revenue by month (group by the first 7 characters of Date): title="Monthly revenue".'
+      - 'A bar chart of the number of transactions per category (value_counts): title="Category frequency".'
+    hints:
+      - df["Total Revenue"].plot(kind="hist", bins=20, title="Revenue distribution")
+      - ayliq = df.groupby(df["Date"].str[:7])["Total Revenue"].sum(); ayliq.plot(kind="line", title="Monthly revenue")
+      - df["Product Category"].value_counts().plot(kind="bar", title="Category frequency")
+    starter_code: |
+      import pandas as pd
+      import matplotlib.pyplot as plt
+
+      df = pd.read_csv("satislar.csv")
+
+      plt.figure()
+      # 1. histogram
+
+      plt.figure()
+      ayliq = ...
+      # 2. line
+
+      plt.figure()
+      # 3. bar
+    solution: |
+      import pandas as pd
+      import matplotlib.pyplot as plt
+
+      df = pd.read_csv("satislar.csv")
+
+      plt.figure()
+      df["Total Revenue"].plot(kind="hist", bins=20, title="Revenue distribution")
+
+      plt.figure()
+      ayliq = df.groupby(df["Date"].str[:7])["Total Revenue"].sum()
+      ayliq.plot(kind="line", title="Monthly revenue")
+
+      plt.figure()
+      df["Product Category"].value_counts().plot(kind="bar", title="Category frequency")
+    tests: |
+      # i18n-superset: the Azerbaijani chart titles are accepted too
+      import pandas as _pd
+      import numpy as _np
+      import matplotlib.pyplot as _plt
+      def _axes():
+          return [a for n in _plt.get_fignums() for a in _plt.figure(n).axes]
+      def _ax(*titles):
+          for a in _axes():
+              if a.get_title().strip() in titles:
+                  return a
+          _t = [a.get_title() for a in _axes()]
+          raise AssertionError(f'No chart titled "{titles[0]}" was found (pass title=...). Titles found: {_t}')
+
+      _s = _pd.read_csv("satislar.csv")
+
+      _h = _ax("Revenue distribution", "Gəlir paylanması")
+      assert len(_h.patches) == 20, f"The histogram should have 20 bars (bins=20), yours has {len(_h.patches)}"
+      _l = _ax("Monthly revenue", "Aylıq gəlir")
+      assert len(_l.get_lines()) >= 1 and len(_l.get_lines()[0].get_ydata()) == 24, "Monthly revenue should be a line of 24 monthly points"
+      _b = _ax("Category frequency", "Kateqoriya tezliyi")
+      assert len(_b.patches) == _s["Product Category"].nunique(), "Category frequency — one bar per category"
+      _hs = sorted(round(p.get_height()) for p in _b.patches)
+      assert _hs == sorted(_s["Product Category"].value_counts().tolist()), "The bar heights should be the counts of the categories"
+  pandas-pie-barh:
+    title: Pie and horizontal bar charts
+    instructions: |
+      Show the regions' share of revenue with a pie chart and the best-selling products with a horizontal bar chart.
+    tasks:
+      - 'A pie chart of revenue by region: autopct="%1.1f%%", title="Revenue by region".'
+      - 'A horizontal bar chart (kind="barh") of the 10 best-selling products by units, in the color "lightgreen": title="Top 10 products".'
+    hints:
+      - region = df.groupby("Region")["Total Revenue"].sum(); region.plot(kind="pie", autopct="%1.1f%%", title=...)
+      - top10 = df.groupby("Product Name")["Units Sold"].sum().nlargest(10)
+      - top10.plot(kind="barh", color="lightgreen", title="Top 10 products")
+    starter_code: |
+      import pandas as pd
+      import matplotlib.pyplot as plt
+
+      df = pd.read_csv("satislar.csv")
+
+      plt.figure()
+      region = ...
+      # pie
+
+      plt.figure()
+      top10 = ...
+      # horizontal bar
+    solution: |
+      import pandas as pd
+      import matplotlib.pyplot as plt
+
+      df = pd.read_csv("satislar.csv")
+
+      plt.figure()
+      region = df.groupby("Region")["Total Revenue"].sum()
+      region.plot(kind="pie", autopct="%1.1f%%", title="Revenue by region")
+
+      plt.figure()
+      top10 = df.groupby("Product Name")["Units Sold"].sum().nlargest(10)
+      top10.plot(kind="barh", color="lightgreen", title="Top 10 products")
+    tests: |
+      # i18n-superset: the Azerbaijani chart titles are accepted too
+      import pandas as _pd
+      import numpy as _np
+      import matplotlib.pyplot as _plt
+      def _axes():
+          return [a for n in _plt.get_fignums() for a in _plt.figure(n).axes]
+      def _ax(*titles):
+          for a in _axes():
+              if a.get_title().strip() in titles:
+                  return a
+          _t = [a.get_title() for a in _axes()]
+          raise AssertionError(f'No chart titled "{titles[0]}" was found (pass title=...). Titles found: {_t}')
+
+      _s = _pd.read_csv("satislar.csv")
+
+      from matplotlib.patches import Wedge as _W
+      _p = _ax("Revenue by region", "Regionlar üzrə gəlir")
+      _w = [x for x in _p.patches if isinstance(x, _W)]
+      assert len(_w) == 5, f"The pie should have 5 slices (regions), yours has {len(_w)}"
+      assert any("%" in t.get_text() for t in _p.texts), "The slices show no percentages — add autopct='%1.1f%%'"
+      _b = _ax("Top 10 products", "Top 10 məhsul")
+      assert len(_b.patches) == 10, f"There should be 10 bars, yours has {len(_b.patches)}"
+      _wd = sorted(round(x.get_width()) for x in _b.patches)
+      assert _wd == sorted(_s.groupby("Product Name")["Units Sold"].sum().nlargest(10).tolist()), "The bar lengths should be the units sold (kind='barh')"
+  giris-testi:
+    title: 'Quiz: Chart types'
+    questions:
+      - text: 'The most suitable chart type for each question:'
+        buckets:
+          - name: line
+            items:
+              - How revenue changed over the last 24 months
+          - name: bar / barh
+            items:
+              - Comparing the sales of the regions
+              - The top 10 products
+          - name: hist
+            items:
+              - The distribution of order amounts
+          - name: pie
+            items:
+              - The share of payment methods (4 parts)
+        explanation: Time — line; comparison — bar; distribution — histogram; a whole with few parts — pie.
+      - text: Why do two consecutive `.plot()` calls appear on the same chart?
+        options:
+          - It's a pandas bug
+          - Both are drawn on the current figure — you need plt.figure() to separate them
+          - Because kind is the same
+          - Because show() wasn't written
+        explanation: matplotlib draws on the current axes; plt.figure() opens a new window.

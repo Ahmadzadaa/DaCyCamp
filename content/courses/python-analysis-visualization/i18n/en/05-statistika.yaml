@@ -1,0 +1,195 @@
+title: Statistics and correlation with Python
+description: describe parameters, quantiles, outliers with the IQR, the correlation and covariance matrices, heatmaps.
+steps:
+  statistika-ders:
+    title: Descriptive statistics, correlation and covariance
+    content: |
+      ## describe — summary statistics
+
+      ```python
+      df.describe()                                    # count, mean, std, min, 25%, 50%, 75%, max
+      df.describe(percentiles=[.1, .25, .5, .75, .9])  # your own percentiles
+      df.describe(include="all")                       # text columns too
+      df.describe(include=["object", "number"])
+      df.describe(exclude=["object"])
+      ```
+
+      ## Quantiles (percentiles)
+
+      ```python
+      df["Total Revenue"].quantile([0.25, 0.5, 0.75])
+      df["Total Revenue"].quantile(0.9)     # 90% of the transactions are smaller than this
+      ```
+
+      ## Outliers with the IQR
+
+      ```python
+      q1, q3 = s.quantile(0.25), s.quantile(0.75)
+      iqr = q3 - q1
+      kenar = s[(s < q1 - 1.5 * iqr) | (s > q3 + 1.5 * iqr)]
+      ```
+
+      This is the rule for the points beyond the "whiskers" of a box plot.
+
+      ## The correlation matrix
+
+      ```python
+      o[["Sales", "Quantity", "Discount", "Profit"]].corr()
+      ```
+
+      Pearson correlation is between −1 and +1: **+1** — a perfect positive linear relationship, **0** — no linear relationship, **−1** — a perfect negative one. It only works for **numeric** columns (`df.corr(numeric_only=True)`).
+
+      | \|r\| | Interpretation (approximate) |
+      | --- | --- |
+      | 0.0–0.2 | Very weak |
+      | 0.2–0.4 | Weak |
+      | 0.4–0.6 | Moderate |
+      | 0.6–0.8 | Strong |
+      | 0.8–1.0 | Very strong |
+
+      ## Covariance
+
+      ```python
+      o[["Sales", "Profit"]].cov()
+      ```
+
+      Covariance shows how two variables change together, but it depends on the unit of measurement (AZN², units × AZN) — so for comparisons, correlation (which has no unit) is more convenient.
+
+      ## A heatmap
+
+      ```python
+      plt.figure(figsize=(8, 6))
+      sns.heatmap(corr, annot=True, cmap="coolwarm", linewidths=0.5, fmt=".2f", cbar=True)
+      plt.title("Correlation matrix heatmap")
+      ```
+
+      `annot=True` — a number in every cell, `fmt=".2f"` — 2 decimal places, `cmap="coolwarm"` — negative values are blue, positive ones are red.
+
+      > ⚠️ The correlation with a categorical column (e.g. Product Category) can't be calculated directly. You first need to convert it to numbers (e.g. with `pd.get_dummies`) or compare the means by group.
+  describe-iqr:
+    title: describe, quantiles and outliers
+    instructions: |
+      Day 8: summary statistics and quantiles.
+    tasks:
+      - Use describe to also show the 10%, 25%, 50%, 75% and 90% percentiles → stat.
+      - The 90% quantile of Total Revenue, 2 decimal places → p90.
+      - The number of outliers in Total Revenue by the IQR rule → kenar_say.
+      - The most common category among the transactions that are outliers → kenar_kateqoriya.
+    hints:
+      - df.describe(percentiles=[.1, .25, .5, .75, .9])
+      - q1, q3 = s.quantile(0.25), s.quantile(0.75); iqr = q3 - q1
+      - maska = (s < q1 - 1.5 * iqr) | (s > q3 + 1.5 * iqr); df[maska]["Product Category"].value_counts().idxmax()
+    tests: |
+      import pandas as _pd
+      import numpy as _np
+      _s = _pd.read_csv("satislar.csv")
+
+      _st = _s.describe(percentiles=[.1, .25, .5, .75, .9])
+      assert isinstance(stat, _pd.DataFrame) and "10%" in stat.index and "90%" in stat.index, "describe(percentiles=[.1, .25, .5, .75, .9])"
+      _t = _s["Total Revenue"]
+      assert p90 == round(_t.quantile(0.9), 2), f"p90 should be {round(_t.quantile(0.9), 2)}"
+      _q1, _q3 = _t.quantile(0.25), _t.quantile(0.75)
+      _m = (_t < _q1 - 1.5 * (_q3 - _q1)) | (_t > _q3 + 1.5 * (_q3 - _q1))
+      assert kenar_say == int(_m.sum()), f"kenar_say should be {int(_m.sum())}"
+      assert kenar_kateqoriya == _s[_m]["Product Category"].value_counts().idxmax(), "kenar_kateqoriya isn't correct"
+  corr-cov:
+    title: Correlation and covariance
+    instructions: |
+      Day 9 (1): the relationship between Sales and Profit in the orders; the effect of discounts on profit.
+
+      > 📁 **`sifarisler.csv`** — Superstore-style orders (2023–2024, 5 countries): `OrderID`, `OrderDate`, `ShipDate`, `ShipMode`, `CustomerID`, `CustomerName`, `CustomerSegment`, `Country`, `City`, `ProductID`, `ProductName`, `Category`, `Sales`, `Quantity`, `Discount`, `Profit`.
+    tasks:
+      - The correlation matrix of the Sales, Quantity, Discount and Profit columns → corr.
+      - The Sales–Profit correlation, 3 decimal places → sales_profit.
+      - The column with the strongest negative correlation with Profit (other than Profit itself) → menfi.
+      - The Sales–Profit covariance, 2 decimal places → kov.
+    hints:
+      - corr = o[cols].corr(); corr.loc["Sales", "Profit"]
+      - corr["Profit"].drop("Profit").idxmin() — this removes the correlation with itself (1.0).
+      - o[cols].cov().loc["Sales", "Profit"]
+    tests: |
+      import pandas as _pd
+      import numpy as _np
+      _o = _pd.read_csv("sifarisler.csv")
+
+      _c = _o[["Sales", "Quantity", "Discount", "Profit"]].corr()
+      assert isinstance(corr, _pd.DataFrame) and corr.shape == (4, 4) and _np.allclose(corr.values, _c.values), "corr = o[cols].corr()"
+      assert sales_profit == round(_c.loc["Sales", "Profit"], 3), f"sales_profit should be {round(_c.loc['Sales', 'Profit'], 3)}"
+      assert menfi == _c["Profit"].drop("Profit").idxmin(), f"menfi should be {_c['Profit'].drop('Profit').idxmin()!r}"
+      assert kov == round(_o[["Sales", "Profit"]].cov().loc["Sales", "Profit"], 2), "kov = o[cols].cov().loc['Sales', 'Profit']"
+  heatmap:
+    title: A correlation heatmap
+    instructions: |
+      Day 8 (2): visualize the relationships between all the numeric columns with a heatmap, and write the values in the cells.
+    tasks:
+      - The correlation of the numeric columns of sifarisler.csv (corr(numeric_only=True)) → corr.
+      - 'sns.heatmap: annot=True, cmap="coolwarm", fmt=".2f", linewidths=0.5.'
+      - plt.title("Correlation matrix").
+    hints:
+      - corr = o.corr(numeric_only=True)
+      - sns.heatmap(corr, annot=True, cmap="coolwarm", fmt=".2f", linewidths=0.5)
+      - plt.title("Correlation matrix")
+    solution: |
+      import pandas as pd
+      import seaborn as sns
+      import matplotlib.pyplot as plt
+
+      o = pd.read_csv("sifarisler.csv")
+
+      corr = o.corr(numeric_only=True)
+      plt.figure(figsize=(7, 5))
+      sns.heatmap(corr, annot=True, cmap="coolwarm", fmt=".2f", linewidths=0.5)
+      plt.title("Correlation matrix")
+    tests: |
+      # i18n-superset: the Azerbaijani chart title is accepted too
+      import pandas as _pd
+      import numpy as _np
+      import matplotlib.pyplot as _plt
+      def _axes():
+          return [a for n in _plt.get_fignums() for a in _plt.figure(n).axes]
+      def _ax(*titles):
+          for a in _axes():
+              if a.get_title().strip() in titles:
+                  return a
+          _t = [a.get_title() for a in _axes()]
+          raise AssertionError(f'No chart titled "{titles[0]}" was found (pass title=...). Titles found: {_t}')
+
+      _o = _pd.read_csv("sifarisler.csv")
+
+      _c = _o.corr(numeric_only=True)
+      assert isinstance(corr, _pd.DataFrame) and corr.shape == _c.shape, "corr = o.corr(numeric_only=True)"
+      _a = _ax("Correlation matrix", "Korrelyasiya matrisi")
+      from matplotlib.collections import QuadMesh as _QM
+      assert any(isinstance(x, _QM) for x in _a.collections), "No sns.heatmap was drawn"
+      _tx = [t.get_text() for t in _a.texts]
+      assert len(_tx) == _c.size, "annot=True — every cell should show its value"
+      assert all(len(t.split(".")[-1]) == 2 for t in _tx if "." in t), "fmt='.2f' — 2 decimal places"
+  statistika-testi:
+    title: 'Quiz: statistics'
+    questions:
+      - text: The correlation is −0.85. What does this mean?
+        options:
+          - There is no relationship
+          - A strong negative linear relationship
+          - A weak positive relationship
+          - Cause and effect has been proven
+        explanation: '|r| is greater than 0.8 and the sign is negative. Correlation doesn''t prove causation.'
+      - text: Why is correlation used more often than covariance?
+        options:
+          - It's faster to calculate
+          - It has no unit and is in the −1…+1 range — easy to compare
+          - It can't be negative
+          - It works with categories
+        explanation: Covariance depends on the unit of measurement.
+      - text: 'The result of each piece of code:'
+        buckets:
+          - name: A single number
+            items:
+              - s.quantile(0.9)
+              - df[["A", "B"]].corr().loc["A", "B"]
+          - name: A matrix (DataFrame)
+            items:
+              - df.corr(numeric_only=True)
+              - df.cov(numeric_only=True)
+              - df.describe()
+        explanation: quantile(0.9) and a single cell of a matrix give a number; corr/cov/describe give a table.

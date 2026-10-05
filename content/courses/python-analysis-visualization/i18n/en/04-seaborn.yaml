@@ -1,0 +1,227 @@
+title: Statistical charts with seaborn
+description: histplot, boxplot, barplot, countplot, scatterplot, lineplot, regplot, hue and palettes.
+steps:
+  seaborn-ders:
+    title: 'Seaborn: beautiful charts with little code'
+    content: |
+      **Seaborn** is a statistical visualization library built on top of matplotlib. Its main advantage: it works with DataFrames and column names, and it takes care of grouping and colors by itself.
+
+      ```python
+      import seaborn as sns
+      import matplotlib.pyplot as plt
+      ```
+
+      > ⏳ On DaCy, seaborn is installed from the internet the first time you use it (it takes a few seconds).
+
+      ## The main functions
+
+      | Function | Chart |
+      | --- | --- |
+      | `sns.histplot(data=df, x="Total Revenue", bins=20)` | Histogram |
+      | `sns.boxplot(data=df, x="Product Category", y="Total Revenue", palette="Set2")` | Box (by group) |
+      | `sns.barplot(data=df, x="Region", y="Total Revenue", estimator="sum", errorbar=None)` | Bar (with aggregation) |
+      | `sns.countplot(data=df, x="Payment Method")` | Count |
+      | `sns.scatterplot(data=df, x="Units Sold", y="Total Revenue", hue="Product Category")` | Scatter |
+      | `sns.lineplot(data=ayliq, x="Month", y="Revenue")` | Line |
+      | `sns.regplot(data=df, x="Sales", y="Profit")` | Scatter + trend line |
+      | `sns.pairplot(df, hue="Category")` | All numeric pairs |
+      | `sns.catplot(data=df, x=..., y=..., hue=..., kind="bar")` | Category charts (figure-level) |
+
+      ## hue — a third dimension with color
+
+      ```python
+      sns.scatterplot(data=df, x="Units Sold", y="Total Revenue", hue="Product Category")
+      ```
+
+      Each category gets its own color, and the legend is added automatically.
+
+      ## barplot and estimator
+
+      By default, `sns.barplot` shows the **mean** and draws a confidence interval (the black line). If you need the sum, use `estimator="sum"`; for no interval, `errorbar=None`.
+
+      ## A trend line: regplot
+
+      ```python
+      sns.regplot(x="total_bill", y="tip", data=tips,
+                  scatter_kws={"alpha": 0.5},
+                  line_kws={"color": "red", "linewidth": 2})
+      ```
+
+      ## The title
+
+      Seaborn functions return a matplotlib **axes**: `ax = sns.boxplot(...)`, then `ax.set_title(...)` or `plt.title(...)`.
+  sns-hist-box:
+    title: histplot and boxplot
+    instructions: |
+      Day 7 (5, 10): distributions with seaborn.
+    tasks:
+      - 'sns.histplot: Total Revenue, bins=20; plt.title("Revenue distribution").'
+      - 'In a new figure, sns.boxplot: x="Region", y="Total Revenue"; plt.title("Sales by region").'
+    hints:
+      - sns.histplot(data=df, x="Total Revenue", bins=20)
+      - sns.boxplot(data=df, x="Region", y="Total Revenue")
+      - 'The title: plt.title(...)'
+    solution: |
+      import pandas as pd
+      import seaborn as sns
+      import matplotlib.pyplot as plt
+
+      df = pd.read_csv("satislar.csv")
+
+      plt.figure()
+      sns.histplot(data=df, x="Total Revenue", bins=20)
+      plt.title("Revenue distribution")
+
+      plt.figure()
+      sns.boxplot(data=df, x="Region", y="Total Revenue")
+      plt.title("Sales by region")
+    tests: |
+      # i18n-superset: the Azerbaijani chart titles are accepted too
+      import pandas as _pd
+      import numpy as _np
+      import matplotlib.pyplot as _plt
+      def _axes():
+          return [a for n in _plt.get_fignums() for a in _plt.figure(n).axes]
+      def _ax(*titles):
+          for a in _axes():
+              if a.get_title().strip() in titles:
+                  return a
+          _t = [a.get_title() for a in _axes()]
+          raise AssertionError(f'No chart titled "{titles[0]}" was found (pass title=...). Titles found: {_t}')
+
+      _s = _pd.read_csv("satislar.csv")
+
+      _h = _ax("Revenue distribution", "Gəlirin paylanması")
+      assert len(_h.patches) == 20, f"The histplot should have 20 bars, yours has {len(_h.patches)}"
+      _b = _ax("Sales by region", "Regionlar üzrə satış")
+      assert len(_b.get_xticklabels()) == 5 and _b.get_xlabel() == "Region", "The boxplot should have x='Region' (5 boxes)"
+      assert "sns.histplot(" in dacy.code and "sns.boxplot(" in dacy.code, "Use the seaborn functions"
+  sns-bar-count:
+    title: barplot and countplot
+    instructions: |
+      Day 7 (3) and Day 8 (3): the revenue of the regions and the payment methods.
+    tasks:
+      - 'sns.barplot: x="Region", y="Total Revenue", estimator="sum", errorbar=None; plt.title("Regional revenue").'
+      - 'In a new figure, sns.countplot: x="Payment Method"; plt.title("Transactions by payment method").'
+    hints:
+      - sns.barplot(data=df, x="Region", y="Total Revenue", estimator="sum", errorbar=None)
+      - sns.countplot(data=df, x="Payment Method")
+      - Without estimator, barplot shows the mean.
+    solution: |
+      import pandas as pd
+      import seaborn as sns
+      import matplotlib.pyplot as plt
+
+      df = pd.read_csv("satislar.csv")
+
+      plt.figure()
+      sns.barplot(data=df, x="Region", y="Total Revenue", estimator="sum", errorbar=None)
+      plt.title("Regional revenue")
+
+      plt.figure()
+      sns.countplot(data=df, x="Payment Method")
+      plt.title("Transactions by payment method")
+    tests: |
+      # i18n-superset: the Azerbaijani chart titles are accepted too
+      import pandas as _pd
+      import numpy as _np
+      import matplotlib.pyplot as _plt
+      def _axes():
+          return [a for n in _plt.get_fignums() for a in _plt.figure(n).axes]
+      def _ax(*titles):
+          for a in _axes():
+              if a.get_title().strip() in titles:
+                  return a
+          _t = [a.get_title() for a in _axes()]
+          raise AssertionError(f'No chart titled "{titles[0]}" was found (pass title=...). Titles found: {_t}')
+
+      _s = _pd.read_csv("satislar.csv")
+
+      _b = _ax("Regional revenue", "Regionların gəliri")
+      _g = _s.groupby("Region")["Total Revenue"].sum()
+      assert sorted(round(p.get_height()) for p in _b.patches) == sorted(round(v) for v in _g.values), "The bars should be the total revenue of the regions — estimator='sum'"
+      assert len(_b.get_lines()) == 0, "There should be no confidence interval lines — errorbar=None"
+      _c = _ax("Transactions by payment method", "Ödəniş üsulları üzrə əməliyyat")
+      assert sorted(round(p.get_height()) for p in _c.patches) == sorted(_s["Payment Method"].value_counts().tolist()), "The countplot should show the count of each payment method"
+  sns-scatter-reg:
+    title: scatterplot, hue and regplot
+    instructions: |
+      Day 8 (7): the relationship between price and units; the trend between sales and profit in the orders.
+
+      > 📁 **`sifarisler.csv`** — Superstore-style orders (2023–2024, 5 countries): `OrderID`, `OrderDate`, `ShipDate`, `ShipMode`, `CustomerID`, `CustomerName`, `CustomerSegment`, `Country`, `City`, `ProductID`, `ProductName`, `Category`, `Sales`, `Quantity`, `Discount`, `Profit`.
+    tasks:
+      - 'sns.scatterplot: satislar.csv, x="Unit Price", y="Units Sold", hue="Product Category"; plt.title("Price and units").'
+      - 'In a new figure, sns.regplot: sifarisler.csv, x="Sales", y="Profit", scatter_kws={"alpha": 0.3}, line_kws={"color": "red"}; plt.title("Sales and profit").'
+    hints:
+      - sns.scatterplot(data=df, x="Unit Price", y="Units Sold", hue="Product Category")
+      - 'sns.regplot(data=o, x="Sales", y="Profit", scatter_kws={"alpha": 0.3}, line_kws={"color": "red"})'
+      - plt.title(...) after each one.
+    solution: |
+      import pandas as pd
+      import seaborn as sns
+      import matplotlib.pyplot as plt
+
+      df = pd.read_csv("satislar.csv")
+      o = pd.read_csv("sifarisler.csv")
+
+      plt.figure()
+      sns.scatterplot(data=df, x="Unit Price", y="Units Sold", hue="Product Category")
+      plt.title("Price and units")
+
+      plt.figure()
+      sns.regplot(data=o, x="Sales", y="Profit", scatter_kws={"alpha": 0.3}, line_kws={"color": "red"})
+      plt.title("Sales and profit")
+    tests: |
+      # i18n-superset: the Azerbaijani chart titles are accepted too
+      import pandas as _pd
+      import numpy as _np
+      import matplotlib.pyplot as _plt
+      def _axes():
+          return [a for n in _plt.get_fignums() for a in _plt.figure(n).axes]
+      def _ax(*titles):
+          for a in _axes():
+              if a.get_title().strip() in titles:
+                  return a
+          _t = [a.get_title() for a in _axes()]
+          raise AssertionError(f'No chart titled "{titles[0]}" was found (pass title=...). Titles found: {_t}')
+
+      _s = _pd.read_csv("satislar.csv")
+
+      _a = _ax("Price and units", "Qiymət və ədəd")
+      assert _a.collections and len(_a.collections[0].get_offsets()) == len(_s), "There should be one point per transaction"
+      assert _a.get_legend() is not None and len(_a.get_legend().get_texts()) == 5, "hue='Product Category' — the legend should show 5 categories"
+      _r = _ax("Sales and profit", "Satış və mənfəət")
+      assert len(_r.get_lines()) >= 1, "regplot should draw a trend line"
+      assert "sns.regplot(" in dacy.code, "Use sns.regplot"
+  seaborn-testi:
+    title: 'Quiz: seaborn'
+    questions:
+      - text: What does `sns.barplot(data=df, x="Region", y="Total Revenue")` show by default?
+        options:
+          - The sum
+          - The mean and a confidence interval
+          - The count
+          - The median
+        explanation: By default, barplot shows the mean + a confidence interval; for the sum, use estimator="sum".
+      - text: 'The right seaborn function for each task:'
+        buckets:
+          - name: countplot
+            items:
+              - How many times each payment method was used
+          - name: regplot
+            items:
+              - A trend line between sales and profit
+          - name: boxplot
+            items:
+              - The spread of sales by region
+          - name: histplot
+            items:
+              - The distribution of revenue
+        explanation: A count — countplot; a trend — regplot; the spread by group — boxplot; a distribution — histplot.
+      - text: What does `hue="Product Category"` do?
+        options:
+          - It filters the chart by category
+          - It colors the points/bars by category
+          - It adds a title
+          - It sorts the data
+        explanation: hue shows a third variable with color.

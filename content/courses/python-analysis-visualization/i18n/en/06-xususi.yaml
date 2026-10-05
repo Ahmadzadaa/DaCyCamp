@@ -1,0 +1,170 @@
+title: Facet analysis and special charts
+description: catplot, FacetGrid, pie charts with wedgeprops and word clouds.
+steps:
+  facet-ders:
+    title: catplot, FacetGrid, wedgeprops and wordcloud
+    content: |
+      ## catplot — for categories
+
+      ```python
+      sns.catplot(data=df, x="Payment Method", y="Units Sold", kind="box", height=4, aspect=1.5)
+      ```
+
+      `kind=` — `"bar"`, `"box"`, `"violin"`, `"strip"`, `"count"`. `catplot` creates **its own figure** (not an axes) — for a title, use `g.figure.suptitle(...)`.
+
+      ## FacetGrid — the same chart for each group
+
+      ```python
+      g = sns.FacetGrid(df, col="Region", col_wrap=3, height=3)
+      g.map(sns.histplot, "Total Revenue")
+      g.figure.suptitle("Distribution by region", y=1.03)
+      ```
+
+      - `col` — a separate chart in a column for each value; `row` — in a row; `hue` — by color;
+      - `col_wrap=3` — 3 charts per row;
+      - `g.map(function, "column")` — what to draw in each chart;
+      - `g.add_legend()` — a legend.
+
+      Facet analysis lets you compare the distributions of different groups side by side.
+
+      ## Pie charts: wedgeprops
+
+      ```python
+      df.set_index("Products").plot(kind="pie", y="Sales", autopct="%1.1f%%",
+                                    wedgeprops={"edgecolor": "black", "linewidth": 2})
+      plt.ylabel("")
+      ```
+
+      `wedgeprops` sets the properties of the slices: the color and thickness of the edge line; `{"width": 0.4}` makes a "donut" chart.
+
+      ## Wordcloud — visualizing text
+
+      ```python
+      from wordcloud import WordCloud, STOPWORDS
+
+      wc = WordCloud(width=800, height=400, background_color="white",
+                     colormap="plasma", max_words=50, stopwords=set(STOPWORDS)).generate(metn)
+      plt.imshow(wc, interpolation="bilinear")
+      plt.axis("off")
+      ```
+
+      The more often a word occurs, the bigger it's written. If you already have the frequencies (e.g. product → number of sales), use `generate_from_frequencies(dict)` — then multi-word names aren't split.
+  facetgrid:
+    title: FacetGrid and catplot
+    instructions: |
+      Day 8 (3, 4): the distribution by region and the units sold by payment method.
+    tasks:
+      - 'FacetGrid: col="Region", col_wrap=3; a histogram of Total Revenue in each chart (g.map(sns.histplot, "Total Revenue")) → g.'
+      - g.figure.suptitle("Distribution by region").
+      - 'sns.catplot: x="Payment Method", y="Units Sold", kind="box" → cat; cat.figure.suptitle("Payment method and units").'
+    hints:
+      - g = sns.FacetGrid(df, col="Region", col_wrap=3, height=3); g.map(sns.histplot, "Total Revenue")
+      - g.figure.suptitle("Distribution by region", y=1.03)
+      - cat = sns.catplot(data=df, x="Payment Method", y="Units Sold", kind="box")
+    solution: |
+      import pandas as pd
+      import seaborn as sns
+      import matplotlib.pyplot as plt
+
+      df = pd.read_csv("satislar.csv")
+
+      g = sns.FacetGrid(df, col="Region", col_wrap=3, height=3)
+      g.map(sns.histplot, "Total Revenue")
+      g.figure.suptitle("Distribution by region", y=1.03)
+
+      cat = sns.catplot(data=df, x="Payment Method", y="Units Sold", kind="box")
+      cat.figure.suptitle("Payment method and units", y=1.03)
+    tests: |
+      # i18n-superset: the Azerbaijani titles are accepted too
+      import pandas as _pd
+      import numpy as _np
+      import matplotlib.pyplot as _plt
+      _s = _pd.read_csv("satislar.csv")
+
+      import seaborn as _sns
+      assert isinstance(g, _sns.FacetGrid), "g = sns.FacetGrid(...)"
+      _fa = [a for a in g.figure.axes if a.patches]
+      assert len(_fa) == 5, f"There should be 5 histograms for the 5 regions, yours has {len(_fa)}"
+      assert g.figure._suptitle is not None and g.figure._suptitle.get_text() in ("Distribution by region", "Regionlar üzrə paylanma"), "g.figure.suptitle('Distribution by region')"
+      assert isinstance(cat, _sns.FacetGrid) and cat.figure._suptitle is not None and cat.figure._suptitle.get_text() in ("Payment method and units", "Ödəniş üsulu və ədəd"), "cat = sns.catplot(..., kind='box'); cat.figure.suptitle('Payment method and units')"
+      assert len(cat.ax.get_xticklabels()) == 4, "catplot x='Payment Method' — 4 categories"
+  wordcloud-pie:
+    title: A word cloud and a donut chart
+    instructions: |
+      Day 8 (5, 9) and wedgeprops: a word cloud of the best-selling products and a donut chart of the categories.
+    tasks:
+      - 'A {name: units sold} dictionary of the 10 best-selling products → tezlik.'
+      - WordCloud(width=800, height=400, background_color="white").generate_from_frequencies(tezlik) → wc; plt.imshow(wc), plt.axis("off"), plt.title("Top 10 products").
+      - 'In a new figure, a donut chart of the revenue by category: plt.pie(..., wedgeprops={"width": 0.4, "edgecolor": "white"}), plt.title("Categories").'
+    hints:
+      - tezlik = df.groupby("Product Name")["Units Sold"].sum().nlargest(10).to_dict()
+      - wc = WordCloud(width=800, height=400, background_color="white").generate_from_frequencies(tezlik)
+      - 'plt.pie(kat.values, labels=kat.index, wedgeprops={"width": 0.4, "edgecolor": "white"})'
+    solution: |
+      import pandas as pd
+      import matplotlib.pyplot as plt
+      from wordcloud import WordCloud
+
+      df = pd.read_csv("satislar.csv")
+
+      tezlik = df.groupby("Product Name")["Units Sold"].sum().nlargest(10).to_dict()
+      wc = WordCloud(width=800, height=400, background_color="white").generate_from_frequencies(tezlik)
+      plt.figure(figsize=(8, 4))
+      plt.imshow(wc, interpolation="bilinear")
+      plt.axis("off")
+      plt.title("Top 10 products")
+
+      plt.figure()
+      kat = df.groupby("Product Category")["Total Revenue"].sum()
+      plt.pie(kat.values, labels=kat.index, autopct="%1.1f%%", wedgeprops={"width": 0.4, "edgecolor": "white"})
+      plt.title("Categories")
+    tests: |
+      # i18n-superset: the Azerbaijani chart titles are accepted too
+      import pandas as _pd
+      import numpy as _np
+      import matplotlib.pyplot as _plt
+      def _axes():
+          return [a for n in _plt.get_fignums() for a in _plt.figure(n).axes]
+      def _ax(*titles):
+          for a in _axes():
+              if a.get_title().strip() in titles:
+                  return a
+          _t = [a.get_title() for a in _axes()]
+          raise AssertionError(f'No chart titled "{titles[0]}" was found (pass title=...). Titles found: {_t}')
+
+      _s = _pd.read_csv("satislar.csv")
+
+      from wordcloud import WordCloud as _WC
+      from matplotlib.patches import Wedge as _W
+      _t = _s.groupby("Product Name")["Units Sold"].sum().nlargest(10).to_dict()
+      assert tezlik == _t, f"tezlik should be a {{name: units}} dictionary of the top 10 products: {_t}"
+      assert isinstance(wc, _WC) and set(wc.words_) <= set(_t) and len(wc.words_) == 10, "wc = WordCloud(...).generate_from_frequencies(tezlik)"
+      _a = _ax("Top 10 products", "Top 10 məhsul")
+      assert _a.images, "Show the word cloud with plt.imshow(wc)"
+      _p = _ax("Categories", "Kateqoriyalar")
+      _w = [x for x in _p.patches if isinstance(x, _W)]
+      assert len(_w) == 5 and all(x.width is not None and abs(x.width - 0.4) < 1e-6 for x in _w), "Donut: wedgeprops={'width': 0.4, ...}"
+  xususi-testi:
+    title: 'Quiz: facet analysis and special charts'
+    questions:
+      - text: What does `sns.FacetGrid(df, col="Region")` do?
+        options:
+          - It filters the regions
+          - It creates a separate chart for each region
+          - It colors the regions
+          - It deletes the Region column
+        explanation: col — a separate subplot for each value.
+      - text: What do you use so that multi-word product names (e.g. "iPhone 15") aren't split in a word cloud?
+        options:
+          - generate(text)
+          - generate_from_frequencies(dict)
+          - STOPWORDS
+          - max_words
+        explanation: A frequency dictionary treats each key as one "word".
+      - text: 'The result of `wedgeprops={"width": 0.4}`:'
+        options:
+          - The slices are pulled out
+          - A donut chart (empty in the middle)
+          - The chart shrinks by 40%
+          - Percentages are shown
+        explanation: width sets the width of the slices, so the middle becomes empty.

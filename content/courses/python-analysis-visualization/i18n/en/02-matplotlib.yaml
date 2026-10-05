@@ -1,0 +1,244 @@
+title: Matplotlib basics
+description: plot, bar, barh, scatter, hist, pie, boxplot and their main parameters.
+steps:
+  matplotlib-ders:
+    title: 'Matplotlib: the chart functions'
+    content: |
+      ```python
+      import matplotlib.pyplot as plt
+      ```
+
+      Every chart is drawn on a **figure** (a window, a canvas) and on one or more **axes** inside it (a plotting area with axes). Functions like `plt.bar(...)` draw on the **current** axes.
+
+      ## The main functions
+
+      | Function | Chart |
+      | --- | --- |
+      | `plt.plot(x, y)` | Line |
+      | `plt.bar(x, height)` / `plt.barh(y, width)` | Bar / horizontal bar |
+      | `plt.scatter(x, y)` | Scatter (points) |
+      | `plt.hist(data, bins=...)` | Histogram |
+      | `plt.pie(data, labels=...)` | Pie |
+      | `plt.boxplot(data)` | Box (spread, center, outliers) |
+
+      ## Parameters
+
+      ```python
+      plt.bar(x, height, color="steelblue", width=0.5)
+      plt.barh(y, width, color="orange", height=0.5)
+
+      plt.scatter(x, y,
+                  c=rengler,          # the color of the points (can also be a colormap by value)
+                  cmap="viridis",     # the colormap
+                  s=olculer,          # the size of the points
+                  alpha=0.5)          # transparency: 0 — fully transparent, 1 — opaque
+      plt.colorbar()                  # the color scale
+
+      plt.hist(data, bins=10, color="blue", alpha=0.5, edgecolor="black")
+
+      plt.pie(data, labels=labels,
+              startangle=90,          # the starting angle
+              explode=[0.1, 0, 0],    # pull the first slice out by 10%
+              shadow=True,
+              autopct="%1.1f%%")      # percentages
+
+      plt.boxplot(data, notch=True, vert=True, patch_artist=True)
+
+      plt.plot(x, y, color="red", linestyle="-", linewidth=2,
+               marker="o", markersize=8, markerfacecolor="r")
+      ```
+
+      ## Reading a box plot
+
+      ```text
+          ●          ← an outlier
+         ─┬─         ← the maximum (within 1.5 × IQR)
+        ┌─┴─┐
+        │   │        ← Q3 (75%)
+        ├───┤        ← the median
+        │   │        ← Q1 (25%)
+        └─┬─┘
+         ─┴─         ← the minimum
+      ```
+
+      The height of the box is the **IQR** (Q3 − Q1): the middle 50% of the data. A tall box means widely spread data.
+  bar-barh:
+    title: Bar charts
+    instructions: |
+      Day 7 (1, 9): revenue and units sold by category.
+    tasks:
+      - Draw the total revenue per category with plt.bar (color "steelblue"), plt.title("Revenue by category").
+      - In a new figure, draw the sum of Units Sold per category with plt.barh, plt.title("Units sold by category").
+    hints:
+      - plt.bar(gelir.index, gelir.values, color="steelblue"); plt.title("Revenue by category")
+      - plt.barh(eded.index, eded.values)
+      - The tests check the titles exactly — copy them.
+    solution: |
+      import pandas as pd
+      import matplotlib.pyplot as plt
+
+      df = pd.read_csv("satislar.csv")
+      gelir = df.groupby("Product Category")["Total Revenue"].sum()
+      eded = df.groupby("Product Category")["Units Sold"].sum()
+
+      plt.figure()
+      plt.bar(gelir.index, gelir.values, color="steelblue")
+      plt.title("Revenue by category")
+
+      plt.figure()
+      plt.barh(eded.index, eded.values)
+      plt.title("Units sold by category")
+    tests: |
+      # i18n-superset: the Azerbaijani chart titles are accepted too
+      import pandas as _pd
+      import numpy as _np
+      import matplotlib.pyplot as _plt
+      def _axes():
+          return [a for n in _plt.get_fignums() for a in _plt.figure(n).axes]
+      def _ax(*titles):
+          for a in _axes():
+              if a.get_title().strip() in titles:
+                  return a
+          _t = [a.get_title() for a in _axes()]
+          raise AssertionError(f'No chart titled "{titles[0]}" was found (pass title=...). Titles found: {_t}')
+
+      _s = _pd.read_csv("satislar.csv")
+
+      _a = _ax("Revenue by category", "Kateqoriyalar üzrə gəlir")
+      _g = _s.groupby("Product Category")["Total Revenue"].sum()
+      assert len(_a.patches) == len(_g), "There should be one bar per category"
+      assert sorted(round(p.get_height()) for p in _a.patches) == sorted(round(v) for v in _g.values), "The bar heights should be the revenue of the categories"
+      _b = _ax("Units sold by category", "Kateqoriyalar üzrə satılan ədəd")
+      _e = _s.groupby("Product Category")["Units Sold"].sum()
+      assert sorted(round(p.get_width()) for p in _b.patches) == sorted(_e.tolist()), "The lengths of the horizontal bars should be the units sold (plt.barh)"
+      assert "plt.bar(" in dacy.code and "plt.barh(" in dacy.code, "Use plt.bar and plt.barh"
+  scatter-hist:
+    title: Scatter plot and histogram
+    instructions: |
+      Day 7 (7, 8): the relationship between Units Sold and Total Revenue, and the distribution of prices.
+    tasks:
+      - 'plt.scatter: x=Units Sold, y=Total Revenue, alpha=0.4; title="Units and revenue"; axis labels with xlabel/ylabel.'
+      - 'In a new figure, a histogram of Unit Price: bins=15, edgecolor="black"; title="Price distribution".'
+    hints:
+      - plt.scatter(df["Units Sold"], df["Total Revenue"], alpha=0.4)
+      - plt.xlabel("Units Sold"); plt.ylabel("Total Revenue")
+      - plt.hist(df["Unit Price"], bins=15, edgecolor="black")
+    solution: |
+      import pandas as pd
+      import matplotlib.pyplot as plt
+
+      df = pd.read_csv("satislar.csv")
+
+      plt.figure()
+      plt.scatter(df["Units Sold"], df["Total Revenue"], alpha=0.4)
+      plt.title("Units and revenue")
+      plt.xlabel("Units Sold")
+      plt.ylabel("Total Revenue")
+
+      plt.figure()
+      plt.hist(df["Unit Price"], bins=15, edgecolor="black")
+      plt.title("Price distribution")
+    tests: |
+      # i18n-superset: the Azerbaijani chart titles are accepted too
+      import pandas as _pd
+      import numpy as _np
+      import matplotlib.pyplot as _plt
+      def _axes():
+          return [a for n in _plt.get_fignums() for a in _plt.figure(n).axes]
+      def _ax(*titles):
+          for a in _axes():
+              if a.get_title().strip() in titles:
+                  return a
+          _t = [a.get_title() for a in _axes()]
+          raise AssertionError(f'No chart titled "{titles[0]}" was found (pass title=...). Titles found: {_t}')
+
+      _s = _pd.read_csv("satislar.csv")
+
+      _a = _ax("Units and revenue", "Ədəd və gəlir")
+      assert _a.collections and len(_a.collections[0].get_offsets()) == len(_s), "The scatter plot should have one point per transaction (plt.scatter)"
+      assert abs(_a.collections[0].get_alpha() - 0.4) < 1e-9, "Pass alpha=0.4"
+      assert _a.get_xlabel() and _a.get_ylabel(), "Label the axes: plt.xlabel(...), plt.ylabel(...)"
+      _h = _ax("Price distribution", "Qiymətlərin paylanması")
+      assert len(_h.patches) == 15, f"The histogram should have 15 bars, yours has {len(_h.patches)}"
+  pie-boxplot:
+    title: Pie chart and box plot
+    instructions: |
+      Day 7 (2, 5, 10): the share of each payment method and the spread of prices by category.
+    tasks:
+      - 'plt.pie by the count of each payment method: labels, autopct="%1.1f%%", startangle=90, the first slice pulled out by 0.1 (explode); title="Payment methods".'
+      - In a new figure, a box plot of the Unit Price values of each category (plt.boxplot, patch_artist=True, labels=kateqoriyalar); title="Price by category".
+    hints:
+      - plt.pie(odenis.values, labels=odenis.index, autopct="%1.1f%%", startangle=90, explode=[0.1, 0, 0, 0])
+      - plt.boxplot(qiymetler, patch_artist=True, labels=kateqoriyalar)
+      - Write plt.title(...) after each chart.
+    solution: |
+      import pandas as pd
+      import matplotlib.pyplot as plt
+
+      df = pd.read_csv("satislar.csv")
+      odenis = df["Payment Method"].value_counts()
+      kateqoriyalar = sorted(df["Product Category"].unique())
+      qiymetler = [df[df["Product Category"] == k]["Unit Price"] for k in kateqoriyalar]
+
+      plt.figure()
+      plt.pie(odenis.values, labels=odenis.index, autopct="%1.1f%%", startangle=90,
+              explode=[0.1] + [0] * (len(odenis) - 1))
+      plt.title("Payment methods")
+
+      plt.figure()
+      plt.boxplot(qiymetler, patch_artist=True, labels=kateqoriyalar)
+      plt.title("Price by category")
+    tests: |
+      # i18n-superset: the Azerbaijani chart titles are accepted too
+      import pandas as _pd
+      import numpy as _np
+      import matplotlib.pyplot as _plt
+      def _axes():
+          return [a for n in _plt.get_fignums() for a in _plt.figure(n).axes]
+      def _ax(*titles):
+          for a in _axes():
+              if a.get_title().strip() in titles:
+                  return a
+          _t = [a.get_title() for a in _axes()]
+          raise AssertionError(f'No chart titled "{titles[0]}" was found (pass title=...). Titles found: {_t}')
+
+      _s = _pd.read_csv("satislar.csv")
+
+      from matplotlib.patches import Wedge as _W, PathPatch as _PP
+      _p = _ax("Payment methods", "Ödəniş üsulları")
+      _w = [x for x in _p.patches if isinstance(x, _W)]
+      assert len(_w) == 4, "The pie should have 4 slices"
+      assert any("%" in t.get_text() for t in _p.texts), "Add autopct='%1.1f%%'"
+      _c = [_np.hypot(*_np.subtract(_x.center, (0, 0))) for _x in _w]
+      assert max(_c) > 0.05, "Pull the first slice out with explode: explode=[0.1, 0, 0, 0]"
+      _b = _ax("Price by category", "Kateqoriyalar üzrə qiymət")
+      assert len([x for x in _b.patches if isinstance(x, _PP)]) == 5, "There should be 5 boxes (patch_artist=True)"
+  matplotlib-testi:
+    title: 'Quiz: matplotlib'
+    questions:
+      - text: Match each parameter to its chart.
+        buckets:
+          - name: plt.pie
+            items:
+              - explode
+              - startangle
+              - autopct
+          - name: plt.scatter
+            items:
+              - alpha (point transparency)
+              - cmap and colorbar
+          - name: plt.hist
+            items:
+              - bins
+          - name: plt.plot
+            items:
+              - linestyle
+              - marker
+        explanation: explode/startangle/autopct — pie; alpha/cmap — scatter; bins — histogram; linestyle/marker — line.
+      - text: What does the height of the box show in a box plot?
+        options:
+          - The mean
+          - The IQR — the middle 50% of the data (Q1–Q3)
+          - The maximum
+          - The number of rows
+        explanation: The box runs from Q1 to Q3, and the line inside it is the median.

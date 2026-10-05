@@ -1,0 +1,217 @@
+title: Customizing charts and subplots
+description: Titles, axis labels, legends, grids, limits, line styles and several charts in one figure.
+steps:
+  ferdilesdirme-ders:
+    title: Customization and subplots
+    content: |
+      A good chart explains itself: a title, axis labels, units, a legend.
+
+      ```python
+      plt.plot(x, y1, label="Line 1", color="blue", linestyle="-", marker="o", markersize=8, linewidth=2)
+      plt.plot(x, y2, label="Line 2", color="red", linestyle="--", marker="s", markersize=8, linewidth=2)
+
+      plt.title("Sample chart", fontsize=14, fontweight="bold")
+      plt.xlabel("X-axis label", fontsize=12)
+      plt.ylabel("Y-axis label", fontsize=12)
+      plt.legend(loc="upper left", fontsize=10, shadow=True, frameon=True, fancybox=True)
+      plt.grid(True, linestyle=":", linewidth=0.5, color="gray")
+      plt.xlim(0, 6)
+      plt.ylim(0, 10)
+      plt.tight_layout()       # adjusts the spacing
+      plt.show()
+      ```
+
+      | Setting | Function |
+      | --- | --- |
+      | Title | `plt.title(..., fontsize=, fontweight=)` |
+      | Axis labels | `plt.xlabel()`, `plt.ylabel()` |
+      | Legend | `label=...` + `plt.legend(loc=...)` |
+      | Grid | `plt.grid(axis="both"/"x"/"y", linestyle=":", color=...)` |
+      | Limits | `plt.xlim()`, `plt.ylim()` |
+      | Size | `plt.figure(figsize=(10, 5))` |
+
+      Line styles: `"-"` solid, `"--"` dashed, `"-."` dash-dot, `":"` dotted. Markers: `"o"`, `"s"`, `"^"`, `"x"`.
+
+      ## Subplots: several charts in one figure
+
+      ```python
+      fig, axs = plt.subplots(nrows=2, ncols=1, figsize=(8, 6))
+
+      axs[0].plot(x, y1, color="blue")
+      axs[0].set_title("Sine Function")
+      axs[0].set_xlabel("X-axis")
+      axs[0].grid(True)
+
+      axs[1].plot(x, y2, color="red")
+      axs[1].set_title("Cosine Function")
+
+      plt.tight_layout()
+      ```
+
+      - `plt.subplots(nrows, ncols)` returns a figure and an array of axes.
+      - With `nrows=2, ncols=2`, they are `axs[0, 0]`, `axs[0, 1]`, `axs[1, 0]`, `axs[1, 1]`.
+      - Axes methods have the `set_` prefix: `ax.set_title()`, `ax.set_xlabel()`, `ax.set_ylim()`.
+      - To draw a pandas chart on a specific axes: `seriya.plot(kind="bar", ax=axs[1, 0])`.
+  iki-xett:
+    title: 'Comparing two years: legend, grid, axes'
+    instructions: |
+      Show the monthly revenue of 2023 and 2024 as two lines on the **same** chart.
+    tasks:
+      - 'The revenue per month (1–12) for each year: g23, g24.'
+      - 'Draw two lines: 2023 — dashed (linestyle="--"), marker "o", label="2023"; 2024 — solid, marker "s", label="2024".'
+      - 'title="Monthly revenue: 2023 and 2024", xlabel="Month", ylabel="Revenue (AZN)", a legend, a grid.'
+    hints:
+      - g24 = df[il == 2024].groupby(df["Date"].dt.month)["Total Revenue"].sum()
+      - plt.plot(g23.index, g23.values, linestyle="--", marker="o", label="2023")
+      - plt.legend(); plt.grid(True); plt.xlabel("Month"); plt.ylabel("Revenue (AZN)")
+    starter_code: |
+      import pandas as pd
+      import matplotlib.pyplot as plt
+
+      df = pd.read_csv("satislar.csv", parse_dates=["Date"])
+
+      g23 = ...
+      g24 = ...
+
+      plt.figure(figsize=(9, 4))
+      # lines, title, axis labels, legend, grid
+    solution: |
+      import pandas as pd
+      import matplotlib.pyplot as plt
+
+      df = pd.read_csv("satislar.csv", parse_dates=["Date"])
+
+      il = df["Date"].dt.year
+      g23 = df[il == 2023].groupby(df["Date"].dt.month)["Total Revenue"].sum()
+      g24 = df[il == 2024].groupby(df["Date"].dt.month)["Total Revenue"].sum()
+
+      plt.figure(figsize=(9, 4))
+      plt.plot(g23.index, g23.values, linestyle="--", marker="o", label="2023")
+      plt.plot(g24.index, g24.values, linestyle="-", marker="s", label="2024")
+      plt.title("Monthly revenue: 2023 and 2024")
+      plt.xlabel("Month")
+      plt.ylabel("Revenue (AZN)")
+      plt.legend()
+      plt.grid(True, linestyle=":")
+      plt.tight_layout()
+    tests: |
+      # i18n-superset: the Azerbaijani title and axis labels are accepted too
+      import pandas as _pd
+      import numpy as _np
+      import matplotlib.pyplot as _plt
+      def _axes():
+          return [a for n in _plt.get_fignums() for a in _plt.figure(n).axes]
+      def _ax(*titles):
+          for a in _axes():
+              if a.get_title().strip() in titles:
+                  return a
+          _t = [a.get_title() for a in _axes()]
+          raise AssertionError(f'No chart titled "{titles[0]}" was found (pass title=...). Titles found: {_t}')
+
+      _s = _pd.read_csv("satislar.csv")
+
+      _a = _ax("Monthly revenue: 2023 and 2024", "Aylıq gəlir: 2023 və 2024")
+      _ls = _a.get_lines()
+      assert len(_ls) >= 2, "The chart should have two lines"
+      _leg = _a.get_legend()
+      assert _leg is not None and sorted(t.get_text() for t in _leg.get_texts()) == ["2023", "2024"], "The legend should show 2023 and 2024 (label=... + plt.legend())"
+      _st = sorted(l.get_linestyle() for l in _ls[:2])
+      assert _st == ["--", "-"] or set(_st) == {"--", "-"}, "2023 should be a dashed line (--) and 2024 a solid one (-)"
+      assert _a.get_xlabel() in ("Month", "Ay") and _a.get_ylabel() in ("Revenue (AZN)", "Gəlir (AZN)"), "Axis labels: 'Month' and 'Revenue (AZN)'"
+      assert any(g.get_visible() for g in _a.get_xgridlines()), "Add a grid: plt.grid(True)"
+      _d = _s.assign(Date=_pd.to_datetime(_s["Date"]))
+      _e = _d[_d["Date"].dt.year == 2024].groupby(_d["Date"].dt.month)["Total Revenue"].sum()
+      _y = [l for l in _ls if l.get_label() == "2024"][0].get_ydata()
+      assert _np.allclose(sorted(_y), sorted(_e.values)), "The values of the 2024 line should be the monthly revenue"
+  subplots:
+    title: 'A 2×2 subplot: a small dashboard'
+    instructions: |
+      Four charts in one figure — a mini dashboard for management.
+    tasks:
+      - fig, axs = plt.subplots(2, 2, figsize=(10, 7)).
+      - 'axs[0, 0]: revenue by region (bar), title "Regions"; axs[0, 1]: monthly revenue (line), title "Monthly revenue".'
+      - 'axs[1, 0]: a histogram of Total Revenue (bins=20), title "Distribution"; axs[1, 1]: the count of each payment method (barh), title "Payments".'
+      - plt.tight_layout().
+    hints:
+      - fig, axs = plt.subplots(2, 2, figsize=(10, 7))
+      - axs[0, 0].bar(...); axs[0, 0].set_title("Regions") — set_title on the axes
+      - axs[1, 0].hist(df["Total Revenue"], bins=20); axs[1, 1].barh(odenis.index, odenis.values)
+    solution: |
+      import pandas as pd
+      import matplotlib.pyplot as plt
+
+      df = pd.read_csv("satislar.csv")
+
+      fig, axs = plt.subplots(2, 2, figsize=(10, 7))
+
+      region = df.groupby("Region")["Total Revenue"].sum()
+      axs[0, 0].bar(region.index, region.values)
+      axs[0, 0].set_title("Regions")
+
+      ayliq = df.groupby(df["Date"].str[:7])["Total Revenue"].sum()
+      axs[0, 1].plot(range(len(ayliq)), ayliq.values)
+      axs[0, 1].set_title("Monthly revenue")
+
+      axs[1, 0].hist(df["Total Revenue"], bins=20)
+      axs[1, 0].set_title("Distribution")
+
+      odenis = df["Payment Method"].value_counts()
+      axs[1, 1].barh(odenis.index, odenis.values)
+      axs[1, 1].set_title("Payments")
+
+      plt.tight_layout()
+    tests: |
+      # i18n-superset: the Azerbaijani chart titles are accepted too
+      import pandas as _pd
+      import numpy as _np
+      import matplotlib.pyplot as _plt
+      def _axes():
+          return [a for n in _plt.get_fignums() for a in _plt.figure(n).axes]
+      def _ax(*titles):
+          for a in _axes():
+              if a.get_title().strip() in titles:
+                  return a
+          _t = [a.get_title() for a in _axes()]
+          raise AssertionError(f'No chart titled "{titles[0]}" was found (pass title=...). Titles found: {_t}')
+
+      _s = _pd.read_csv("satislar.csv")
+
+      _f = [_plt.figure(n) for n in _plt.get_fignums() if len(_plt.figure(n).axes) == 4]
+      assert _f, "There should be one figure with 4 charts: plt.subplots(2, 2)"
+      _names = [("Regions", "Regionlar"), ("Monthly revenue", "Aylıq gəlir"), ("Distribution", "Paylanma"), ("Payments", "Ödəniş")]
+      _t = sorted(a.get_title().strip() for a in _f[0].axes)
+      assert all(any(n in _t for n in p) for p in _names), f"Titles: Regions, Monthly revenue, Distribution, Payments. Yours: {_t}"
+      assert len(_ax("Regions", "Regionlar").patches) == 5, "Regions — 5 bars"
+      assert len(_ax("Monthly revenue", "Aylıq gəlir").get_lines()[0].get_ydata()) == 24, "Monthly revenue — 24 points"
+      assert len(_ax("Distribution", "Paylanma").patches) == 20, "Distribution — bins=20"
+      assert len(_ax("Payments", "Ödəniş").patches) == 4, "Payments — 4 horizontal bars"
+  ferdilesdirme-testi:
+    title: 'Quiz: customization'
+    questions:
+      - text: What is needed for the names of the lines to appear in the legend?
+        options:
+          - Only plt.legend()
+          - Giving each line label=... and calling plt.legend()
+          - plt.title()
+          - plt.grid()
+        explanation: The legend shows the labels — a line without a label doesn't appear in the legend.
+      - text: '`fig, axs = plt.subplots(2, 3)` — how do you access the bottom-right chart?'
+        options:
+          - axs[2, 3]
+          - axs[1, 2]
+          - axs[6]
+          - axs[-1, 3]
+        explanation: 'Indexes start at 0: the 2nd row (1), the 3rd column (2).'
+      - text: 'pyplot function or axes method:'
+        buckets:
+          - name: pyplot (the current chart)
+            items:
+              - plt.title()
+              - plt.xlabel()
+              - plt.ylim()
+          - name: axes method (a subplot)
+            items:
+              - ax.set_title()
+              - ax.set_xlabel()
+              - ax.set_ylim()
+        explanation: When you work with subplots, the axes methods are written with the set_ prefix.
