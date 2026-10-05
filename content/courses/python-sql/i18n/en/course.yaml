@@ -1,0 +1,2 @@
+title: 'Python & SQL: Working with Databases'
+description: 'Working with databases from Python: connections, cursors, queries, parameterized queries and protection against SQL injection, to_sql and read_sql with pandas, JOIN, GROUP BY, HAVING and date functions. You practice on an SQLite database that runs in your browser, and finish with a mini database project.'

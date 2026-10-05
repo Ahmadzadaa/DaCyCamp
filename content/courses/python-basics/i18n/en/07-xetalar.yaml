@@ -1,0 +1,250 @@
+title: Error handling (exceptions)
+description: try / except / else / finally — so the program doesn't stop when it hits an error and gives the user a clear message.
+steps:
+  istisnalar:
+    title: 'Exceptions: try, except, else, finally'
+    content: |
+      Errors can happen while a program is running: the user types text instead of a number, a file isn't found, a number is divided by zero. Errors like these are called **exceptions**. An unhandled exception stops the program:
+
+      ```python
+      int("salam")   # ValueError: invalid literal for int() with base 10: 'salam'
+      10 / 0         # ZeroDivisionError: division by zero
+      ```
+
+      ## The main exceptions
+
+      | Exception | When |
+      | --- | --- |
+      | `ValueError` | the value isn't suitable — e.g. `int("salam")` |
+      | `ZeroDivisionError` | division by zero |
+      | `TypeError` | incompatible types — e.g. `"5" + 3` |
+      | `KeyError` | the key doesn't exist in a dictionary |
+      | `IndexError` | there's no such index in the list |
+      | `FileNotFoundError` | the file wasn't found |
+
+      ## Structure
+
+      ```python
+      try:
+          # code that might cause an error
+          number = int(input("Enter a number: "))
+          print("Your number:", number)
+      except ValueError:
+          # when the error happens
+          print("That's not a valid number. Please enter a whole number.")
+      else:
+          # when NO error happens
+          print("You entered a number successfully.")
+      finally:
+          # IN ANY CASE — whether there's an error or not
+          print("The program has finished.")
+      ```
+
+      | Block | When it runs |
+      | --- | --- |
+      | `try` | always — "we try it" |
+      | `except ErrorType` | when an error of that type happens in `try` |
+      | `else` | when there's no error at all in `try` |
+      | `finally` | in any case, at the end (e.g. to close a file) |
+
+      ## Example: dividing by zero
+
+      ```python
+      try:
+          netice = 10 / 0
+      except ZeroDivisionError:
+          print("You can't divide by zero!")
+      else:
+          print("Result:", netice)
+      ```
+
+      ## Several error types
+
+      You can write several `except` blocks after one `try` — each error type gets its own message:
+
+      ```python
+      try:
+          eded = int(input("Divisor: "))
+          netice = 100 / eded
+      except ValueError:
+          print("Enter a number!")
+      except ZeroDivisionError:
+          print("You can't divide by zero!")
+      ```
+
+      ## Raising an error ourselves: `raise`
+
+      ```python
+      def yas_yoxla(yas):
+          if yas < 0:
+              raise ValueError("Age can't be negative")
+          return yas
+      ```
+
+      > Avoid writing a bare `except:` (with no type) that blindly catches every error — it hides real mistakes too. Write the specific error type you expect.
+  sifira-bolme:
+    title: 'try / except: dividing by zero'
+    instructions: |
+      Get a number from the user and divide `100` by it. Handle the error that occurs when dividing by zero with `try / except`: the program shouldn't stop, and a clear message should appear on the screen.
+
+      `input()` takes the value from the `girisler` list — the user has entered exactly `0`. In this case:
+
+      - the variable `netice` must stay `None`;
+      - a warning containing the word **"zero"** must be printed (e.g. "You can't divide by zero!").
+
+      **Extra (not checked):** add `except ValueError` and try it by changing `girisler` to `["abc"]`. Print the successful result with an `else` block and check it by changing `girisler` to `["4"]`.
+    tasks:
+      - In the try block, get a number from the user and divide 100 by it (netice).
+      - Catch the division-by-zero error with except ZeroDivisionError and print a warning.
+    hints:
+      - 'Move the division line inside the try: block (indented by 4 spaces).'
+      - 'After try: except ZeroDivisionError: and inside it, print("You can''t divide by zero!")'
+      - If you run the starter code as it is, you'll see a ZeroDivisionError — the goal is to catch exactly this error.
+    starter_code: |
+      # ── There's no keyboard in the browser: input() takes the values from this list one by one ──
+      girisler = ["0"]
+
+      def input(sual=""):
+          if not girisler:
+              raise RuntimeError("Ran out of inputs")
+          deyer = girisler.pop(0)
+          print(sual + deyer)
+          return deyer
+      # ── Write your code below this line ──────────────────────────────────────────
+
+      bolunen = 100
+      netice = None
+
+      eded = int(input("Enter the divisor: "))
+      netice = bolunen / eded
+      print("Result:", netice)
+    solution: |
+      # ── There's no keyboard in the browser: input() takes the values from this list one by one ──
+      girisler = ["0"]
+
+      def input(sual=""):
+          if not girisler:
+              raise RuntimeError("Ran out of inputs")
+          deyer = girisler.pop(0)
+          print(sual + deyer)
+          return deyer
+      # ── Write your code below this line ──────────────────────────────────────────
+
+      bolunen = 100
+      netice = None
+
+      try:
+          eded = int(input("Enter the divisor: "))
+          netice = bolunen / eded
+      except ZeroDivisionError:
+          print("You can't divide by zero!")
+      except ValueError:
+          print("Please enter a number.")
+      else:
+          print("Result:", netice)
+      finally:
+          print("The program has finished.")
+    tests: |
+      # i18n-superset: a warning with the Azerbaijani word "sıfır" is accepted too
+      assert "try" in dacy.code and "except ZeroDivisionError" in dacy.code, "Use try and except ZeroDivisionError blocks"
+      assert girisler == [], "Read the number with input()"
+      assert netice is None, f"When dividing by zero, netice should stay None, your result: {netice!r}"
+      _l = dacy.stdout.lower()
+      assert "zero" in _l or "sıfır" in _l or "sifir" in _l, 'When the error happens, print a warning that contains the word "zero"'
+  icmal-testi:
+    title: 'Quiz: Errors and a review of chapters 1–7'
+    questions:
+      - text: Which error does `int("abc")` raise?
+        options:
+          - TypeError
+          - KeyError
+          - ValueError
+          - ZeroDivisionError
+      - text: Which block runs when NO error happens in the `try` block?
+        options:
+          - else
+          - except
+          - raise
+          - finally
+      - text: Which block always runs, whether there's an error or not?
+        options:
+          - finally
+          - except
+          - try
+          - else
+      - text: Which keyword is used to raise an error ourselves?
+        options:
+          - raise
+          - except
+          - throw
+          - error
+      - text: |
+          What is the result of this code?
+
+          ```python
+          qiymetler = [12, 7, 30, 5]
+          print(max(qiymetler) - min(qiymetler))
+          ```
+        options:
+          - '5'
+          - '30'
+          - '25'
+          - '54'
+      - text: |
+          What is the result of this code?
+
+          ```python
+          d = {"ad": "Aysel", "yaş": 24}
+          d["yaş"] = d["yaş"] + 1
+          print(d["yaş"])
+          ```
+        options:
+          - KeyError
+          - '`"yaş"`'
+          - '25'
+          - '24'
+      - text: |
+          What does this function return for `qiymet(75)`?
+
+          ```python
+          def qiymet(bal):
+              if bal >= 90:
+                  return "Excellent"
+              elif bal >= 70:
+                  return "Good"
+              return "Satisfactory"
+          ```
+        options:
+          - '"Excellent"'
+          - '"Satisfactory"'
+          - None
+          - '"Good"'
+      - text: |
+          What does this code print?
+
+          ```python
+          cem = 0
+          for i in range(1, 5):
+              if i == 3:
+                  continue
+              cem += i
+          print(cem)
+          ```
+        options:
+          - '3'
+          - '6'
+          - '7'
+          - '10'
+        explanation: 1 + 2 + 4 = 7 (3 is skipped with continue, and range(1, 5) doesn't include 5).
+      - text: To find the unique customer cities, which structure is it most convenient to convert the list to?
+        options:
+          - tuple
+          - dict
+          - set
+          - list
+      - text: What is the result of `"data,analitika,python".split(",")`?
+        options:
+          - '[''data,analitika,python'']'
+          - ('data', 'analitika', 'python')
+          - '[''data'', ''analitika'', ''python'']'
+          - '''data analitika python'''

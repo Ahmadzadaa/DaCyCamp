@@ -4,7 +4,12 @@ solution + tests KEÇMƏLİ, starter_code + tests KEÇMƏMƏLİDİR. Brauzer run
 datasetlər iş qovluğuna yazılır, `dacy` obyekti, son ifadənin göstərilməsi, matplotlib AGG, plt.show — no-op.
 
 İstifadə: pyenv/bin/python gen/pyverify.py <kurs qovluğu> [fayl filtri] [--en]
-  --en — ingiliscə tərcümə (i18n/en) mənbənin üzərinə birləşdirilib yoxlanılır
+  --en — ingiliscə tərcümə (i18n/en) mənbənin üzərinə birləşdirilib yoxlanılır; qiymətləndirmə
+         dildən asılı olmasın deyə çarpaz yoxlama da aparılır: AZ həll EN testlərindən, EN həll AZ
+         testlərindən keçməlidir (tələbə dili dəyişəndə yazdığı kod eyni nəticə verir).
+         EN testlərində `# i18n-superset` şərhi: tələbənin yazdığı mətn (mesaj, etiket) EN-də
+         ingiliscədir və EN testləri AZ variantı da qəbul edir — onda yalnız AZ həll → EN test
+         yoxlanılır (EN həll AZ testindən keçməyə bilər)
 """
 import ast
 import contextlib
@@ -102,6 +107,7 @@ def main():
                     bad += 1
                     n += 1
                     continue
+                az = d
                 d = merge(d, en)
             n += 1
             ds = d.get('dataset') or []
@@ -117,6 +123,16 @@ def main():
                 sok, serr, _, _ = run(course, d.get('starter_code', ''), d['tests'], ds, tmp)
                 if sok:
                     probs.append('starter keçir')
+            if use_en:
+                with tempfile.TemporaryDirectory() as tmp:
+                    ok, err, _, _ = run(course, az.get('solution', ''), d['tests'], ds, tmp)
+                    if not ok:
+                        probs.append(f'AZ həll EN testlərindən keçmir: {err}')
+                if 'i18n-superset' not in d['tests']:
+                    with tempfile.TemporaryDirectory() as tmp:
+                        ok, err, _, _ = run(course, d.get('solution', ''), az['tests'], ds, tmp)
+                        if not ok:
+                            probs.append(f'EN həll AZ testlərindən keçmir: {err}')
             if probs:
                 bad += 1
                 print(f'✗ {m}/{f} — {d["title"]}')

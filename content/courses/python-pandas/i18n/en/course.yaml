@@ -1,0 +1,2 @@
+title: Python Pandas
+description: 'Data processing with pandas, on real sales data: DataFrames and Series, reading and writing CSV/Excel, getting to know your data, filtering, sorting, working with columns, apply and lambda, grouping and aggregation, missing values, dates, merge/join/concat, pivot and melt, text columns and regex. It ends with a complete sales analysis project.'

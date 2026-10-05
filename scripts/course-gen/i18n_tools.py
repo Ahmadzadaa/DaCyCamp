@@ -130,11 +130,19 @@ def az_left(node, path, out, code=False):
             az_left(v, f'{path}[{i}]', out, code)
     elif isinstance(node, str):
         if code:
-            # kodda: şərhlər və sətir mesajları — identifikator/data (satislar, Bakı) icazəlidir
+            # kodda: şərhlər və assert mesajları — identifikator/data (satislar, Bakı) icazəlidir.
+            # Şərhdəki söz kodda sətir literalı kimi işlənirsə (gözlənilən nəticə: # Müsbət) — datadır
+            lits = {w for q in re.findall(r'"([^"\n]*)"|\'([^\'\n]*)\'', node) for x in q for w in re.findall(r'\w+', x)}
             for line in node.splitlines():
                 c = line.split('#', 1)[1] if '#' in line else ''
+                # şərhdə dırnaq/backtick içindəki data (məs. "yaş" açarı) icazəlidir
+                c = re.sub(r'"[^"]*"|\'[^\']*\'|`[^`]*`', '', c)
+                c = ' '.join(w for w in re.findall(r'\S+', c) if re.sub(r'\W', '', w) not in lits)
                 if AZ.search(c):
                     out.append(f'{path}: şərh — {c.strip()[:70]}')
+                m = re.match(r'''\s*assert\b.*,\s*(f?(["'])(?:(?!\2).)*\2)\s*$''', line)
+                if path.endswith('.tests') and m and AZ.search(m.group(1)):
+                    out.append(f'{path}: assert mesajı — {m.group(1).strip()[:70]}')
         elif AZ.search(strip_code(node)):
             out.append(f'{path}: {strip_code(node).strip()[:90]}')
 

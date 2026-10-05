@@ -1,0 +1,464 @@
+title: Conditions, functions and modules
+description: if / elif / else, writing your own functions (def, return, default parameters), functions with conditions, creating and importing a module.
+steps:
+  if-elif-else:
+    title: 'Conditions: if, elif, else'
+    content: |
+      Remember Excel's `=IF(condition; if_true; if_false)` function? In Python, its equivalent is the `if` statement. It runs different commands depending on whether a condition is true (`True`) or false (`False`).
+
+      ```python
+      yas = 20
+
+      if yas >= 18:
+          print("Adult")
+      else:
+          print("Not an adult")
+      ```
+
+      The rules:
+
+      - A **colon** `:` goes after the condition.
+      - The code that runs when the condition is true is indented by **4 spaces**. Python defines blocks not with brackets but with exactly these spaces.
+      - The `else` block runs when the condition is false, and it's optional.
+
+      ## Several conditions: `elif`
+
+      With `elif` ("else if"), we check conditions one after another. The block of the first true condition runs, and the rest aren't checked:
+
+      ```python
+      if condition1:
+          # when condition1 is true
+      elif condition2:
+          # when condition1 is false and condition2 is true
+      else:
+          # when none of them is true
+      ```
+
+      ```python
+      bal = 78
+
+      if bal >= 90:
+          qiymet = "Excellent"
+      elif bal >= 70:
+          qiymet = "Good"
+      elif bal >= 50:
+          qiymet = "Satisfactory"
+      else:
+          qiymet = "Unsatisfactory"
+
+      print(qiymet)   # Good
+      ```
+
+      ## Combining conditions: `and`, `or`, `not`
+
+      ```python
+      yas = 25
+      gelir = 1500
+
+      if yas >= 18 and gelir > 1000:
+          print("A loan can be granted")
+
+      if yas < 18 or gelir == 0:
+          print("No loan")
+
+      if not (yas < 18):
+          print("Is an adult")
+      ```
+
+      > **Watch out for `&` and `|`:** in ordinary Python conditions, you write `and` for "and" and `or` for "or". The `&` and `|` symbols are used in **pandas** when filtering a table (with each condition in parentheses): `df[(df["yas"] > 18) & (df["gelir"] > 1000)]`. We'll see this in the coming days. If you write `&` in an ordinary `if`, you may get unexpected results.
+  funksiyalar:
+    title: Functions
+    content: |
+      So far we've used built-in functions: `print()`, `len()`, `sum()`. Now we'll write **our own functions**.
+
+      A **function** is a named block of code that performs a specific task. You write it once and call it as many times as you like. This avoids repeating code and makes the program easier to read.
+
+      ## Structure
+
+      ```python
+      def funksiya_adi(param1, param2):
+          # code block
+          return netice
+      ```
+
+      - `def` — the keyword that defines a function.
+      - **Parameters** — the values the function accepts (in parentheses).
+      - `return` — the result the function **returns**. A function without `return` returns `None`.
+
+      ```python
+      def topla(a, b):
+          return a + b
+
+      netice = topla(5, 3)
+      print(netice)   # 8
+      ```
+
+      ## The difference between `return` and `print`
+
+      `print()` just writes the result to the screen. `return`, on the other hand, **hands** the result back to the caller — you can store it in a variable and use it later:
+
+      ```python
+      def kvadrat_yaz(x):
+          print(x * x)       # only writes to the screen
+
+      def kvadrat(x):
+          return x * x       # returns the result
+
+      a = kvadrat_yaz(3)     # 9 on the screen, but a = None
+      b = kvadrat(3)         # b = 9
+      print(b + 1)           # 10
+      ```
+
+      ## Default parameters
+
+      You can give a parameter a value in advance. If that argument isn't passed in the call, the default value is used:
+
+      ```python
+      def salamla(ad="Friend"):
+          return "Hello, " + ad + "!"
+
+      print(salamla("Aysel"))   # Hello, Aysel!
+      print(salamla())          # Hello, Friend!
+      ```
+
+      ## Functions + if
+
+      By using conditions inside a function, we can return different results in different cases:
+
+      ```python
+      def edede_bax(eded):
+          if eded > 100:
+              return "Large"
+          else:
+              return "Small"
+
+      print(edede_bax(250))   # Large
+      print(edede_bax(7))     # Small
+      ```
+
+      > As soon as `return` runs, the function ends immediately — the lines after it don't run.
+  kvadrat:
+    title: 'Your first function: the square of a number'
+    instructions: |
+      Write a function that **returns** the square of the number passed to it.
+
+      The function shouldn't `print()` the result — it should return it with `return`. The tests will call the function with different numbers and check the value it returns.
+    tasks:
+      - 'Write the function kvadrat(eded): it should return the square of the number with return.'
+      - Call the function with a few numbers and print the results.
+    hints:
+      - Replace the pass line with return ...
+      - return eded ** 2 or return eded * eded
+    starter_code: |
+      def kvadrat(eded):
+          # return the square of the number
+          pass
+
+
+      print(kvadrat(4))    # 16 expected
+      print(kvadrat(-3))   # 9 expected
+    solution: |
+      def kvadrat(eded):
+          # return the square of the number
+          return eded ** 2
+
+
+      print(kvadrat(4))    # 16 expected
+      print(kvadrat(-3))   # 9 expected
+    tests: |
+      assert callable(globals().get("kvadrat")), "No function named kvadrat was found"
+      for _x, _y in [(4, 16), (-3, 9), (0, 0), (1.5, 2.25), (10, 100)]:
+          _r = kvadrat(_x)
+          assert _r is not None, "The function returns None — return the result with return"
+          assert _r == _y, f"kvadrat({_x}) should return {_y}, your function returned: {_r!r}"
+  eded-novu:
+    title: 'Functions + if: positive, negative or zero?'
+    instructions: |
+      Using `if / elif / else`, write a function that determines whether a number is positive, negative or zero.
+
+      The function must **return** one of these three strings (spelled exactly like this):
+
+      | Number | Returned value |
+      |---|---|
+      | greater than 0 | `"Positive"` |
+      | less than 0 | `"Negative"` |
+      | 0 | `"Zero"` |
+    tasks:
+      - Write the function eded_novu(eded).
+      - Call the function with 10, -5 and 0 and print the results.
+    hints:
+      - First check eded > 0, then elif eded < 0, and the remaining case goes to else.
+      - Write return "..." in each block — mind the capital letters.
+    starter_code: |
+      def eded_novu(eded):
+          # with if / elif / else, return "Positive", "Negative" or "Zero"
+          pass
+
+
+      print(eded_novu(10))   # Positive
+      print(eded_novu(-5))   # Negative
+      print(eded_novu(0))    # Zero
+    solution: |
+      def eded_novu(eded):
+          # with if / elif / else, return "Positive", "Negative" or "Zero"
+          if eded > 0:
+              return "Positive"
+          elif eded < 0:
+              return "Negative"
+          else:
+              return "Zero"
+
+
+      print(eded_novu(10))   # Positive
+      print(eded_novu(-5))   # Negative
+      print(eded_novu(0))    # Zero
+    tests: |
+      # i18n-superset: the Azerbaijani labels ("Müsbət", "Mənfi", "Sıfır") are accepted too
+      assert callable(globals().get("eded_novu")), "No function named eded_novu was found"
+      _en = {"Müsbət": "Positive", "Mənfi": "Negative", "Sıfır": "Zero"}
+      for _x, _y in [(10, "Müsbət"), (-5, "Mənfi"), (0, "Sıfır"), (0.5, "Müsbət"), (-0.1, "Mənfi"), (1000, "Müsbət")]:
+          _r = eded_novu(_x)
+          assert _r is not None, "The function returns None — return the result with return (not print)"
+          assert _r in (_en[_y], _y), f'eded_novu({_x}) should return "{_en[_y]}", your function returned: {_r!r}'
+      assert "if" in dacy.code and "elif" in dacy.code, "Use if and elif conditions"
+  yas-qrupu:
+    title: 'Age group: child, teenager, adult'
+    instructions: |
+      Write a function that determines the group for a given age. Use `if / elif / else` inside the function.
+
+      | Age | Returned value |
+      |---|---|
+      | 0 – 12 | `"child"` |
+      | 13 – 17 | `"teenager"` |
+      | 18 and over | `"adult"` |
+
+      Watch the boundary values: 12 is still a child, 13 is already a teenager, and 18 is already an adult.
+    tasks:
+      - Write the function yas_qrupu(yas).
+      - Check the function with the ages 8, 15 and 30.
+    hints:
+      - 'Check the conditions from smallest to largest: first yas < 13, then yas < 18.'
+      - The elif yas < 18 block is only checked when yas is 13 or more — because the first condition has already turned out to be false.
+    starter_code: |
+      def yas_qrupu(yas):
+          # return "child", "teenager" or "adult"
+          pass
+
+
+      print(yas_qrupu(8))    # child
+      print(yas_qrupu(15))   # teenager
+      print(yas_qrupu(30))   # adult
+    solution: |
+      def yas_qrupu(yas):
+          # return "child", "teenager" or "adult"
+          if yas < 13:
+              return "child"
+          elif yas < 18:
+              return "teenager"
+          else:
+              return "adult"
+
+
+      print(yas_qrupu(8))    # child
+      print(yas_qrupu(15))   # teenager
+      print(yas_qrupu(30))   # adult
+    tests: |
+      # i18n-superset: the Azerbaijani labels ("uşaq", "yeniyetmə", "yetkin") are accepted too
+      assert callable(globals().get("yas_qrupu")), "No function named yas_qrupu was found"
+      _en = {"uşaq": "child", "yeniyetmə": "teenager", "yetkin": "adult"}
+      for _x, _y in [(8, "uşaq"), (0, "uşaq"), (12, "uşaq"), (13, "yeniyetmə"), (15, "yeniyetmə"), (17, "yeniyetmə"), (18, "yetkin"), (30, "yetkin"), (75, "yetkin")]:
+          _r = yas_qrupu(_x)
+          assert _r is not None, "The function returns None — return the result with return"
+          assert str(_r).strip().lower() in (_en[_y], _y), f'yas_qrupu({_x}) should return "{_en[_y]}", your function returned: {_r!r}'
+  modullar:
+    title: Modules
+    content: |
+      As a program grows, keeping all the functions in one file gets harder. A **module** is a separate `.py` file that holds functions, variables and classes. We bring it into another file with the `import` keyword and use it.
+
+      We've already used built-in modules: `import math` → `math.ceil()`. Now let's create our own module.
+
+      ## Example
+
+      Suppose we have a file named `hesablama.py`:
+
+      ```python
+      # hesablama.py
+      def topla(a, b):
+          return a + b
+
+      def vurma(a, b):
+          return a * b
+      ```
+
+      We use this module in another file (for example, `main.py` or a notebook):
+
+      ```python
+      # main.py
+      import hesablama
+
+      netice = hesablama.topla(3, 4)
+      print(netice)        # 7
+
+      vurma_netice = hesablama.vurma(3, 4)
+      print(vurma_netice)  # 12
+      ```
+
+      The rules:
+
+      - The module's name is the file's name (without `.py`): `hesablama.py` → `import hesablama`.
+      - A module's function is called with a dot: `hesablama.topla(...)`.
+      - You can also import just the function you need: `from hesablama import topla` → then simply `topla(3, 4)`.
+      - You can give it a short name: `import pandas as pd` → `pd.read_csv(...)`.
+
+      > The module file must be in the same folder as the file that imports it (the working directory). We'll talk about the working directory in the Jupyter chapter.
+
+      ## Creating a module file in Jupyter
+
+      In Jupyter, if you write `%%writefile hesablama.py` at the start of a cell, the cell's contents are written to a file. In plain Python, we do this with `open()`:
+
+      ```python
+      kod = '''
+      def topla(a, b):
+          return a + b
+      '''
+
+      with open("hesablama.py", "w") as f:
+          f.write(kod)
+
+      import hesablama
+      print(hesablama.topla(2, 5))   # 7
+      ```
+
+      In the next exercise, you'll create your own module this way.
+  modul-faktorial:
+    title: 'Your own module: factorial'
+    instructions: |
+      Create a module named `hesablama.py` and put a `faktorial(n)` function in it that returns the factorial of a number. Then import the module and call the function.
+
+      **Factorial:** `n! = 1 · 2 · 3 · … · n`. For example, `5! = 120`. By definition, `0! = 1`.
+
+      There's no separate file editor in the browser, so we write the module's code in the string `modul_kodu`, and the code copies it into the file `hesablama.py` (like `%%writefile` in Jupyter). You only need to fill in the body of the `faktorial` function.
+    tasks:
+      - Inside modul_kodu, write the function faktorial(n) (with a for loop).
+      - 'Run the code: the file hesablama.py is created and brought in with import hesablama.'
+      - Print the result of hesablama.faktorial(5).
+    hints:
+      - Start with netice = 1 and, in a for i in range(1, n + 1) loop, multiply netice by i.
+      - 'range(1, 1) is empty — so when n = 0, the loop doesn''t run and netice stays 1. That''s correct: 0! = 1.'
+      - Don't forget to write return netice at the end of the function. Even though the code is inside the modul_kodu string, the indentation rules are the same.
+    starter_code: |
+      # The contents of the hesablama.py module
+      modul_kodu = '''
+      def faktorial(n):
+          # n! = 1 * 2 * ... * n, 0! = 1
+          pass
+      '''
+
+      # Write the module to a file (in Jupyter: %%writefile hesablama.py)
+      with open("hesablama.py", "w") as f:
+          f.write(modul_kodu)
+
+      # So that an old version of the module doesn't stay in memory when the code is rerun in the browser
+      import importlib, sys
+      importlib.invalidate_caches()
+      sys.modules.pop("hesablama", None)
+
+      import hesablama
+      print(hesablama.faktorial(5))   # 120 expected
+    solution: |
+      # The contents of the hesablama.py module
+      modul_kodu = '''
+      def faktorial(n):
+          # n! = 1 * 2 * ... * n, 0! = 1
+          netice = 1
+          for i in range(1, n + 1):
+              netice = netice * i
+          return netice
+      '''
+
+      # Write the module to a file (in Jupyter: %%writefile hesablama.py)
+      with open("hesablama.py", "w") as f:
+          f.write(modul_kodu)
+
+      # So that an old version of the module doesn't stay in memory when the code is rerun in the browser
+      import importlib, sys
+      importlib.invalidate_caches()
+      sys.modules.pop("hesablama", None)
+
+      import hesablama
+      print(hesablama.faktorial(5))   # 120 expected
+    tests: |
+      import importlib as _il, sys as _sys
+      _il.invalidate_caches()
+      _sys.modules.pop("hesablama", None)
+      import hesablama as _h
+      assert hasattr(_h, "faktorial"), "No faktorial function was found in the file hesablama.py"
+      for _n, _f in [(0, 1), (1, 1), (3, 6), (5, 120), (6, 720), (10, 3628800)]:
+          _r = _h.faktorial(_n)
+          assert _r is not None, "faktorial returns None — return the result with return"
+          assert _r == _f, f"faktorial({_n}) should be {_f}, your function returned: {_r!r}"
+      assert "import hesablama" in dacy.code, "Bring in the module with import hesablama"
+      assert "120" in dacy.lines, "120 is not on the screen — print the result of hesablama.faktorial(5) with print()"
+  funksiyalar-testi:
+    title: 'Quiz: Conditions, functions, modules'
+    questions:
+      - text: |
+          If `x = 0`, what does this code print?
+
+          ```python
+          if x > 0:
+              print("A")
+          elif x < 0:
+              print("B")
+          else:
+              print("C")
+          ```
+        options:
+          - C
+          - Nothing
+          - B
+          - A
+      - text: How do we combine two conditions with "and" in Python?
+        options:
+          - AND
+          - plus
+          - '&&'
+          - and
+        explanation: Ordinary conditions use and/or/not. & and | are used in pandas filters.
+      - text: Which keyword defines a function?
+        options:
+          - def
+          - func
+          - define
+          - function
+      - text: What does a function without `return` return?
+        options:
+          - An empty string
+          - '0'
+          - It raises an error
+          - None
+      - text: |
+          In this function, what does `salamla()` return?
+
+          ```python
+          def salamla(ad="Dost"):
+              return "Salam, " + ad
+          ```
+        options:
+          - '"Salam, Dost"'
+          - '"Salam, "'
+          - An error, because no argument was passed
+          - None
+        explanation: When no argument is passed, the default value ("Dost") is used.
+      - text: What is a module?
+        options:
+          - A .py file that holds functions and variables — it's brought in with import
+          - The Python installer
+          - A variable made of a single function
+          - A special type of cell in Jupyter
+      - text: After writing `import hesablama`, how do we call the `topla` function?
+        options:
+          - topla.hesablama(3, 4)
+          - import topla(3, 4)
+          - hesablama[topla](3, 4)
+          - hesablama.topla(3, 4)

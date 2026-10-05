@@ -1,0 +1,228 @@
+title: 'Jupyter: the working directory, Markdown and exporting'
+description: Where files are looked for, documenting a notebook with Markdown and exporting it as HTML/PDF.
+steps:
+  is-direktoriyasi:
+    title: The working directory and file paths
+    content: |
+      ## The current working directory
+
+      Jupyter Notebook (or any IDE) works within a particular folder — this is called the **current working directory**. If you write a file's name without a path (`"satislar.csv"`), Python looks for it in exactly this folder.
+
+      ```python
+      import os
+
+      print(os.getcwd())      # the current working directory, e.g. C:\Users\Aysel\Documents\python-basics
+      print(os.listdir())     # the files in this folder
+      ```
+
+      ## File paths
+
+      If the file is in another folder, we refer to it with a full or a relative path:
+
+      ```python
+      # A full (absolute) path
+      df = pd.read_csv("C:/Users/Aysel/Desktop/data/satislar.csv")
+
+      # A relative path — relative to the working directory
+      df = pd.read_csv("data/satislar.csv")
+      ```
+
+      To avoid typing long paths every time, you can change the working directory:
+
+      ```python
+      os.chdir("C:/Users/Aysel/Desktop/data")
+      df = pd.read_csv("satislar.csv")
+      ```
+
+      > On Windows, paths contain the `\` character: `C:\Users\...`. In Python strings, `\` has a special meaning, so either write `/` or put an `r` in front of the string: `r"C:\Users\Aysel\data.csv"`.
+
+      ## Uploading a file in Google Colab
+
+      Google Colab runs in the cloud — it can't see the files on your computer. You first need to upload the file to Colab. For this, there's the `files` module of the `google.colab` package:
+
+      ```python
+      from google.colab import files
+      import pandas as pd
+
+      # Choose and upload a file — a "Choose Files" button appears
+      uploaded = files.upload()
+
+      # The list of uploaded files
+      for file_name in uploaded.keys():
+          print(f"Uploaded file: {file_name}")
+
+      # The name of the first file
+      file_path = list(uploaded.keys())[0]
+
+      # Read it into a DataFrame
+      try:
+          # we try to read it with UTF-8 encoding
+          df = pd.read_csv(file_path, encoding="utf-8")
+          print("The file was read successfully (UTF-8)")
+      except UnicodeDecodeError:
+          # if that fails, with an alternative encoding
+          df = pd.read_csv(file_path, encoding="latin-1")
+          print("The file was read successfully (latin-1)")
+      ```
+
+      > The `try / except` block at the end of this code is error handling — we'll study it in detail in the next chapter.
+
+      In the exercises on this platform, the datasets you need are placed in the working directory automatically — reading a file by its name is enough.
+  markdown:
+    title: Markdown in Jupyter
+    content: |
+      A good notebook isn't just code: what each step does is explained. For this, Jupyter supports the **Markdown** language. Markdown is a language that turns text formatted with simple symbols into HTML. With it, we add headings, lists, bold and italic text, links and images.
+
+      ## The Markdown cell
+
+      Change the cell type from **Code** to **Markdown** (from the list in the toolbar, or press `Esc` and then `M` on the keyboard). When you run the cell (`Shift + Enter`), the text is shown formatted.
+
+      ![Changing the cell type to Markdown](images/jupyter-markdown-hucre.png)
+
+      ## Syntax
+
+      | What | Syntax |
+      | --- | --- |
+      | Headings (H1 … H6) | `# Heading 1`, `## Heading 2`, … `###### Heading 6` |
+      | Bold text | `**bold**` or `__bold__` |
+      | Italic text | `*italic*` or `_italic_` |
+      | Strikethrough | `~~old price~~` |
+      | Link | `[Link text](https://example.com)` |
+      | Image | `![Alt text](image_url)` |
+      | Bulleted list | `* Item 1` (or `- Item 1`) |
+      | Numbered list | `1. Item 1` |
+      | Inline code | `` `code` `` |
+      | Quote | `> This is a quote.` |
+      | Horizontal rule | `---` |
+
+      A code block goes between three "backticks" — you can also specify the language:
+
+      ````markdown
+      ```python
+      print("Hello, World!")
+      ```
+      ````
+
+      ## Example
+
+      This Markdown text:
+
+      ```markdown
+      # Project title
+
+      This is **a simple example** of using Markdown. Markdown makes _content_ easier to understand.
+
+      ## Items
+
+      - _The first item_
+      - _The second item_
+      - **The third item**:
+        - Sub-item 1
+        - Sub-item 2
+
+      ## Numbered list
+
+      1. The first item
+      2. The second item
+
+      ## Links
+
+      For more information, visit [this link](https://www.example.com).
+      ```
+
+      will look like this in the notebook:
+
+      > # Project title
+      >
+      > This is **a simple example** of using Markdown. Markdown makes _content_ easier to understand.
+      >
+      > ## Items
+      >
+      > - _The first item_
+      > - _The second item_
+      > - **The third item**:
+      >   - Sub-item 1
+      >   - Sub-item 2
+
+      > **Tip:** start every analysis with a Markdown heading and explain the results in a short text. When someone else (or you, a month later) opens the notebook, they'll understand right away what's going on.
+  ixrac:
+    title: Exporting a notebook as HTML and PDF
+    content: |
+      You've finished an analysis and want to send it to your manager or a client. Not everyone has Jupyter — so we export the notebook as **HTML** or **PDF**. The code, results, charts and Markdown explanations stay in one document.
+
+      ## With the menu
+
+      **File → Download as** (in newer versions, **File → Save and Export Notebook As…**) and choose the format:
+
+      ![The File → Download as menu](images/jupyter-download-as.png)
+
+      | Format | When |
+      | --- | --- |
+      | **HTML (.html)** | the easiest option: it opens in any browser and includes the charts |
+      | **PDF via LaTeX (.pdf)** | for printing; LaTeX must be installed on the computer |
+      | **PDF via HTML** | a PDF without LaTeX ("WebPDF" in newer versions of Jupyter) |
+      | **Python (.py)** | the code only — to run as a script |
+      | **Markdown (.md)** | as a text document |
+      | **Reveal.js slides** | a presentation made from the notebook |
+
+      > The simplest way to get a PDF: first export it as HTML, then open it in the browser and choose **Print → Save as PDF**.
+
+      ## From the command line
+
+      You can do the same thing from the terminal with the `nbconvert` tool:
+
+      ```bash
+      jupyter nbconvert --to html analiz.ipynb
+      jupyter nbconvert --to pdf analiz.ipynb
+      jupyter nbconvert --to slides analiz.ipynb
+      ```
+
+      > Before sending, do **Kernel → Restart & Run All**: all the cells run in order from top to bottom. That way, the results in the document match the code exactly.
+  jupyter-testi:
+    title: 'Quiz: Jupyter, Markdown and exporting'
+    questions:
+      - text: Which function shows the current working directory in Python?
+        options:
+          - files.upload()
+          - print(path)
+          - os.listdir()
+          - os.getcwd()
+        explanation: getcwd — "get current working directory". os.listdir(), on the other hand, shows the files in the folder.
+      - text: 'The code has a file name without a path: `pd.read_csv("satislar.csv")`. Where does Python look for the file?'
+        options:
+          - In the current working directory
+          - On the whole disk
+          - On the internet
+          - Only in the "Desktop" folder
+      - text: How is the largest heading written in Markdown?
+        options:
+          - '# Heading'
+          - '**Heading**'
+          - '###### Heading'
+          - '> Heading'
+      - text: How do we make text bold in Markdown?
+        options:
+          - '**bold**'
+          - '`bold`'
+          - '*bold*'
+          - ~~bold~~
+        explanation: '*text* is italic, ~~text~~ is strikethrough and `text` is code.'
+      - text: How is a link written in Markdown?
+        options:
+          - '[Link text](https://example.com)'
+          - '#Link text https://example.com'
+          - <Link text>https://example.com
+          - (Link text)[https://example.com]
+      - text: What is the easiest format for sending a notebook to someone who doesn't have Jupyter?
+        options:
+          - Python (.py)
+          - LaTeX (.tex)
+          - Notebook (.ipynb)
+          - HTML (.html)
+        explanation: HTML opens in any browser and keeps the code, results, charts and explanations.
+      - text: Which command converts a notebook to HTML from the terminal?
+        options:
+          - jupyter notebook --html
+          - pip install html
+          - jupyter nbconvert --to html analiz.ipynb
+          - python analiz.ipynb

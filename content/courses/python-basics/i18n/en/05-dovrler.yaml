@@ -1,0 +1,490 @@
+title: 'Loops: for, while, break, continue, pass'
+description: Automating repetitive operations — for and while loops, controlling a loop and conditions inside a loop.
+steps:
+  for-while:
+    title: 'Loops: for and while'
+    content: |
+      In Excel, you "drag" a formula down a hundred rows. In Python, **loops** do the same job: they run an operation again and again, automatically.
+
+      ## The `for` loop
+
+      `for` runs the block once for **each item** of a given sequence (a list, a string, a `range`):
+
+      ```python
+      seherler = ["Bakı", "Gəncə", "Şəki"]
+      for seher in seherler:
+          print(seher)
+      ```
+
+      ### `range()` — a sequence of numbers
+
+      | Syntax | Sequence |
+      | --- | --- |
+      | `range(5)` | 0, 1, 2, 3, 4 |
+      | `range(1, 6)` | 1, 2, 3, 4, 5 — **the end value isn't included** |
+      | `range(2, 11, 2)` | 2, 4, 6, 8, 10 — the third argument is the step |
+
+      ```python
+      # Print the numbers from 1 to 5
+      for i in range(1, 6):
+          print(i)
+      ```
+
+      ### Adding up in a loop (an accumulator)
+
+      A very common technique: we create a variable before the loop and add to it at every step:
+
+      ```python
+      satislar = [120, 340, 90]
+      cem = 0
+      for s in satislar:
+          cem = cem + s      # short form: cem += s
+      print(cem)             # 550
+      ```
+
+      ## The `while` loop
+
+      `while` repeats the block **as long as** the condition is true. It's used when you don't know in advance how many times it will repeat (for example, until the user enters "0").
+
+      ```python
+      # Print the numbers from 1 to 5
+      i = 1
+      while i <= 5:
+          print(i)
+          i += 1     # if we don't increase i, the condition stays true forever!
+      ```
+
+      > **Infinite loop:** if a `while` loop's condition never becomes false, the loop never stops. In the example above, if you forget the `i += 1` line, the program will keep printing `1` forever. On this platform, code like that is stopped automatically after 10 seconds and an error is shown.
+
+      ## Which one to choose?
+
+      - If the number of items or repetitions is known — `for`.
+      - If you need to repeat until a condition is met — `while`.
+  break-continue-pass:
+    title: 'Controlling a loop: break, continue, pass and if inside a loop'
+    content: |
+      ## `continue` — skip this step
+
+      `continue` cuts the **current** iteration of the loop short and moves on to the next one:
+
+      ```python
+      # Print the numbers from 1 to 10, but skip 5
+      for i in range(1, 11):
+          if i == 5:
+              continue      # when we reach 5, skip this iteration
+          print(i)
+      # 1 2 3 4 6 7 8 9 10
+      ```
+
+      ## `break` — stop the loop
+
+      `break` stops the loop early, completely:
+
+      ```python
+      # Print the numbers from 1 to 10, but stop when we reach 5
+      for i in range(1, 11):
+          if i == 5:
+              break         # exit the loop
+          print(i)
+      # 1 2 3 4
+      ```
+
+      `break` is often used together with `while True:` — "repeat until the stopping condition is met":
+
+      ```python
+      while True:
+          cavab = input("Shall we continue? (y/n): ")
+          if cavab == "n":
+              break
+      ```
+
+      ## `pass` — do nothing
+
+      `pass` is an empty operation. Python doesn't allow an empty block, so we write `pass` to say "there's no code here yet":
+
+      ```python
+      x = 5
+      if x > 10:
+          pass              # this block is empty for now
+      else:
+          print("x is less than 10")
+
+      def gelecek_funksiya():
+          pass              # I'll write it later
+
+      for i in range(5):
+          pass              # the loop does nothing
+      print("The for loop has finished")
+      ```
+
+      ## `if` inside a loop
+
+      By checking a condition inside the loop, we work only with the items we need. The `%` (remainder) operator is very handy here: `i % 2 == 0` — an even number, `i % 5 == 0` — a number divisible by 5.
+
+      ```python
+      # Print only the even numbers from 1 to 10
+      for i in range(1, 11):
+          if i % 2 == 0:
+              print(i)
+      # 2 4 6 8 10
+      ```
+
+      ## `input()` in the browser
+
+      `input()` gets a value from the user via the keyboard and returns it as a **string**, so if you need a number, convert it with `int()`:
+
+      ```python
+      eded = int(input("Enter a number: "))
+      ```
+
+      On this platform, you type the values for `input()` into the console's **"Input"** tab — one value per line. When the code calls `input()`, the values are taken from there one by one and appear in the console just like in Jupyter.
+
+      In graded exercises, however, the values come from the `girisler` (inputs) list at the top of the code — so the tests can check your code with the same inputs every time. You still write `input()` just as you would in Jupyter.
+  for-cem-cut:
+    title: 'for: sums and even numbers'
+    instructions: |
+      Do two things with a `for` loop and `range()`.
+
+      1. Calculate the sum of the numbers from 1 to 10 (including 10) **with a loop**. Without the built-in `sum()` function — use the accumulator technique: `cem = 0`, then `cem += i` at every step.
+      2. Print the even numbers from 1 to 20.
+
+      Reminder: `range(1, 11)` — 1, 2, …, 10 (the end value isn't included).
+    tasks:
+      - With a for loop, calculate the sum of the numbers from 1 to 10 (cem) and print it.
+      - With a for loop, print the even numbers from 1 to 20.
+    hints:
+      - 'Inside the for i in range(1, 11): block, write cem += i.'
+      - 'An even number: i % 2 == 0. Or a range with a step: for i in range(2, 21, 2).'
+    starter_code: |
+      # 1. The sum of the numbers from 1 to 10
+      cem = 0
+      # write the for loop here
+
+      print("Sum:", cem)
+
+      # 2. The even numbers from 1 to 20
+    solution: |
+      # 1. The sum of the numbers from 1 to 10
+      cem = 0
+      for i in range(1, 11):
+          cem += i
+      print("Sum:", cem)
+
+      # 2. The even numbers from 1 to 20
+      for i in range(1, 21):
+          if i % 2 == 0:
+              print(i)
+    tests: |
+      assert cem == 55, f"cem should be 55 (1 + 2 + … + 10), your result: {cem!r}"
+      assert "for " in dacy.code, "Use a for loop"
+      assert "sum(" not in dacy.code, "In this exercise, calculate the sum with a loop, not with sum()"
+      _nums = [int(_t) for _t in dacy.stdout.replace(",", " ").split() if _t.lstrip("-").isdigit()]
+      assert 55 in _nums, "Print the sum (55)"
+      _cut = [_n for _n in _nums if _n != 55]
+      assert _cut == list(range(2, 21, 2)), f"The screen should show the even numbers 2, 4, …, 20 (and only them), your output: {_cut}"
+  for-if-bolunenler:
+    title: 'for + if: divisible numbers'
+    instructions: |
+      Inside the loop, use `if` to print only the numbers that meet the condition. Check divisibility with `%` (the remainder): `i % 5 == 0` — `i` is divisible by 5 with no remainder.
+
+      Do the items in order: first print the numbers divisible by 5, then those divisible by 3.
+    tasks:
+      - With an if condition and a for loop, print only the numbers from 1 to 20 that are divisible by 5.
+      - With a for loop, print only the numbers from 1 to 100 that are divisible by 3.
+    hints:
+      - 'for i in range(1, 21): and inside it, if i % 5 == 0: print(i)'
+      - 'From 1 to 100 (including 100): range(1, 101). The largest number divisible by 3 is 99.'
+    starter_code: |
+      # 1. Numbers from 1 to 20 divisible by 5
+
+
+      # 2. Numbers from 1 to 100 divisible by 3
+    solution: |
+      # 1. Numbers from 1 to 20 divisible by 5
+      for i in range(1, 21):
+          if i % 5 == 0:
+              print(i)
+
+      # 2. Numbers from 1 to 100 divisible by 3
+      for i in range(1, 101):
+          if i % 3 == 0:
+              print(i)
+    tests: |
+      assert "for " in dacy.code and "if " in dacy.code, "Use a for loop and an if condition"
+      _nums = [int(_t) for _t in dacy.stdout.replace(",", " ").split() if _t.lstrip("-").isdigit()]
+      _bes = [5, 10, 15, 20]
+      _uc = list(range(3, 101, 3))
+      assert _nums[:4] == _bes, f"5, 10, 15, 20 should be printed first, your output: {_nums[:4]}"
+      assert _nums[4:] == _uc, "Then 3, 6, 9, …, 99 should be printed (the numbers from 1 to 100 divisible by 3, including 100)"
+  continue:
+    title: 'continue: skip what you don''t need'
+    instructions: |
+      In both items, use `continue` to skip the numbers you don't want and print the rest. Think of the condition the other way around: "which numbers should I **skip**?"
+
+      ```python
+      for i in range(1, 11):
+          if <number to skip>:
+              continue
+          print(i)
+      ```
+    tasks:
+      - With continue, print only the even numbers from 1 to 10.
+      - With continue, print only the numbers from 1 to 20 that aren't divisible by 5.
+    hints:
+      - 'An odd number: i % 2 != 0 → continue.'
+      - 'Divisible by 5: i % 5 == 0 → continue. print(i) for the rest.'
+    starter_code: |
+      # 1. Even numbers from 1 to 10 (skip the odd numbers with continue)
+
+
+      # 2. Numbers from 1 to 20 not divisible by 5
+    solution: |
+      # 1. Even numbers from 1 to 10 (skip the odd numbers with continue)
+      for i in range(1, 11):
+          if i % 2 != 0:
+              continue
+          print(i)
+
+      # 2. Numbers from 1 to 20 not divisible by 5
+      for i in range(1, 21):
+          if i % 5 == 0:
+              continue
+          print(i)
+    tests: |
+      assert dacy.code.count("continue") >= 2, "Use continue in both items"
+      _nums = [int(_t) for _t in dacy.stdout.replace(",", " ").split() if _t.lstrip("-").isdigit()]
+      _cut = [2, 4, 6, 8, 10]
+      _bes_deyil = [_n for _n in range(1, 21) if _n % 5 != 0]
+      assert _nums[:5] == _cut, f"2, 4, 6, 8, 10 should be printed first, your output: {_nums[:5]}"
+      assert _nums[5:] == _bes_deyil, f"Then the numbers not divisible by 5 should be printed: {_bes_deyil}"
+  while-sifir:
+    title: 'while: read and add up until 0 is entered'
+    instructions: |
+      Get numbers from the user and stop the loop when **0** is entered. At the same time, calculate the sum of the numbers entered.
+
+      The ready-made part at the top of the code replaces `input()`: on each call, it takes the next value from the `girisler` list (there's no keyboard input in the browser). Write it just as you would in Jupyter:
+
+      ```python
+      eded = int(input("Enter a number: "))
+      ```
+
+      With these inputs, the sum should be `8 + (-3) + 15 + 4 = 24`, and the `11` after the 0 shouldn't be read.
+    tasks:
+      - With a while loop, get numbers from the user and stop the loop when 0 is entered.
+      - Calculate the sum of the numbers entered (cem) and print it.
+    hints:
+      - 'Read the first number before the loop, then while eded != 0: — read the next number at the end of the loop.'
+      - 'Alternatively: inside while True:, read the number, if eded == 0: break, then cem += eded.'
+      - input() returns a string — convert it to a number with int(...).
+    starter_code: |
+      # ── There's no keyboard in the browser: input() takes the values from this list one by one ──
+      girisler = ["8", "-3", "15", "4", "0", "11"]
+
+      def input(sual=""):
+          if not girisler:
+              raise RuntimeError("Ran out of inputs — the loop should have stopped at 0")
+          deyer = girisler.pop(0)
+          print(sual + deyer)
+          return deyer
+      # ── Write your code below this line ──────────────────────────────────────────
+
+      cem = 0
+
+
+      print("Sum:", cem)
+    solution: |
+      # ── There's no keyboard in the browser: input() takes the values from this list one by one ──
+      girisler = ["8", "-3", "15", "4", "0", "11"]
+
+      def input(sual=""):
+          if not girisler:
+              raise RuntimeError("Ran out of inputs — the loop should have stopped at 0")
+          deyer = girisler.pop(0)
+          print(sual + deyer)
+          return deyer
+      # ── Write your code below this line ──────────────────────────────────────────
+
+      cem = 0
+      eded = int(input("Enter a number: "))
+      while eded != 0:
+          cem += eded
+          eded = int(input("Enter a number: "))
+
+      print("Sum:", cem)
+    tests: |
+      assert "while" in dacy.code, "Use a while loop"
+      assert dacy.code.count("input(") >= 2, "Read the numbers with input()"
+      assert girisler == ["11"], f"The loop should stop when 0 is entered — the 11 after the 0 shouldn't be read. Unread inputs: {girisler}"
+      assert cem == 24, f"cem should be 24 (8 - 3 + 15 + 4), your result: {cem!r}"
+      assert "24" in dacy.stdout.split(), "Print the sum"
+  while-musbet:
+    title: 'while + if: until a positive number is entered'
+    instructions: |
+      Get a number from the user and check whether it's positive. If the number isn't positive, print a warning and ask again. Stop the loop when a **positive** number is entered.
+
+      `input()` takes the values from the `girisler` list. With these inputs, the first positive number is `7` — the loop should stop there, and `3` shouldn't be read.
+    tasks:
+      - Get a number from the user with a while loop and an if condition.
+      - If the number isn't positive, print a warning.
+      - When a positive number is entered, stop the loop and store it in the variable musbet.
+    hints:
+      - 'Inside while True:, read the number. if eded > 0: musbet = eded and break.'
+      - The lines after break only run when the number isn't positive — put the warning there.
+      - '0 isn''t positive: the condition should be eded > 0, not eded >= 0.'
+    starter_code: |
+      # ── There's no keyboard in the browser: input() takes the values from this list one by one ──
+      girisler = ["-5", "0", "-12", "7", "3"]
+
+      def input(sual=""):
+          if not girisler:
+              raise RuntimeError("Ran out of inputs — the loop should have stopped at a positive number")
+          deyer = girisler.pop(0)
+          print(sual + deyer)
+          return deyer
+      # ── Write your code below this line ──────────────────────────────────────────
+
+      musbet = None
+
+
+      print("Positive number:", musbet)
+    solution: |
+      # ── There's no keyboard in the browser: input() takes the values from this list one by one ──
+      girisler = ["-5", "0", "-12", "7", "3"]
+
+      def input(sual=""):
+          if not girisler:
+              raise RuntimeError("Ran out of inputs — the loop should have stopped at a positive number")
+          deyer = girisler.pop(0)
+          print(sual + deyer)
+          return deyer
+      # ── Write your code below this line ──────────────────────────────────────────
+
+      musbet = None
+      while True:
+          eded = int(input("Enter a positive number: "))
+          if eded > 0:
+              musbet = eded
+              break
+          print("This number isn't positive, please try again.")
+
+      print("Positive number:", musbet)
+    tests: |
+      assert "while" in dacy.code and "if" in dacy.code, "Use a while loop and an if condition"
+      assert girisler == ["3"], f"The loop should stop at the first positive number (7). Unread inputs: {girisler}"
+      assert musbet == 7, f"musbet should be 7, your result: {musbet!r}"
+      # 4 lines are the prompts written by input() itself (-5, 0, -12, 7); the rest is your output
+      assert len(dacy.lines) - 4 >= 3, "Print a warning for every number that isn't positive (-5, 0, -12)"
+  while-100:
+    title: 'while: add up until the sum reaches 100'
+    instructions: |
+      Get numbers from the user and add them up. Stop the loop when the sum **reaches 100** (when it's 100 or more).
+
+      `input()` takes the values from the `girisler` list: `25 + 40 + 30 = 95` isn't 100 yet, `+ 10 = 105` — the loop should stop here, and `50` shouldn't be read.
+    tasks:
+      - With a while loop, get numbers from the user and add them to cem.
+      - When the sum reaches 100, stop the loop and print the sum.
+    hints:
+      - 'The condition: while cem < 100: — keep reading while the sum is less than 100.'
+      - 'Inside the loop: eded = int(input("Enter a number: ")) and cem += eded'
+    starter_code: |
+      # ── There's no keyboard in the browser: input() takes the values from this list one by one ──
+      girisler = ["25", "40", "30", "10", "50"]
+
+      def input(sual=""):
+          if not girisler:
+              raise RuntimeError("Ran out of inputs — the loop should have stopped when the sum reached 100")
+          deyer = girisler.pop(0)
+          print(sual + deyer)
+          return deyer
+      # ── Write your code below this line ──────────────────────────────────────────
+
+      cem = 0
+
+
+      print("Sum:", cem)
+    solution: |
+      # ── There's no keyboard in the browser: input() takes the values from this list one by one ──
+      girisler = ["25", "40", "30", "10", "50"]
+
+      def input(sual=""):
+          if not girisler:
+              raise RuntimeError("Ran out of inputs — the loop should have stopped when the sum reached 100")
+          deyer = girisler.pop(0)
+          print(sual + deyer)
+          return deyer
+      # ── Write your code below this line ──────────────────────────────────────────
+
+      cem = 0
+      while cem < 100:
+          eded = int(input("Enter a number: "))
+          cem += eded
+
+      print("Sum:", cem)
+    tests: |
+      assert "while" in dacy.code, "Use a while loop"
+      assert girisler == ["50"], f"The loop should stop when the sum reaches 100 (when 10 is added). Unread inputs: {girisler}"
+      assert cem == 105, f"cem should be 105 (25 + 40 + 30 + 10), your result: {cem!r}"
+      assert "105" in dacy.stdout.split(), "Print the sum"
+  dovrler-testi:
+    title: 'Quiz: Loops'
+    questions:
+      - text: Which numbers does `range(1, 6)` give?
+        options:
+          - 0, 1, 2, 3, 4, 5
+          - 1, 2, 3, 4, 5, 6
+          - 1, 2, 3, 4, 5
+          - 2, 3, 4, 5, 6
+        explanation: The end value (6) isn't included.
+      - text: What does `continue` do?
+        options:
+          - Nothing — it's an empty operation
+          - It skips the current iteration and moves on to the next one
+          - It stops the loop completely
+          - It ends the program
+      - text: What does `break` do?
+        options:
+          - It restarts the loop from the beginning
+          - It skips the current iteration and moves on to the next one
+          - It returns a value from a function
+          - It stops the loop early, completely
+      - text: What is `pass` used for?
+        options:
+          - To move on to the next iteration
+          - To stop the loop
+          - To hide an error
+          - To write an empty block — it does nothing and keeps the syntax valid
+      - text: |
+          What will this code do?
+
+          ```python
+          i = 1
+          while i <= 5:
+              print(i)
+          ```
+        options:
+          - It will print 1, 2, 3, 4, 5
+          - It won't print anything
+          - An infinite loop — it will keep printing 1 forever
+          - It will raise an error
+        explanation: i is never increased (there's no i += 1), so the condition is always true.
+      - text: |
+          How many numbers does this code print?
+
+          ```python
+          for i in range(1, 11):
+              if i % 2 == 0:
+                  print(i)
+          ```
+        options:
+          - '6'
+          - '4'
+          - '5'
+          - '10'
+        explanation: 2, 4, 6, 8, 10.
+      - text: What is the result of `17 % 5`?
+        options:
+          - '2'
+          - '3.4'
+          - '3'
+          - '85'
+        explanation: '% gives the remainder of a division: 17 = 5 · 3 + 2.'

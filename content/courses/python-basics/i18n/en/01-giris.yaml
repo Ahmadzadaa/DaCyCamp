@@ -1,0 +1,351 @@
+title: Introduction to Python and the work environment
+description: Open source, why Python, Jupyter Notebook, functions and operators, OOP, PEP8.
+steps:
+  kurs-haqqinda:
+    title: About the course
+    content: |
+      **Python Basics** is the first course of the Python4Business program: the fundamentals of Python for business and data analytics. No programming experience is required — we'll learn everything from scratch, step by step.
+
+      ## Course format
+
+      | Section | Details |
+      | --- | --- |
+      | Duration | 10 teaching days |
+      | Day 1 | A hands-on exercise in class (not graded) |
+      | Assessment (~70%) | 3 in-class assignments and 4 homework assignments |
+      | Final project (~30%) | Announced on Day 8. Criteria: completeness 50%, ease of understanding 25%, defense 25% |
+      | Project defense | Within ~10 days after Day 10 |
+
+      ## How you'll learn on the platform
+
+      1. **Theory step** — a short explanation with code examples. Read it and press "continue".
+      2. **Quiz** — a few questions that check how well you've understood the topic.
+      3. **Hands-on exercise** — Python code runs right in your browser; there's nothing to install.
+         - **Run** — runs the code and shows the result in the console.
+         - **Submit and continue** — checks the code with automated tests. If they all pass, the next step unlocks.
+         - If you get stuck, use the **Hint** button.
+
+      > If your code is wrong, the test will tell you what was expected. Making mistakes is part of learning — you can try again as many times as you like.
+
+      ## A note on names
+
+      The code in this course uses short Azerbaijani words as variable names — for example, `cem` (sum), `yeni` (new), `qiymet` (price), `satislar` (sales). Keep these names exactly as they are in the exercises: the automated checks look for them.
+
+      ## Topics of Day 1 and Day 2
+
+      - What is open source, and why Python?
+      - Jupyter Notebook and IDEs
+      - From "spreadsheet" to "console": functions and operators
+      - Object-oriented programming (OOP), Python scripts and PEP8
+      - Basic data types: `int`, `float`, `str`, `bool`
+      - Data structures: `list`, `tuple`, `dict`, `set`
+      - Conditions (`if / elif / else`), functions and modules
+      - Loops: `for`, `while`, `break`, `continue`, `pass`
+      - The working directory, Jupyter Markdown, exporting a notebook to HTML/PDF
+      - Error handling: `try / except / else / finally`
+  open-source-python:
+    title: Open source, and why Python?
+    content: |
+      ## What is open source?
+
+      **Open source tools** are software whose source code is open, meaning anyone can use and modify it. Python and R are exactly this kind of tool.
+
+      Why do companies prefer open source tools?
+
+      - **Lower costs** — the tools are free. The company avoids license fees and makes better use of its budget.
+      - **Rich functionality** — the extensive libraries of Python and R offer wide-ranging possibilities for data analysis.
+      - **Community support** — large, active communities provide constant improvements and support.
+      - **Flexibility** — because the source code is open, organizations can adapt a tool to their own needs.
+
+      ## Why Python?
+
+      Python is a powerful programming language for statistical analysis, visualization and data science. It's one of the most widely used languages in data analytics and machine learning.
+
+      - **Versatility** — not just statistical analysis, but also web development, automation and machine learning.
+      - **A rich package ecosystem** — `pandas`, `NumPy`, `matplotlib`, `scikit-learn`, `TensorFlow`.
+      - **Visualization** — high-quality, interactive charts with `matplotlib`, `seaborn` and `Plotly`.
+      - **Community support** — you'll almost always find an answer to your question.
+      - **Popularity in industry and academia** — one of the leading languages both in research and in real business projects.
+
+      ## Two key areas for a data analyst
+
+      **Data cleaning and processing.** With the DataFrames of the `pandas` library, cleaning, filtering and transforming large datasets takes just a few lines of code.
+
+      **Visualization.** `matplotlib` and `seaborn` are used for statistical charts, and `Plotly` for interactive charts.
+
+      > We'll get to know these libraries in the coming days. First, we learn Python itself — types, structures, conditions and loops.
+  jupyter-ide:
+    title: Jupyter Notebook and IDEs
+    content: |
+      An **IDE** (Integrated Development Environment) is a set of tools gathered in one place for writing code, running it and finding errors.
+
+      ## Jupyter Notebook
+
+      Jupyter Notebook is the most widely used interactive environment for working with Python. Data analysts love it because the code, the results and the explanations are kept in one document.
+
+      - **A single environment** — writing, testing and running code all happen in one place.
+      - **A cell-based interface** — you run code cells one at a time and see the result right below.
+      - **Debugging and profiling** — you can step through code and measure performance.
+      - **Markdown and charts** — you write explanations in Markdown cells and show `matplotlib`, `seaborn` and `Plotly` charts inside the notebook.
+
+      ![The Jupyter Notebook interface](images/jupyter-notebook.png)
+
+      To run a code cell, press **Shift + Enter**.
+
+      ## One notebook — several languages
+
+      Jupyter isn't just for Python: you can also write code in R, Julia, Scala and other languages. Different **kernels** (language engines) make this possible. When you create a new notebook, you choose a kernel, for example _Python 3 (ipykernel)_.
+
+      ![An example of working with the R kernel in Jupyter](images/jupyter-r-kernel.png)
+
+      The easiest way to install Jupyter is the **Anaconda (Conda)** distribution: Python, Jupyter and the main data libraries come together. There's also **Google Colab** for working in the browser without installing anything.
+
+      ## Other IDEs for Python
+
+      ![IDEs for Python: PyCharm, VS Code, Spyder, Jupyter and others](images/ide-siyahisi.png)
+
+      The most popular ones: **VS Code**, **PyCharm**, **Spyder**, **Jupyter** and **Thonny** (for beginners).
+
+      > The hands-on exercises on this platform work like a Jupyter code cell: you write the code, press **Run** and see the result in the console.
+  konsol-funksiyalar:
+    title: 'From "spreadsheet" to "console": functions and operators'
+    content: |
+      If you're used to typing `=SUM(A1:A5)` in Excel, Python functions will feel familiar: the function's name and its **arguments** in parentheses. Just as in Excel, you can use another function in place of a function's argument.
+
+      ```python
+      sum([2, 3])               # 5
+      len([2, 3])               # 2 — the number of items in the list
+      sum([2, len([2, 3])])     # 4 — the result of len() is an argument of sum()
+      ```
+
+      Note: not every Excel function has a Python equivalent with the same name.
+
+      ```python
+      sum([2, count(2, 3)])     # NameError — there's no built-in function called count()
+      sum([2, len(2, 3)])       # TypeError — len() expects one argument (for example, a list)
+      ```
+
+      ## What is a list?
+
+      A **list** is an ordered collection of values: a row, a column or just a set of values. It's written in square brackets and can hold data of different types:
+
+      ```python
+      qiymetler = [12.5, 8, 30]
+      qarisiq = [1, "alma", 3.14, True]
+      len(qarisiq)   # 4
+      ```
+
+      ## Operators
+
+      | Operator | Meaning | Example | Result |
+      | --- | --- | --- | --- |
+      | `+` | addition | `7 + 2` | `9` |
+      | `-` | subtraction | `7 - 2` | `5` |
+      | `*` | multiplication | `7 * 2` | `14` |
+      | `/` | division | `7 / 2` | `3.5` |
+      | `//` | floor division | `7 // 2` | `3` |
+      | `%` | remainder (modulo) | `7 % 2` | `1` |
+      | `**` | exponentiation | `2 ** 3` | `8` |
+      | `==` | equal to | `7 == 7` | `True` |
+      | `!=` | not equal to | `7 != 2` | `True` |
+      | `>`, `<` | greater than, less than | `7 > 2` | `True` |
+      | `>=`, `<=` | greater than or equal to, less than or equal to | `7 <= 2` | `False` |
+
+      > **Note:** in Excel, exponentiation is written with `^`, but in Python it's `**`. In Python, `^` is a completely different operation (bitwise XOR): `2 ^ 3` gives `1`, not `8`!
+
+      ### Why is equality written as `==`?
+
+      Because a single `=` in Python means **assignment** — it stores a value in a variable. A comparison needs two equals signs:
+
+      ```python
+      a = 5        # store 5 in the variable a
+      a == 5       # is a equal to 5? → True
+      ```
+
+      ## The dot `.` and square brackets `[]`
+
+      These two symbols access a part of an object (like referring to one column of a table in Excel):
+
+      ```python
+      ad = "Python"
+      ad.upper()       # "PYTHON" — we call the object's method with a dot
+      ad[0]            # "P" — square brackets access an item (counting starts at 0)
+      ```
+  oop-skript-pep8:
+    title: OOP, Python scripts and PEP8
+    content: |
+      ## Object-oriented programming (OOP)
+
+      **Object-oriented programming** is an approach in which a program is built from **objects**. In Python, everything is an object: numbers, strings, lists, functions.
+
+      Every object has its own **methods** — functions that work with that object. A method is called with a dot:
+
+      ```python
+      a = "Code Academy"
+      a.replace("Academy", "Python")   # "Code Python"
+      a.upper()                        # "CODE ACADEMY"
+      ```
+
+      Compare: `sum([2, 3])` is an ordinary function — you pass the argument in parentheses. `a.replace(...)` is a method — it belongs to the string object `a`.
+
+      Libraries follow the same logic: `numpy.sum([2, 3])` is the `sum` function of the `numpy` module.
+
+      ## Python scripts
+
+      - Python files come in `.py` (a regular script) or `.ipynb` (a Jupyter notebook) format.
+      - A script usually starts by **import**ing the packages it needs:
+
+      ```python
+      import math
+      import pandas as pd
+      ```
+
+      - A **comment** starts with `#` — Python doesn't execute it:
+
+      ```python
+      # This is a comment
+      qiymet = 100  # you can also write a comment at the end of a line
+
+      # Loading the data ####
+      ```
+
+      - Triple quotes are used for explanations that span several lines:
+
+      ```python
+      """
+      This script calculates monthly sales.
+      Author: the data team
+      """
+      ```
+
+      ## PEP8 — the coding style
+
+      **PEP8** is the official set of recommendations describing how Python code should be written. The main principles:
+
+      - **Indentation:** 4 spaces per level.
+      - **Line length:** at most 79 characters.
+      - **Variable and function names:** `snake_case` — `orta_gelir`, `hesabla_vergi()`.
+      - **Class names:** `PascalCase` — `MusteriHesabi`.
+      - **Spaces:** one space before and after operators — `x = a + b`, not `x=a+b`.
+
+      ```python
+      # Bad
+      def HesablaGelir(Qiymet,Say):
+        return Qiymet*Say
+
+      # Good (PEP8)
+      def hesabla_gelir(qiymet, say):
+          return qiymet * say
+      ```
+
+      > Python has no single "handwriting" — it's open source, so anyone can write in their own style. PEP8 makes everyone's code on a team equally readable.
+  isinma:
+    title: 'Warm-up: your first Python code'
+    instructions: |
+      Let's write your first code! In this exercise, you'll get to know the platform's code editor.
+
+      The `print()` function writes the value in parentheses to the **console** (the screen):
+
+      ```python
+      print("Hello!")
+      print(2 + 3)      # 5
+      ```
+
+      Replace the `...` in the code with your own code. First look at the result with **Run**, then check it with **Submit and continue**.
+    tasks:
+      - Print "Hello, Python!" to the screen.
+      - In the variable cem, store the result of sum([2, len([2, 3])]) by combining the sum() and len() functions.
+      - In the variable yeni, store the result of using the replace() method of the string a to replace the word "Academy" with "Python".
+    hints:
+      - 'Text is written in quotes: print("Hello, Python!")'
+      - cem = sum([2, len([2, 3])]) — first len([2, 3]) is calculated (2), then sum([2, 2]).
+      - 'A method is called with a dot: a.replace("old", "new")'
+    starter_code: |
+      # 1. Print "Hello, Python!" to the screen
+
+
+      # 2. A function inside another function's argument
+      cem = ...
+      print(cem)
+
+      # 3. The replace() method of a string object
+      a = "Code Academy"
+      yeni = ...
+      print(yeni)
+    solution: |
+      # 1. Print "Hello, Python!" to the screen
+      print("Hello, Python!")
+
+      # 2. A function inside another function's argument
+      cem = sum([2, len([2, 3])])
+      print(cem)
+
+      # 3. The replace() method of a string object
+      a = "Code Academy"
+      yeni = a.replace("Academy", "Python")
+      print(yeni)
+    tests: |
+      # i18n-superset: the Azerbaijani "Salam, Python!" is accepted too
+      assert "Hello, Python!" in dacy.lines or "Salam, Python!" in dacy.lines, 'The line "Hello, Python!" is not on the screen — write print("Hello, Python!")'
+      assert cem == 4, f"cem should be 4, your result: {cem!r}"
+      assert "sum(" in dacy.code and "len(" in dacy.code, "Calculate cem with the sum() and len() functions"
+      assert yeni == "Code Python", f'yeni should be "Code Python", your result: {yeni!r}'
+      assert ".replace(" in dacy.code, "Use the replace() method"
+      assert "4" in dacy.lines and "Code Python" in dacy.lines, "Print the results with print()"
+  giris-testi:
+    title: 'Quiz: Introduction to Python'
+    questions:
+      - text: What is open source software?
+        options:
+          - Software whose source code is kept secret
+          - Commercial software with only a free trial period
+          - Software whose source code is open, so anyone can use and modify it
+          - Software that only works online
+        explanation: The source code of open source tools is open — anyone can use it, study it and modify it.
+      - text: Which of these are Python libraries for data analytics?
+        options:
+          - NumPy
+          - matplotlib
+          - pandas
+          - Photoshop
+        explanation: pandas is for tabular data, NumPy for numerical computing and matplotlib for charts. Photoshop is a graphics editor.
+      - text: What is the main advantage of Jupyter Notebook for data analysts?
+        options:
+          - The code, results and explanations are kept in cells in one document
+          - It automatically converts code into an Excel file
+          - It only supports the Python language
+          - It doesn't work without the internet
+        explanation: The cell-based interface keeps the code, the results and the Markdown explanations together. Jupyter also supports R, Julia and other languages.
+      - text: How do we write 2 to the power of 3 in Python?
+        options:
+          - 2 ** 3
+          - 2 * 3
+          - pow[2, 3]
+          - 2 ^ 3
+        explanation: The exponentiation operator is **. In Python, 2 ^ 3 is a bitwise XOR operation, and its result is 1.
+      - text: What is the difference between `=` and `==` in Python?
+        options:
+          - There's no difference
+          - = is only for numbers, == is only for strings
+          - == stores a value in a variable, = compares
+          - = stores a value in a variable, == compares two values
+      - text: What is the result of the expression `sum([2, len([2, 3])])`?
+        options:
+          - '4'
+          - '5'
+          - '7'
+          - An error
+        explanation: len([2, 3]) = 2, then sum([2, 2]) = 4.
+      - text: According to PEP8, how should a variable name be written?
+        options:
+          - orta_gelir
+          - ORTA-GELIR
+          - ortaGelir
+          - OrtaGelir
+        explanation: Variable and function names are written in snake_case. PascalCase is for class names.
+      - text: Which character starts a comment in Python?
+        options:
+          - '%'
+          - '#'
+          - --
+          - //

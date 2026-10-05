@@ -1,0 +1,437 @@
+title: Basic data types
+description: Integers and floats, strings and Boolean values — each with its main functions and methods.
+steps:
+  int-float:
+    title: Integers and floats (int, float)
+    content: |
+      Every value has a **type**. The type determines what we can do with the value. The `type()` function shows it.
+
+      ## Integers — `int`
+
+      Integers have no fractional part. The `int()` function converts a value to an integer.
+
+      ```python
+      x = 10
+      print(type(x))   # <class 'int'>
+      print(x)         # 10
+      ```
+
+      ### Key functions
+
+      | Function | What it does | Example | Result |
+      | --- | --- | --- | --- |
+      | `int(x)` | converts to an integer (**drops** the fractional part) | `int(5.7)` | `5` |
+      | `abs(x)` | absolute value | `abs(-10)` | `10` |
+      | `pow(x, y)` | x to the power of y (same as `x ** y`) | `pow(2, 3)` | `8` |
+      | `divmod(x, y)` | returns the quotient and the remainder together | `divmod(10, 3)` | `(3, 1)` |
+      | `max(...)` | the largest value | `max(1, 2, 3)` | `3` |
+      | `min(...)` | the smallest value | `min(1, 2, 3)` | `1` |
+
+      ```python
+      x = -10
+      print(int(5.7))        # 5  — it doesn't round, it just drops the fraction
+      print(abs(x))          # 10
+      print(pow(2, 3))       # 8
+      print(divmod(10, 3))   # (3, 1): 10 = 3 · 3 + 1
+      print(max(1, 2, 3))    # 3
+      print(min(1, 2, 3))    # 1
+      ```
+
+      `divmod()` returns two values — we can store them directly in two variables:
+
+      ```python
+      qismet, qaliq = divmod(10, 3)
+      print(qismet)   # 3
+      print(qaliq)    # 1
+      ```
+
+      `max()` and `min()` also work with lists: `max([4, 9, 2])` → `9`.
+
+      ## Floats — `float`
+
+      Floats (decimal numbers) are written with a dot (not a comma!). The `float()` function converts a value to a float.
+
+      ```python
+      y = 10.5
+      print(type(y))   # <class 'float'>
+      print(y)         # 10.5
+      ```
+
+      ### Key functions
+
+      | Function | What it does | Example | Result |
+      | --- | --- | --- | --- |
+      | `float(x)` | converts to a float | `float(7)` | `7.0` |
+      | `round(x)` | rounds to the nearest integer | `round(10.75)` | `11` |
+      | `round(x, n)` | rounds to n decimal places | `round(10.75, 1)` | `10.8` |
+      | `sum(list)` | adds up the items | `sum([1.5, 2.5, 3.0])` | `7.0` |
+      | `math.ceil(x)` | rounds **up** | `math.ceil(10.2)` | `11` |
+      | `math.floor(x)` | rounds **down** | `math.floor(10.8)` | `10` |
+
+      `ceil` and `floor` live in the `math` module — you need to import it first:
+
+      ```python
+      import math
+
+      y = 10.75
+      print(float(7))                 # 7.0
+      print(round(y, 1))              # 10.8
+      print(sum([1.5, 2.5, 3.0]))     # 7.0
+      print(math.ceil(y))             # 11
+      print(math.floor(y))            # 10
+      ```
+
+      > **Fun fact:** `round(2.5)` gives `2`, not `3`! Python rounds values that are exactly in the middle to the nearest **even** number ("banker's rounding"): `round(3.5)` → `4`, `round(2.5)` → `2`.
+  ededler:
+    title: 'Working with numbers: int, abs, powers, divmod'
+    instructions: |
+      Apply the key functions for integers. Store each result in the given variable and print it with `print()`.
+
+      Don't calculate the result by hand and type it in (like `tam = 12`) — use the function. In real work, the values come from data and aren't known in advance.
+    tasks:
+      - Convert the number 12.5 to an integer (tam) and print it.
+      - Find the absolute value of -15 (mutleq) and print it.
+      - Find 3 to the power of 4 (quvvet) and print it.
+      - 'Divide 17 by 5: find the quotient (qismet) and the remainder (qaliq).'
+    hints:
+      - 'int(12.5) drops the fractional part. Absolute value: abs(-15).'
+      - 'Power: 3 ** 4 or pow(3, 4). Careful: 3 ^ 4 is not a power!'
+      - 'divmod(17, 5) returns two values: qismet, qaliq = divmod(17, 5)'
+    starter_code: |
+      # 1. Convert 12.5 to an integer
+      tam = ...
+      print(tam)
+
+      # 2. The absolute value of -15
+      mutleq = ...
+      print(mutleq)
+
+      # 3. 3 to the power of 4
+      quvvet = ...
+      print(quvvet)
+
+      # 4. Divide 17 by 5: the quotient and the remainder
+      qismet = ...
+      qaliq = ...
+      print(qismet, qaliq)
+    solution: |
+      # 1. Convert 12.5 to an integer
+      tam = int(12.5)
+      print(tam)
+
+      # 2. The absolute value of -15
+      mutleq = abs(-15)
+      print(mutleq)
+
+      # 3. 3 to the power of 4
+      quvvet = 3 ** 4
+      print(quvvet)
+
+      # 4. Divide 17 by 5: the quotient and the remainder
+      qismet, qaliq = divmod(17, 5)
+      print(qismet, qaliq)
+    tests: |
+      assert tam == 12 and type(tam) is int, f"tam should be 12 (an int), your result: {tam!r}"
+      assert "int(" in dacy.code, "Item 1: use the int() function"
+      assert mutleq == 15, f"mutleq should be 15, your result: {mutleq!r}"
+      assert "abs(" in dacy.code, "Item 2: use the abs() function"
+      assert quvvet == 81, f"quvvet should be 81, your result: {quvvet!r}"
+      assert "**" in dacy.code or "pow(" in dacy.code, "Item 3: calculate it with the ** operator or the pow() function"
+      assert (qismet, qaliq) == (3, 2), f"17 = 5 · 3 + 2 → qismet should be 3 and qaliq 2, your result: {qismet!r}, {qaliq!r}"
+      assert "divmod(" in dacy.code or ("//" in dacy.code and "%" in dacy.code), "Item 4: calculate it with divmod() (or with // and %)"
+      for _v in ("12", "15", "81"):
+          assert _v in dacy.lines, f"{_v} is not on the screen — print the result with print()"
+  min-max-cem:
+    title: The largest, the smallest and the sum of a list
+    instructions: |
+      The `max()`, `min()` and `sum()` functions work with lists — like `MAX`, `MIN` and `SUM` in Excel.
+
+      ```python
+      satislar = [120, 340, 90]
+      max(satislar)   # 340
+      ```
+
+      Don't change the lists; store the results in the given variables and print them.
+    tasks:
+      - Find the largest number in the numbers list (en_boyuk).
+      - Find the smallest number in the numbers list (en_kicik).
+      - Find the sum of all the items in the numbers2 list (cem).
+    hints:
+      - max(numbers) returns the largest item of the list.
+      - cem = sum(numbers2)
+    starter_code: |
+      numbers = [3, 7, 9, 5, 1]
+      numbers2 = [2, 4, 6, 8]
+
+      # 1. The largest number
+      en_boyuk = ...
+      print(en_boyuk)
+
+      # 2. The smallest number
+      en_kicik = ...
+      print(en_kicik)
+
+      # 3. The sum of numbers2
+      cem = ...
+      print(cem)
+    solution: |
+      numbers = [3, 7, 9, 5, 1]
+      numbers2 = [2, 4, 6, 8]
+
+      # 1. The largest number
+      en_boyuk = max(numbers)
+      print(en_boyuk)
+
+      # 2. The smallest number
+      en_kicik = min(numbers)
+      print(en_kicik)
+
+      # 3. The sum of numbers2
+      cem = sum(numbers2)
+      print(cem)
+    tests: |
+      assert numbers == [3, 7, 9, 5, 1] and numbers2 == [2, 4, 6, 8], "Don't change the lists"
+      assert en_boyuk == 9, f"en_boyuk should be 9, your result: {en_boyuk!r}"
+      assert "max(" in dacy.code, "Use the max() function"
+      assert en_kicik == 1, f"en_kicik should be 1, your result: {en_kicik!r}"
+      assert "min(" in dacy.code, "Use the min() function"
+      assert cem == 20, f"cem should be 20, your result: {cem!r}"
+      assert "sum(" in dacy.code, "Use the sum() function"
+      for _v in ("9", "1", "20"):
+          assert _v in dacy.lines, f"{_v} is not on the screen — print the result with print()"
+  yuvarlaqlasdirma:
+    title: 'Rounding: round, ceil, floor'
+    instructions: |
+      Three different ways of rounding:
+
+      - `round(x)` — to the nearest integer
+      - `math.ceil(x)` — always **up** (*ceiling*)
+      - `math.floor(x)` — always **down** (*floor*)
+
+      The `math` module is already imported at the top of the code.
+    tasks:
+      - Round 15.67 to the nearest integer (yuvarlaq).
+      - Round 7.3 up (yuxari) and print it.
+      - Round 7.9 down (asagi) and print it.
+    hints:
+      - round(15.67) → 16
+      - math.ceil(7.3) → 8, math.floor(7.9) → 7
+    starter_code: |
+      import math
+
+      # 1. To the nearest integer
+      yuvarlaq = ...
+      print(yuvarlaq)
+
+      # 2. Round up
+      yuxari = ...
+      print(yuxari)
+
+      # 3. Round down
+      asagi = ...
+      print(asagi)
+    solution: |
+      import math
+
+      # 1. To the nearest integer
+      yuvarlaq = round(15.67)
+      print(yuvarlaq)
+
+      # 2. Round up
+      yuxari = math.ceil(7.3)
+      print(yuxari)
+
+      # 3. Round down
+      asagi = math.floor(7.9)
+      print(asagi)
+    tests: |
+      assert yuvarlaq == 16, f"yuvarlaq should be 16, your result: {yuvarlaq!r}"
+      assert "round(" in dacy.code, "Item 1: use the round() function"
+      assert yuxari == 8, f"yuxari should be 8 (7.3 → 8), your result: {yuxari!r}"
+      assert "ceil(" in dacy.code, "Item 2: use the math.ceil() function"
+      assert asagi == 7, f"asagi should be 7 (7.9 → 7), your result: {asagi!r}"
+      assert "floor(" in dacy.code, "Item 3: use the math.floor() function"
+      for _v in ("16", "8", "7"):
+          assert _v in dacy.lines, f"{_v} is not on the screen — print the result with print()"
+  str-bool:
+    title: Strings and Boolean values (str, bool)
+    content: |
+      ## Strings — `str`
+
+      A string is text, written between single `'...'` or double `"..."` quotes. The `str()` function converts any value to a string.
+
+      ```python
+      name = "Riyad"
+      print(type(name))   # <class 'str'>
+      print(name)         # Riyad
+      ```
+
+      ### Key functions and methods
+
+      | Function / method | What it does | Example | Result |
+      | --- | --- | --- | --- |
+      | `str(x)` | converts to a string | `str(10)` | `'10'` |
+      | `len(s)` | length (number of characters) | `len("Code")` | `4` |
+      | `s.upper()` | makes all letters uppercase | `"Code".upper()` | `'CODE'` |
+      | `s.lower()` | makes all letters lowercase | `"Code".lower()` | `'code'` |
+      | `s.replace(old, new)` | replaces a part | `"Code".replace("e", "e Academy")` | `'Code Academy'` |
+      | `s.split()` | splits the string into parts (default: on spaces) | `"Code Academy".split()` | `['Code', 'Academy']` |
+      | `separator.join(list)` | joins the items of a list | `" ".join(["Hello", "World"])` | `'Hello World'` |
+
+      ```python
+      name = "Code"
+      print(str(10))                          # 10
+      print(len(name))                        # 4
+      print(name.upper())                     # CODE
+      print(name.lower())                     # code
+      print(name.replace("e", "e Academy"))   # Code Academy
+      print("Code Academy".split())           # ['Code', 'Academy']
+      print("a,b,c".split(","))               # ['a', 'b', 'c'] — split on commas
+      print(" ".join(["Hello", "World"]))     # Hello World
+      ```
+
+      > **Note:** strings can't be changed. `name.replace(...)` doesn't change `name` — it returns a **new** string. To keep the result, store it in a variable: `yeni = name.replace("C", "K")`.
+
+      > Use only straight quotes (`"` and `'`) in code. Curly quotes copied from Word or slides (`“ ”`, `‘ ’`) cause a `SyntaxError` in Python.
+
+      ## Boolean values — `bool`
+
+      A Boolean is a logical value with only two possible values: `True` and `False`. The result of a comparison is a Boolean: `5 > 3` → `True`.
+
+      ```python
+      is_active = True
+      print(type(is_active))   # <class 'bool'>
+      print(is_active)         # True
+      ```
+
+      ### Key functions and operators
+
+      | | What it does | Example | Result |
+      | --- | --- | --- | --- |
+      | `bool(x)` | converts to a Boolean (`0`, an empty string, an empty list → `False`) | `bool(0)` | `False` |
+      | `all(list)` | `True` if **all** items are true | `all([True, True, False])` | `False` |
+      | `any(list)` | `True` if **any** item is true | `any([False, True, False])` | `True` |
+      | `not` | inverts the value | `not True` | `False` |
+      | `and` | `True` if both are true | `True and False` | `False` |
+      | `or` | `True` if at least one is true | `True or False` | `True` |
+
+      ```python
+      a = True
+      b = False
+      print(bool(1))                       # True
+      print(bool(0))                       # False
+      print(all([True, True, False]))      # False
+      print(any([False, True, False]))     # True
+      print(not a)                         # False
+      print(a and b)                       # False
+      print(a or b)                        # True
+      ```
+  setirler:
+    title: 'Working with strings: len, replace, split'
+    instructions: |
+      Apply string methods. Remember: string methods don't change the original string; they return a **new** value — store the result in a variable.
+    tasks:
+      - Find the length of the string my_string (uzunluq).
+      - In my_string, replace the letter "P" with the letter "J" (yeni_setir).
+      - Split the string my_string2 on spaces (sozler).
+    hints:
+      - len(my_string) returns the number of characters.
+      - my_string.replace("P", "J") — store the result in yeni_setir.
+      - When split() is called without arguments, it splits on spaces.
+    starter_code: |
+      my_string = "Python"
+      my_string2 = "Python is fun"
+
+      # 1. Length
+      uzunluq = ...
+      print(uzunluq)
+
+      # 2. "P" → "J"
+      yeni_setir = ...
+      print(yeni_setir)
+
+      # 3. Split on spaces
+      sozler = ...
+      print(sozler)
+    solution: |
+      my_string = "Python"
+      my_string2 = "Python is fun"
+
+      # 1. Length
+      uzunluq = len(my_string)
+      print(uzunluq)
+
+      # 2. "P" → "J"
+      yeni_setir = my_string.replace("P", "J")
+      print(yeni_setir)
+
+      # 3. Split on spaces
+      sozler = my_string2.split()
+      print(sozler)
+    tests: |
+      assert my_string == "Python" and my_string2 == "Python is fun", "Don't change my_string and my_string2"
+      assert uzunluq == 6, f"uzunluq should be 6, your result: {uzunluq!r}"
+      assert "len(" in dacy.code, "Item 1: use the len() function"
+      assert yeni_setir == "Jython", f'yeni_setir should be "Jython", your result: {yeni_setir!r}'
+      assert ".replace(" in dacy.code, "Item 2: use the replace() method"
+      assert sozler == ["Python", "is", "fun"], f"sozler should be ['Python', 'is', 'fun'], your result: {sozler!r}"
+      assert ".split(" in dacy.code, "Item 3: use the split() method"
+      for _v in ("6", "Jython", "['Python', 'is', 'fun']"):
+          assert _v in dacy.lines, f"{_v} is not on the screen — print the result with print()"
+  tipler-testi:
+    title: 'Quiz: Data types'
+    questions:
+      - text: What is the result of `int(5.7)`?
+        options:
+          - '6'
+          - '5.7'
+          - An error
+          - '5'
+        explanation: int() doesn't round; it just drops the fractional part.
+      - text: What does `divmod(10, 3)` return?
+        options:
+          - '3.33'
+          - (3, 1)
+          - (3, 0.33)
+          - (1, 3)
+        explanation: 10 = 3 · 3 + 1 → the quotient is 3 and the remainder is 1.
+      - text: What are the results of `math.ceil(10.2)` and `math.floor(10.8)`?
+        options:
+          - 11 and 10
+          - 10 and 11
+          - 11 and 11
+          - 10 and 10
+        explanation: ceil always rounds up, and floor always rounds down.
+      - text: What is the result of `round(2.5)`?
+        options:
+          - '3'
+          - '2.5'
+          - '2'
+          - An error
+        explanation: Python rounds values that are exactly in the middle to the nearest even number — round(2.5) → 2, round(3.5) → 4.
+      - text: What does `type("10")` show?
+        options:
+          - <class 'int'>
+          - <class 'float'>
+          - <class 'str'>
+          - <class 'bool'>
+        explanation: Anything in quotes is a string — even digits.
+      - text: If `name = "Code"`, what is the result of `name.upper()`?
+        options:
+          - code
+          - CODE
+          - cODE
+          - Code
+      - text: What is the result of `"Code Academy".split()`?
+        options:
+          - '[''Code Academy'']'
+          - '[''C'', ''o'', ''d'', ''e'']'
+          - '''CodeAcademy'''
+          - '[''Code'', ''Academy'']'
+      - text: Which of these return `True`?
+        options:
+          - any([False, True])
+          - bool(0)
+          - not True
+          - all([True, True])
+        explanation: any is True if at least one item is true, and all is True if every item is true. not True → False, bool(0) → False.
