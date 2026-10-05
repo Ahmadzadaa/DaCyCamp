@@ -118,7 +118,9 @@ def extract(course, mod):
 
 def strip_code(s):
     s = re.sub(r'```.*?```', '', s, flags=re.S)
-    return re.sub(r'`[^`\n]*`', '', s)
+    s = re.sub(r'`[^`\n]*`', '', s)
+    # dırnaq içində qısa data dəyəri (açar, etiket, şəhər: "yaş", "Bakı") — tapşırıq/variant düz mətndir
+    return re.sub(r'"[^"\n]{1,60}"', '', s)
 
 
 def az_left(node, path, out, code=False):
@@ -140,9 +142,12 @@ def az_left(node, path, out, code=False):
                 c = ' '.join(w for w in re.findall(r'\S+', c) if re.sub(r'\W', '', w) not in lits)
                 if AZ.search(c):
                     out.append(f'{path}: şərh — {c.strip()[:70]}')
-                m = re.match(r'''\s*assert\b.*,\s*(f?(["'])(?:(?!\2).)*\2)\s*$''', line)
-                if path.endswith('.tests') and m and AZ.search(m.group(1)):
-                    out.append(f'{path}: assert mesajı — {m.group(1).strip()[:70]}')
+                m = re.match(r'''\s*assert\b.*,\s*f?((["'])(?:(?!\2).)*\2)\s*$''', line)
+                if path.endswith('.tests') and m:
+                    # mesajın içində dırnaqlı data ("Aysel Məmmədova") icazəlidir
+                    inner = re.sub(r'\\?"[^"\n]{1,60}?\\?"', '', m.group(1)[1:-1])
+                    if AZ.search(inner):
+                        out.append(f'{path}: assert mesajı — {m.group(1).strip()[:70]}')
         elif AZ.search(strip_code(node)):
             out.append(f'{path}: {strip_code(node).strip()[:90]}')
 

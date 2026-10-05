@@ -1,0 +1,204 @@
+title: Regular expressions (the re module)
+description: 'Searching for a pattern in text, finding, replacing and splitting: re.search, findall, sub, split.'
+steps:
+  regex-giris:
+    title: What is regex? The key functions of the re module
+    content: |
+      You need to pull all the phone numbers out of customer reviews, all the codes out of order notes, or all the email addresses. `find()` and `split()` find one specific word, but they can't find a **pattern** such as "any number starting with +994". That's what **regular expressions** (regex) are for.
+
+      In Python, regex works through the `re` module:
+
+      ```python
+      import re
+      ```
+
+      ## The four key functions
+
+      | Function | What it does | Returns |
+      | --- | --- | --- |
+      | `re.search(pattern, text)` | Finds the first match | A `Match` object or `None` |
+      | `re.findall(pattern, text)` | Finds all matches | A list |
+      | `re.sub(pattern, new, text)` | Replaces the matches | A new string |
+      | `re.split(pattern, text)` | Splits on the matches | A list |
+
+      ```python
+      metn = "Hello world! Hello everyone!"
+
+      m = re.search(r"world", metn)
+      if m:
+          print(m.group())                    # world
+
+      re.findall(r"Hello", metn)              # ['Hello', 'Hello']
+      re.sub(r"world", "planet", metn)        # 'Hello planet! Hello everyone!'
+      re.split(r",", "Hello,world,everyone")  # ['Hello', 'world', 'everyone']
+      ```
+
+      ## Why `r"..."`?
+
+      Patterns contain lots of backslashes (`\`): `\d` — a digit, `\s` — whitespace. In an ordinary string, `\` has a special meaning (`\n` — a new line), so we write patterns as **raw strings** — `r"..."`: `r"\d+"`.
+
+      ## The Match object
+
+      When `re.search()` finds a match, it returns a `Match` object:
+
+      ```python
+      m = re.search(r"\d+", "Order 1045 delivered")
+      m.group()    # '1045'  — the matched text
+      m.start()    # 6       — the index where it starts
+      ```
+
+      When it finds nothing, it returns `None` — that's why we first check the result with `if m:`.
+  regex-sintaksis:
+    title: 'Regex syntax: characters, quantifiers, groups'
+    content: |
+      ## Character classes
+
+      | Pattern | Matches |
+      | --- | --- |
+      | `.` | Any single character (except a new line) |
+      | `\d` | A digit (0–9) |
+      | `\w` | A letter, a digit or `_` |
+      | `\s` | A whitespace character (space, tab, new line) |
+      | `[abc]` | `a`, `b` or `c` |
+      | `[A-Z]` | An uppercase Latin letter |
+      | `[^0-9]` | A character that is **not** a digit |
+
+      ## Quantifiers
+
+      | Pattern | Meaning |
+      | --- | --- |
+      | `*` | 0 or more |
+      | `+` | 1 or more |
+      | `?` | 0 or 1 |
+      | `{n}` | Exactly n times |
+      | `{n,m}` | From n to m times |
+
+      ## Position and alternation
+
+      | Pattern | Meaning |
+      | --- | --- |
+      | `^` | The start of the string |
+      | `$` | The end of the string |
+      | `a\|b` | `a` or `b` |
+      | `\.` | A literal dot (`\` turns a special character into an ordinary one) |
+
+      ## Groups `( )`
+
+      Parentheses **capture** part of the pattern. When there's a group, `findall` returns only what's inside the group:
+
+      ```python
+      metn = "Order #A-10234 and #B-20871"
+      re.findall(r"#[A-Z]-\d+", metn)     # ['#A-10234', '#B-20871']
+      re.findall(r"#([A-Z]-\d+)", metn)   # ['A-10234', 'B-20871']  — without the #
+      ```
+
+      ## Real examples
+
+      ```python
+      # An Azerbaijani mobile number: +994 50 123 45 67
+      r"\+994 \d{2} \d{3} \d{2} \d{2}"
+
+      # An email address (simplified): name@domain.zone
+      r"[\w.+-]+@[\w-]+\.[\w.]+"
+
+      # A date: 2024-12-02
+      r"\d{4}-\d{2}-\d{2}"
+      ```
+
+      > 💡 Build a regex step by step: start with a simple pattern (`\d+`), then refine it (`\d{4}-\d{2}`). Don't try to write a complex pattern in one go.
+
+      > ⚠️ `+` and `*` are "greedy" — they grab as many characters as possible. In the text `<a><b>`, the pattern `<.*>` captures the whole `<a><b>`; if you only need `<a>`, write `<.*?>`.
+  regex-axtaris:
+    title: 'Find the order codes: findall and search'
+    instructions: |
+      In the order notes, the codes have the format `#A-10234`: `#`, a series letter, a hyphen and digits. Extract them with the `re` module.
+
+      The notes are in Azerbaijani: "Sifariş" means "Order", and "2 gündə" means "in 2 days".
+    tasks:
+      - 'Find all the order codes without the # sign → kodlar (["A-10234", ...]). Use a group.'
+      - Find the number of A-series codes with regex → a_say.
+      - With re.search, find the number before the word "gündə" (days) and convert it to an int → gun.
+    hints:
+      - 'A group leaves the # sign out of the result: re.findall(r"#([A-Z]-\d+)", metn)'
+      - 'The A series: re.findall(r"#A-\d+", metn) — the length of the list with len().'
+      - gun = int(re.search(r"(\d+) gündə", metn).group(1)) — group(1) is the first group.
+    tests: |
+      assert kodlar == ["A-10234", "B-20871", "A-10301"], f"kodlar should be ['A-10234', 'B-20871', 'A-10301'], your result: {kodlar!r}"
+      assert a_say == 2, f"a_say should be 2, your result: {a_say!r}"
+      assert gun == 2 and isinstance(gun, int), f"gun should be the integer 2, your result: {gun!r}"
+      assert "re.findall(" in dacy.code and "re.search(" in dacy.code, "Use the re.findall() and re.search() functions"
+  telefon-email:
+    title: Extract email addresses and phone numbers from reviews
+    instructions: |
+      The customer reviews contain contact details. The marketing team wants them in a separate list.
+
+      - The mobile number format: `+994 50 123 45 67`
+      - An email address: `name@domain.zone`
+    tasks:
+      - Find all the email addresses → emailler.
+      - Find all the mobile numbers starting with +994 → nomreler (the office number 012... must not be included).
+      - Find the domains of the email addresses ("gmail.com", "technar.az") → domenler.
+    hints:
+      - 'The + sign is special in regex — write it as \+: r"\+994 \d{2} \d{3} \d{2} \d{2}"'
+      - 'Email: r"[\w.+-]+@[\w-]+\.[\w.]+" — letters/digits/dots before the @, then the domain.'
+      - 'For the domain, capture the part after the @ in a group: r"@([\w.-]+)"'
+    tests: |
+      assert emailler == ["aysel.m@gmail.com", "help@technar.az"], f"emailler should be ['aysel.m@gmail.com', 'help@technar.az'], your result: {emailler!r}"
+      assert nomreler == ["+994 50 123 45 67", "+994 55 987 65 43"], f"nomreler should contain only the two mobile numbers, your result: {nomreler!r}"
+      assert domenler == ["gmail.com", "technar.az"], f"domenler should be ['gmail.com', 'technar.az'], your result: {domenler!r}"
+      assert dacy.code.count("re.findall(") >= 3, "Use re.findall() in all three items"
+  metn-temizleme:
+    title: 'Clean up text: sub and split'
+    instructions: |
+      The text from a scanned price tag is messy, and the categories are written with different separators. Tidy them up with `re.sub` and `re.split`.
+    tasks:
+      - In the text xam, replace consecutive spaces with a single space and remove the spaces at both ends → temiz.
+      - Find all the numbers in the text xam and convert them to a list of ints → ededler ([2399, 10]).
+      - Split setir on commas, semicolons and | separators, and strip the spaces from each part → hisseler.
+    hints:
+      - '\s+ is one or more whitespace characters: re.sub(r"\s+", " ", xam).strip()'
+      - 'Numbers: re.findall(r"\d+", xam) returns strings — convert them with int().'
+      - 'A character class for several separators: re.split(r"[,;|]", setir)'
+    tests: |
+      assert temiz == "Qiymət: 2399 AZN!!! Endirim: 10%", f'temiz should be "Qiymət: 2399 AZN!!! Endirim: 10%", your result: {temiz!r}'
+      assert ededler == [2399, 10], f"ededler should be [2399, 10] (integers), your result: {ededler!r}"
+      assert hisseler == ["Electronics", "Clothing", "Sports", "Beauty"], f"hisseler isn't correct: {hisseler!r}"
+      assert "re.sub(" in dacy.code and "re.split(" in dacy.code, "Use the re.sub() and re.split() functions"
+  regex-testi:
+    title: 'Quiz: Regex'
+    questions:
+      - text: Group each function by the result it returns.
+        buckets:
+          - name: A Match object or None
+            items:
+              - re.search()
+              - re.match()
+          - name: A list
+            items:
+              - re.findall()
+              - re.split()
+          - name: A new string
+            items:
+              - re.sub()
+        explanation: search/match return a Match object for the first match (or None), findall and split return a list, and sub returns a new string with the replacements.
+      - text: What does `re.findall(r"\d+", "A1B22C333")` return?
+        options:
+          - '[''1'', ''2'', ''2'', ''3'', ''3'', ''3'']'
+          - '[''1'', ''22'', ''333'']'
+          - '[1, 22, 333]'
+          - '''122333'''
+        explanation: \d+ captures one or more consecutive digits as a single match; findall returns a list of strings.
+      - text: Which pattern finds **only** numbers in the format `+994 50 123 45 67`?
+        options:
+          - r"\d+"
+          - r"+994 \d{2} \d{3} \d{2} \d{2}"
+          - r"\+994 \d{2} \d{3} \d{2} \d{2}"
+          - r"994.*"
+        explanation: + is a special character (1 or more), so it's written as \+. \d{n} means exactly n digits.
+      - text: What does the `^` symbol mean in regex?
+        options:
+          - The end of the string
+          - The start of the string
+          - Any character
+          - Exponentiation
+        explanation: ^ marks the start of the string and $ the end. Inside square brackets ([^0-9]), however, it means "not".

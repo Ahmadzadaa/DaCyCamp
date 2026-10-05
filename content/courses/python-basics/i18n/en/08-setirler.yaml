@@ -1,0 +1,263 @@
+title: 'Strings in depth: indexing, slicing, methods and f-strings'
+description: Accessing a string's characters by index, slicing, the key methods and formatting with f-strings.
+steps:
+  indeks-kesme:
+    title: Indexing and slicing
+    content: |
+      A string is an **ordered** sequence of characters. Every character has its own position — an **index** — and counting starts at **0**.
+
+      ```text
+       T   e   c   h   N   a   r
+       0   1   2   3   4   5   6      ← positive index
+      -7  -6  -5  -4  -3  -2  -1      ← negative index (from the end)
+      ```
+
+      ```python
+      ad = "TechNar"
+      print(ad[0])    # T  — the first character
+      print(ad[4])    # N
+      print(ad[-1])   # r  — the last character
+      print(len(ad))  # 7
+      ```
+
+      ## Slicing: `[start:stop:step]`
+
+      Slicing takes a part of a string. **The stop index isn't included.**
+
+      | Syntax | Result | Explanation |
+      | --- | --- | --- |
+      | `ad[0:4]` | `'Tech'` | 0, 1, 2, 3 |
+      | `ad[:4]` | `'Tech'` | if the start is omitted — from the beginning |
+      | `ad[4:]` | `'Nar'` | if the stop is omitted — to the end |
+      | `ad[-3:]` | `'Nar'` | the last 3 characters |
+      | `ad[::2]` | `'TcNr'` | every second character |
+      | `ad[::-1]` | `'raNhceT'` | reversed |
+
+      ## A real example: a product code
+
+      In the TechNar warehouse, every product code looks like this: `TEC-1001-BAKU-2024` — category, number, city, year.
+
+      ```python
+      kod = "TEC-1001-BAKU-2024"
+      kateqoriya = kod[:3]     # 'TEC'
+      nomre = kod[4:8]         # '1001'
+      il = kod[-4:]            # '2024'
+      ```
+
+      > 💡 Slicing is very handy when the codes have a fixed format. If the format varies (e.g. the parts have different lengths), `split("-")` is more reliable — in the next lesson.
+
+      ## Strings are immutable
+
+      You can't change one character of a string in place:
+
+      ```python
+      ad[0] = "M"   # TypeError: 'str' object does not support item assignment
+      ```
+
+      Instead, a **new string** is created: `"M" + ad[1:]` → `'MechNar'`. String methods (`upper()`, `replace()`...) also always return a new string and leave the original unchanged.
+  setir-metodlari:
+    title: String methods and f-strings
+    content: |
+      The most common jobs with strings — cleaning, searching, splitting and formatting — are done with built-in **methods**.
+
+      ## The key methods
+
+      | Method | What it does | Example → result |
+      | --- | --- | --- |
+      | `upper()` / `lower()` | Uppercase / lowercase letters | `"Bakı".upper()` → `'BAKI'` |
+      | `title()` | Capitalizes the first letter of every word | `"aysel məmmədova".title()` → `'Aysel Məmmədova'` |
+      | `strip()` | Removes the spaces at both ends | `"  salam  ".strip()` → `'salam'` |
+      | `replace(a, b)` | Replaces `a` with `b` | `"Credit Card".replace("Credit", "Visa")` → `'Visa Card'` |
+      | `split(separator)` | Splits into a list | `"a-b-c".split("-")` → `['a', 'b', 'c']` |
+      | `separator.join(list)` | Joins a list | `", ".join(["a", "b"])` → `'a, b'` |
+      | `find(sub)` | The index of the first occurrence (−1 if not found) | `"TechNar".find("Nar")` → `4` |
+      | `count(sub)` | How many times it occurs | `"banana".count("a")` → `3` |
+      | `startswith()` / `endswith()` | Does it start / end like this? | `"iPhone 15".startswith("iPhone")` → `True` |
+      | `isdigit()` | Is it digits only? | `"2024".isdigit()` → `True` |
+
+      Methods can be **chained** — each one returns a new string:
+
+      ```python
+      musteri = "   aYSEL məmmədova  "
+      print(musteri.strip().title())   # Aysel Məmmədova
+      ```
+
+      ## Formatting with f-strings
+
+      Inside an `f"..."` string, you write variables and expressions in `{}` braces. After a colon, you specify the **format**:
+
+      | Syntax | Result | Meaning |
+      | --- | --- | --- |
+      | `f"{2399:.2f}"` | `2399.00` | 2 decimal places |
+      | `f"{1690500.5:,.2f}"` | `1,690,500.50` | thousands separated |
+      | `f"{0.256:.1%}"` | `25.6%` | a percentage |
+      | `f"{'Bakı':>8}"` | `'    Bakı'` | right-aligned (8 characters) |
+      | `f"{7:03d}"` | `007` | padded with zeros |
+
+      ```python
+      mehsul, say, qiymet = "AirPods Pro 2", 2, 599
+      print(f"{mehsul} x{say} = {say * qiymet:.2f} ₼")
+      # AirPods Pro 2 x2 = 1198.00 ₼
+      ```
+
+      ## Special characters
+
+      - `\n` — a new line, `\t` — a tab.
+      - Quotes inside a string: `"Levi's 501"` (a different kind of quote) or `'Levi\'s 501'`.
+  indeks-kesme-tapsiriq:
+    title: Split a product code into parts
+    instructions: |
+      In the TechNar warehouse, every product code has a fixed format: **category (3) – number (4) – city – year (4)**.
+
+      Split the code into parts with indexing and slicing. Don't use `split()` — this exercise is for practicing slicing.
+    tasks:
+      - Store the first 3 characters of kod in the variable kateqoriya.
+      - Store the last 4 characters (the year) in the variable il.
+      - Store the number part ("1001") in the variable nomre.
+      - Reverse the code (terse) and print the four values separately.
+    hints:
+      - 'The first 3 characters: kod[:3]. The last 4 characters: kod[-4:].'
+      - '"TEC-" is 4 characters long, so the number starts at index 4 and is 4 characters long: kod[4:8].'
+      - 'To reverse a string, the step is −1: kod[::-1].'
+    tests: |
+      assert kateqoriya == "TEC", f'kateqoriya should be "TEC", your result: {kateqoriya!r}'
+      assert il == "2024", f'il should be "2024", your result: {il!r}'
+      assert nomre == "1001", f'nomre should be "1001" (from index 4 up to 8), your result: {nomre!r}'
+      assert terse == kod[::-1], f"terse should be the code reversed: {kod[::-1]!r}, your result: {terse!r}"
+      assert "split(" not in dacy.code, "In this exercise, use slicing ([a:b]), not split()"
+      assert "[" in dacy.code and ":" in dacy.code, "Use slicing: kod[a:b]"
+      for _v in ("TEC", "2024", "1001", kod[::-1]):
+          assert _v in dacy.lines, f"{_v} is not on the screen — print it with print()"
+  setir-metodlari-tapsiriq:
+    title: Clean up customer data
+    instructions: |
+      The data coming from the CRM system is messy: extra spaces and mixed upper- and lowercase letters. Clean it up with string methods.
+
+      The message `mesaj` is in Azerbaijani: the word "Sifariş" means "Order".
+    tasks:
+      - Remove the spaces at both ends of the string musteri and capitalize every word → ad_temiz ("Aysel Məmmədova").
+      - Convert email to lowercase → email_kicik.
+      - Split the lowercase email address on the "@" sign and take the domain → domen ("gmail.com").
+      - Count how many times the word "Sifariş" occurs in the string mesaj → say.
+      - Does mesaj start with the word "Sifariş"? → baslayir (True/False). Print the five values.
+    hints:
+      - 'Chain the methods: musteri.strip().title()'
+      - domen = email_kicik.split("@")[1] — split returns a list, and [1] is the second part.
+      - say = mesaj.count("Sifariş"); baslayir = mesaj.startswith("Sifariş")
+    tests: |
+      assert ad_temiz == "Aysel Məmmədova", f'ad_temiz should be "Aysel Məmmədova", your result: {ad_temiz!r}'
+      assert email_kicik == "aysel.mammadova@gmail.com", f"email_kicik should be in lowercase, your result: {email_kicik!r}"
+      assert domen == "gmail.com", f'domen should be "gmail.com", your result: {domen!r}'
+      assert say == 3, f"say should be 3, your result: {say!r}"
+      assert baslayir is True, f"baslayir should be True, your result: {baslayir!r}"
+      assert ".strip()" in dacy.code and ".title()" in dacy.code, "Use the strip() and title() methods"
+      assert ".split(" in dacy.code and ".count(" in dacy.code, "Use the split() and count() methods"
+      for _v in ("Aysel Məmmədova", "aysel.mammadova@gmail.com", "gmail.com", "3", "True"):
+          assert _v in dacy.lines, f"{_v} is not on the screen"
+  f-string-qebz:
+    title: A sales receipt with f-strings
+    instructions: |
+      Format the receipt printed at the checkout with f-strings. Amounts must always be shown with **2 decimal places**.
+
+      The line for each product should look like this:
+
+      ```text
+      iPhone 15 x1 = 2399.00 ₼
+      ```
+
+      At the end come the total and VAT (18%) lines:
+
+      ```text
+      Total: 3716.70 ₼
+      VAT (18%): 669.01 ₼
+      ```
+    tasks:
+      - With a for loop, print the line "name xquantity = amount ₼" for each product (amount = quantity × price).
+      - 'Add up all the amounts in the variable cemi and print "Total: ... ₼".'
+      - 'Store 18% of the total in the variable edv and print "VAT (18%): ... ₼".'
+    hints:
+      - 'Inside the loop: cemi += mebleg and print(f"{ad} x{say} = {mebleg:.2f} ₼")'
+      - 'The :.2f format shows a number with 2 decimal places: 119.7 → 119.70'
+      - 'VAT: edv = cemi * 0.18, then print(f"VAT (18%): {edv:.2f} ₼")'
+    starter_code: |
+      sebet = [
+          ("iPhone 15", 1, 2399.0),
+          ("AirPods Pro 2", 2, 599.0),
+          ("Zara Basic T-Shirt", 3, 39.9),
+      ]
+
+      cemi = 0
+      for ad, say, qiymet in sebet:
+          mebleg = say * qiymet
+          # print the line with an f-string
+
+      edv = ...
+    solution: |
+      sebet = [
+          ("iPhone 15", 1, 2399.0),
+          ("AirPods Pro 2", 2, 599.0),
+          ("Zara Basic T-Shirt", 3, 39.9),
+      ]
+
+      cemi = 0
+      for ad, say, qiymet in sebet:
+          mebleg = say * qiymet
+          cemi += mebleg
+          print(f"{ad} x{say} = {mebleg:.2f} ₼")
+
+      print(f"Total: {cemi:.2f} ₼")
+      edv = cemi * 0.18
+      print(f"VAT (18%): {edv:.2f} ₼")
+    tests: |
+      # i18n-superset: the Azerbaijani labels ("Cəmi:", "ƏDV (18%):") are accepted too
+      assert abs(cemi - 3716.7) < 0.01, f"cemi should be 3716.70, your result: {cemi!r}"
+      assert abs(edv - 3716.7 * 0.18) < 0.01, f"edv should be 18% of the total (669.01), your result: {edv!r}"
+      for _v in ("iPhone 15 x1 = 2399.00 ₼", "AirPods Pro 2 x2 = 1198.00 ₼", "Zara Basic T-Shirt x3 = 119.70 ₼"):
+          assert _v in dacy.lines, f"This line is not on the screen: {_v}"
+      assert "Total: 3716.70 ₼" in dacy.lines or "Cəmi: 3716.70 ₼" in dacy.lines, "This line is not on the screen: Total: 3716.70 ₼"
+      assert "VAT (18%): 669.01 ₼" in dacy.lines or "ƏDV (18%): 669.01 ₼" in dacy.lines, "This line is not on the screen: VAT (18%): 669.01 ₼"
+      assert 'f"' in dacy.code or "f'" in dacy.code, "Use an f-string"
+  setirler-testi:
+    title: 'Quiz: Strings'
+    questions:
+      - text: Group each string method by the type of result it returns.
+        buckets:
+          - name: A new string (str)
+            items:
+              - '"abc".upper()'
+              - '"  x ".strip()'
+              - '"a-b".replace("-", "+")'
+          - name: A list (list)
+            items:
+              - '"a,b,c".split(",")'
+          - name: A number (int)
+            items:
+              - '"banana".count("a")'
+              - '"TechNar".find("Nar")'
+              - len("Baku")
+          - name: A Boolean (bool)
+            items:
+              - '"2024".isdigit()'
+              - '"iPhone 15".startswith("iPhone")'
+        explanation: Cleaning and replacing methods return a new string, split() returns a list, count()/find()/len() return a number, and the is…/starts…/ends… methods return True/False.
+      - text: If `s = "Python"`, what is `s[1:4]` equal to?
+        options:
+          - '''Pyt'''
+          - '''yth'''
+          - '''ytho'''
+          - '''Pyth'''
+        explanation: 'The slice starts at index 1, and index 4 isn''t included: y(1), t(2), h(3).'
+      - text: If `ad = "Bakı"`, what does the command `ad[0] = "b"` do?
+        options:
+          - It makes the string "bakı"
+          - It raises a TypeError — strings are immutable
+          - Nothing
+          - It adds 'b' to the end of the string
+        explanation: 'Strings are immutable. You need to create a new string: "b" + ad[1:].'
+      - text: What does `f"{0.256:.1%}"` print?
+        options:
+          - '0.256'
+          - 25.6%
+          - 0.3%
+          - 26%
+        explanation: The :.1% format multiplies the number by 100 and shows it as a percentage with one decimal place.

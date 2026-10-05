@@ -1,0 +1,262 @@
+title: 'Working with files: text, CSV and JSON'
+description: open() and with, read and write modes, the csv module, the json module.
+steps:
+  fayllar-ders:
+    title: Reading and writing files
+    content: |
+      Data often comes in files: text, CSV tables, JSON. Python opens files with the `open()` function.
+
+      ## with open(...)
+
+      ```python
+      with open("reyler.txt", encoding="utf-8") as f:
+          metn = f.read()
+      ```
+
+      When the `with` block ends, the file is **closed automatically** — even if an error happens. This is the recommended way to work with files.
+
+      > 🔤 `encoding="utf-8"` is important for reading Azerbaijani letters (`ə`, `ş`, `ç`, `ğ`, `ö`, `ü`, `ı`) correctly.
+
+      ## Modes
+
+      | Mode | Meaning |
+      | --- | --- |
+      | `"r"` | Read (the default) |
+      | `"w"` | Write — if the file exists, its **contents are erased** |
+      | `"a"` | Append to the end |
+      | `"rb"` / `"wb"` | Binary — images, Excel |
+
+      ## Ways to read
+
+      ```python
+      with open("reyler.txt", encoding="utf-8") as f:
+          hamisi = f.read()          # all the text in one string
+
+      with open("reyler.txt", encoding="utf-8") as f:
+          setirler = f.readlines()   # a list of lines (with "\n")
+
+      with open("reyler.txt", encoding="utf-8") as f:
+          for setir in f:            # line by line — the best option for large files
+              print(setir.strip())
+      ```
+
+      ## Writing
+
+      ```python
+      with open("hesabat.txt", "w", encoding="utf-8") as f:
+          f.write("January report\n")
+          f.write(f"Number of orders: {152}\n")
+      ```
+
+      `write()` doesn't add `\n` to the end of the string — you have to write the new line yourself.
+
+      > 💻 On DaCy, files are stored in a virtual file system inside the browser. The datasets attached to an exercise (e.g. `reyler.txt`) are ready in the working folder — just open them by name.
+  csv-json:
+    title: The CSV and JSON formats
+    content: |
+      ## CSV — a comma-separated table
+
+      ```text
+      Transaction ID,Date,Region,Product Name,Total Revenue
+      100002,2024-01-01,Bakı,iPhone 15,2399
+      ```
+
+      The `csv` module splits rows correctly — even when a cell contains a comma (`"Levi's 501, Blue"`).
+
+      ```python
+      import csv
+
+      with open("satis_yanvar.csv", encoding="utf-8") as f:
+          for setir in csv.DictReader(f):
+              print(setir["Region"], setir["Total Revenue"])
+      ```
+
+      - `csv.reader` — gives each row as a **list**.
+      - `csv.DictReader` — gives each row as a **dictionary** keyed by the headers (`setir["Region"]`) — it's more readable.
+      - ⚠️ Values always come in as **strings**: convert them to numbers with `float(setir["Total Revenue"])`.
+
+      For writing, use `csv.writer` or `csv.DictWriter`:
+
+      ```python
+      with open("xulase.csv", "w", newline="", encoding="utf-8") as f:
+          w = csv.writer(f)
+          w.writerow(["Region", "Revenue"])
+          w.writerow(["Bakı", 48210.5])
+      ```
+
+      ## JSON — the language of APIs and configuration
+
+      JSON looks a lot like Python's dictionaries and lists:
+
+      ```python
+      import json
+
+      hesabat = {"ay": "Yanvar", "sifaris": 152, "top": ["iPhone 15", "AirPods Pro 2"]}
+
+      s = json.dumps(hesabat, ensure_ascii=False)       # dict → a JSON string
+      geri = json.loads(s)                             # a JSON string → dict
+
+      with open("hesabat.json", "w", encoding="utf-8") as f:
+          json.dump(hesabat, f, ensure_ascii=False, indent=2)   # to a file
+      with open("hesabat.json", encoding="utf-8") as f:
+          oxunan = json.load(f)                                 # from a file
+      ```
+
+      `ensure_ascii=False` writes Azerbaijani letters as they are, instead of escaping them as `ə`.
+
+      > 💡 For working with large tables, **pandas** is more powerful than the `csv` module: `pd.read_csv("satis_yanvar.csv")`. We'll learn it in the next course — but under the hood, pandas works on the same principles.
+  metn-fayli:
+    title: Read the reviews file
+    instructions: |
+      The file `reyler.txt` contains one customer review per line. Read the file and analyze it.
+
+      The reviews are in Azerbaijani: the word "çatdırılma" means "delivery".
+    tasks:
+      - Open the file with with open(..., encoding="utf-8") and collect the non-empty lines, without the spaces at both ends, into the list reyler.
+      - Find the number of reviews → say.
+      - Find the number of reviews that contain the word "çatdırılma" (ignoring upper and lower case) → catdirilma_say.
+      - Find the text of the longest review → en_uzun.
+    hints:
+      - 'with open("reyler.txt", encoding="utf-8") as f: for setir in f: ...'
+      - 'Convert to lowercase and check: "çatdırılma" in r.lower()'
+      - en_uzun = max(reyler, key=len)
+    starter_code: |
+      reyler = []
+      # read the file
+
+      say = ...
+      catdirilma_say = ...
+      en_uzun = ...
+
+      print(say, catdirilma_say)
+      print(en_uzun)
+    tests: |
+      _r = [s.strip() for s in open("reyler.txt", encoding="utf-8") if s.strip()]
+      assert reyler == _r, "reyler should be the non-empty lines of the file (stripped)"
+      assert say == len(_r), f"say should be {len(_r)}, your result: {say!r}"
+      _c = sum(1 for x in _r if "çatdırılma" in x.lower())
+      assert catdirilma_say == _c, f'catdirilma_say should be {_c} (check with lower() — "Çatdırılma" counts too), your result: {catdirilma_say!r}'
+      assert en_uzun == max(_r, key=len), "en_uzun should be the longest review — max(reyler, key=len)"
+      assert "with open(" in dacy.code, "Open the file with with open(...)"
+  csv-dictreader:
+    title: Read a CSV with csv.DictReader
+    instructions: |
+      `satis_yanvar.csv` contains TechNar's sales for January 2024. Prepare a summary without pandas, using only the `csv` module.
+
+      Remember: DictReader gives the values as **strings** — convert the amounts with `float()`.
+    tasks:
+      - Read the file with csv.DictReader and collect all the rows into the list setirler.
+      - Find the number of transactions → say.
+      - Round the total revenue (the sum of Total Revenue) to 2 decimal places → cem.
+      - 'Build a dictionary of revenue by region: {region: sum (2 decimal places)} → region_gelir.'
+    hints:
+      - 'with open("satis_yanvar.csv", encoding="utf-8") as f: setirler = list(csv.DictReader(f))'
+      - cem = round(sum(float(s["Total Revenue"]) for s in setirler), 2)
+      - region_gelir[r] = region_gelir.get(r, 0) + amount — get() returns 0 if the key doesn't exist.
+    starter_code: |
+      import csv
+
+      setirler = []
+      # read the file
+
+      say = ...
+      cem = ...
+      region_gelir = {}
+
+      print(say, cem)
+      print(region_gelir)
+    tests: |
+      import csv as _csv
+      _rows = list(_csv.DictReader(open("satis_yanvar.csv", encoding="utf-8")))
+      assert say == len(_rows), f"say should be {len(_rows)}, your result: {say!r}"
+      _cem = round(sum(float(x["Total Revenue"]) for x in _rows), 2)
+      assert cem == _cem, f"cem should be {_cem}, your result: {cem!r}"
+      _rg = {}
+      for x in _rows:
+          _rg[x["Region"]] = _rg.get(x["Region"], 0) + float(x["Total Revenue"])
+      _rg = {k: round(v, 2) for k, v in _rg.items()}
+      assert region_gelir == _rg, f"region_gelir should be {_rg}, your result: {region_gelir!r}"
+      assert "DictReader(" in dacy.code, "Use csv.DictReader"
+  json-yaz-oxu:
+    title: Write and read a JSON file
+    instructions: |
+      To pass the monthly report to another system, save it in JSON format, then read it back to check it.
+    tasks:
+      - Write the dictionary hesabat to the file hesabat.json (json.dump, indent=2, ensure_ascii=False).
+      - Read the file back → oxunan (json.load).
+      - Convert hesabat to a JSON string → json_str (json.dumps, ensure_ascii=False).
+    hints:
+      - 'with open("hesabat.json", "w", encoding="utf-8") as f: json.dump(hesabat, f, indent=2, ensure_ascii=False)'
+      - 'Reading: with open("hesabat.json", encoding="utf-8") as f: oxunan = json.load(f)'
+      - json_str = json.dumps(hesabat, ensure_ascii=False)
+    starter_code: |
+      import json
+
+      hesabat = {"ay": "Yanvar", "sifaris": 152, "gelir": 48210.5, "top_mehsul": "iPhone 15", "seherler": ["Bakı", "Gəncə"]}
+
+      # 1. write to the file
+
+      # 2. read it back
+      oxunan = ...
+
+      json_str = ...
+      print(oxunan)
+      print(json_str)
+    solution: |
+      import json
+
+      hesabat = {"ay": "Yanvar", "sifaris": 152, "gelir": 48210.5, "top_mehsul": "iPhone 15", "seherler": ["Bakı", "Gəncə"]}
+
+      with open("hesabat.json", "w", encoding="utf-8") as f:
+          json.dump(hesabat, f, indent=2, ensure_ascii=False)
+
+      with open("hesabat.json", encoding="utf-8") as f:
+          oxunan = json.load(f)
+
+      json_str = json.dumps(hesabat, ensure_ascii=False)
+      print(oxunan)
+      print(json_str)
+    tests: |
+      import json as _j, os as _os
+      assert _os.path.exists("hesabat.json"), "The file hesabat.json hasn't been created — use json.dump(hesabat, f, ...)"
+      _txt = open("hesabat.json", encoding="utf-8").read()
+      assert _j.loads(_txt) == hesabat, "The JSON in the file should be the same as hesabat"
+      assert "Gəncə" in _txt, "The Azerbaijani letters in the file are escaped — add ensure_ascii=False"
+      assert oxunan == hesabat, "oxunan should be the dictionary read from the file with json.load"
+      assert isinstance(json_str, str) and _j.loads(json_str) == hesabat and "Bakı" in json_str, "json_str = json.dumps(hesabat, ensure_ascii=False)"
+      assert "json.load(" in dacy.code, "Read the file with json.load()"
+  fayllar-testi:
+    title: 'Quiz: Files'
+    questions:
+      - text: What does `open("hesabat.txt", "w")` do if the file already exists?
+        options:
+          - It appends to the end
+          - It erases the contents and writes from scratch
+          - It raises an error
+          - It opens the file for reading only
+        explanation: 'The "w" mode resets the file. To append to the end, you need the "a" mode.'
+      - text: What is the main advantage of writing `with open(...) as f:`?
+        options:
+          - It reads the file faster
+          - It closes the file automatically when the block ends (even if there's an error)
+          - It encrypts the file
+          - It only works for CSV files
+        explanation: The with context guarantees that the file gets closed.
+      - text: What is the type of the value `setir["Units Sold"]` read with `csv.DictReader`?
+        options:
+          - int
+          - float
+          - str
+          - list
+        explanation: The csv module gives every value as a string — you need to convert it with int()/float() for calculations.
+      - text: Group each function by what it does.
+        buckets:
+          - name: Converts a Python object to JSON
+            items:
+              - json.dumps()
+              - json.dump()
+          - name: Converts JSON to a Python object
+            items:
+              - json.loads()
+              - json.load()
+        explanation: dump/dumps — Python → JSON (dump to a file, dumps to a string); load/loads — JSON → Python (load from a file, loads from a string).

@@ -1,0 +1,219 @@
+title: Comprehensions, lambda, map, filter and reduce
+description: Creating lists with a short syntax, sort keys, lambda functions, map/filter/reduce and eval.
+steps:
+  comprehension:
+    title: List comprehensions and sorting
+    content: |
+      When working with data, we often create one list from another: adding VAT to prices, selecting expensive products... You can do this with a `for` loop, but Python has a shorter, more readable way — the **comprehension**.
+
+      ## List comprehensions
+
+      ```python
+      qiymetler = [2399, 549, 39, 899]
+
+      # with a for loop
+      edv_li = []
+      for q in qiymetler:
+          edv_li.append(q * 1.18)
+
+      # with a list comprehension — the same result, in one line
+      edv_li = [q * 1.18 for q in qiymetler]
+      ```
+
+      The structure: **`[expression for item in list]`**.
+
+      ## Selecting with a condition
+
+      ```python
+      bahali = [q for q in qiymetler if q > 500]   # [2399, 549, 899]
+      ```
+
+      The structure: **`[expression for item in list if condition]`**.
+
+      ## Dictionary and set comprehensions
+
+      ```python
+      mehsullar = ["iPhone 15", "Redmi Note 13"]
+      qiymetler = [2399, 549]
+
+      cedvel = {m: q for m, q in zip(mehsullar, qiymetler)}
+      # {'iPhone 15': 2399, 'Redmi Note 13': 549}
+
+      seherler = {s.strip().title() for s in ["bakı", " Bakı", "gəncə"]}
+      # {'Bakı', 'Gəncə'} — a set drops duplicates
+      ```
+
+      `zip()` pairs up two lists: `("iPhone 15", 2399)`, `("Redmi Note 13", 549)`.
+
+      ## Sorting: `sorted()` and `key`
+
+      ```python
+      sorted([3, 1, 2])                 # [1, 2, 3]
+      sorted([3, 1, 2], reverse=True)   # [3, 2, 1]
+      ```
+
+      To sort complex items, use **`key`** — a function that extracts the sort value from each item:
+
+      ```python
+      mehsullar = [("iPhone 15", 2399), ("T-Shirt", 39), ("Dyson V15", 1499)]
+      sorted(mehsullar, key=lambda m: m[1])
+      # [('T-Shirt', 39), ('Dyson V15', 1499), ('iPhone 15', 2399)]
+
+      max(mehsullar, key=lambda m: m[1])   # ('iPhone 15', 2399)
+      ```
+
+      > 💡 `lambda m: m[1]` means "take an item and return its second part (the price)". We'll study lambda in detail in the next lesson.
+  lambda-map-filter-reduce:
+    title: lambda, map, filter, reduce and eval
+    content: |
+      ## lambda — a short, anonymous function
+
+      ```python
+      def kvadrat(x):
+          return x ** 2
+
+      kvadrat = lambda x: x ** 2    # the same function, in one line
+      ```
+
+      `lambda arguments: expression` — it's usually for small functions used once, inside another function: `sorted(..., key=lambda ...)`, `map()`, `filter()`, and later `apply()` in pandas.
+
+      ## map — apply a function to every item
+
+      ```python
+      satislar = [120.5, 89.9, 300.0]
+      endirimli = list(map(lambda x: x * 0.9, satislar))
+      # [108.45, 80.91, 270.0]
+      ```
+
+      `map()` returns a "lazy" object — to see the result, we convert it to a list with `list()`.
+
+      ## filter — keep the items that meet a condition
+
+      ```python
+      boyuk = list(filter(lambda x: x > 100, satislar))   # [120.5, 300.0]
+      ```
+
+      ## reduce — "fold" a sequence into a single value
+
+      `reduce` lives in the `functools` module. It applies the function to the first two items, then to the result and the next item:
+
+      ```python
+      from functools import reduce
+
+      cem = reduce(lambda x, y: x + y, [1, 2, 3, 4, 5])
+      # ((((1 + 2) + 3) + 4) + 5) = 15
+      ```
+
+      | Tool | Input | Result |
+      | --- | --- | --- |
+      | `map(f, list)` | n items | n items (transformed) |
+      | `filter(f, list)` | n items | ≤ n items (selected) |
+      | `reduce(f, list)` | n items | 1 value |
+
+      > 📝 A comprehension is often more readable than `map`/`filter`: `[x * 0.9 for x in satislar]`. It's important to recognize both forms — you'll see both in other people's code.
+
+      ## eval — running a string as a Python expression
+
+      ```python
+      eval("5 + 10")      # 15
+      x = 10
+      eval("x * 2")       # 20
+      ```
+
+      ⚠️ **Security:** `eval()` must **never** run text that comes from a user or from the internet — that text could be any Python code (deleting files, stealing data). In pandas, `df.eval("A + B")` is a different, safe tool designed for calculations with columns — we'll see it in the Pandas course.
+  comprehension-tapsiriq:
+    title: List and dictionary comprehensions
+    instructions: |
+      We're working with TechNar's price list. Write each item with a **comprehension** (not a `for` loop with `append`).
+    tasks:
+      - Add 18% VAT to every price and round to 2 decimal places → edv_li (a list comprehension, round(..., 2)).
+      - Select only the prices above 500 AZN → bahali.
+      - 'Create a {product: price} dictionary from the lists mehsullar and qiymetler → qiymet_cedveli (with zip).'
+    hints:
+      - edv_li = [round(q * 1.18, 2) for q in qiymetler]
+      - 'The condition goes at the end: [q for q in qiymetler if q > 500]'
+      - 'A dictionary: {m: q for m, q in zip(mehsullar, qiymetler)}'
+    tests: |
+      import re as _re
+      _exp = [round(q * 1.18, 2) for q in qiymetler]
+      assert edv_li == _exp, f"edv_li should be {_exp}, your result: {edv_li!r}"
+      assert bahali == [2399, 549, 899, 1499], f"bahali should be [2399, 549, 899, 1499], your result: {bahali!r}"
+      assert qiymet_cedveli == dict(zip(mehsullar, qiymetler)), f"qiymet_cedveli isn't correct: {qiymet_cedveli!r}"
+      assert len(_re.findall(r"[\[{][^\]}]*\bfor\b[^\]}]*\bin\b", dacy.code)) >= 3, "Write all three items with comprehensions: [... for ... in ...] and {... for ... in ...}"
+      assert ".append(" not in dacy.code, "Use a comprehension instead of append()"
+  sorted-lambda:
+    title: Sorting, max and lambda
+    instructions: |
+      Each product is a tuple of the form `(name, price, units sold)`. Choose the sort criterion yourself by passing `key=lambda ...` to the `sorted()` and `max()` functions.
+    tasks:
+      - Sort the products by price from cheapest to most expensive → ucuzdan (a list of tuples).
+      - Sort by units sold from most to least and take only the names of the first 3 products → top3.
+      - Find the name of the product that brings in the most revenue (price × units) → lider (max + key).
+    hints:
+      - 'ucuzdan = sorted(mehsullar, key=lambda m: m[1]) — m[1] is the price.'
+      - 'From most to least: sorted(..., key=lambda m: m[2], reverse=True)[:3], then take the names with a comprehension.'
+      - 'lider = max(mehsullar, key=lambda m: m[1] * m[2])[0] — [0] gives the name.'
+    tests: |
+      assert ucuzdan == sorted(mehsullar, key=lambda m: m[1]), f"ucuzdan should be in ascending order of price, your result: {ucuzdan!r}"
+      assert top3 == ["Zara T-Shirt", "Redmi Note 13", "AirPods Pro 2"], f"top3 should be ['Zara T-Shirt', 'Redmi Note 13', 'AirPods Pro 2'], your result: {top3!r}"
+      assert lider == "iPhone 15", f'lider should be "iPhone 15" (2399 × 38 = 91,162 AZN), your result: {lider!r}'
+      assert "lambda" in dacy.code and "key=" in dacy.code, "Pass key=lambda ... to sorted()/max()"
+  map-filter-reduce:
+    title: map, filter and reduce
+    instructions: |
+      Perform three operations on the day's sales amounts with functional tools.
+    tasks:
+      - With map, apply a 10% discount to every sale and round to 2 decimal places → endirimli (a list).
+      - With filter, select the sales greater than 100 AZN → boyuk (a list).
+      - With reduce, calculate the sum of all sales and round it to 2 decimal places → cem.
+    hints:
+      - 'endirimli = list(map(lambda x: round(x * 0.9, 2), satislar))'
+      - 'boyuk = list(filter(lambda x: x > 100, satislar))'
+      - 'cem = round(reduce(lambda x, y: x + y, satislar), 2)'
+    tests: |
+      _exp = [round(x * 0.9, 2) for x in satislar]
+      assert isinstance(endirimli, list), "endirimli should be a list — convert the result of map() with list()"
+      assert endirimli == _exp, f"endirimli should be {_exp}, your result: {endirimli!r}"
+      assert boyuk == [120.5, 300.0, 610.0], f"boyuk should be [120.5, 300.0, 610.0], your result: {boyuk!r}"
+      assert cem == 1180.65, f"cem should be 1180.65, your result: {cem!r}"
+      for _f in ("map(", "filter(", "reduce("):
+          assert _f in dacy.code, f"Use the {_f[:-1]}() function"
+  funksional-testi:
+    title: 'Quiz: Comprehensions and functional tools'
+    questions:
+      - text: Place each description under the matching tool.
+        buckets:
+          - name: map
+            items:
+              - Adding VAT to every price
+              - Converting every name to uppercase
+          - name: filter
+            items:
+              - Keeping only the sales greater than 100 AZN
+              - Dropping empty strings
+          - name: reduce
+            items:
+              - Folding all the sales into a single total
+              - Finding the product of the numbers in a list
+        explanation: map transforms every item (the count doesn't change), filter keeps the items that meet a condition, and reduce folds all the items into one value.
+      - text: What is `[x * 2 for x in [1, 2, 3] if x != 2]` equal to?
+        options:
+          - '[2, 4, 6]'
+          - '[2, 6]'
+          - '[1, 3]'
+          - '[4]'
+        explanation: 'The condition drops 2: 1 → 2, 3 → 6.'
+      - text: 'What does `sorted(mehsullar, key=lambda m: m[1], reverse=True)` do? (m = (name, price))'
+        options:
+          - It sorts the products by name in alphabetical order
+          - It sorts the products by price from most expensive to cheapest
+          - It sorts the products by price from cheapest to most expensive
+          - It returns only the most expensive product
+        explanation: 'key=lambda m: m[1] — by price; reverse=True — in descending order.'
+      - text: Why is it dangerous to run the text typed into a website's search box with `eval()`?
+        options:
+          - eval() is very slow
+          - The user could write any Python code and get it executed
+          - eval() only works with numbers
+          - It isn't dangerous
+        explanation: eval() runs text as code. Text that comes from outside must never be run with eval().

@@ -1,0 +1,288 @@
+title: 'Mini project: a sales report and the final test'
+description: 'Bring together what you''ve learned: a sales report built with functions, dictionaries, loops and f-strings.'
+steps:
+  layihe-izah:
+    title: 'Mini project: TechNar''s January report'
+    content: |
+      At the end of the course, let's bring what you've learned together in a real task. At the start of every month, TechNar's sales manager wants a short report:
+
+      - total revenue;
+      - revenue by category (from highest to lowest);
+      - the best-selling product (by units).
+
+      The sales are given as a list of dictionaries:
+
+      ```python
+      satislar = [
+          {"mehsul": "iPhone 15", "kateqoriya": "Electronics", "say": 2, "qiymet": 2399.0},
+          {"mehsul": "Zara Basic T-Shirt", "kateqoriya": "Clothing", "say": 6, "qiymet": 39.9},
+          ...
+      ]
+      ```
+
+      The keys are Azerbaijani: `"mehsul"` (product), `"kateqoriya"` (category), `"say"` (units) and `"qiymet"` (price).
+
+      ## Why functions?
+
+      The report repeats every month — only the data changes. If we put the calculations into **functions**, we can pass February's data to the same functions and get a new report right away. That's why the tests will also check your functions **with other data**: a function should rely on the argument passed to it, not on specific numbers.
+
+      ## The plan
+
+      1. `umumi_gelir(satislar)` — the sum of units × price.
+      2. `kateqoriya_uzre(satislar)` — a `{category: revenue}` dictionary.
+      3. `en_cox_satilan(satislar)` — the same product can appear several times: first add up the units per product, then find the maximum.
+      4. `hesabat(satislar)` — turn everything into neat text with f-strings.
+
+      > 💡 Move forward in small steps: after writing each function, print its result with **Run** and check it.
+  layihe-funksiyalar:
+    title: 'Project 1: the calculation functions'
+    instructions: |
+      Write three functions. Each one must work with the list it **receives as an argument** — the tests will also call them with another month's data.
+
+      Revenue = `say × qiymet` (units × price). Round all amounts to 2 decimal places.
+    tasks:
+      - umumi_gelir(satislar) — returns the sum of the revenue of all sales (round 2).
+      - 'kateqoriya_uzre(satislar) — returns a {category: revenue} dictionary (round 2).'
+      - en_cox_satilan(satislar) — returns the name of the product with the most units sold (the units of the same product are added up).
+    hints:
+      - 'umumi_gelir: return round(sum(s["say"] * s["qiymet"] for s in satislar), 2)'
+      - 'kateqoriya_uzre: an empty dict; in the loop, netice[k] = netice.get(k, 0) + revenue; at the end, round the values.'
+      - 'en_cox_satilan: first add up {product: units}, then max(sayi, key=sayi.get).'
+    tests: |
+      _fevral = [
+          {"mehsul": "Dyson V15", "kateqoriya": "Home Appliances", "say": 2, "qiymet": 1499.0},
+          {"mehsul": "Puma RS-X", "kateqoriya": "Sports", "say": 4, "qiymet": 199.0},
+          {"mehsul": "Puma RS-X", "kateqoriya": "Sports", "say": 3, "qiymet": 199.0},
+          {"mehsul": "Nivea Soft 200ml", "kateqoriya": "Beauty", "say": 6, "qiymet": 12.0},
+      ]
+
+      assert umumi_gelir(satislar) == 11001.6, f"umumi_gelir(satislar) should be 11001.6, your result: {umumi_gelir(satislar)!r}"
+      assert umumi_gelir(_fevral) == 4463.0, "umumi_gelir should also work with other data — use the argument, not specific numbers"
+      _k = {"Electronics": 8994.0, "Clothing": 765.6, "Sports": 793.0, "Home Appliances": 329.0, "Beauty": 120.0}
+      assert kateqoriya_uzre(satislar) == _k, f"kateqoriya_uzre(satislar) should be {_k}, your result: {kateqoriya_uzre(satislar)!r}"
+      assert kateqoriya_uzre(_fevral) == {"Home Appliances": 2998.0, "Sports": 1393.0, "Beauty": 72.0}, "kateqoriya_uzre should also work with other data"
+      assert en_cox_satilan(satislar) == "Zara Basic T-Shirt", f'en_cox_satilan should be "Zara Basic T-Shirt" (6 + 8 = 14 units), your result: {en_cox_satilan(satislar)!r}'
+      assert en_cox_satilan(_fevral) == "Puma RS-X", "en_cox_satilan should add up the units of the same product (4 + 3 = 7 > 6)"
+  layihe-hesabat:
+    title: 'Project 2: the report text'
+    instructions: |
+      Now turn the calculations into neat text. The `hesabat(satislar, ay)` function must **return a string** (not print it); then print it with `print()`.
+
+      The expected format (for January):
+
+      ```text
+      TechNar · January report
+      Total revenue: 11,001.60 ₼
+      - Electronics: 8,994.00 ₼
+      - Sports: 793.00 ₼
+      - Clothing: 765.60 ₼
+      - Home Appliances: 329.00 ₼
+      - Beauty: 120.00 ₼
+      Best seller: Zara Basic T-Shirt
+      ```
+
+      The categories are sorted **by revenue, from highest to lowest**. Amounts use a thousands separator: `f"{x:,.2f}"`. Join the lines with `"\n".join(...)`.
+
+      The functions from the previous exercise are ready here.
+    tasks:
+      - The function hesabat(satislar, ay) should return multi-line text in the format above.
+      - Write the categories in descending order of revenue (sorted + key).
+      - Print the January report with print(hesabat(satislar, "January")).
+    hints:
+      - 'The total revenue line: f"Total revenue: {umumi_gelir(satislar):,.2f} ₼"'
+      - 'Categories: for k, v in sorted(kat.items(), key=lambda x: x[1], reverse=True): ...'
+      - 'At the end: setirler.append(f"Best seller: {en_cox_satilan(satislar)}") and return "\n".join(setirler)'
+    starter_code: |
+      satislar = [
+          {"mehsul": "iPhone 15", "kateqoriya": "Electronics", "say": 2, "qiymet": 2399.0},
+          {"mehsul": "Zara Basic T-Shirt", "kateqoriya": "Clothing", "say": 6, "qiymet": 39.9},
+          {"mehsul": "AirPods Pro 2", "kateqoriya": "Electronics", "say": 3, "qiymet": 599.0},
+          {"mehsul": "Nike Air Force 1", "kateqoriya": "Sports", "say": 2, "qiymet": 249.0},
+          {"mehsul": "Zara Basic T-Shirt", "kateqoriya": "Clothing", "say": 8, "qiymet": 39.9},
+          {"mehsul": "Philips Air Fryer XL", "kateqoriya": "Home Appliances", "say": 1, "qiymet": 329.0},
+          {"mehsul": "Yoga Mat Pro", "kateqoriya": "Sports", "say": 5, "qiymet": 59.0},
+          {"mehsul": "iPhone 15", "kateqoriya": "Electronics", "say": 1, "qiymet": 2399.0},
+          {"mehsul": "Nivea Soft 200ml", "kateqoriya": "Beauty", "say": 10, "qiymet": 12.0},
+          {"mehsul": "H&M Hoodie", "kateqoriya": "Clothing", "say": 3, "qiymet": 69.0},
+      ]
+
+
+      def umumi_gelir(satislar):
+          return round(sum(s["say"] * s["qiymet"] for s in satislar), 2)
+
+
+      def kateqoriya_uzre(satislar):
+          netice = {}
+          for s in satislar:
+              netice[s["kateqoriya"]] = netice.get(s["kateqoriya"], 0) + s["say"] * s["qiymet"]
+          return {k: round(v, 2) for k, v in netice.items()}
+
+
+      def en_cox_satilan(satislar):
+          sayi = {}
+          for s in satislar:
+              sayi[s["mehsul"]] = sayi.get(s["mehsul"], 0) + s["say"]
+          return max(sayi, key=sayi.get)
+
+
+      def hesabat(satislar, ay):
+          setirler = [f"TechNar · {ay} report"]
+          # continue here
+          return "\n".join(setirler)
+    solution: |
+      satislar = [
+          {"mehsul": "iPhone 15", "kateqoriya": "Electronics", "say": 2, "qiymet": 2399.0},
+          {"mehsul": "Zara Basic T-Shirt", "kateqoriya": "Clothing", "say": 6, "qiymet": 39.9},
+          {"mehsul": "AirPods Pro 2", "kateqoriya": "Electronics", "say": 3, "qiymet": 599.0},
+          {"mehsul": "Nike Air Force 1", "kateqoriya": "Sports", "say": 2, "qiymet": 249.0},
+          {"mehsul": "Zara Basic T-Shirt", "kateqoriya": "Clothing", "say": 8, "qiymet": 39.9},
+          {"mehsul": "Philips Air Fryer XL", "kateqoriya": "Home Appliances", "say": 1, "qiymet": 329.0},
+          {"mehsul": "Yoga Mat Pro", "kateqoriya": "Sports", "say": 5, "qiymet": 59.0},
+          {"mehsul": "iPhone 15", "kateqoriya": "Electronics", "say": 1, "qiymet": 2399.0},
+          {"mehsul": "Nivea Soft 200ml", "kateqoriya": "Beauty", "say": 10, "qiymet": 12.0},
+          {"mehsul": "H&M Hoodie", "kateqoriya": "Clothing", "say": 3, "qiymet": 69.0},
+      ]
+
+
+      def umumi_gelir(satislar):
+          return round(sum(s["say"] * s["qiymet"] for s in satislar), 2)
+
+
+      def kateqoriya_uzre(satislar):
+          netice = {}
+          for s in satislar:
+              netice[s["kateqoriya"]] = netice.get(s["kateqoriya"], 0) + s["say"] * s["qiymet"]
+          return {k: round(v, 2) for k, v in netice.items()}
+
+
+      def en_cox_satilan(satislar):
+          sayi = {}
+          for s in satislar:
+              sayi[s["mehsul"]] = sayi.get(s["mehsul"], 0) + s["say"]
+          return max(sayi, key=sayi.get)
+
+
+      def hesabat(satislar, ay):
+          setirler = [f"TechNar · {ay} report"]
+          setirler.append(f"Total revenue: {umumi_gelir(satislar):,.2f} ₼")
+          kat = kateqoriya_uzre(satislar)
+          for k, v in sorted(kat.items(), key=lambda x: x[1], reverse=True):
+              setirler.append(f"- {k}: {v:,.2f} ₼")
+          setirler.append(f"Best seller: {en_cox_satilan(satislar)}")
+          return "\n".join(setirler)
+
+
+      print(hesabat(satislar, "January"))
+    tests: |
+      # i18n-superset: the Azerbaijani report format ("hesabatı", "Ümumi gəlir:", "Ən çox satılan:") is accepted too
+      _fevral = [
+          {"mehsul": "Dyson V15", "kateqoriya": "Home Appliances", "say": 2, "qiymet": 1499.0},
+          {"mehsul": "Puma RS-X", "kateqoriya": "Sports", "say": 4, "qiymet": 199.0},
+          {"mehsul": "Puma RS-X", "kateqoriya": "Sports", "say": 3, "qiymet": 199.0},
+          {"mehsul": "Nivea Soft 200ml", "kateqoriya": "Beauty", "say": 6, "qiymet": 12.0},
+      ]
+
+      def _lines(ay, total, cats, best, az):
+          _l = [f"TechNar · {ay} hesabatı" if az else f"TechNar · {ay} report",
+                ("Ümumi gəlir: " if az else "Total revenue: ") + f"{total} ₼"]
+          _l += [f"- {k}: {v} ₼" for k, v in cats]
+          _l.append(("Ən çox satılan: " if az else "Best seller: ") + best)
+          return _l
+
+      _cats = [("Electronics", "8,994.00"), ("Sports", "793.00"), ("Clothing", "765.60"),
+               ("Home Appliances", "329.00"), ("Beauty", "120.00")]
+      _got = hesabat(satislar, "January")
+      assert isinstance(_got, str), "hesabat() should return a string (return), not print it"
+      _gl = [_x.strip() for _x in _got.strip().splitlines()]
+      _az = bool(_gl) and _gl[0].endswith("hesabatı")
+      _el = _lines("January", "11,001.60", _cats, "Zara Basic T-Shirt", _az)
+      for _i, (_g, _e) in enumerate(zip(_gl, _el), 1):
+          assert _g == _e, f"Line {_i} is different.\nExpected: {_e}\nYours:    {_g}"
+      assert len(_gl) == len(_el), f"The report should have {len(_el)} lines, yours has {len(_gl)}"
+      _f = [_x.strip() for _x in hesabat(_fevral, "February").splitlines()]
+      _fe = _lines("February", "4,463.00", [("Home Appliances", "2,998.00"), ("Sports", "1,393.00"), ("Beauty", "72.00")], "Puma RS-X", _az)
+      assert _f[:2] == _fe[:2], "hesabat should also work for another month and other data"
+      assert len(_f) > 2 and _f[2] == _fe[2], "The categories should be in descending order of revenue"
+      assert "TechNar · January report" in dacy.lines or "TechNar · Yanvar hesabatı" in dacy.lines, 'Print the January report with print(hesabat(satislar, "January"))'
+  yekun-test:
+    title: 'Final test: Python Basics'
+    questions:
+      - text: What does `type(7 / 2)` return?
+        options:
+          - int
+          - float
+          - str
+          - bool
+        explanation: 'The / operator always returns a float: 7 / 2 = 3.5. For floor division, use //.'
+      - text: Place each property under the matching data structure.
+        buckets:
+          - name: list
+            items:
+              - 'Ordered and mutable: [1, 2, 3]'
+          - name: tuple
+            items:
+              - 'Ordered but immutable: (1, 2, 3)'
+          - name: dict
+            items:
+              - 'Key–value pairs: {"ad": "Aysel"}'
+          - name: set
+            items:
+              - 'Items without duplicates: {1, 2, 3}'
+        explanation: A list is mutable and ordered, a tuple is immutable, a dict stores key–value pairs and a set drops duplicates.
+      - text: What is `sum(range(1, 5))` equal to?
+        options:
+          - '15'
+          - '10'
+          - '5'
+          - '14'
+        explanation: range(1, 5) → 1, 2, 3, 4 (5 isn't included). The sum is 10.
+      - text: Which block runs when an error happens in the `try` block?
+        options:
+          - else
+          - except
+          - Not finally, only else
+          - None of them
+        explanation: except runs when there's an error, and else runs when there isn't; finally runs in both cases.
+      - text: What does `"Python"[::-1]` return?
+        options:
+          - '''Python'''
+          - '''nohtyP'''
+          - '''P'''
+          - '''n'''
+        explanation: A step of −1 reverses the string.
+      - text: What is `[x for x in [5, 12, 8, 20] if x > 10]` equal to?
+        options:
+          - '[12, 20]'
+          - '[5, 8]'
+          - '[True, False]'
+          - '[12, 8, 20]'
+        explanation: The condition keeps only the numbers greater than 10.
+      - text: What does `re.findall(r"#(\d+)", "#12 and #345")` return?
+        options:
+          - '[''#12'', ''#345'']'
+          - '[''12'', ''345'']'
+          - '[12, 345]'
+          - '''12345'''
+        explanation: When there's a group, findall returns only what's inside the group; the values are strings.
+      - text: Which mode do you need to append data to the end of a file?
+        options:
+          - '"r"'
+          - '"w"'
+          - '"a"'
+          - '"x"'
+        explanation: '"a" (append) keeps the existing contents and writes at the end.'
+      - text: Which of these are modules of the **standard library**? (Select all that apply)
+        options:
+          - datetime
+          - pandas
+          - json
+          - collections
+          - seaborn
+        explanation: datetime, json and collections come with Python; pandas and seaborn are PyPI packages.
+      - text: When a function is called with other data in the tests, it gives the wrong result. What is the most likely cause?
+        options:
+          - The function uses a global variable or fixed numbers instead of its argument
+          - The function's name is too long
+          - The function uses print instead of return — that's always correct
+          - Python functions can only be called once
+        explanation: A function should work only with the arguments passed to it — then it gives the correct result for any data.

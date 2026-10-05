@@ -200,7 +200,7 @@ steps:
           ```
         options:
           - KeyError
-          - '`"yaş"`'
+          - '"yaş"'
           - '25'
           - '24'
       - text: |

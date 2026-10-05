@@ -1,0 +1,220 @@
+title: Packages, pip and the standard library
+description: Modules, packages and libraries; PyPI and pip; import syntax; math, statistics, datetime, collections.
+steps:
+  paketler-pip:
+    title: Modules, packages, libraries; PyPI and pip
+    content: |
+      Python's power isn't only in the language itself — it's in the ready-made **packages** written by millions of programmers. pandas for data analytics, matplotlib for charts, scikit-learn for machine learning — they're all packages.
+
+      ## The concepts
+
+      | Concept | What it is | Example |
+      | --- | --- | --- |
+      | **Module** | A single `.py` file | `hesablama.py`, `math` |
+      | **Package** | A folder that brings modules together | `pandas`, `matplotlib` |
+      | **Library** | A ready-made set of tools made of one or more packages (in everyday speech, the same as "package") | the pandas library |
+      | **Standard library** | The modules that come with Python — no installation needed | `math`, `datetime`, `random`, `json`, `csv` |
+
+      ## PyPI and pip
+
+      **PyPI** (the Python Package Index, pypi.org) is the central repository of Python packages: hundreds of thousands of packages, updated regularly. Packages are installed with the **pip** tool:
+
+      ```bash
+      pip install pandas          # in the terminal
+      !pip install pandas         # in a Jupyter / Colab cell
+      ```
+
+      A package is installed once, but it must be **imported** in every new session (each time you reopen the notebook).
+
+      > 💻 On DaCy, packages such as pandas, numpy and matplotlib load automatically in the browser — writing `import` is enough. Some, such as seaborn, are installed from the internet the first time you use them (a few seconds).
+
+      ## Import syntax
+
+      ```python
+      import math                     # math.sqrt(16)
+      import pandas as pd             # an alias: pd.read_csv(...)
+      from math import sqrt, ceil     # directly: sqrt(16)
+      from datetime import date       # date(2024, 12, 2)
+      ```
+
+      The aliases accepted in the data world:
+
+      | Package | Alias |
+      | --- | --- |
+      | pandas | `pd` |
+      | numpy | `np` |
+      | matplotlib.pyplot | `plt` |
+      | seaborn | `sns` |
+
+      > ⚠️ Avoid `from package import *` — you can't tell which name came from where, and names can clash.
+
+      ## Getting information about a function
+
+      - In Jupyter, press **Shift + Tab** inside the parentheses after a function's name — it shows the arguments.
+      - `help(function)` — prints the documentation.
+  standart-kitabxana:
+    title: 'The standard library: math, statistics, datetime, collections'
+    content: |
+      The most useful modules you can use without installing anything.
+
+      ## math — mathematical functions
+
+      ```python
+      import math
+      math.sqrt(16)      # 4.0
+      math.ceil(4.2)     # 5   — rounding up
+      math.floor(4.8)    # 4   — rounding down
+      math.pi            # 3.14159...
+      ```
+
+      ## statistics — simple statistics
+
+      ```python
+      import statistics as st
+      satis = [42, 38, 51, 47, 38]
+      st.mean(satis)     # 43.2  — the mean
+      st.median(satis)   # 42    — the median
+      st.mode(satis)     # 38    — the most frequent value
+      st.stdev(satis)    # the standard deviation
+      ```
+
+      ## datetime — dates and times
+
+      ```python
+      from datetime import date, datetime, timedelta
+
+      sifaris = date(2024, 11, 25)
+      catdi = date(2024, 12, 2)
+      (catdi - sifaris).days            # 7 — the difference between two dates (a timedelta)
+      sifaris + timedelta(days=14)      # date(2024, 12, 9)
+      sifaris.strftime("%d.%m.%Y")      # '25.11.2024'
+      sifaris.strftime("%A")            # 'Monday' — the day of the week
+      datetime.strptime("02.12.2024", "%d.%m.%Y").date()   # from a string to a date
+      ```
+
+      | Code | Meaning | Example |
+      | --- | --- | --- |
+      | `%Y` | Year (4 digits) | 2024 |
+      | `%m` | Month (01–12) | 12 |
+      | `%d` | Day (01–31) | 02 |
+      | `%A` | Day of the week | Monday |
+      | `%B` | Month name | December |
+      | `%H:%M` | Hours:minutes | 14:05 |
+
+      ## collections.Counter — counting
+
+      ```python
+      from collections import Counter
+      odenisler = ["Kart", "Nağd", "Kart", "Mobil", "Kart"]
+      say = Counter(odenisler)   # Counter({'Kart': 3, 'Nağd': 1, 'Mobil': 1})
+      say["Kart"]                # 3
+      say.most_common(1)         # [('Kart', 3)]
+      ```
+
+      ## Other useful modules
+
+      - `random` — random numbers and choices (`random.choice`, `random.seed`);
+      - `json` and `csv` — file formats (in the next chapter);
+      - `os`, `pathlib` — files and folders.
+  statistics-math:
+    title: Statistics on daily orders
+    instructions: |
+      You're given the number of orders received by TechNar's Ganja branch over the last 9 days. Prepare a summary with the `statistics` and `math` modules.
+    tasks:
+      - Find the average number of daily orders and round it to 2 decimal places → orta.
+      - Find the median and the mode → mediana, moda.
+      - Find the standard deviation (stdev) and round it to 2 decimal places → std.
+      - Round the weekly plan (average × 7) up (math.ceil) → plan.
+    hints:
+      - statistics.mean(), statistics.median(), statistics.mode(), statistics.stdev()
+      - round(x, 2) — 2 decimal places.
+      - plan = math.ceil(statistics.mean(gunluk) * 7) — calculate it from the unrounded average.
+    tests: |
+      import statistics as _st, math as _m
+      assert orta == 45.89, f"orta should be 45.89, your result: {orta!r}"
+      assert mediana == 44, f"mediana should be 44, your result: {mediana!r}"
+      assert moda == 38, f"moda should be 38, your result: {moda!r}"
+      assert std == round(_st.stdev(gunluk), 2), f"std should be {round(_st.stdev(gunluk), 2)}, your result: {std!r}"
+      assert plan == 322, f"plan should be 322 (45.89 × 7 = 321.2 → rounded up to 322), your result: {plan!r}"
+      assert "statistics." in dacy.code and "math.ceil(" in dacy.code, "Use the statistics functions and math.ceil()"
+  datetime-tapsiriq:
+    title: Delivery and return dates
+    instructions: |
+      A customer placed an order on November 25, 2024, and the product was delivered on December 2. The return period is **14 days** after delivery.
+    tasks:
+      - How many days did delivery take → gun (an integer).
+      - On which day of the week was the order placed (strftime("%A")) → hefte_gunu.
+      - The last day of the return period → qaytarma (a date object).
+      - Write the delivery date in the "02.12.2024" format → formatli.
+    hints:
+      - 'The difference between two dates is a timedelta: (catdirilma - sifaris).days'
+      - sifaris.strftime("%A") gives the day of the week in English.
+      - qaytarma = catdirilma + timedelta(days=14); formatli = catdirilma.strftime("%d.%m.%Y")
+    tests: |
+      from datetime import date as _date
+      assert gun == 7, f"gun should be 7, your result: {gun!r}"
+      assert hefte_gunu == "Monday", f'hefte_gunu should be "Monday", your result: {hefte_gunu!r}'
+      assert qaytarma == _date(2024, 12, 16), f"qaytarma should be 2024-12-16, your result: {qaytarma!r}"
+      assert formatli == "02.12.2024", f'formatli should be "02.12.2024", your result: {formatli!r}'
+      assert "timedelta(" in dacy.code and "strftime(" in dacy.code, "Use timedelta and strftime"
+  counter-tapsiriq:
+    title: Counting with Counter
+    instructions: |
+      The checkout records contain payment methods and the words of customer reviews. Find the most frequent ones with `collections.Counter`.
+
+      The data is in Azerbaijani: the payment methods are "Kart" (card), "Nağd" (cash) and "Mobil" (mobile), and the review praises fast ("sürətli"), cheap ("ucuz") and free ("pulsuz") delivery ("çatdırılma").
+    tasks:
+      - Count each payment method → say (a Counter).
+      - Find the name of the most used payment method → en_cox.
+      - Split the text rey into words and find the 3 most frequent words → top3 (most_common).
+    hints:
+      - say = Counter(odenisler)
+      - most_common(1) returns [("Kart", 5)] — use [0][0] to get the name.
+      - top3 = Counter(rey.split()).most_common(3)
+    tests: |
+      from collections import Counter as _C
+      assert isinstance(say, _C) and say == _C(odenisler), f"say should be Counter(odenisler), your result: {say!r}"
+      assert en_cox == "Kart", f'en_cox should be "Kart", your result: {en_cox!r}'
+      assert top3 == [("çatdırılma", 3), ("idi", 2), ("ucuz", 2)], f"top3 isn't correct: {top3!r}"
+      assert "most_common(" in dacy.code, "Use the most_common() method"
+  kitabxanalar-testi:
+    title: 'Quiz: Packages and the standard library'
+    questions:
+      - text: Which modules come with Python, and which need to be installed with pip?
+        buckets:
+          - name: Standard library (no installation needed)
+            items:
+              - math
+              - datetime
+              - statistics
+              - json
+              - collections
+          - name: PyPI package (pip install)
+            items:
+              - pandas
+              - numpy
+              - matplotlib
+              - seaborn
+              - openpyxl
+        explanation: math, datetime, statistics, json and collections come with Python itself. pandas, numpy, matplotlib, seaborn and openpyxl are packages installed from PyPI.
+      - text: In `import pandas as pd`, what is `pd`?
+        options:
+          - A separate package
+          - An alias for pandas
+          - A built-in Python function
+          - A file name
+        explanation: as gives the package a short name; it's then used like pd.read_csv().
+      - text: What is `(date(2024, 3, 10) - date(2024, 3, 1)).days` equal to?
+        options:
+          - '10'
+          - '9'
+          - '11'
+          - It raises an error
+        explanation: The difference between two dates is a timedelta; .days returns 9 days.
+      - text: What does `!pip install seaborn` do in a Jupyter cell?
+        options:
+          - It imports seaborn into the current notebook
+          - It downloads and installs the seaborn package from PyPI
+          - It deletes seaborn
+          - It raises an error — pip only works in the terminal
+        explanation: 'The ! sign runs a terminal command in a cell. After installing it, you still need to write import seaborn.'

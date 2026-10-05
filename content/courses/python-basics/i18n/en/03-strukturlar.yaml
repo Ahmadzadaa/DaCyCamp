@@ -211,13 +211,13 @@ steps:
       The dictionaries use Azerbaijani keys: `"ad"` (name), `"yaş"` (age) and `"peşə"` (profession). Keep them exactly as written.
     tasks:
       - Find how many times the item 20 appears in my_tuple (say).
-      - Find the value of the `"yaş"` (age) key in my_dict (yas) and print it.
+      - Find the value of the "yaş" (age) key in my_dict (yas) and print it.
       - Add the number 5 to my_set and print the result.
-      - In my_dict2, change the value of the `"yaş"` key to 22.
+      - In my_dict2, change the value of the "yaş" key to 22.
     hints:
       - say = my_tuple.count(20)
-      - '`yas = my_dict["yaş"]` or `my_dict.get("yaş")`'
-      - '`my_set.add(5)`; `my_dict2["yaş"] = 22`'
+      - yas = my_dict["yaş"] or my_dict.get("yaş")
+      - my_set.add(5); my_dict2["yaş"] = 22
     starter_code: |
       # 1. Tuple: how many times does 20 appear?
       my_tuple = (10, 20, 30, 40)
