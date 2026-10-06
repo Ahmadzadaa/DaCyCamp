@@ -5,7 +5,7 @@ Format spesifikasiyanın §3.2 və §4 bölmələrinə uyğundur. Aşağıdakı 
 
 ## Repo-dakı kurslar: `content/courses/`
 
-`content/courses/<slug>/` qovluğundakı hər paket **API açılanda avtomatik idxal olunur** (`ContentSyncService`): yalnız bazada olmayan kurslar, admin paneldəki düzəlişlərin üzərinə yazılmır, giriş/şifrə tələb etmir. Söndürmək: `.env`-də `CONTENT_SYNC=false`; başqa qovluq: `CONTENT_DIR=/yol`. Əl ilə:
+`content/courses/<slug>/` qovluğundakı hər paket **API açılanda avtomatik idxal olunur** (`ContentSyncService`): yalnız bazada olmayan kurslar, admin paneldəki düzəlişlərin üzərinə yazılmır, giriş/şifrə tələb etmir. Bazada artıq olan kursların yalnız ingiliscə tərcüməsi (`i18n/en/`) yenilənir (aşağıdakı «İngiliscə tərcümə» bölməsi). Söndürmək: `.env`-də `CONTENT_SYNC=false`; başqa qovluq: `CONTENT_DIR=/yol`. Əl ilə:
 
 ```bash
 pnpm content:sync --update <slug>    # mövcud kursu paketdən yenilə (tələbə irəliləyişi qorunur; SEED_ADMIN_* lazımdır)
@@ -23,6 +23,7 @@ sql-ile-analiz/                ← ZIP-in kökü (bu qovluq ZIP-də olsa da, olm
 ├── datasets/
 │   └── sales.csv
 ├── images/  files/  videos/  checks/  logs/   ← fayllar, yol olduğu kimi saxlanılır
+├── i18n/en/                   ← ingiliscə tərcümə (istəyə bağlı): course.yaml, 01-giris.yaml, …
 └── modules/
     ├── 01-giris/
     │   ├── module.yaml
@@ -286,3 +287,58 @@ items:
 ```
 
 Uzun məzmunu ayrıca fayla çıxarmaq olar: `path-items/<açar>.yaml` (eyni sahələr: `title`, `instructions`, `deliverables`, `questions`, `pass_score`, `certificate_title`, `description`). `path.yaml`-dakı inline dəyər faylı üstələyir. İxrac: admin → yol → «path.yaml ixrac».
+
+## İngiliscə tərcümə: `i18n/en/`
+
+Paketə ingiliscə tərcümə əlavə etmək olar (istəyə bağlı). Defolt dil azərbaycan dilidir; tələbə saytı ingiliscə açanda tərcümə olunmuş mətn göstərilir, tərcüməsi olmayan sahə azərbaycanca qalır. Repodakı bütün paketlər tam tərcümə olunub.
+
+```
+i18n/en/
+├── course.yaml        ← { title, description }
+├── 01-giris.yaml      ← fəslin qovluq adı ilə (və ya açarı ilə: giris.yaml)
+└── 02-sqlite3.yaml
+```
+
+```yaml
+# i18n/en/01-giris.yaml
+title: Connecting to a database from Python
+description: Why databases, drivers, connections, cursors, queries and security.
+steps:
+  niye-baza:               # addımın açarı (01-niye-baza.md → niye-baza)
+    title: Python and databases
+    content: |
+      A company's data usually lives ...
+  ilk-cedvel:
+    instructions: |
+      Create a database in memory ...
+    tasks:
+      - ...
+    tests: |               # testlər də tərcümə olunur: assert mesajları ingiliscə
+      ...
+```
+
+Qaydalar:
+
+- Addım tərcüməsi mənbə addımın üzərinə **birləşdirilir** — yalnız yazılan sahələr dəyişir. Obyekt siyahıları (suallar, qruplar) indeksə görə birləşir; sətir siyahıları (tapşırıqlar, ipuçları, variantlar) mənbə ilə eyni uzunluqda olmalıdır.
+- Qiymətləndirməni dəyişə biləcək heç nə dəyişməməlidir: addım tipi, XP, sualların və variantların sayı, düzgün cavablar, CTF flag-ları. İdxal validasiyası bunu yoxlayır və səhvi fayl adı ilə göstərir.
+- Python addımlarında dəyişən adları, lüğət açarları, tələbənin yaratdığı və sonra istifadə etdiyi sütun adları və dataset dəyərləri **dəyişdirilmir** — tələbə dili dəyişəndə kodu eyni nəticə verir (dərsdə azərbaycanca adların mənası izah olunur). Şərhlər, assert mesajları, tapşırıqlar və ipuçları tərcümə olunur.
+- Tələbənin yazdığı sərbəst mətn (çap olunan mesaj, qrafik başlığı, kateqoriya etiketi, hesabat sütunu) ingiliscə variantda ingiliscədir. Belə addımda EN testləri azərbaycanca variantı da qəbul edir və testin birinci sətrinə `# i18n-superset` şərhi yazılır.
+- Düz mətn sahələri (variantlar, qrup adları, tapşırıqlar, ipuçları) markdown deyil — orada backtick yazmayın, data dəyərlərini dırnağa alın (`"Bakı"`, SQL-də `'Bakı'`).
+- İngilis mətni: ABŞ yazılışı, pul vahidi mətnin içində «AZN» (kodda ₼ ola bilər), minliklər vergüllə (1,582).
+
+Sinxronlaşdırma və admin düzəlişləri:
+
+- `ContentSyncService` mövcud kursların yalnız tərcümələrini yeniləyir və tərcüməni yalnız bazadakı azərbaycanca mətni paketdəki ilə eyni olan sahələrə yazır — admin paneldə dəyişdirilmiş mətnin köhnə tərcüməsi geri qayıtmır.
+- Admin paneldə azərbaycanca mətn dəyişəndə həmin sahənin ingiliscə tərcüməsi avtomatik silinir (köhnə tərcümə yeni mətnin əvəzinə göstərilmir); dəyişməyən sahələrin tərcüməsi qalır.
+- Mövzu və istiqamətlərin ingiliscə adı və təsviri admin paneldə «İngiliscə variant» sahəsindən yazılır. Roadmap xəritələrinin tərcüməsi kodda saxlanılır (`packages/shared/src/content/roadmap-en.ts`) və yalnız defolt mətn dəyişməyibsə tətbiq olunur.
+
+Yoxlama alətləri (`scripts/course-gen/`):
+
+```bash
+python3 scripts/course-gen/i18n_tools.py extract content/courses/<slug> 01-giris   # fəslin tərcümə skeleti
+python3 scripts/course-gen/i18n_tools.py check content/courses/<slug>              # əhatə + ingiliscə mətndə azərbaycan hərfi qalmayıb
+pyenv/bin/python scripts/course-gen/pyverify.py content/courses/<slug> "" --en     # EN həll keçir, starter keçmir + çarpaz yoxlama
+node scripts/course-gen/validate_api.mjs content/courses/<slug>                    # API-nin idxal validasiyası (API işləməlidir)
+```
+
+`pyverify --en` çarpaz yoxlama da aparır: azərbaycanca həll EN testlərindən, ingiliscə həll AZ testlərindən keçməlidir (`# i18n-superset` olan addımda ikincisi ötürülür).

@@ -202,7 +202,7 @@ export const en: Dictionary = {
     navFaq: 'FAQ',
     login: 'Log in',
     signup: 'Sign up',
-    heroBadge: 'Hands-on · taught in Azerbaijani',
+    heroBadge: 'Hands-on · in Azerbaijani and English',
     heroTitle: 'Learn data and cybersecurity with real-world exercises',
     heroText:
       'Solve SQL, Python, Linux and CTF exercises right in your browser. Learn at your own pace, step by step, and earn a verifiable certificate at the end.',

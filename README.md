@@ -151,7 +151,9 @@ Defolt dil — **azərbaycan dili**. Başlıqdakı **AZ/EN** düyməsi (və Prof
 - Mətnlər: `packages/shared/src/i18n/az.ts` (əsas) və `en.ts` (`Dictionary` tipində — açar əskik olsa tip yoxlaması keçmir). **Yeni mətn əlavə edəndə hər iki fayla yazın**; `pnpm --filter @dacy/shared test` açarları, parametrləri və ingiliscə mətndə azərbaycan hərfi qalmamasını yoxlayır.
 - İngilis dilində tək/cəm: `'{n} {n|course|courses}'` (n = 1 → tək). Azərbaycan dilində lazım deyil.
 - Web: `t()` dili özü müəyyən edir (server — sorğunun cookie-si, brauzer — `<html lang>`); səhifə başlıqları `generateMetadata()` ilə. API: `tr()` (`apps/api/src/common/i18n/request-locale.ts`) — bildirişlər, SQL yoxlama mesajları, PDF sertifikat.
-- Kursların məzmunu (dərslər, təsvirlər, Roadmap xəritələri) müəllimin yazdığı dildə qalır — tərcümə edilmir.
+- **Kursların məzmunu da ingiliscədir:** repodakı 8 kursun hamısı (dərslər, testlər, tapşırıqlar, Python testlərinin mesajları), Roadmap xəritələri, istiqamətlər, mövzular və nümunə məzmun. Tərcümə paketdə `i18n/en/` qovluğunda saxlanılır və API açılanda bazaya yazılır (`docs/content-package.md` → «İngiliscə tərcümə»). Tələbə dili EN seçəndə tərcümə göstərilir; tərcüməsi olmayan mətn (məs. admin paneldə yeni yazılmış kurs) azərbaycanca qalır.
+- Python tapşırıqlarının qiymətləndirilməsi dildən asılı deyil: dəyişən və sütun adları hər iki dildə eynidir, ingiliscə testlər azərbaycanca cavabları da qəbul edir.
+- Admin paneldə azərbaycanca mətn dəyişəndə həmin sahənin köhnə ingiliscə tərcüməsi avtomatik silinir. Mövzu və istiqamətlərin ingiliscə adı «İngiliscə variant» sahəsindən yazılır.
 
 ## Kurs paketi (ZIP)
 

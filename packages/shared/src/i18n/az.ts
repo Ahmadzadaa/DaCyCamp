@@ -196,7 +196,7 @@ export const az = {
     navFaq: 'Sual-cavab',
     login: 'Daxil ol',
     signup: 'Qeydiyyat',
-    heroBadge: 'Azərbaycan dilində · praktiki',
+    heroBadge: 'Azərbaycan və ingilis dilində · praktiki',
     heroTitle: 'Data və kiber təhlükəsizliyi real tapşırıqlarla öyrənin',
     heroText:
       'SQL, Python, Linux və CTF tapşırıqlarını birbaşa brauzerdə həll edin. Öz tempinizlə, addım-addım — sonunda yoxlanıla bilən sertifikat.',
