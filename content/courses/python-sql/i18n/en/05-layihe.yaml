@@ -1,0 +1,132 @@
+title: 'Mini project: an orders database'
+description: Building a normalized database from a CSV and answering business questions with SQL.
+steps:
+  layihe-izah:
+    title: 'Project: from a CSV to a database'
+    content: |
+      `sifarisler.csv` is one big table: the customer's name, country and city and the product's name repeat on every row. In real databases, the data is **normalized** — repeated information is moved into separate tables:
+
+      ```text
+      musteriler (CustomerID, CustomerName, CustomerSegment, Country, City)
+      mehsullar  (ProductID, ProductName, Category)
+      sifarisler (OrderID, OrderDate, ShipDate, ShipMode, CustomerID, ProductID, Sales, Quantity, Discount, Profit)
+      ```
+
+      (`musteriler` — customers, `mehsullar` — products, `sifarisler` — orders.)
+
+      The benefits:
+
+      - When a customer's city changes, it's updated in **one** place;
+      - It saves storage;
+      - There are fewer mistakes (the same customer's name isn't written differently on different rows).
+
+      When you query the data, the tables are combined with `JOIN`.
+
+      ```python
+      musteriler = o[["CustomerID", "CustomerName", "CustomerSegment", "Country", "City"]].drop_duplicates()
+      ```
+
+      > 💡 `drop_duplicates()` keeps each customer once — this is a "dimension" table. `sifarisler` is the "fact" table (a star schema — we saw it in the What is Data Engineering course).
+  layihe-baza:
+    title: 'Project: build the database and answer the questions'
+    instructions: |
+      Build a three-table database from sifarisler.csv and answer business questions with SQL JOINs.
+    tasks:
+      - Build the musteriler (CustomerID, CustomerName, CustomerSegment, Country, City) and mehsullar (ProductID, ProductName, Category) tables with drop_duplicates; write only the OrderID, OrderDate, ShipDate, ShipMode, CustomerID, ProductID, Sales, Quantity, Discount and Profit columns to the sifarisler table.
+      - Profit by country (Country, menfeet — 2 decimal places), from highest to lowest → olke (JOIN musteriler).
+      - Sales and profit by category (Category, satis, menfeet — 2 decimal places) → kateqoriya (JOIN mehsullar).
+      - The name of the customer who brings in the most sales (the sum of Sales) → top_musteri.
+    hints:
+      - o[["CustomerID", "CustomerName", "CustomerSegment", "Country", "City"]].drop_duplicates().to_sql("musteriler", con, index=False)
+      - FROM sifarisler s JOIN musteriler m ON m.CustomerID = s.CustomerID GROUP BY m.Country
+      - 'The top customer: GROUP BY m.CustomerID ORDER BY satis DESC LIMIT 1'
+    starter_code: |
+      import sqlite3
+      import pandas as pd
+
+      o = pd.read_csv("sifarisler.csv")
+      con = sqlite3.connect(":memory:")
+
+      # build the tables
+
+      olke = ...
+      kateqoriya = ...
+      top_musteri = ...
+
+      print(top_musteri)
+      olke
+    tests: |
+      import pandas as _pd
+      import numpy as _np
+
+      _o = _pd.read_csv("sifarisler.csv")
+      _mc = [r[1] for r in con.execute("PRAGMA table_info(musteriler)").fetchall()]
+      _pc = [r[1] for r in con.execute("PRAGMA table_info(mehsullar)").fetchall()]
+      _sc = [r[1] for r in con.execute("PRAGMA table_info(sifarisler)").fetchall()]
+      assert _mc == ["CustomerID", "CustomerName", "CustomerSegment", "Country", "City"], f"The columns of musteriler aren't correct: {_mc}"
+      assert _pc == ["ProductID", "ProductName", "Category"], f"The columns of mehsullar aren't correct: {_pc}"
+      assert "CustomerName" not in _sc and "Country" not in _sc and "ProductName" not in _sc, "Customer and product names shouldn't repeat in the sifarisler table (normalization)"
+      assert con.execute("SELECT COUNT(*) FROM musteriler").fetchone()[0] == _o["CustomerID"].nunique(), "Each customer should appear in musteriler once (drop_duplicates)"
+      _c = _o.groupby("Country")["Profit"].sum().sort_values(ascending=False).round(2)
+      assert list(olke["Country"]) == list(_c.index) and _np.allclose(olke["menfeet"], _c.values), f"olke: {_c.to_dict()}"
+      _k = _o.groupby("Category")[["Sales", "Profit"]].sum().round(2)
+      _kk = kateqoriya.set_index("Category").sort_index()
+      assert _np.allclose(_kk["satis"], _k["Sales"]) and _np.allclose(_kk["menfeet"], _k["Profit"]), "The sales and profit in kateqoriya aren't correct"
+      _t = _o.groupby(["CustomerID", "CustomerName"])["Sales"].sum().idxmax()[1]
+      assert top_musteri == _t, f"top_musteri should be {_t!r}"
+  yekun-test:
+    title: 'Final test: Python & SQL'
+    questions:
+      - text: Which database does the sqlite3 module that comes with Python connect to?
+        options:
+          - MySQL
+          - SQLite (a file or memory)
+          - Oracle
+          - All of them
+        explanation: sqlite3 is the SQLite driver.
+      - text: How should you pass a city name typed by the user to a query?
+        options:
+          - With an f-string
+          - 'As a parameter: execute("... = ?", (seher,))'
+          - By joining strings
+          - With eval()
+        explanation: Parameters protect against SQL injection.
+      - text: What does `pd.read_sql_query(sql, con)` return?
+        options:
+          - A list of tuples
+          - A DataFrame
+          - A cursor
+          - JSON
+        explanation: The result is a DataFrame right away.
+      - text: Where is each operation more efficient?
+        buckets:
+          - name: In the database (SQL)
+            items:
+              - Filtering and summing a million rows
+              - A JOIN of two big tables
+          - name: In pandas
+            items:
+              - Drawing a chart from a small result
+              - Complex text cleaning (regex)
+        explanation: Heavy filtering and aggregation in the database; visualization and flexible processing in pandas.
+      - text: Where is an aggregate condition (SUM > 1000) written?
+        options:
+          - WHERE
+          - HAVING
+          - ORDER BY
+          - FROM
+        explanation: A filter after grouping — HAVING.
+      - text: 'The benefit of normalization:'
+        options:
+          - Queries don't need JOINs
+          - Repeated information is kept in one place and is easy to update
+          - There are fewer tables
+          - No password is needed
+        explanation: Repeated data goes into a separate table.
+      - text: Which of these are Python database drivers? (Select all that apply)
+        options:
+          - psycopg2
+          - mysql-connector-python
+          - seaborn
+          - pyodbc
+        explanation: seaborn is a charting library.

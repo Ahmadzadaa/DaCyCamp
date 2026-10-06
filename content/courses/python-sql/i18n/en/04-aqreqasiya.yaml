@@ -1,0 +1,132 @@
+title: 'Analysis with SQL: GROUP BY, HAVING, dates'
+description: Aggregate functions, HAVING, ORDER BY and LIMIT, monthly analysis with strftime.
+steps:
+  aqreqasiya-ders:
+    title: GROUP BY, HAVING and date functions
+    content: |
+      ## Aggregate functions
+
+      `COUNT(*)`, `SUM(x)`, `AVG(x)`, `MIN(x)`, `MAX(x)`, `COUNT(DISTINCT x)`.
+
+      ```sql
+      SELECT "Product Category" AS kateqoriya,
+             COUNT(*)            AS emeliyyat,
+             SUM("Units Sold")   AS eded,
+             ROUND(AVG("Total Revenue"), 2) AS orta_cek
+      FROM satislar
+      GROUP BY "Product Category"
+      ORDER BY eded DESC;
+      ```
+
+      (`kateqoriya` — category, `emeliyyat` — transactions, `eded` — units, `orta_cek` — the average receipt.)
+
+      ## WHERE and HAVING
+
+      - `WHERE` filters rows **before** grouping.
+      - `HAVING` filters groups **after** grouping.
+
+      ```sql
+      SELECT "Sales Employee", SUM("Total Revenue") AS gelir
+      FROM satislar
+      WHERE Region = 'Bakı'              -- only the transactions in Baku
+      GROUP BY "Sales Employee"
+      HAVING SUM("Total Revenue") > 150000   -- only the salespeople with big results
+      ORDER BY gelir DESC;
+      ```
+
+      ## The order in which a query runs
+
+      ```text
+      FROM → WHERE → GROUP BY → HAVING → SELECT → ORDER BY → LIMIT
+      ```
+
+      That's why you can't use an aggregate (`SUM`) in `WHERE` — at that stage, the groups don't exist yet.
+
+      ## Dates (SQLite)
+
+      In SQLite, dates are stored as text (`'2024-03-15'`), and the date functions understand them:
+
+      ```sql
+      SELECT strftime('%Y-%m', Date) AS ay, SUM("Total Revenue") AS gelir
+      FROM satislar
+      WHERE strftime('%Y', Date) = '2024'
+      GROUP BY ay
+      ORDER BY ay;
+      ```
+
+      (`ay` — month, `gelir` — revenue.) In MySQL: `DATE_FORMAT(Date, '%Y-%m')`; in PostgreSQL: `TO_CHAR(Date, 'YYYY-MM')` or `DATE_TRUNC('month', Date)`.
+  top-mehsullar-sql:
+    title: Top products and a category summary
+    instructions: |
+      The key summaries with SQL queries.
+    tasks:
+      - 'The top 5 products by units sold: Product Name AS mehsul, SUM("Units Sold") AS eded → top5 (a DataFrame, LIMIT 5).'
+      - 'By category: kateqoriya, emeliyyat (COUNT), eded (the SUM of Units Sold), orta_cek (ROUND(AVG, 2)), by units from highest to lowest → kateqoriya.'
+    hints:
+      - SELECT "Product Name" AS mehsul, SUM("Units Sold") AS eded FROM satislar GROUP BY "Product Name" ORDER BY eded DESC LIMIT 5
+      - COUNT(*) AS emeliyyat, SUM("Units Sold") AS eded, ROUND(AVG("Total Revenue"), 2) AS orta_cek
+      - pd.read_sql_query(sql, con)
+    tests: |
+      import pandas as _pd
+      import numpy as _np
+
+      _s = _pd.read_csv("satislar.csv")
+      _t = _s.groupby("Product Name")["Units Sold"].sum().sort_values(ascending=False).head(5)
+      assert isinstance(top5, _pd.DataFrame) and list(top5.columns) == ["mehsul", "eded"] and len(top5) == 5, "top5 — the columns mehsul, eded and 5 rows"
+      assert list(top5["eded"]) == list(_t.values), f"The units in top5: {list(_t.values)}"
+      _k = _s.groupby("Product Category").agg(emeliyyat=("Units Sold", "size"), eded=("Units Sold", "sum"), orta_cek=("Total Revenue", "mean")).sort_values("eded", ascending=False)
+      assert isinstance(kateqoriya, _pd.DataFrame) and list(kateqoriya.columns) == ["kateqoriya", "emeliyyat", "eded", "orta_cek"], "The columns of kateqoriya: kateqoriya, emeliyyat, eded, orta_cek"
+      assert list(kateqoriya["kateqoriya"]) == list(_k.index) and list(kateqoriya["emeliyyat"]) == list(_k["emeliyyat"]), "The categories should be in descending order of units"
+      assert _np.allclose(kateqoriya["orta_cek"], _k["orta_cek"].round(2), atol=0.011), "orta_cek = ROUND(AVG(\"Total Revenue\"), 2)"
+  having-strftime:
+    title: HAVING and a monthly analysis
+    instructions: |
+      Baku's strongest salespeople and 2024's monthly revenue — with SQL.
+    tasks:
+      - 'The salespeople in "Bakı" with revenue over 150,000 AZN: "Sales Employee" AS satici, the SUM of revenue AS gelir (2 decimal places), by revenue from highest to lowest → guclu (WHERE + HAVING).'
+      - '2024''s revenue by month: strftime("%Y-%m", Date) AS ay, ROUND(SUM, 2) AS gelir, by month in ascending order → ayliq_2024.'
+    hints:
+      - WHERE Region = 'Bakı' GROUP BY "Sales Employee" HAVING SUM("Total Revenue") > 150000 ORDER BY gelir DESC
+      - strftime('%Y-%m', Date) AS ay ... WHERE strftime('%Y', Date) = '2024' GROUP BY ay ORDER BY ay
+      - ROUND(SUM("Total Revenue"), 2) AS gelir
+    tests: |
+      import pandas as _pd
+      import numpy as _np
+
+      _s = _pd.read_csv("satislar.csv")
+      _g = _s[_s["Region"] == "Bakı"].groupby("Sales Employee")["Total Revenue"].sum()
+      _g = _g[_g > 150000].sort_values(ascending=False).round(2)
+      assert isinstance(guclu, _pd.DataFrame) and list(guclu.columns) == ["satici", "gelir"], "The columns of guclu: satici, gelir"
+      assert list(guclu["satici"]) == list(_g.index) and _np.allclose(guclu["gelir"], _g.values), f"guclu: {_g.to_dict()}"
+      _y = _s[_s["Date"].str[:4] == "2024"].groupby(_s["Date"].str[:7])["Total Revenue"].sum().round(2)
+      assert isinstance(ayliq_2024, _pd.DataFrame) and list(ayliq_2024["ay"]) == list(_y.index), "ayliq_2024 — the 12 months of 2024, in ascending order"
+      assert _np.allclose(ayliq_2024["gelir"], _y.values), "The revenue in ayliq_2024 isn't correct"
+      assert "HAVING" in dacy.code.upper() and "STRFTIME" in dacy.code.upper(), "Use HAVING and strftime"
+  aqreqasiya-testi:
+    title: 'Quiz: GROUP BY and HAVING'
+    questions:
+      - text: 'The difference between WHERE and HAVING:'
+        options:
+          - There's no difference
+          - WHERE filters rows before grouping, HAVING filters groups after it
+          - HAVING only works with JOIN
+          - WHERE only works with numbers
+        explanation: Filtering by an aggregate — HAVING.
+      - text: 'The option with the correct order in which a query runs:'
+        options:
+          - SELECT → FROM → WHERE → GROUP BY
+          - FROM → WHERE → GROUP BY → HAVING → SELECT → ORDER BY → LIMIT
+          - FROM → GROUP BY → WHERE → SELECT
+          - WHERE → FROM → SELECT → HAVING
+        explanation: That's why SUM isn't used in WHERE.
+      - text: Where should each condition be written?
+        buckets:
+          - name: WHERE
+            items:
+              - Region = 'Bakı'
+              - strftime('%Y', Date) = '2024'
+          - name: HAVING
+            items:
+              - SUM("Total Revenue") > 150000
+              - COUNT(*) >= 10
+        explanation: Row conditions go in WHERE, aggregate conditions in HAVING.

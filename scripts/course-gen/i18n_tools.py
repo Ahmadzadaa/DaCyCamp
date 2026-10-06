@@ -120,7 +120,9 @@ def strip_code(s):
     s = re.sub(r'```.*?```', '', s, flags=re.S)
     s = re.sub(r'`[^`\n]*`', '', s)
     # dırnaq içində qısa data dəyəri (açar, etiket, şəhər: "yaş", "Bakı") — tapşırıq/variant düz mətndir
-    return re.sub(r'"[^"\n]{1,60}"', '', s)
+    s = re.sub(r'"[^"\n]{1,60}"', '', s)
+    # SQL sətir literalı: tək dırnaqda boşluqsuz bir söz ('Bakı', '2024'); don't kimi apostroflar düşmür
+    return re.sub(r"(?<!\w)'[^'\s]{1,30}'(?!\w)", '', s)
 
 
 def az_left(node, path, out, code=False):

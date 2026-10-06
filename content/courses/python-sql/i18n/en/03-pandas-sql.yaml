@@ -1,0 +1,143 @@
+title: 'pandas and SQL: to_sql, read_sql, JOIN'
+description: Writing a DataFrame to a database, reading an SQL result as a DataFrame, SQL JOIN compared with pd.merge.
+steps:
+  pandas-sql-ders:
+    title: 'A database with pandas: to_sql and read_sql_query'
+    content: |
+      Instead of working with tuples through a cursor, it's more convenient to get the result straight as a **DataFrame**.
+
+      ```python
+      import sqlite3
+      import pandas as pd
+
+      con = sqlite3.connect(":memory:")
+      df = pd.read_csv("satislar.csv")
+
+      df.to_sql("satislar", con, index=False, if_exists="replace")   # DataFrame → table
+
+      netice = pd.read_sql_query("""
+          SELECT Region, SUM("Total Revenue") AS gelir
+          FROM satislar
+          GROUP BY Region
+          ORDER BY gelir DESC
+      """, con)
+      ```
+
+      (`netice` — result, `gelir` — revenue.)
+
+      - `if_exists="replace"` — replace the table if it exists; `"append"` — add to the end; `"fail"` — raise an error.
+      - Column names with spaces are written in **double quotes** in SQL: `"Total Revenue"`.
+      - Parameters: `pd.read_sql_query("... WHERE Region = ?", con, params=("Bakı",))`.
+
+      On real servers (MySQL, PostgreSQL), pandas works with an SQLAlchemy "engine":
+
+      ```python
+      from sqlalchemy import create_engine
+      engine = create_engine(os.environ["DATABASE_URL"])
+      df = pd.read_sql_query("SELECT * FROM orders", engine)
+      ```
+
+      ## SQL JOIN and pd.merge
+
+      ```sql
+      SELECT s.SifarişID, m.Ad, s.Məbləğ
+      FROM sifarisler s
+      JOIN musteriler m ON m.MüştəriID = s.MüştəriID
+      ```
+
+      ```python
+      pd.merge(sifarisler, musteriler, on="MüştəriID")   # the same result
+      ```
+
+      The `sifarisler` (orders) and `musteriler` (customers) tables have Azerbaijani column names: `SifarişID` — order ID, `MüştəriID` — customer ID, `Ad` — name, `Məbləğ` — amount.
+
+      | SQL | pandas |
+      | --- | --- |
+      | `JOIN` / `INNER JOIN` | `how="inner"` |
+      | `LEFT JOIN` | `how="left"` |
+      | `WHERE` | `df[condition]` |
+      | `GROUP BY` + `SUM` | `groupby(...).sum()` |
+      | `ORDER BY ... DESC` | `sort_values(ascending=False)` |
+      | `LIMIT 5` | `head(5)` |
+
+      > 💡 The rule: take **only as much** data from the database as you need. Instead of pulling millions of rows into pandas and filtering them there, do the `WHERE` and `GROUP BY` in the database — it's faster and saves memory.
+  to-sql:
+    title: Write a CSV to the database and query it with SQL
+    instructions: |
+      Move satislar.csv into an SQLite database and calculate the revenue by region with SQL, then compare the result with pandas.
+    tasks:
+      - con = sqlite3.connect(":memory:"); write df as the "satislar" table (to_sql, index=False).
+      - The revenue by region with SQL (Region, gelir), by revenue from highest to lowest → sql_netice (read_sql_query).
+      - Calculate the same result with pandas and check whether the two results are the same → eynidir (True/False).
+      - Find the number of transactions in the "Bakı" region with a parameterized query (params=("Bakı",)) → baki_say.
+    hints:
+      - df.to_sql("satislar", con, index=False)
+      - 'In SQL, a column name with a space goes in double quotes: SUM("Total Revenue") AS gelir ... GROUP BY Region ORDER BY gelir DESC'
+      - pd.read_sql_query("SELECT COUNT(*) AS n FROM satislar WHERE Region = ?", con, params=("Bakı",))["n"][0]
+    tests: |
+      import pandas as _pd
+      import numpy as _np
+
+      _s = _pd.read_csv("satislar.csv")
+      _n = con.execute("SELECT COUNT(*) FROM satislar").fetchone()[0]
+      assert _n == len(_s), f"The satislar table should have {len(_s)} rows (to_sql)"
+      _g = _s.groupby("Region")["Total Revenue"].sum().sort_values(ascending=False)
+      assert isinstance(sql_netice, _pd.DataFrame) and list(sql_netice.columns) == ["Region", "gelir"], "The columns of sql_netice: Region, gelir"
+      assert list(sql_netice["Region"]) == list(_g.index) and _np.allclose(sql_netice["gelir"], _g.values), "sql_netice should be the revenue by region, in descending order"
+      assert eynidir is True, "eynidir should be True"
+      assert baki_say == (_s["Region"] == "Bakı").sum(), f"baki_say should be {(_s['Region'] == 'Bakı').sum()}"
+      assert "params=" in dacy.code and "read_sql_query(" in dacy.code, "Use read_sql_query and params"
+  sql-join:
+    title: SQL JOIN and pd.merge
+    instructions: |
+      Write the customers and orders tables to the database and combine them with an SQL JOIN.
+    tasks:
+      - musteriler.csv → the "musteriler" table, sifarisler_qisa.csv → the "sifarisler" table.
+      - 'SQL INNER JOIN: each customer''s name and total spending (Ad, xerc), by spending from highest to lowest → xerc_sql.'
+      - With an SQL LEFT JOIN, the names of the customers without orders (in alphabetical order) → sifarissiz.
+    hints:
+      - FROM sifarisler s JOIN musteriler m ON m."MüştəriID" = s."MüştəriID" GROUP BY m.Ad ORDER BY xerc DESC
+      - 'In a LEFT JOIN, s."SifarişID" is NULL for the customers without orders: WHERE s."SifarişID" IS NULL'
+      - pd.read_sql_query(sql, con)["Ad"].tolist()
+    tests: |
+      import pandas as _pd
+      import numpy as _np
+
+      _m = _pd.read_csv("musteriler.csv"); _o = _pd.read_csv("sifarisler_qisa.csv")
+      _x = _pd.merge(_o, _m, on="MüştəriID").groupby("Ad")["Məbləğ"].sum().sort_values(ascending=False)
+      assert isinstance(xerc_sql, _pd.DataFrame) and list(xerc_sql.columns) == ["Ad", "xerc"], "The columns of xerc_sql: Ad, xerc"
+      assert list(xerc_sql["xerc"]) == list(_x.values) and set(xerc_sql["Ad"]) == set(_x.index), f"xerc_sql isn't correct: {_x.to_dict()}"
+      assert sifarissiz == ["Nigar", "Rauf", "Tural"], f"sifarissiz should be ['Nigar', 'Rauf', 'Tural'], yours: {sifarissiz!r}"
+      assert "JOIN" in dacy.code.upper(), "Use an SQL JOIN"
+  pandas-sql-testi:
+    title: 'Quiz: pandas and SQL'
+    questions:
+      - text: 'The pandas equivalent of each SQL expression:'
+        buckets:
+          - name: df[condition]
+            items:
+              - WHERE Region = 'Bakı'
+          - name: groupby(...).sum()
+            items:
+              - GROUP BY Region + SUM(...)
+          - name: sort_values(ascending=False)
+            items:
+              - ORDER BY gelir DESC
+          - name: head(5)
+            items:
+              - LIMIT 5
+        explanation: SQL and pandas do the same operations with different syntax.
+      - text: What does `df.to_sql("t", con, if_exists="append")` do?
+        options:
+          - It deletes the table
+          - It adds the rows to the end of the existing table
+          - It raises an error
+          - It replaces the table
+        explanation: append — add, replace — replace, fail — raise an error.
+      - text: You only need the total of the Baku sales from a database with a million rows. What's the best way?
+        options:
+          - Pull everything into pandas and filter it
+          - Do the WHERE and SUM in the SQL query
+          - Export to CSV and calculate in Excel
+          - Read each row separately with fetchone
+        explanation: Filtering and aggregating in the database is fast and efficient.

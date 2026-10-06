@@ -1,0 +1,132 @@
+title: 'sqlite3: tables, inserts and queries'
+description: CREATE TABLE, INSERT and executemany, SELECT, fetchall/fetchone, commit and parameterized queries.
+steps:
+  sqlite3-ders:
+    title: Your first database with sqlite3
+    content: |
+      ```python
+      import sqlite3
+
+      con = sqlite3.connect(":memory:")
+      cur = con.cursor()
+
+      cur.execute("""
+          CREATE TABLE mehsullar (
+              id INTEGER PRIMARY KEY,
+              ad TEXT NOT NULL,
+              kateqoriya TEXT,
+              qiymet REAL
+          )
+      """)
+
+      cur.execute("INSERT INTO mehsullar (ad, kateqoriya, qiymet) VALUES (?, ?, ?)",
+                  ("iPhone 15", "Electronics", 2399))
+
+      data = [("AirPods Pro 2", "Electronics", 599), ("Yoga Mat Pro", "Sports", 59)]
+      cur.executemany("INSERT INTO mehsullar (ad, kateqoriya, qiymet) VALUES (?, ?, ?)", data)
+      con.commit()            # save the changes
+
+      cur.execute("SELECT ad, qiymet FROM mehsullar WHERE qiymet > 500 ORDER BY qiymet DESC")
+      print(cur.fetchall())   # [('iPhone 15', 2399.0), ('AirPods Pro 2', 599.0)]
+      ```
+
+      The table and column names are Azerbaijani: `mehsullar` — products, `ad` — name, `kateqoriya` — category, `qiymet` — price.
+
+      | Method | What it does |
+      | --- | --- |
+      | `execute(sql, parameters)` | One query |
+      | `executemany(sql, list)` | The same query for many rows |
+      | `fetchall()` | All the result rows (a list of tuples) |
+      | `fetchone()` | The next single row |
+      | `commit()` | Saves INSERT/UPDATE/DELETE |
+
+      ## Parameterized queries and SQL injection
+
+      ❌ **Never do this:**
+
+      ```python
+      seher = input("City: ")
+      cur.execute(f"SELECT * FROM musteriler WHERE seher = '{seher}'")
+      ```
+
+      (`musteriler` — customers, `seher` — city.)
+
+      If the user types `' OR '1'='1`, the query returns all the customers; in worse cases, it can delete the table. This is called **SQL injection**.
+
+      ✅ **Do this** — pass the value separately, as a parameter:
+
+      ```python
+      cur.execute("SELECT * FROM musteriler WHERE seher = ?", (seher,))
+      ```
+
+      The driver passes the value safely — it's never run as SQL code. (In sqlite3, the placeholder is `?`; in MySQL/psycopg2, it's `%s`.)
+
+      > ⚠️ Even a single parameter must be a tuple: `(seher,)` — the comma matters.
+  ilk-cedvel:
+    title: Create a table, fill it, query it
+    instructions: |
+      Create a database in memory and add a few of TechNar's products.
+    tasks:
+      - sqlite3.connect(":memory:") → con; cur = con.cursor().
+      - 'The mehsullar (products) table: id INTEGER PRIMARY KEY, ad TEXT, kateqoriya TEXT, qiymet REAL.'
+      - Add mehsul_siyahisi with executemany and commit.
+      - The number of rows in the table (SELECT COUNT(*)) → say; the names of the Electronics products by price, from highest to lowest → elektronika (a list).
+    hints:
+      - cur.execute("CREATE TABLE mehsullar (id INTEGER PRIMARY KEY, ad TEXT, kateqoriya TEXT, qiymet REAL)")
+      - cur.executemany("INSERT INTO mehsullar (ad, kateqoriya, qiymet) VALUES (?, ?, ?)", mehsul_siyahisi); con.commit()
+      - say = cur.execute("SELECT COUNT(*) FROM mehsullar").fetchone()[0]
+    tests: |
+      import sqlite3 as _sq
+      assert isinstance(con, _sq.Connection), "con = sqlite3.connect(':memory:')"
+      _cols = [r[1] for r in con.execute("PRAGMA table_info(mehsullar)").fetchall()]
+      assert _cols == ["id", "ad", "kateqoriya", "qiymet"], f"The columns of the mehsullar table: id, ad, kateqoriya, qiymet. Yours: {_cols}"
+      assert con.execute("SELECT COUNT(*) FROM mehsullar").fetchone()[0] == 6, "6 products should be added (executemany)"
+      assert say == 6, f"say should be 6, your result: {say!r}"
+      assert elektronika == ["iPhone 15", "AirPods Pro 2"], f"elektronika should be ['iPhone 15', 'AirPods Pro 2'], your result: {elektronika!r}"
+      assert "executemany(" in dacy.code, "Use executemany"
+  parametrli:
+    title: 'A parameterized query: protect against SQL injection'
+    instructions: |
+      Write a search function: the user enters a category and a maximum price. Pass the values to the query as **parameters** — not with an f-string.
+    tasks:
+      - 'The function axtar(con, kateqoriya, max_qiymet) ("axtar" means search): return the names of the products in that category whose price isn''t more than max_qiymet (in alphabetical order).'
+      - 'Use the ? placeholder: cur.execute(sql, (kateqoriya, max_qiymet)).'
+      - 'An attack attempt: axtar(con, "Sports'' OR ''1''=''1", 10000) should return an empty list → hucum.'
+    hints:
+      - 'SQL: "SELECT ad FROM mehsullar WHERE kateqoriya = ? AND qiymet <= ? ORDER BY ad"'
+      - con.execute(sql, (kateqoriya, max_qiymet)) — the values go in a tuple
+      - '[r[0] for r in cur.fetchall()]'
+    tests: |
+      assert axtar(con, "Sports", 200) == ["Puma RS-X", "Yoga Mat Pro"], f"axtar(con, 'Sports', 200) should be ['Puma RS-X', 'Yoga Mat Pro'], yours: {axtar(con, 'Sports', 200)!r}"
+      assert axtar(con, "Electronics", 3000) == ["AirPods Pro 2", "iPhone 15"], "Electronics, 3000 — two products (in alphabetical order)"
+      assert hucum == [], f"The attack attempt should return an empty list — use parameters, not an f-string. Yours: {hucum!r}"
+      _src = dacy.code.split("def axtar")[1].split("print(")[0]
+      assert "?" in _src and "f\"" not in _src and "f'" not in _src and ".format(" not in _src, "Use ? placeholders in the query, not an f-string or format"
+  sqlite3-testi:
+    title: 'Quiz: sqlite3 and security'
+    questions:
+      - text: What happens if you forget `commit()` after an INSERT (in a file database)?
+        options:
+          - Nothing
+          - The changes may not be saved
+          - It raises an error
+          - The table is deleted
+        explanation: commit writes the changes to the database.
+      - text: Which way of writing it is safe?
+        buckets:
+          - name: Safe ✅
+            items:
+              - cur.execute("... WHERE seher = ?", (seher,))
+              - cur.executemany("INSERT ... VALUES (?, ?)", siyahi)
+          - name: Dangerous 🚩
+            items:
+              - cur.execute(f"... WHERE seher = '{seher}'")
+              - cur.execute("... WHERE ad = '" + ad + "'")
+        explanation: The driver passes parameters safely; joining strings together opens the door to SQL injection.
+      - text: What does `fetchone()` return?
+        options:
+          - All the rows
+          - The next row (a tuple) or None
+          - The number of rows
+          - The column names
+        explanation: fetchone — one row.

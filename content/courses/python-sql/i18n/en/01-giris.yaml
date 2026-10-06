@@ -1,0 +1,100 @@
+title: Connecting to a database from Python
+description: Why databases, drivers, connections, cursors, queries and security.
+steps:
+  niye-baza:
+    title: Python and databases
+    content: |
+      A company's data usually lives not in CSV files but in a **database** (MySQL, PostgreSQL, SQL Server, Oracle). An analyst either queries the data in an SQL tool or **connects to the database from Python** and loads the result straight into pandas — then cleans it, analyzes it, draws charts and automates the report.
+
+      ## The same steps for every connection
+
+      ```text
+      1. Import the driver              →  import mysql.connector
+      2. Open a connection              →  connection = ...connect(host, database, user, password)
+      3. Create a cursor                →  cursor = connection.cursor()
+      4. Run the query                  →  cursor.execute("SELECT ...")
+      5. Fetch the result               →  rows = cursor.fetchall()
+      6. Close                          →  cursor.close(); connection.close()
+      ```
+
+      ## The Day 9 example: MySQL
+
+      ```python
+      # !pip install mysql-connector-python
+      import os
+      import mysql.connector
+
+      connection = mysql.connector.connect(
+          host="localhost",                       # the server's address
+          database="satis_db",                    # the name of the database
+          user=os.environ["DB_USER"],             # the user
+          password=os.environ["DB_PASSWORD"],     # the password — never written in code!
+      )
+      cursor = connection.cursor()
+      cursor.execute("SELECT * FROM orders LIMIT 10;")
+      for row in cursor.fetchall():
+          print(row)
+      cursor.close()
+      connection.close()
+      ```
+
+      ## Drivers
+
+      | Database | Python package |
+      | --- | --- |
+      | SQLite | `sqlite3` — comes with Python |
+      | MySQL / MariaDB | `mysql-connector-python`, `PyMySQL` |
+      | PostgreSQL | `psycopg2` / `psycopg` |
+      | SQL Server | `pyodbc` |
+      | A common layer for all of them | `SQLAlchemy` (the most convenient with pandas) |
+
+      The **RODBC** in the slides is an R package; its equivalents in Python are `pyodbc` and the drivers above.
+
+      ## In this course: SQLite
+
+      **SQLite** is a small database that needs no server and keeps the whole database in one file (or in memory). It's built into Python and runs in the browser on DaCy. Its SQL is almost the same as MySQL's and PostgreSQL's — what you learn here also works on real servers.
+
+      ```python
+      import sqlite3
+      con = sqlite3.connect(":memory:")     # a temporary database in memory
+      # con = sqlite3.connect("satis.db")   # in a file
+      ```
+
+      ## 🔒 Security
+
+      - Passwords and user names are kept in **environment variables**, not written in code.
+      - Analysts are usually given **read-only** access (the principle of least privilege).
+      - Values that come from users are passed to the query as **parameters** — to protect against SQL injection (in the next chapter).
+  giris-testi:
+    title: 'Quiz: connections'
+    questions:
+      - text: 'Put the steps in order: which stage of the connection does each one belong to?'
+        buckets:
+          - name: Setup
+            items:
+              - import sqlite3
+              - con = sqlite3.connect(...)
+          - name: The work
+            items:
+              - cur = con.cursor()
+              - cur.execute("SELECT ...")
+              - cur.fetchall()
+          - name: Finishing
+            items:
+              - con.commit() (if there were changes)
+              - con.close()
+        explanation: First the driver and the connection, then the cursor, the query and the result, and finally saving and closing.
+      - text: Which package is used to connect to PostgreSQL?
+        options:
+          - mysql-connector-python
+          - psycopg2
+          - sqlite3
+          - openpyxl
+        explanation: psycopg2/psycopg is the PostgreSQL driver.
+      - text: Where should the database password be kept?
+        options:
+          - In the code, as a variable
+          - In an environment variable or a secret configuration
+          - In the first cell of the notebook
+          - In a comment in the SQL query
+        explanation: A password is never written in code.
