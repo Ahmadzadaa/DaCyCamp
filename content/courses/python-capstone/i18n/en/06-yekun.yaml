@@ -1,0 +1,184 @@
+title: 'Wrap-up: the dashboard and the report'
+description: Bring the results together in one dashboard, recommendations for management and the final test.
+steps:
+  hesabat:
+    title: Presenting the results
+    content: |
+      A manager won't read 15 tables. They need **4 charts + 5 sentences**.
+
+      ## Dashboard: 2 × 2
+
+      ```python
+      fig, axes = plt.subplots(2, 2, figsize=(14, 9))
+      fig.suptitle("DaCy Store — 2023–2024 sales analysis", fontsize=16)
+
+      ayliq.plot(ax=axes[0, 0], title="Monthly sales")
+      olke.plot(kind="bar", ax=axes[0, 1], title="Profit by country")
+      kat.plot(kind="barh", ax=axes[1, 0], title="Category margin, %")
+      seg.plot(kind="pie", ax=axes[1, 1], title="RFM segments", autopct="%1.0f%%")
+
+      plt.tight_layout()
+      plt.show()
+      ```
+
+      ## The monthly trend: resample
+
+      ```python
+      ayliq = df.set_index("OrderDate")["Sales"].resample("ME").sum()   # month end
+      ```
+
+      ## A report template (1 slide)
+
+      1. **The key figure:** X AZN in sales and Y AZN in profit over 2 years (a margin of Z%).
+      2. **Geography:** most of the profit comes from Turkey and Azerbaijan.
+      3. **Products:** the sales leader ≠ the profit leader → review the discount policy.
+      4. **Customers:** there are N customers in the "At risk" segment — run a win-back campaign.
+      5. **Operations:** delivery takes about 4 days on average; the share of Same Day is small.
+
+      > 💡 Each chart's title should be a **finding**, not a **question**: "55% of the profit comes from two countries" instead of "Profit by country". (This course's tests check fixed titles, but in a real report, write the finding.)
+  dashboard:
+    title: The final dashboard (2 × 2)
+    instructions: |
+      The last step of the project: bring the key results together in one figure.
+    tasks:
+      - fig, axes = plt.subplots(2, 2, figsize=(14, 9)); fig.suptitle("DaCy Store — 2023–2024 sales analysis").
+      - 'axes[0, 0]: monthly Sales (resample("ME").sum()), a line chart, the title "Monthly sales".'
+      - 'axes[0, 1]: the sum of Profit by country, in descending order, a bar chart, the title "Profit by country".'
+      - 'axes[1, 0]: the category margin % (the sum of Profit / the sum of Sales × 100), barh, the title "Category margin, %".'
+      - 'axes[1, 1]: the share of Sales by ShipMode, a pie chart (autopct="%1.0f%%"), the title "Sales by ShipMode".'
+      - 'The overall indicators: umumi_satis, umumi_menfeet (2 decimal places), umumi_marja (%, 1 decimal place).'
+    hints:
+      - ayliq = df.set_index("OrderDate")["Sales"].resample("ME").sum(); ayliq.plot(ax=axes[0, 0], title="Monthly sales")
+      - olke.plot(kind="bar", ax=axes[0, 1], title="Profit by country")
+      - mode.plot(kind="pie", ax=axes[1, 1], title="Sales by ShipMode", autopct="%1.0f%%")
+    starter_code: |
+      import pandas as pd
+      import matplotlib.pyplot as plt
+
+      df = pd.read_csv("sifarisler.csv", parse_dates=["OrderDate", "ShipDate"])
+
+      umumi_satis = ...
+      umumi_menfeet = ...
+      umumi_marja = ...
+
+      fig, axes = plt.subplots(2, 2, figsize=(14, 9))
+      fig.suptitle("DaCy Store — 2023–2024 sales analysis", fontsize=16)
+
+      # 4 charts
+
+      plt.tight_layout()
+      plt.show()
+      print(f"Sales: {umumi_satis} AZN | Profit: {umumi_menfeet} AZN | Margin: {umumi_marja}%")
+    solution: |
+      import pandas as pd
+      import matplotlib.pyplot as plt
+
+      df = pd.read_csv("sifarisler.csv", parse_dates=["OrderDate", "ShipDate"])
+
+      umumi_satis = round(df["Sales"].sum(), 2)
+      umumi_menfeet = round(df["Profit"].sum(), 2)
+      umumi_marja = round(umumi_menfeet / umumi_satis * 100, 1)
+
+      ayliq = df.set_index("OrderDate")["Sales"].resample("ME").sum()
+      olke = df.groupby("Country")["Profit"].sum().sort_values(ascending=False)
+      k = df.groupby("Category")[["Sales", "Profit"]].sum()
+      marja = (k["Profit"] / k["Sales"] * 100).sort_values()
+      mode = df.groupby("ShipMode")["Sales"].sum()
+
+      fig, axes = plt.subplots(2, 2, figsize=(14, 9))
+      fig.suptitle("DaCy Store — 2023–2024 sales analysis", fontsize=16)
+
+      ayliq.plot(ax=axes[0, 0], title="Monthly sales")
+      olke.plot(kind="bar", ax=axes[0, 1], title="Profit by country", color="seagreen")
+      marja.plot(kind="barh", ax=axes[1, 0], title="Category margin, %", color="orange")
+      mode.plot(kind="pie", ax=axes[1, 1], title="Sales by ShipMode", autopct="%1.0f%%")
+      axes[1, 1].set_ylabel("")
+
+      plt.tight_layout()
+      plt.show()
+      print(f"Sales: {umumi_satis} AZN | Profit: {umumi_menfeet} AZN | Margin: {umumi_marja}%")
+    tests: |
+      # i18n-superset: the Azerbaijani titles are accepted too
+      import pandas as _pd
+      import numpy as _np
+      _o = _pd.read_csv("sifarisler.csv", parse_dates=["OrderDate", "ShipDate"])
+
+      import matplotlib.pyplot as _plt
+      def _axes():
+          return [a for n in _plt.get_fignums() for a in _plt.figure(n).axes]
+      def _ax(*titles):
+          for a in _axes():
+              if a.get_title().strip() in titles:
+                  return a
+          _t = [a.get_title() for a in _axes()]
+          raise AssertionError(f'No chart titled "{titles[0]}" was found (pass title=...). Titles found: {_t}')
+
+      assert umumi_satis == round(_o["Sales"].sum(), 2) and umumi_menfeet == round(_o["Profit"].sum(), 2), "umumi_satis / umumi_menfeet — the sums of Sales and Profit, 2 decimal places"
+      assert umumi_marja == round(round(_o["Profit"].sum(), 2) / round(_o["Sales"].sum(), 2) * 100, 1), "umumi_marja = profit / sales × 100, 1 decimal place"
+      _figs = [_plt.figure(n) for n in _plt.get_fignums()]
+      assert any(f._suptitle is not None and f._suptitle.get_text() in ("DaCy Store — 2023–2024 sales analysis", "DaCy Store — 2023–2024 satış təhlili") for f in _figs), "Set fig.suptitle('DaCy Store — 2023–2024 sales analysis')"
+      _a = _ax("Monthly sales", "Aylıq satış")
+      _ay = _o.set_index("OrderDate")["Sales"].resample("ME").sum()
+      assert _a.lines and len(_a.lines[0].get_ydata()) == len(_ay) and _np.allclose(_a.lines[0].get_ydata(), _ay.values), f"Monthly sales — {len(_ay)} monthly points (resample('ME').sum())"
+      _b = _ax("Profit by country", "Ölkələr üzrə mənfəət")
+      _op = _o.groupby("Country")["Profit"].sum().sort_values(ascending=False)
+      assert _np.allclose([p.get_height() for p in _b.patches], _op.values), "Profit by country — a bar chart in descending order"
+      _m = _ax("Category margin, %", "Kateqoriya marjası, %")
+      _k = _o.groupby("Category")[["Sales", "Profit"]].sum()
+      _mj = _k["Profit"] / _k["Sales"] * 100
+      assert _np.allclose(sorted(p.get_width() for p in _m.patches), sorted(_mj.values), atol=0.06), "Category margin, % — barh, the values are the sum of Profit / the sum of Sales × 100"
+      _p = _ax("Sales by ShipMode", "ShipMode üzrə satış")
+      assert len(_p.patches) == _o["ShipMode"].nunique() and any("%" in t.get_text() for t in _p.texts), "Sales by ShipMode — a pie chart with percentages (autopct)"
+  yekun-test:
+    title: 'Final test: Sales Analytics'
+    questions:
+      - text: Keeping in mind that an order can have several products, how do you find the number of orders?
+        options:
+          - len(df)
+          - df["OrderID"].nunique()
+          - df["OrderID"].count()
+          - df["Quantity"].sum()
+        explanation: count and len count rows.
+      - text: Which expression shows the profit by country in descending order?
+        options:
+          - df.groupby("Country")["Profit"].sum().sort_values(ascending=False)
+          - df.sort_values("Profit").groupby("Country")
+          - df["Country"].value_counts()
+          - df.pivot("Country", "Profit")
+        explanation: value_counts counts rows, not profit.
+      - text: Which of these are the right steps for the "At risk" segment?
+        options:
+          - Send a personal win-back offer
+          - Delete them from the database
+          - Ask why they left (a survey)
+          - Put them in the same VIP campaign as the Champions
+        explanation: At-risk customers used to be valuable; winning them back is cheaper than finding new customers.
+      - text: Match each Day 9 question to the code that solves it.
+        buckets:
+          - name: Delivery time
+            items:
+              - (df["ShipDate"] - df["OrderDate"]).dt.days
+          - name: Correlation
+            items:
+              - df["Sales"].corr(df["Profit"])
+          - name: The top 2 countries
+            items:
+              - df.groupby("Country")["Profit"].sum().nlargest(2)
+          - name: Country × segment count
+            items:
+              - pd.crosstab(rfm["Country"], rfm["Seqment"])
+        explanation: These 4 lines are the skeleton of the project.
+      - text: The sales leader and the profit leader of a category are different products. What does this mean?
+        options:
+          - The data is wrong
+          - The best-selling product has a low margin — the pricing and discount policy needs a review
+          - Profit hasn't been calculated
+          - There's no difference
+        explanation: Sales volume and profitability are different things.
+      - text: Ideally, what should the title of each chart on a dashboard be?
+        options:
+          - The column name
+          - The main finding the chart shows (for example, "More than half of the profit comes from two countries")
+          - Empty
+          - The file name
+        explanation: The reader should know the finding just by reading the title.

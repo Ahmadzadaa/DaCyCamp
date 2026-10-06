@@ -1,0 +1,441 @@
+title: Customer analysis and RFM segmentation
+description: 'The top customer, RFM, country/city × segment, the products of the top customers (Day 9: 11, 13, 14, 15).'
+steps:
+  top-musteri:
+    title: 'The most valuable customer: by ID, not by name'
+    content: |
+      "Who is the customer who brings in the most revenue?" looks like a simple question. Let's compare two ways:
+
+      ```python
+      df.groupby("CustomerName")["Sales"].sum().nlargest(3)
+      # Zaur Quliyeva     67316.17   ← ?!
+      # Zeynep Həsənli    66266.49
+      # Giorgi Nurlanov   52824.87
+
+      df.groupby("CustomerID")["Sales"].sum().nlargest(3)
+      # C-1099    52824.87   ← Giorgi Nurlanov
+      # C-1061    50204.05
+      # C-1015    45604.92
+      ```
+
+      There are **4 different customers** behind the name "Zaur Quliyeva"! Grouping by name added up their purchases and created a "super-customer" who doesn't exist. In real life, this mistake means sending a VIP discount to the wrong person.
+
+      > ✅ The rule: always calculate with the **ID** and display the **name**.
+
+      ## The customer profile
+
+      ```python
+      top_id = df.groupby("CustomerID")["Sales"].sum().idxmax()
+      sec = df[df["CustomerID"] == top_id]
+
+      profil = {
+          "ad": sec["CustomerName"].iloc[0],
+          "olke": sec["Country"].iloc[0],
+          "sifaris": sec["OrderID"].nunique(),
+          "satis": sec["Sales"].sum(),
+      }
+      ```
+
+      (The keys: `ad` — name, `olke` — country, `sifaris` — orders, `satis` — sales.)
+  en-deyerli-musteri:
+    title: The customer who brings in the most revenue, and their profile
+    instructions: |
+      Question 11 of Day 9: find the customer who brings in the most revenue and show their details — without falling into the trap.
+    tasks:
+      - The sum of Sales by CustomerID → musteri_satis (a Series, in descending order).
+      - The ID of the customer who brings in the most sales → top_id.
+      - 'Their profile → profil (a dict) with the keys "ad" (name), "seqment" (segment), "olke" (country), "seher" (city), "sifaris" (the number of unique orders), "satis" (sales, 2 decimal places), "menfeet" (profit, 2 decimal places) and "sevimli_kateqoriya" (the favorite category, by Sales).'
+      - All of this customer's rows, sorted by OrderDate → tarixce (a DataFrame).
+      - The name that comes first when you group by name → adla_lider (spot the trap!).
+    hints:
+      - musteri_satis = df.groupby("CustomerID")["Sales"].sum().sort_values(ascending=False); top_id = musteri_satis.idxmax()
+      - 'The profile: sec["CustomerName"].iloc[0], sec["OrderID"].nunique(), round(sec["Sales"].sum(), 2)'
+      - 'sevimli_kateqoriya: sec.groupby("Category")["Sales"].sum().idxmax()'
+    starter_code: |
+      import pandas as pd
+
+      df = pd.read_csv("sifarisler.csv", parse_dates=["OrderDate", "ShipDate"])
+
+      musteri_satis = ...
+      top_id = ...
+
+      sec = df[df["CustomerID"] == top_id]
+      profil = {
+          "ad": ...,
+      }
+      tarixce = ...
+      adla_lider = ...
+
+      print(top_id, profil)
+      print("Grouped by name:", adla_lider, "— but this name belongs to", df[df["CustomerName"] == adla_lider]["CustomerID"].nunique(), "customers")
+      tarixce.head()
+    solution: |
+      import pandas as pd
+
+      df = pd.read_csv("sifarisler.csv", parse_dates=["OrderDate", "ShipDate"])
+
+      musteri_satis = df.groupby("CustomerID")["Sales"].sum().sort_values(ascending=False)
+      top_id = musteri_satis.idxmax()
+
+      sec = df[df["CustomerID"] == top_id]
+      profil = {
+          "ad": sec["CustomerName"].iloc[0],
+          "seqment": sec["CustomerSegment"].iloc[0],
+          "olke": sec["Country"].iloc[0],
+          "seher": sec["City"].iloc[0],
+          "sifaris": sec["OrderID"].nunique(),
+          "satis": round(sec["Sales"].sum(), 2),
+          "menfeet": round(sec["Profit"].sum(), 2),
+          "sevimli_kateqoriya": sec.groupby("Category")["Sales"].sum().idxmax(),
+      }
+      tarixce = sec.sort_values("OrderDate")
+      adla_lider = df.groupby("CustomerName")["Sales"].sum().idxmax()
+
+      print(top_id, profil)
+      print("Grouped by name:", adla_lider, "— but this name belongs to", df[df["CustomerName"] == adla_lider]["CustomerID"].nunique(), "customers")
+      tarixce.head()
+    tests: |
+      import pandas as _pd
+      import numpy as _np
+      _o = _pd.read_csv("sifarisler.csv", parse_dates=["OrderDate", "ShipDate"])
+
+      _ms = _o.groupby("CustomerID")["Sales"].sum().sort_values(ascending=False)
+      assert isinstance(musteri_satis, _pd.Series) and list(musteri_satis.index[:10]) == list(_ms.index[:10]) and _np.allclose(musteri_satis.values, _ms.values), "musteri_satis: the sum of Sales by CustomerID, in descending order"
+      _id = _ms.idxmax()
+      assert top_id == _id, f"top_id should be {_id} — group by CustomerID, not CustomerName"
+      _s = _o[_o["CustomerID"] == _id]
+      _p = {"ad": _s["CustomerName"].iloc[0], "seqment": _s["CustomerSegment"].iloc[0], "olke": _s["Country"].iloc[0], "seher": _s["City"].iloc[0], "sifaris": _s["OrderID"].nunique(), "satis": round(_s["Sales"].sum(), 2), "menfeet": round(_s["Profit"].sum(), 2), "sevimli_kateqoriya": _s.groupby("Category")["Sales"].sum().idxmax()}
+      assert isinstance(profil, dict) and set(profil) == set(_p), f"The keys of profil: {list(_p)}"
+      for _k, _v in _p.items():
+          _u = profil[_k]
+          assert (abs(float(_u) - float(_v)) < 0.01) if isinstance(_v, (int, float)) and not isinstance(_v, bool) else str(_u) == str(_v), f"profil['{_k}'] should be {_v!r}, yours: {_u!r}"
+      assert isinstance(tarixce, _pd.DataFrame) and len(tarixce) == len(_s) and tarixce["OrderDate"].is_monotonic_increasing, f"tarixce: this customer's {len(_s)} rows, sorted by OrderDate"
+      _al = _o.groupby("CustomerName")["Sales"].sum().idxmax()
+      assert adla_lider == _al, f"adla_lider should be {_al}"
+  rfm:
+    title: 'Customer segmentation: RFM'
+    content: |
+      Question 13 of Day 9: "divide the customers into segments". The simple and powerful method that marketing uses most is **RFM**:
+
+      | Letter | Metric | Question | Calculation |
+      |---|---|---|---|
+      | **R** — Recency | The days since the last purchase | When did they buy? | `(ref_date - last_OrderDate).days` |
+      | **F** — Frequency | The number of orders | How often? | `OrderID.nunique()` |
+      | **M** — Monetary | The total spending | How much did they spend? | `Sales.sum()` |
+
+      `ref_date` (the reference date) = the last date in the dataset + 1 day (as if the analysis were done "today").
+
+      ```python
+      ref = df["OrderDate"].max() + pd.Timedelta(days=1)
+      rfm = df.groupby("CustomerID").agg(
+          Recency=("OrderDate", lambda s: (ref - s.max()).days),
+          Frequency=("OrderID", "nunique"),
+          Monetary=("Sales", "sum"),
+      )
+      ```
+
+      ## Scores: quartiles (1–4)
+
+      `pd.qcut` divides the customers into 4 groups of equal size. So that equal values don't break the group boundaries, apply `rank(method="first")` first:
+
+      ```python
+      rfm["R"] = pd.qcut(rfm["Recency"].rank(method="first"), 4, labels=[4, 3, 2, 1]).astype(int)   # fewer days = better → 4
+      rfm["F"] = pd.qcut(rfm["Frequency"].rank(method="first"), 4, labels=[1, 2, 3, 4]).astype(int)
+      rfm["M"] = pd.qcut(rfm["Monetary"].rank(method="first"), 4, labels=[1, 2, 3, 4]).astype(int)
+      ```
+
+      > ⚠️ In Recency, a **small** value is good, so the labels are reversed: `[4, 3, 2, 1]`.
+
+      ## Segments: the R × F matrix
+
+      | | F ≥ 3 (buys often) | F ≤ 2 (buys rarely) |
+      |---|---|---|
+      | **R ≥ 3** (bought recently) | 🏆 **Champion** — reward them | 🌱 **Promising** — make them loyal |
+      | **R ≤ 2** (hasn't been back for a long time) | ⚠️ **At risk** — win them back! | 😴 **Hibernating** — a cheap campaign |
+
+      ```python
+      def seqment(row):
+          if row["R"] >= 3 and row["F"] >= 3:
+              return "Champion"
+          if row["F"] >= 3:
+              return "At risk"
+          if row["R"] >= 3:
+              return "Promising"
+          return "Hibernating"
+
+      rfm["Seqment"] = rfm.apply(seqment, axis=1)
+      ```
+
+      The "At risk" group is the most valuable one: these customers used to buy often but haven't lately — losing them is expensive.
+  rfm-seqment:
+    title: 'RFM: divide the customers into segments'
+    instructions: |
+      Question 13 of Day 9: calculate R, F and M for each customer, give them scores and assign a segment (with the rules from the lesson).
+    tasks:
+      - ref = the last OrderDate + 1 day; Recency, Frequency and Monetary by CustomerID → rfm (with these column names).
+      - 'The R, F and M scores (1–4, int): qcut + rank(method="first"); for Recency, the labels are [4, 3, 2, 1].'
+      - 'The Seqment column: Champion / At risk / Promising / Hibernating (the R × F rule).'
+      - The number of customers in each segment → seqment_say (a Series, value_counts).
+      - The average Recency, Frequency and Monetary by segment → seqment_profil (a DataFrame, sorted by Monetary from highest to lowest).
+    hints:
+      - 'Recency=("OrderDate", lambda s: (ref - s.max()).days)'
+      - rfm["R"] = pd.qcut(rfm["Recency"].rank(method="first"), 4, labels=[4, 3, 2, 1]).astype(int)
+      - rfm["Seqment"] = rfm.apply(seqment, axis=1); seqment_say = rfm["Seqment"].value_counts()
+    starter_code: |
+      import pandas as pd
+
+      df = pd.read_csv("sifarisler.csv", parse_dates=["OrderDate", "ShipDate"])
+
+      ref = ...
+      rfm = ...
+
+      # the R, F, M scores
+
+      def seqment(row):
+          ...
+
+      rfm["Seqment"] = ...
+
+      seqment_say = ...
+      seqment_profil = ...
+
+      print(seqment_say)
+      seqment_profil
+    solution: |
+      import pandas as pd
+
+      df = pd.read_csv("sifarisler.csv", parse_dates=["OrderDate", "ShipDate"])
+
+      ref = df["OrderDate"].max() + pd.Timedelta(days=1)
+      rfm = df.groupby("CustomerID").agg(
+          Recency=("OrderDate", lambda s: (ref - s.max()).days),
+          Frequency=("OrderID", "nunique"),
+          Monetary=("Sales", "sum"),
+      )
+
+      rfm["R"] = pd.qcut(rfm["Recency"].rank(method="first"), 4, labels=[4, 3, 2, 1]).astype(int)
+      rfm["F"] = pd.qcut(rfm["Frequency"].rank(method="first"), 4, labels=[1, 2, 3, 4]).astype(int)
+      rfm["M"] = pd.qcut(rfm["Monetary"].rank(method="first"), 4, labels=[1, 2, 3, 4]).astype(int)
+
+      def seqment(row):
+          if row["R"] >= 3 and row["F"] >= 3:
+              return "Champion"
+          if row["F"] >= 3:
+              return "At risk"
+          if row["R"] >= 3:
+              return "Promising"
+          return "Hibernating"
+
+      rfm["Seqment"] = rfm.apply(seqment, axis=1)
+
+      seqment_say = rfm["Seqment"].value_counts()
+      seqment_profil = (
+          rfm.groupby("Seqment")[["Recency", "Frequency", "Monetary"]].mean().sort_values("Monetary", ascending=False)
+      )
+
+      print(seqment_say)
+      seqment_profil
+    tests: |
+      # i18n-superset: the Azerbaijani segment names (Çempion, Risk altında, Perspektivli, Yuxuda) are accepted too
+      import pandas as _pd
+      import numpy as _np
+      _o = _pd.read_csv("sifarisler.csv", parse_dates=["OrderDate", "ShipDate"])
+
+      _ref = _o["OrderDate"].max() + _pd.Timedelta(days=1)
+      _r = _o.groupby("CustomerID").agg(
+          Recency=("OrderDate", lambda s: (_ref - s.max()).days),
+          Frequency=("OrderID", "nunique"),
+          Monetary=("Sales", "sum"),
+      )
+      _r["R"] = _pd.qcut(_r["Recency"].rank(method="first"), 4, labels=[4, 3, 2, 1]).astype(int)
+      _r["F"] = _pd.qcut(_r["Frequency"].rank(method="first"), 4, labels=[1, 2, 3, 4]).astype(int)
+      _r["M"] = _pd.qcut(_r["Monetary"].rank(method="first"), 4, labels=[1, 2, 3, 4]).astype(int)
+      def _seg(row):
+          if row["R"] >= 3 and row["F"] >= 3:
+              return "Champion"
+          if row["F"] >= 3:
+              return "At risk"
+          if row["R"] >= 3:
+              return "Promising"
+          return "Hibernating"
+      _r["Seqment"] = _r.apply(_seg, axis=1)
+      _AZ = {"Çempion": "Champion", "Risk altında": "At risk", "Perspektivli": "Promising", "Yuxuda": "Hibernating"}
+
+      assert isinstance(rfm, _pd.DataFrame) and len(rfm) == len(_r), f"rfm should have {len(_r)} customers (CustomerID)"
+      for _c in ["Recency", "Frequency", "Monetary"]:
+          assert _c in rfm.columns, f"rfm has no {_c} column"
+      _x = rfm.loc[_r.index]
+      assert (_x["Recency"].values == _r["Recency"].values).all(), "Recency = (ref - the last OrderDate).days, where ref = the last date + 1 day"
+      assert (_x["Frequency"].values == _r["Frequency"].values).all(), "Frequency = OrderID.nunique() (not the number of rows)"
+      assert _np.allclose(_x["Monetary"].values, _r["Monetary"].values), "Monetary = the sum of Sales"
+      for _c in ["R", "F", "M"]:
+          assert _c in rfm.columns and (_x[_c].astype(int).values == _r[_c].values).all(), f"The {_c} scores aren't correct — qcut(rank(method='first'), 4, labels=...)" + (" ([4, 3, 2, 1] for Recency)" if _c == "R" else "")
+      assert "Seqment" in rfm.columns and (_x["Seqment"].map(lambda v: _AZ.get(v, v)).values == _r["Seqment"].values).all(), "The Seqment rule: R≥3 and F≥3 → Champion; F≥3 → At risk; R≥3 → Promising; the rest → Hibernating"
+      _vc = _r["Seqment"].value_counts()
+      assert isinstance(seqment_say, _pd.Series) and {_AZ.get(k, k): v for k, v in seqment_say.to_dict().items()} == _vc.to_dict(), f"seqment_say should be {_vc.to_dict()}"
+      _sp = _r.groupby("Seqment")[["Recency", "Frequency", "Monetary"]].mean().sort_values("Monetary", ascending=False)
+      assert isinstance(seqment_profil, _pd.DataFrame) and [_AZ.get(k, k) for k in seqment_profil.index] == list(_sp.index) and _np.allclose(seqment_profil[["Recency", "Frequency", "Monetary"]].values, _sp.values), "seqment_profil: the average Recency, Frequency and Monetary, sorted by Monetary from highest to lowest"
+  cografiya-top-mehsul:
+    title: Where are the top customers from, and what do they buy?
+    instructions: |
+      Questions 14 and 15 of Day 9. A "top customer" = the "Champion" segment in RFM (build RFM as in the previous exercise).
+    tasks:
+      - Build RFM and the Seqment column (the code from the previous exercise); add each customer's Country and City → rfm.
+      - 'A country × segment table of customer counts → olke_seqment (pd.crosstab: Country as the rows, Seqment as the columns).'
+      - The country with the most Champions → top_olke; the city → top_seher.
+      - The order rows of the Champion customers → top_df; the 5 most bought products (the sum of Quantity) → top_mehsullar (a Series, ProductName).
+      - The Champions' share of Sales by category in %, 1 decimal place → top_kateqoriya (a Series, in descending order).
+    hints:
+      - 'Add to agg: Country=("Country", "first"), City=("City", "first")'
+      - olke_seqment = pd.crosstab(rfm["Country"], rfm["Seqment"]); cemp = rfm[rfm["Seqment"] == "Champion"]
+      - top_df = df[df["CustomerID"].isin(cemp.index)]; top_df.groupby("ProductName")["Quantity"].sum().nlargest(5)
+    starter_code: |
+      import pandas as pd
+
+      df = pd.read_csv("sifarisler.csv", parse_dates=["OrderDate", "ShipDate"])
+
+      # 1) RFM + Seqment (the previous exercise)
+      rfm = ...
+
+      # 2) geography
+      olke_seqment = ...
+      top_olke = ...
+      top_seher = ...
+
+      # 3) what do the Champions buy?
+      top_df = ...
+      top_mehsullar = ...
+      top_kateqoriya = ...
+
+      print(top_olke, top_seher)
+      print(top_mehsullar)
+      print(top_kateqoriya)
+      olke_seqment
+    solution: |
+      import pandas as pd
+
+      df = pd.read_csv("sifarisler.csv", parse_dates=["OrderDate", "ShipDate"])
+
+      # 1) RFM + Seqment
+      ref = df["OrderDate"].max() + pd.Timedelta(days=1)
+      rfm = df.groupby("CustomerID").agg(
+          Recency=("OrderDate", lambda s: (ref - s.max()).days),
+          Frequency=("OrderID", "nunique"),
+          Monetary=("Sales", "sum"),
+          Country=("Country", "first"),
+          City=("City", "first"),
+      )
+      rfm["R"] = pd.qcut(rfm["Recency"].rank(method="first"), 4, labels=[4, 3, 2, 1]).astype(int)
+      rfm["F"] = pd.qcut(rfm["Frequency"].rank(method="first"), 4, labels=[1, 2, 3, 4]).astype(int)
+      rfm["M"] = pd.qcut(rfm["Monetary"].rank(method="first"), 4, labels=[1, 2, 3, 4]).astype(int)
+
+      def seqment(row):
+          if row["R"] >= 3 and row["F"] >= 3:
+              return "Champion"
+          if row["F"] >= 3:
+              return "At risk"
+          if row["R"] >= 3:
+              return "Promising"
+          return "Hibernating"
+
+      rfm["Seqment"] = rfm.apply(seqment, axis=1)
+
+      # 2) geography
+      olke_seqment = pd.crosstab(rfm["Country"], rfm["Seqment"])
+      cemp = rfm[rfm["Seqment"] == "Champion"]
+      top_olke = cemp["Country"].value_counts().idxmax()
+      top_seher = cemp["City"].value_counts().idxmax()
+
+      # 3) what do the Champions buy?
+      top_df = df[df["CustomerID"].isin(cemp.index)]
+      top_mehsullar = top_df.groupby("ProductName")["Quantity"].sum().nlargest(5)
+      kat = top_df.groupby("Category")["Sales"].sum()
+      top_kateqoriya = (kat / kat.sum() * 100).round(1).sort_values(ascending=False)
+
+      print(top_olke, top_seher)
+      print(top_mehsullar)
+      print(top_kateqoriya)
+      olke_seqment
+    tests: |
+      # i18n-superset: the Azerbaijani segment names (Çempion, Risk altında, Perspektivli, Yuxuda) are accepted too
+      import pandas as _pd
+      import numpy as _np
+      _o = _pd.read_csv("sifarisler.csv", parse_dates=["OrderDate", "ShipDate"])
+
+      _ref = _o["OrderDate"].max() + _pd.Timedelta(days=1)
+      _r = _o.groupby("CustomerID").agg(
+          Recency=("OrderDate", lambda s: (_ref - s.max()).days),
+          Frequency=("OrderID", "nunique"),
+          Monetary=("Sales", "sum"),
+      )
+      _r["R"] = _pd.qcut(_r["Recency"].rank(method="first"), 4, labels=[4, 3, 2, 1]).astype(int)
+      _r["F"] = _pd.qcut(_r["Frequency"].rank(method="first"), 4, labels=[1, 2, 3, 4]).astype(int)
+      _r["M"] = _pd.qcut(_r["Monetary"].rank(method="first"), 4, labels=[1, 2, 3, 4]).astype(int)
+      def _seg(row):
+          if row["R"] >= 3 and row["F"] >= 3:
+              return "Champion"
+          if row["F"] >= 3:
+              return "At risk"
+          if row["R"] >= 3:
+              return "Promising"
+          return "Hibernating"
+      _r["Seqment"] = _r.apply(_seg, axis=1)
+      _AZ = {"Çempion": "Champion", "Risk altında": "At risk", "Perspektivli": "Promising", "Yuxuda": "Hibernating"}
+
+      _geo = _o.groupby("CustomerID")[["Country", "City"]].first()
+      _r = _r.join(_geo)
+      assert isinstance(rfm, _pd.DataFrame) and {"Seqment", "Country", "City"} <= set(rfm.columns), "rfm should have the Seqment, Country and City columns"
+      assert (rfm.loc[_r.index, "Seqment"].map(lambda v: _AZ.get(v, v)).values == _r["Seqment"].values).all(), "Seqment should be calculated with the rules from the previous exercise"
+      _ct = _pd.crosstab(_r["Country"], _r["Seqment"])
+      _os = olke_seqment.rename(columns=_AZ) if isinstance(olke_seqment, _pd.DataFrame) else None
+      assert _os is not None and _os.shape == _ct.shape and set(_os.columns) == set(_ct.columns) and set(_os.index) == set(_ct.index) and (_os.loc[_ct.index, _ct.columns].values == _ct.values).all(), "olke_seqment = pd.crosstab(rfm['Country'], rfm['Seqment'])"
+      _c = _r[_r["Seqment"] == "Champion"]
+      assert top_olke == _c["Country"].value_counts().idxmax(), f"top_olke should be {_c['Country'].value_counts().idxmax()}"
+      assert top_seher == _c["City"].value_counts().idxmax(), f"top_seher should be {_c['City'].value_counts().idxmax()}"
+      _td = _o[_o["CustomerID"].isin(_c.index)]
+      assert isinstance(top_df, _pd.DataFrame) and len(top_df) == len(_td), f"top_df should hold the Champions' {len(_td)} rows (isin)"
+      _tm = _td.groupby("ProductName")["Quantity"].sum().nlargest(5)
+      assert isinstance(top_mehsullar, _pd.Series) and list(top_mehsullar.values) == list(_tm.values) and set(top_mehsullar.index) == set(_tm.index), f"top_mehsullar: {_tm.to_dict()}"
+      _k = _td.groupby("Category")["Sales"].sum()
+      _kp = (_k / _k.sum() * 100).round(1).sort_values(ascending=False)
+      assert isinstance(top_kateqoriya, _pd.Series) and list(top_kateqoriya.index) == list(_kp.index) and _np.allclose(top_kateqoriya.values, _kp.values), f"top_kateqoriya: {_kp.to_dict()}"
+  musteri-testi:
+    title: 'Quiz: customer analysis'
+    questions:
+      - text: When grouping by name, "Zaur Quliyeva" came first; with the ID, C-1099 did. Why?
+        options:
+          - A calculation error
+          - The purchases of 4 different customers with the same name were merged when grouping by name
+          - C-1099's orders were canceled
+          - CustomerID is text
+        explanation: Calculate with the ID, display the name.
+      - text: Place each customer in an RFM segment.
+        buckets:
+          - name: Champion
+            items:
+              - 'R=4, F=4: bought yesterday, 15 orders a year'
+              - R=3, F=3
+          - name: At risk
+            items:
+              - 'R=1, F=4: used to buy often, hasn''t been back for 8 months'
+          - name: Promising
+            items:
+              - 'R=4, F=1: made their first purchase last week'
+          - name: Hibernating
+            items:
+              - 'R=1, F=1: bought once, long ago'
+        explanation: 'The R × F matrix: recency and frequency.'
+      - text: Why are the qcut labels for the Recency score `[4, 3, 2, 1]`?
+        options:
+          - It's a mistake; they should be [1, 2, 3, 4]
+          - Fewer days passed is better, so the smallest Recency gets the highest score
+          - qcut only accepts reverse order
+          - Recency is a negative number
+        explanation: In F and M, more is better; in R, less is better.
+      - text: Why is `rank(method="first")` needed before qcut?
+        options:
+          - For speed
+          - When there are many equal values, the qcut boundaries repeat and raise an error; rank gives each customer a unique position
+          - It rounds the values
+          - It deletes NaNs
+        explanation: For example, many customers can have 7 orders in Frequency — "Bin edges must be unique".

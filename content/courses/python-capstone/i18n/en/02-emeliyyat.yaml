@@ -1,0 +1,197 @@
+title: Data checks and delivery
+description: 'Get to know the data, convert the dates, delivery times and a ShipMode analysis (Day 9: 3, 4, 10).'
+steps:
+  yoxlama:
+    title: 'Getting to know the data: a 5-minute checklist'
+    content: |
+      With every new dataset, the first job is to get to know it. These 6 lines protect you from hours of wrong conclusions:
+
+      ```python
+      import pandas as pd
+
+      df = pd.read_csv("sifarisler.csv", parse_dates=["OrderDate", "ShipDate"])
+
+      df.shape                      # (1582, 16) — how many rows and columns?
+      df.dtypes                     # are the dates datetime64?
+      df.isna().sum().sum()         # are there empty cells?
+      df["OrderDate"].agg(["min", "max"])   # which period does it cover?
+      df["OrderID"].nunique()       # how many orders (not rows!)?
+      df["CustomerID"].nunique()    # how many customers?
+      ```
+
+      ## A hidden problem: repeated names
+
+      ```python
+      df.groupby("CustomerName")["CustomerID"].nunique().sort_values(ascending=False).head()
+      ```
+
+      If there's more than one ID behind a name, different people share the same name. If you group by name, their purchases will **merge**, and a "fake" super-customer will appear.
+
+      ## Date differences
+
+      The difference between two `datetime` columns is a `Timedelta`; for the number of days, use `.dt.days`:
+
+      ```python
+      df["ShipDays"] = (df["ShipDate"] - df["OrderDate"]).dt.days
+      df["ShipDays"].describe()
+      ```
+
+      ## Several metrics at once: named aggregation
+
+      ```python
+      df.groupby("ShipMode").agg(
+          ort_gun=("ShipDays", "mean"),
+          satis=("Sales", "sum"),
+          ort_say=("Quantity", "mean"),
+      ).sort_values("ort_gun")
+      ```
+
+      (`ort_gun` — the average days, `satis` — sales, `ort_say` — the average quantity.)
+
+      You choose the column names of the result yourself — the table is ready for the report.
+  ilk-baxis:
+    title: 'Get to know the data: size, period, number of orders and customers'
+    instructions: |
+      The first step of the project is checking the data. Prepare the "data passport" that will be sent to management.
+    tasks:
+      - Load sifarisler.csv into df, reading OrderDate and ShipDate as dates.
+      - The number of rows → setir; the total number of empty cells → bos.
+      - 'The period: the first and last order dates → ilk_tarix, son_tarix (Timestamps).'
+      - The number of unique orders → sifaris_sayi; the number of unique customers (CustomerID) → musteri_sayi.
+      - The number of names that belong to more than one CustomerID → tekrar_ad.
+    hints:
+      - pd.read_csv("sifarisler.csv", parse_dates=["OrderDate", "ShipDate"])
+      - 'Empty cells: df.isna().sum().sum(); a unique count: df["OrderID"].nunique()'
+      - ad_id = df.groupby("CustomerName")["CustomerID"].nunique(); tekrar_ad = (ad_id > 1).sum()
+    starter_code: |
+      import pandas as pd
+
+      df = ...
+
+      setir = ...
+      bos = ...
+      ilk_tarix = ...
+      son_tarix = ...
+      sifaris_sayi = ...
+      musteri_sayi = ...
+      tekrar_ad = ...
+
+      print(setir, bos, ilk_tarix.date(), son_tarix.date())
+      print("Orders:", sifaris_sayi, "| Customers:", musteri_sayi, "| Repeated names:", tekrar_ad)
+    solution: |
+      import pandas as pd
+
+      df = pd.read_csv("sifarisler.csv", parse_dates=["OrderDate", "ShipDate"])
+
+      setir = len(df)
+      bos = int(df.isna().sum().sum())
+      ilk_tarix = df["OrderDate"].min()
+      son_tarix = df["OrderDate"].max()
+      sifaris_sayi = df["OrderID"].nunique()
+      musteri_sayi = df["CustomerID"].nunique()
+      ad_id = df.groupby("CustomerName")["CustomerID"].nunique()
+      tekrar_ad = int((ad_id > 1).sum())
+
+      print(setir, bos, ilk_tarix.date(), son_tarix.date())
+      print("Orders:", sifaris_sayi, "| Customers:", musteri_sayi, "| Repeated names:", tekrar_ad)
+    tests: |
+      import pandas as _pd
+      import numpy as _np
+      _o = _pd.read_csv("sifarisler.csv", parse_dates=["OrderDate", "ShipDate"])
+
+      assert isinstance(df, _pd.DataFrame) and _pd.api.types.is_datetime64_any_dtype(df["OrderDate"]) and _pd.api.types.is_datetime64_any_dtype(df["ShipDate"]), "OrderDate and ShipDate should be dates (datetime64) — parse_dates"
+      assert setir == len(_o), f"setir should be {len(_o)}"
+      assert bos == 0, "bos should be 0 (isna().sum().sum())"
+      assert ilk_tarix == _o["OrderDate"].min() and son_tarix == _o["OrderDate"].max(), "ilk_tarix/son_tarix — the min and max of OrderDate"
+      assert sifaris_sayi == _o["OrderID"].nunique(), f"sifaris_sayi should be {_o['OrderID'].nunique()} — not the number of rows but the unique OrderIDs"
+      assert musteri_sayi == _o["CustomerID"].nunique(), f"musteri_sayi should be {_o['CustomerID'].nunique()} — CustomerID.nunique()"
+      _t = int((_o.groupby("CustomerName")["CustomerID"].nunique() > 1).sum())
+      assert tekrar_ad == _t, f"tekrar_ad should be {_t}: groupby('CustomerName')['CustomerID'].nunique() > 1"
+  catdirilma:
+    title: Delivery time and a ShipMode analysis
+    instructions: |
+      Questions 3, 4 and 10 of Day 9: the shipping time, sales by ShipMode, the average quantity and sales.
+    tasks:
+      - 'Create the ShipDays column: ShipDate − OrderDate (days, a whole number).'
+      - The average delivery time (rounded to 2 decimal places) → orta_gun.
+      - 'A summary by ShipMode → mode_xulase: the columns satis (the sum of Sales), ort_say (the mean of Quantity), ort_satis (the mean of Sales) and ort_gun (the mean of ShipDays); sorted by satis from highest to lowest.'
+      - The ShipMode that brings in the most sales → lider_mode; the fastest ShipMode (the smallest ort_gun) → en_suretli.
+    hints:
+      - df["ShipDays"] = (df["ShipDate"] - df["OrderDate"]).dt.days
+      - df.groupby("ShipMode").agg(satis=("Sales", "sum"), ort_say=("Quantity", "mean"), ort_satis=("Sales", "mean"), ort_gun=("ShipDays", "mean"))
+      - lider_mode = mode_xulase["satis"].idxmax(); en_suretli = mode_xulase["ort_gun"].idxmin()
+    starter_code: |
+      import pandas as pd
+
+      df = pd.read_csv("sifarisler.csv", parse_dates=["OrderDate", "ShipDate"])
+
+      df["ShipDays"] = ...
+      orta_gun = ...
+
+      mode_xulase = ...
+      lider_mode = ...
+      en_suretli = ...
+
+      print("Average:", orta_gun, "days | Leader:", lider_mode, "| Fastest:", en_suretli)
+      mode_xulase
+    solution: |
+      import pandas as pd
+
+      df = pd.read_csv("sifarisler.csv", parse_dates=["OrderDate", "ShipDate"])
+
+      df["ShipDays"] = (df["ShipDate"] - df["OrderDate"]).dt.days
+      orta_gun = round(df["ShipDays"].mean(), 2)
+
+      mode_xulase = (
+          df.groupby("ShipMode")
+          .agg(
+              satis=("Sales", "sum"),
+              ort_say=("Quantity", "mean"),
+              ort_satis=("Sales", "mean"),
+              ort_gun=("ShipDays", "mean"),
+          )
+          .sort_values("satis", ascending=False)
+      )
+      lider_mode = mode_xulase["satis"].idxmax()
+      en_suretli = mode_xulase["ort_gun"].idxmin()
+
+      print("Average:", orta_gun, "days | Leader:", lider_mode, "| Fastest:", en_suretli)
+      mode_xulase
+    tests: |
+      import pandas as _pd
+      import numpy as _np
+      _o = _pd.read_csv("sifarisler.csv", parse_dates=["OrderDate", "ShipDate"])
+
+      _o["ShipDays"] = (_o["ShipDate"] - _o["OrderDate"]).dt.days
+      assert "ShipDays" in df.columns and list(df["ShipDays"]) == list(_o["ShipDays"]), "ShipDays = (ShipDate - OrderDate).dt.days"
+      assert orta_gun == round(_o["ShipDays"].mean(), 2), f"orta_gun should be {round(_o['ShipDays'].mean(), 2)}"
+      _g = _o.groupby("ShipMode").agg(satis=("Sales", "sum"), ort_say=("Quantity", "mean"), ort_satis=("Sales", "mean"), ort_gun=("ShipDays", "mean")).sort_values("satis", ascending=False)
+      assert isinstance(mode_xulase, _pd.DataFrame) and list(mode_xulase.columns) == ["satis", "ort_say", "ort_satis", "ort_gun"], "The columns of mode_xulase: satis, ort_say, ort_satis, ort_gun (in this order)"
+      assert list(mode_xulase.index) == list(_g.index), f"mode_xulase should be sorted by satis from highest to lowest: {list(_g.index)}"
+      assert _np.allclose(mode_xulase.values, _g.values), "The values in mode_xulase aren't correct"
+      assert lider_mode == _g["satis"].idxmax(), f"lider_mode should be {_g['satis'].idxmax()}"
+      assert en_suretli == _g["ort_gun"].idxmin(), f"en_suretli should be {_g['ort_gun'].idxmin()}"
+  emeliyyat-testi:
+    title: 'Quiz: data checks and delivery'
+    questions:
+      - text: What is the type of the result of `(df["ShipDate"] - df["OrderDate"])`?
+        options:
+          - int
+          - Timedelta (timedelta64)
+          - datetime64
+          - str
+        explanation: The difference between dates is a Timedelta; for the number of days, use .dt.days.
+      - text: Standard Class brings in the most sales. Does this show that it's the best delivery type?
+        options:
+          - Yes, sales always mean quality
+          - No — it's simply the most used (default, cheap) type; it should be judged together with speed and price
+          - Yes, because it's the fastest
+          - No, because Same Day sells the most
+        explanation: A large total often just means a large count. Look at the averages and the delivery time too.
+      - text: Which of these are true about named aggregation (`agg(name=("column", "function"))`)?
+        options:
+          - You name the result columns yourself
+          - You can apply different functions to several columns
+          - Only sum works
+          - The result is a DataFrame
+        explanation: 'agg accepts any aggregation function: sum, mean, nunique, lambda...'

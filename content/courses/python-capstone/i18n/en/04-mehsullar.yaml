@@ -1,0 +1,212 @@
+title: Product analysis and visual comparison
+description: 'Revenue and profit by ProductID, category leaders, charts by ProductName (Day 9: 6, 9, 12).'
+steps:
+  mehsul-lideri:
+    title: The revenue leader ≠ the profit leader
+    content: |
+      The question "Which product brings in the most revenue?" can have two answers: the **sales (Sales)** leader and the **profit (Profit)** leader. An expensive laptop brings in a lot of sales, but if it's sold at a discount, its profit can be small; cheap paper, on the other hand, has a high margin.
+
+      ```python
+      mehsul = df.groupby(["ProductID", "ProductName"])[["Sales", "Profit"]].sum()
+      mehsul["Sales"].idxmax()     # ('TEC-1004', 'Lenovo ThinkPad E14') — a tuple!
+      ```
+
+      > 💡 When you group by two columns, the index becomes a `MultiIndex`, and `idxmax()` returns a **tuple**. If you only need the ID, group by `ProductID` and get the name separately.
+
+      ## The leader of each group
+
+      **Way 1 — sort + drop_duplicates:**
+
+      ```python
+      p = df.groupby(["Category", "ProductName"])["Sales"].sum().reset_index()
+      p.sort_values("Sales", ascending=False).drop_duplicates("Category")
+      ```
+
+      **Way 2 — idxmax:**
+
+      ```python
+      s = df.groupby(["Category", "ProductName"])["Sales"].sum()
+      s.loc[s.groupby(level="Category").idxmax()]
+      ```
+
+      ## A visual comparison
+
+      Product names are long, so a **horizontal** bar chart (`barh`) is easy to read. Two indicators side by side:
+
+      ```python
+      import matplotlib.pyplot as plt
+
+      t = df.groupby("ProductName")[["Sales", "Profit"]].sum().sort_values("Sales")
+      ax = t.plot(kind="barh", figsize=(9, 6), title="Products: Sales and Profit")
+      ax.set_xlabel("AZN")
+      plt.tight_layout()
+      plt.show()
+      ```
+
+      A **scatter** plot shows the relationship between margin and sales better: the top-right corner holds the products that both sell a lot and are profitable.
+  mehsul-muqayise:
+    title: 'Products: the sales leader, the profit leader, the category leaders'
+    instructions: |
+      Questions 6 and 12 of Day 9: comparing Sales and Profit by ProductID, and the top product of each category.
+    tasks:
+      - 'A summary by ProductID → mehsul (a DataFrame with ProductID as the index): ProductName (the first value), the sum of Sales, the sum of Profit, Marja (the margin %, 1 decimal place); sorted by Sales from highest to lowest.'
+      - The ProductID of the product that brings in the most sales → satis_lideri; of the one that brings in the most profit → menfeet_lideri.
+      - 'The top ProductID by Sales for each Category → kat_lider_satis (a dict: category → ProductID).'
+      - The top ProductID by Profit for each Category → kat_lider_menfeet (a dict).
+    hints:
+      - agg(ProductName=("ProductName", "first"), Sales=("Sales", "sum"), Profit=("Profit", "sum"))
+      - 'Marja: mehsul["Profit"] / mehsul["Sales"] * 100, then .round(1)'
+      - kp = df.groupby(["Category", "ProductID"])[["Sales", "Profit"]].sum().reset_index(); kp.sort_values("Sales", ascending=False).drop_duplicates("Category")
+      - dict(table[["Category", "ProductID"]].values) — a dictionary from two columns
+    starter_code: |
+      import pandas as pd
+
+      df = pd.read_csv("sifarisler.csv", parse_dates=["OrderDate", "ShipDate"])
+
+      mehsul = ...
+      satis_lideri = ...
+      menfeet_lideri = ...
+      kat_lider_satis = ...
+      kat_lider_menfeet = ...
+
+      print("Sales leader:", satis_lideri, "| Profit leader:", menfeet_lideri)
+      print(kat_lider_satis)
+      print(kat_lider_menfeet)
+      mehsul.head()
+    solution: |
+      import pandas as pd
+
+      df = pd.read_csv("sifarisler.csv", parse_dates=["OrderDate", "ShipDate"])
+
+      mehsul = (
+          df.groupby("ProductID")
+          .agg(ProductName=("ProductName", "first"), Sales=("Sales", "sum"), Profit=("Profit", "sum"))
+          .sort_values("Sales", ascending=False)
+      )
+      mehsul["Marja"] = (mehsul["Profit"] / mehsul["Sales"] * 100).round(1)
+      satis_lideri = mehsul["Sales"].idxmax()
+      menfeet_lideri = mehsul["Profit"].idxmax()
+
+      kp = df.groupby(["Category", "ProductID"])[["Sales", "Profit"]].sum().reset_index()
+      kat_lider_satis = dict(kp.sort_values("Sales", ascending=False).drop_duplicates("Category")[["Category", "ProductID"]].values)
+      kat_lider_menfeet = dict(kp.sort_values("Profit", ascending=False).drop_duplicates("Category")[["Category", "ProductID"]].values)
+
+      print("Sales leader:", satis_lideri, "| Profit leader:", menfeet_lideri)
+      print(kat_lider_satis)
+      print(kat_lider_menfeet)
+      mehsul.head()
+    tests: |
+      import pandas as _pd
+      import numpy as _np
+      _o = _pd.read_csv("sifarisler.csv", parse_dates=["OrderDate", "ShipDate"])
+
+      _m = _o.groupby("ProductID").agg(ProductName=("ProductName", "first"), Sales=("Sales", "sum"), Profit=("Profit", "sum")).sort_values("Sales", ascending=False)
+      _m["Marja"] = (_m["Profit"] / _m["Sales"] * 100).round(1)
+      assert isinstance(mehsul, _pd.DataFrame) and list(mehsul.columns) == ["ProductName", "Sales", "Profit", "Marja"], "The columns of mehsul: ProductName, Sales, Profit, Marja"
+      assert list(mehsul.index) == list(_m.index), "mehsul: ProductID as the index, sorted by Sales from highest to lowest"
+      assert _np.allclose(mehsul[["Sales", "Profit", "Marja"]].values, _m[["Sales", "Profit", "Marja"]].values) and list(mehsul["ProductName"]) == list(_m["ProductName"]), "The values in mehsul aren't correct"
+      assert satis_lideri == _m["Sales"].idxmax(), f"satis_lideri should be {_m['Sales'].idxmax()}"
+      assert menfeet_lideri == _m["Profit"].idxmax(), f"menfeet_lideri should be {_m['Profit'].idxmax()}"
+      _kp = _o.groupby(["Category", "ProductID"])[["Sales", "Profit"]].sum()
+      _ks = {k: v for k, v in _kp["Sales"].groupby(level=0).idxmax().map(lambda t: t[1]).items()}
+      _km = {k: v for k, v in _kp["Profit"].groupby(level=0).idxmax().map(lambda t: t[1]).items()}
+      assert isinstance(kat_lider_satis, dict) and {str(k): str(v) for k, v in kat_lider_satis.items()} == _ks, f"kat_lider_satis should be {_ks}"
+      assert isinstance(kat_lider_menfeet, dict) and {str(k): str(v) for k, v in kat_lider_menfeet.items()} == _km, f"kat_lider_menfeet should be {_km}"
+  mehsul-qrafik:
+    title: Sales and Profit charts by ProductName
+    instructions: |
+      Question 9 of Day 9: compare the sales and profit of the products visually. Two charts in one figure (1×2).
+    tasks:
+      - The sum of Sales and Profit by ProductName, sorted by Sales in ascending order → t (a DataFrame).
+      - fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6)).
+      - 'ax1: draw t as a horizontal bar chart (barh), with the title "Products: Sales and Profit" and the x-axis label "AZN".'
+      - 'ax2: a scatter plot — x = Sales, y = Profit (each point is one product), with the title "Sales and profit" and the axis labels "Sales" and "Profit".'
+      - Show the name of the most profitable product on ax2 with annotate (optional).
+    hints:
+      - 't.plot(kind="barh", ax=ax1, title="Products: Sales and Profit"); ax1.set_xlabel("AZN")'
+      - ax2.scatter(t["Sales"], t["Profit"]); ax2.set_title("Sales and profit")
+      - ax2.annotate(name, (x, y), xytext=(5, 5), textcoords="offset points")
+    solution: |
+      import pandas as pd
+      import matplotlib.pyplot as plt
+
+      df = pd.read_csv("sifarisler.csv", parse_dates=["OrderDate", "ShipDate"])
+
+      t = df.groupby("ProductName")[["Sales", "Profit"]].sum().sort_values("Sales")
+
+      fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6))
+      t.plot(kind="barh", ax=ax1, title="Products: Sales and Profit")
+      ax1.set_xlabel("AZN")
+      ax1.set_ylabel("")
+
+      ax2.scatter(t["Sales"], t["Profit"], s=60, color="teal")
+      ax2.set_title("Sales and profit")
+      ax2.set_xlabel("Sales")
+      ax2.set_ylabel("Profit")
+      lider = t["Profit"].idxmax()
+      ax2.annotate(lider, (t.loc[lider, "Sales"], t.loc[lider, "Profit"]), xytext=(5, 5), textcoords="offset points")
+
+      plt.tight_layout()
+      plt.show()
+    tests: |
+      # i18n-superset: the Azerbaijani chart titles are accepted too
+      import pandas as _pd
+      import numpy as _np
+      _o = _pd.read_csv("sifarisler.csv", parse_dates=["OrderDate", "ShipDate"])
+
+      import matplotlib.pyplot as _plt
+      def _axes():
+          return [a for n in _plt.get_fignums() for a in _plt.figure(n).axes]
+      def _ax(*titles):
+          for a in _axes():
+              if a.get_title().strip() in titles:
+                  return a
+          _t = [a.get_title() for a in _axes()]
+          raise AssertionError(f'No chart titled "{titles[0]}" was found (pass title=...). Titles found: {_t}')
+
+      _t = _o.groupby("ProductName")[["Sales", "Profit"]].sum().sort_values("Sales")
+      assert isinstance(t, _pd.DataFrame) and list(t.columns) == ["Sales", "Profit"] and list(t.index) == list(_t.index) and _np.allclose(t.values, _t.values), "t: the sum of Sales and Profit by ProductName, sorted by Sales in ascending order"
+      _a = _ax("Products: Sales and Profit", "Məhsullar: Sales və Profit")
+      _bars = [p for p in _a.patches if p.get_width() != 0 or p.get_height() != 0]
+      assert len(_bars) == 2 * len(_t), f"The barh chart should have {2 * len(_t)} bars (Sales and Profit for each product)"
+      assert _a.get_xlabel() == "AZN", "The x-axis label of ax1: AZN"
+      _w = sorted(round(p.get_width(), 2) for p in _bars)
+      assert _np.allclose(_w, sorted(_np.round(list(_t["Sales"]) + list(_t["Profit"]), 2)), atol=0.01), "barh — the bar lengths should be the sums of Sales and Profit (kind='barh')"
+      _s = _ax("Sales and profit", "Satış və mənfəət")
+      assert _s.collections, "ax2 should have a scatter plot"
+      _xy = _s.collections[0].get_offsets()
+      assert len(_xy) == len(_t), f"The scatter plot should have {len(_t)} points (one point per product)"
+      assert _np.allclose(sorted(_xy[:, 0]), sorted(_t["Sales"])), "scatter x = Sales"
+      assert _s.get_xlabel() == "Sales" and _s.get_ylabel() == "Profit", "The axis labels of ax2: Sales and Profit"
+  mehsul-testi:
+    title: 'Quiz: product analysis'
+    questions:
+      - text: What does `df.groupby(["Category", "ProductID"])["Sales"].sum().idxmax()` return?
+        options:
+          - ProductID
+          - A ("Category", "ProductID") tuple
+          - The largest Sales value
+          - A DataFrame
+        explanation: With a MultiIndex, idxmax returns a tuple.
+      - text: What's the most readable chart for comparing 15 products with long names?
+        options:
+          - A pie chart
+          - A horizontal bar chart (barh)
+          - A line chart
+          - A histogram
+        explanation: In barh, the names are easy to read on the y-axis; line charts are for time.
+      - text: 'Classify a product by its position on the chart (scatter: x = Sales, y = Profit).'
+        buckets:
+          - name: Star ⭐
+            items:
+              - 'Top right: high sales, high profit'
+          - name: Attention ⚠️
+            items:
+              - 'Bottom right: high sales, low profit'
+          - name: Niche 💎
+            items:
+              - 'Top left: low sales, high profit'
+          - name: Questionable ❓
+            items:
+              - 'Bottom left: low sales, low profit'
+        explanation: '"Attention" products usually call for a review of discounts and pricing.'

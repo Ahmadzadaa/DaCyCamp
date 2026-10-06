@@ -1,0 +1,182 @@
+title: Profit, correlation and geography
+description: 'The Sales ~ Profit relationship, category averages, the top countries, cities and segments (Day 9: 1, 2, 5, 7, 8).'
+steps:
+  korelyasiya:
+    title: Correlation, margin and "top N"
+    content: |
+      ## Correlation: the strength of a relationship
+
+      Pearson correlation is between −1 and +1:
+
+      | r | Interpretation |
+      |---|---|
+      | 0.7 … 1.0 | a strong positive relationship |
+      | 0.3 … 0.7 | a moderate positive one |
+      | 0 … 0.3 | a weak positive one |
+      | ≈ 0 | no linear relationship |
+      | < 0 | as one goes up, the other goes down |
+
+      ```python
+      df["Sales"].corr(df["Profit"])           # two columns
+      df[["Sales", "Profit", "Discount"]].corr()   # a matrix
+      ```
+
+      > ⚠️ Correlation **isn't causation**. Also, more sales don't always mean more profit — discounts and costs can "eat" the profit. That's why analysts look at the **profit margin**.
+
+      ## The profit margin
+
+      ```python
+      marja = df["Profit"].sum() / df["Sales"].sum() * 100   # as a percentage
+      ```
+
+      The margin of a group = the group's total profit / the group's total sales. **Not the average of the row margins!** (Small rows distort the result.)
+
+      ```python
+      k = df.groupby("Category")[["Sales", "Profit"]].sum()
+      k["Marja"] = k["Profit"] / k["Sales"] * 100
+      ```
+
+      (`marja` — margin.)
+
+      ## Top N and ranking
+
+      ```python
+      olke = df.groupby("Country")["Profit"].sum().sort_values(ascending=False)
+      olke.head(2)                 # the top 2
+      olke.nlargest(2)             # the same result
+      olke.rank(ascending=False)   # each country's position: 1, 2, 3...
+      ```
+
+      ## Share (%)
+
+      ```python
+      seg = df.groupby("CustomerSegment")["Sales"].sum()
+      (seg / seg.sum() * 100).round(1)
+      ```
+  korelyasiya-kateqoriya:
+    title: The Sales ~ Profit relationship and the categories
+    instructions: |
+      Questions 1 and 2 of Day 9: the correlation and the average indicators of the categories, plus the margin.
+    tasks:
+      - The correlation between Sales and Profit (3 decimal places) → korr.
+      - 'Describe the strength of the correlation in words, based on the table: "weak", "moderate" or "strong" → guc.'
+      - 'The average Sales and average Profit by category → kat_orta (columns: Sales, Profit; sorted by Profit from highest to lowest).'
+      - The margin % by category = the sum of Profit / the sum of Sales × 100, 1 decimal place → marja (a Series, in descending order).
+      - The category with the highest margin → en_marjali.
+    hints:
+      - korr = round(df["Sales"].corr(df["Profit"]), 3); for guc, use if/elif/else and abs(korr)
+      - df.groupby("Category")[["Sales", "Profit"]].mean().sort_values("Profit", ascending=False)
+      - cem = df.groupby("Category")[["Sales", "Profit"]].sum(); marja = (cem["Profit"] / cem["Sales"] * 100).round(1)
+    starter_code: |
+      import pandas as pd
+
+      df = pd.read_csv("sifarisler.csv", parse_dates=["OrderDate", "ShipDate"])
+
+      korr = ...
+      guc = ...
+
+      kat_orta = ...
+      marja = ...
+      en_marjali = ...
+
+      print("r =", korr, "→", guc, "| Highest margin:", en_marjali)
+      print(marja)
+      kat_orta
+    solution: |
+      import pandas as pd
+
+      df = pd.read_csv("sifarisler.csv", parse_dates=["OrderDate", "ShipDate"])
+
+      korr = round(df["Sales"].corr(df["Profit"]), 3)
+      if abs(korr) >= 0.7:
+          guc = "strong"
+      elif abs(korr) >= 0.3:
+          guc = "moderate"
+      else:
+          guc = "weak"
+
+      kat_orta = df.groupby("Category")[["Sales", "Profit"]].mean().sort_values("Profit", ascending=False)
+      cem = df.groupby("Category")[["Sales", "Profit"]].sum()
+      marja = (cem["Profit"] / cem["Sales"] * 100).round(1).sort_values(ascending=False)
+      en_marjali = marja.idxmax()
+
+      print("r =", korr, "→", guc, "| Highest margin:", en_marjali)
+      print(marja)
+      kat_orta
+    tests: |
+      # i18n-superset: the Azerbaijani strength labels (zəif, orta, güclü) are accepted too
+      import pandas as _pd
+      import numpy as _np
+      _o = _pd.read_csv("sifarisler.csv", parse_dates=["OrderDate", "ShipDate"])
+
+      _k = round(_o["Sales"].corr(_o["Profit"]), 3)
+      assert korr == _k, f"korr should be {_k}: round(df['Sales'].corr(df['Profit']), 3)"
+      _gc = "strong" if abs(_k) >= 0.7 else ("moderate" if abs(_k) >= 0.3 else "weak")
+      _az = {"strong": "güclü", "moderate": "orta", "weak": "zəif"}[_gc]
+      assert guc in (_gc, _az), f'For r = {_k}, guc should be "{_gc}" (below 0.3 — weak, 0.3–0.7 — moderate, 0.7+ — strong)'
+      _m = _o.groupby("Category")[["Sales", "Profit"]].mean().sort_values("Profit", ascending=False)
+      assert isinstance(kat_orta, _pd.DataFrame) and list(kat_orta.columns) == ["Sales", "Profit"], "The columns of kat_orta: Sales, Profit"
+      assert list(kat_orta.index) == list(_m.index) and _np.allclose(kat_orta.values, _m.values), "kat_orta: the mean values, sorted by Profit from highest to lowest"
+      _c = _o.groupby("Category")[["Sales", "Profit"]].sum()
+      _mj = (_c["Profit"] / _c["Sales"] * 100).round(1).sort_values(ascending=False)
+      assert isinstance(marja, _pd.Series) and list(marja.index) == list(_mj.index) and _np.allclose(marja.values, _mj.values), f"marja isn't correct (the ratio of the totals, not the average of the row margins): {_mj.to_dict()}"
+      assert en_marjali == _mj.idxmax(), f"en_marjali should be {_mj.idxmax()}"
+  olke-seher-seqment:
+    title: Top countries, profitable cities and segments
+    instructions: |
+      Questions 5, 7 and 8 of Day 9: the picture by geography and customer segment.
+    tasks:
+      - The sum of Profit by country, in descending order → olke_profit (a Series); the names of the top 2 countries (a list) → top2_olke.
+      - The sum of Profit by city, the top 5 cities (in descending order) → top5_seher (a Series).
+      - The sum of Sales by CustomerSegment, in descending order → seqment_satis (a Series).
+      - Each segment's share of sales in %, 1 decimal place → seqment_pay (a Series, in the same order).
+    hints:
+      - olke_profit.head(2).index.tolist()
+      - df.groupby("City")["Profit"].sum().nlargest(5)
+      - seqment_pay = (seqment_satis / seqment_satis.sum() * 100).round(1)
+    tests: |
+      import pandas as _pd
+      import numpy as _np
+      _o = _pd.read_csv("sifarisler.csv", parse_dates=["OrderDate", "ShipDate"])
+
+      _op = _o.groupby("Country")["Profit"].sum().sort_values(ascending=False)
+      assert isinstance(olke_profit, _pd.Series) and list(olke_profit.index) == list(_op.index) and _np.allclose(olke_profit.values, _op.values), "olke_profit: the sum of Profit by country, in descending order"
+      assert top2_olke == list(_op.index[:2]), f"top2_olke should be {list(_op.index[:2])} (a list)"
+      _cs = _o.groupby("City")["Profit"].sum().nlargest(5)
+      assert isinstance(top5_seher, _pd.Series) and list(top5_seher.index) == list(_cs.index) and _np.allclose(top5_seher.values, _cs.values), f"top5_seher: {list(_cs.index)}"
+      _ss = _o.groupby("CustomerSegment")["Sales"].sum().sort_values(ascending=False)
+      assert isinstance(seqment_satis, _pd.Series) and list(seqment_satis.index) == list(_ss.index) and _np.allclose(seqment_satis.values, _ss.values), "seqment_satis: the sum of Sales by segment, in descending order"
+      _sp = (_ss / _ss.sum() * 100).round(1)
+      assert list(seqment_pay.index) == list(_sp.index) and _np.allclose(seqment_pay.values, _sp.values), f"seqment_pay: {_sp.to_dict()}"
+  menfeet-testi:
+    title: 'Quiz: profit and geography'
+    questions:
+      - text: r(Sales, Profit) came out at about 0.28. Which interpretation is the most accurate?
+        options:
+          - Profit always goes up as sales go up
+          - 'A weak positive relationship: big sales don''t guarantee profit (discounts, costs)'
+          - There's no relationship at all
+          - Sales reduce profit
+        explanation: 0.28 is a weak positive relationship. It shows that profit also depends on discounts and the product mix.
+      - text: What's the right way to calculate a category's margin?
+        options:
+          - The average of each row's Profit/Sales ratio
+          - The category's total Profit / its total Sales
+          - The average of Profit / the maximum of Sales
+          - The total Sales / the total Profit
+        explanation: The average of the row margins gives too much weight to small orders.
+      - text: What does each expression return?
+        buckets:
+          - name: A Series (values)
+            items:
+              - s.nlargest(2)
+              - s.sort_values().head(2)
+          - name: A single label (a name)
+            items:
+              - s.idxmax()
+              - s.idxmin()
+          - name: A list of labels
+            items:
+              - s.head(2).index.tolist()
+              - list(s.nlargest(3).index)
+        explanation: nlargest/head return a Series; idxmax returns one label; .index.tolist() returns a list of names.

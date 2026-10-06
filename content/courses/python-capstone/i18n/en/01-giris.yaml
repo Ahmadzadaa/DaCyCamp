@@ -1,0 +1,114 @@
+title: 'Introduction to the project: business questions and the data'
+description: The client's brief, the dataset dictionary, the analytical workflow and the right tools for the questions.
+steps:
+  layihe-brifi:
+    title: 'Project brief: a sales analysis for "DaCy Store"'
+    content: |
+      You're the data analyst of the online store "DaCy Store". In 2023–2024, the store sold office supplies, furniture and technology in **Azerbaijan, Turkey, Georgia, Kazakhstan and Uzbekistan**. Management is planning next year's budget and expects answers to **15 questions** from you — these are the graded exercises of Day 9 of the Python4Business course.
+
+      ## Management's questions (5 blocks)
+
+      | Block | Questions |
+      |---|---|
+      | 🚚 **Operations** | How many days pass between an order and its shipping? How much in sales does each `ShipMode` bring in? The average quantity and sales? |
+      | 💰 **Profit** | Is there a relationship between `Sales` and `Profit`? The average sales and profit of the categories? |
+      | 🌍 **Geography** | The 2 most profitable countries? The most profitable cities? Sales by segment? |
+      | 📦 **Products** | Which product brings in the most revenue? The leading product of each category? A visual comparison. |
+      | 👥 **Customers** | Who is the most valuable customer? Divide the customers into segments. Where are the top customers from, and what do they buy? |
+
+      ## How the course is built
+
+      Each chapter answers one block. The exercises use **the same dataset** and build on each other — you'll use a method you learned in one step in the next one. At the end, you'll bring all the results together in **one dashboard** and take the final test.
+
+      > 💡 In a real project, most of the time goes into checking the data. That's why the first exercise doesn't produce any "nice" result — but the correctness of every later result depends on it.
+
+      ## The dataset dictionary
+
+      > 📁 **`sifarisler.csv`** — 1,582 rows; each row is **one product line** of an order (one `OrderID` can contain several products).
+
+      | Column | Meaning | Example |
+      |---|---|---|
+      | `OrderID` | The order number | `ORD-50001` |
+      | `OrderDate`, `ShipDate` | The order and shipping dates | `2023-01-02` |
+      | `ShipMode` | The delivery type | `Standard Class`, `Second Class`, `First Class`, `Same Day` |
+      | `CustomerID`, `CustomerName` | The customer's code and name | `C-1050`, `Nurlan Əliyev` |
+      | `CustomerSegment` | The customer type | `Consumer`, `Corporate`, `Small Business` |
+      | `Country`, `City` | The country and city | `Azerbaijan`, `Baku` |
+      | `ProductID`, `ProductName`, `Category` | The product | `TEC-1004`, `Lenovo ThinkPad E14`, `Technology` |
+      | `Sales`, `Quantity`, `Discount`, `Profit` | Sales (the amount), quantity, discount, profit | `2265.0`, `2`, `0`, `270.28` |
+
+      ## The analytical workflow
+
+      ```text
+      1. Question     → what does the business want to know?   ("the most valuable customer")
+      2. Metric       → how do we measure it?                  (the sum of Sales, by CustomerID)
+      3. Preparation  → types, dates, new columns
+      4. Calculation  → groupby / agg / pivot / corr
+      5. Check        → does the result make sense? do the totals add up?
+      6. Presentation → a table + a chart + a one-sentence finding
+      ```
+  aletler:
+    title: The right tool for each question
+    content: |
+      All 15 questions can be solved with a few pandas operations you already know. The key skill is reading the question and **choosing the right tool**.
+
+      | Question type | Tool | Example |
+      |---|---|---|
+      | "The total / average Y by X" | `groupby("X")["Y"].sum()` / `.mean()` | Sales by ShipMode |
+      | "Several metrics at once" | `groupby("X").agg(a=("Y", "sum"), b=("Z", "mean"))` | Category: the average Sales and Profit |
+      | "Top N" | `.sort_values(ascending=False).head(N)` or `.nlargest(N)` | The top 2 countries |
+      | "The leader of each group" | `idxmax()` or `sort_values` + `drop_duplicates("group")` | The top product of each category |
+      | "Counts across two dimensions" | `pd.crosstab` / `pivot_table(aggfunc="count")` | Country × segment |
+      | "Is there a relationship?" | `df["A"].corr(df["B"])` | Sales ~ Profit |
+      | "A date difference" | `(df["B"] - df["A"]).dt.days` | ShipDate − OrderDate |
+      | "Divide into groups" | `pd.cut` / `pd.qcut` + a rule | RFM segments |
+
+      ## A few golden rules
+
+      1. **Convert dates right away:** `pd.read_csv(..., parse_dates=["OrderDate", "ShipDate"])`. You can't subtract dates stored as text.
+      2. **Count customers by ID, not by name.** Different people can have the same first and last name — and this dataset has them too! (You'll see it with your own eyes in chapter 5.)
+      3. **An order ≠ a row.** One order can contain several products: use `nunique()` for the number of orders and `size()`/`count()` for the number of rows.
+      4. **Check with totals:** the group totals must add up to the overall total.
+  giris-testi:
+    title: 'Quiz: question → tool'
+    questions:
+      - text: Match each question to the right pandas tool.
+        buckets:
+          - name: groupby + sum/mean
+            items:
+              - The total Sales by ShipMode
+              - The average Profit by category
+          - name: corr()
+            items:
+              - The relationship between Sales and Profit
+              - Does Profit go down as Discount goes up?
+          - name: crosstab / pivot_table
+            items:
+              - The number of customers in each segment in each country
+              - A city × category sales table
+          - name: .dt.days
+            items:
+              - The days between an order and its shipping
+              - The days since the customer's last purchase
+        explanation: Aggregation — groupby; a relationship — corr; counts across two dimensions — crosstab; a date difference — Timedelta.dt.days.
+      - text: Which column is the right one for counting customers?
+        options:
+          - CustomerName
+          - CustomerID
+          - City
+          - OrderID
+        explanation: Names can repeat; the ID is unique.
+      - text: If an order has 3 products, how many rows does it have in `sifarisler.csv`?
+        options:
+          - '1'
+          - '3'
+          - '0'
+          - It doesn't depend on the number of products
+        explanation: Each product line is a separate row; for the number of orders, use OrderID.nunique().
+      - text: If `OrderDate` was read as text, what does `ShipDate - OrderDate` do?
+        options:
+          - It returns the number of days
+          - It raises a TypeError
+          - It returns NaN
+          - It joins the dates
+        explanation: You can't subtract text — use parse_dates or pd.to_datetime first.
