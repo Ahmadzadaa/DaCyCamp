@@ -1,0 +1,230 @@
+title: 'Final project: a sales dashboard'
+description: 'The graded tasks of Day 7 and Day 8: a multi-chart dashboard and the key findings.'
+steps:
+  layihe-izah:
+    title: 'Final project: a visual report for management'
+    content: |
+      We bring the tasks of Day 7 and Day 8 together in one **dashboard**. Management wants to see on one page:
+
+      1. Revenue by category (bar);
+      2. The regions' share of revenue (pie);
+      3. The monthly units sold of Apple products (line);
+      4. The relationship between Units Sold and Total Revenue (scatter);
+      5. The distribution of product prices (histogram);
+      6. The spread of sales amounts by region (box).
+
+      Then we'll show the revenue of the 3 best-selling products and the monthly dynamics of the regions separately.
+
+      ## The rules of a good dashboard (a reminder)
+
+      - Each chart's **title should state the finding** or the question.
+      - Include axis labels and units.
+      - Use few, consistent colors; highlight what matters.
+      - Use `figsize` and `tight_layout()` so the charts don't overlap.
+
+      > 💡 To find the Apple products, look at the start of the name: iPhone, iPad, MacBook, AirPods, Apple Watch — `str.contains(r"^(?:iPhone|iPad|MacBook|AirPods|Apple)", regex=True)`.
+  dashboard:
+    title: 'Project 1: a 2×3 dashboard'
+    instructions: |
+      Day 7's graded tasks in one figure: `plt.subplots(2, 3, figsize=(15, 8))`. The titles must be exactly as below.
+    tasks:
+      - 'axs[0, 0] — revenue by category (bar): "Revenue by category".'
+      - 'axs[0, 1] — the regions'' share of revenue (pie, autopct): "Share by region".'
+      - 'axs[0, 2] — the monthly units sold of Apple products (line): "Apple sales".'
+      - 'axs[1, 0] — Units Sold vs Total Revenue (scatter): "Units and revenue"; axs[1, 1] — a histogram of Unit Price (bins=20): "Price distribution".'
+      - 'axs[1, 2] — a box plot of Total Revenue by region (boxplot): "Spread by region"; plt.tight_layout().'
+    hints:
+      - fig, axs = plt.subplots(2, 3, figsize=(15, 8)); set_title(...) on each axes
+      - apple = df[df["Product Name"].str.contains(r"^(?:iPhone|iPad|MacBook|AirPods|Apple)", regex=True)]
+      - axs[1, 2].boxplot([df[df["Region"] == r]["Total Revenue"] for r in regionlar], labels=regionlar)
+    solution: |
+      import pandas as pd
+      import matplotlib.pyplot as plt
+
+      df = pd.read_csv("satislar.csv")
+
+      fig, axs = plt.subplots(2, 3, figsize=(15, 8))
+
+      kat = df.groupby("Product Category")["Total Revenue"].sum()
+      axs[0, 0].bar(kat.index, kat.values)
+      axs[0, 0].set_title("Revenue by category")
+      axs[0, 0].tick_params(axis="x", rotation=30)
+
+      reg = df.groupby("Region")["Total Revenue"].sum()
+      axs[0, 1].pie(reg.values, labels=reg.index, autopct="%1.1f%%")
+      axs[0, 1].set_title("Share by region")
+
+      apple = df[df["Product Name"].str.contains(r"^(?:iPhone|iPad|MacBook|AirPods|Apple)", regex=True)]
+      ay = apple.groupby(apple["Date"].str[:7])["Units Sold"].sum()
+      axs[0, 2].plot(range(len(ay)), ay.values, marker="o")
+      axs[0, 2].set_title("Apple sales")
+
+      axs[1, 0].scatter(df["Units Sold"], df["Total Revenue"], alpha=0.4)
+      axs[1, 0].set_title("Units and revenue")
+
+      axs[1, 1].hist(df["Unit Price"], bins=20)
+      axs[1, 1].set_title("Price distribution")
+
+      regionlar = sorted(df["Region"].unique())
+      axs[1, 2].boxplot([df[df["Region"] == r]["Total Revenue"] for r in regionlar], labels=regionlar)
+      axs[1, 2].set_title("Spread by region")
+
+      plt.tight_layout()
+    tests: |
+      # i18n-superset: the Azerbaijani chart titles are accepted too
+      import pandas as _pd
+      import numpy as _np
+      import matplotlib.pyplot as _plt
+      def _axes():
+          return [a for n in _plt.get_fignums() for a in _plt.figure(n).axes]
+      def _ax(*titles):
+          for a in _axes():
+              if a.get_title().strip() in titles:
+                  return a
+          _t = [a.get_title() for a in _axes()]
+          raise AssertionError(f'No chart titled "{titles[0]}" was found (pass title=...). Titles found: {_t}')
+
+      _s = _pd.read_csv("satislar.csv")
+
+      from matplotlib.patches import Wedge as _W
+      _f = [_plt.figure(n) for n in _plt.get_fignums() if len(_plt.figure(n).axes) == 6]
+      assert _f, "There should be a figure with 6 charts: plt.subplots(2, 3)"
+      assert len(_ax("Revenue by category", "Kateqoriyalar üzrə gəlir").patches) == 5, "Revenue by category — 5 bars"
+      assert len([x for x in _ax("Share by region", "Regionların payı").patches if isinstance(x, _W)]) == 5, "Share by region — 5 slices"
+      _ap = _s[_s["Product Name"].str.contains(r"^(?:iPhone|iPad|MacBook|AirPods|Apple)", regex=True)]
+      _ay = _ap.groupby(_ap["Date"].str[:7])["Units Sold"].sum()
+      _l = _ax("Apple sales", "Apple satışları").get_lines()
+      assert _l and sorted(_l[0].get_ydata()) == sorted(_ay.values), "Apple sales — the monthly units of Apple products (iPhone, iPad, MacBook, AirPods, Apple Watch)"
+      assert len(_ax("Units and revenue", "Ədəd və gəlir").collections[0].get_offsets()) == len(_s), "Units and revenue — all the transactions"
+      assert len(_ax("Price distribution", "Qiymət paylanması").patches) == 20, "Price distribution — bins=20"
+      assert len(_ax("Spread by region", "Regionlar üzrə yayılma").get_xticklabels()) == 5, "Spread by region — 5 boxes"
+  layihe-top3:
+    title: 'Project 2: the top 3 products and the dynamics of the regions'
+    instructions: |
+      Day 8 (8, 10): the revenue of the 3 best-selling products and the monthly sales movement of the regions.
+    tasks:
+      - The names of the top 3 products by units sold → top3; their total revenue (a Series) → top3_gelir.
+      - 'Draw top3_gelir with sns.barplot: plt.title("Revenue of the top 3 products").'
+      - 'In a new figure, sns.lineplot: the monthly revenue of each region (the first 7 characters of Date as the "Month" column, hue="Region"); plt.title("Monthly revenue by region").'
+    hints:
+      - top3 = df.groupby("Product Name")["Units Sold"].sum().nlargest(3).index.tolist()
+      - top3_gelir = df[df["Product Name"].isin(top3)].groupby("Product Name")["Total Revenue"].sum()
+      - ra = df.groupby(["Month", "Region"])["Total Revenue"].sum().reset_index(); sns.lineplot(data=ra, x="Month", y="Total Revenue", hue="Region")
+    solution: |
+      import pandas as pd
+      import seaborn as sns
+      import matplotlib.pyplot as plt
+
+      df = pd.read_csv("satislar.csv")
+
+      top3 = df.groupby("Product Name")["Units Sold"].sum().nlargest(3).index.tolist()
+      top3_gelir = df[df["Product Name"].isin(top3)].groupby("Product Name")["Total Revenue"].sum()
+      plt.figure()
+      sns.barplot(x=top3_gelir.index, y=top3_gelir.values)
+      plt.title("Revenue of the top 3 products")
+
+      plt.figure(figsize=(10, 4))
+      df["Month"] = df["Date"].str[:7]
+      ra = df.groupby(["Month", "Region"])["Total Revenue"].sum().reset_index()
+      sns.lineplot(data=ra, x="Month", y="Total Revenue", hue="Region")
+      plt.xticks(rotation=90)
+      plt.title("Monthly revenue by region")
+    tests: |
+      # i18n-superset: the Azerbaijani chart titles are accepted too
+      import pandas as _pd
+      import numpy as _np
+      import matplotlib.pyplot as _plt
+      def _axes():
+          return [a for n in _plt.get_fignums() for a in _plt.figure(n).axes]
+      def _ax(*titles):
+          for a in _axes():
+              if a.get_title().strip() in titles:
+                  return a
+          _t = [a.get_title() for a in _axes()]
+          raise AssertionError(f'No chart titled "{titles[0]}" was found (pass title=...). Titles found: {_t}')
+
+      _s = _pd.read_csv("satislar.csv")
+
+      _t = _s.groupby("Product Name")["Units Sold"].sum().nlargest(3).index.tolist()
+      assert top3 == _t, f"top3 should be {_t}"
+      _g = _s[_s["Product Name"].isin(_t)].groupby("Product Name")["Total Revenue"].sum()
+      assert isinstance(top3_gelir, _pd.Series) and top3_gelir.round(2).to_dict() == _g.round(2).to_dict(), "top3_gelir isn't correct"
+      _b = _ax("Revenue of the top 3 products", "Top 3 məhsulun gəliri")
+      assert sorted(round(p.get_height()) for p in _b.patches) == sorted(round(v) for v in _g.values), "The barplot should show the revenue of the top 3 products"
+      _l = _ax("Monthly revenue by region", "Regionların aylıq gəliri")
+      assert len([x for x in _l.get_lines() if len(x.get_xdata()) > 1]) >= 5, "There should be one line per region (hue='Region')"
+  yekun-test:
+    title: 'Final test: Data Analysis & Visualization'
+    questions:
+      - text: 'The chart for each question:'
+        buckets:
+          - name: Line
+            items:
+              - How monthly revenue changes
+          - name: Scatter
+            items:
+              - The relationship between sales and profit
+          - name: Histogram
+            items:
+              - The distribution of prices
+          - name: Box
+            items:
+              - The spread by region and the outliers
+        explanation: Time — line; a relationship — scatter; a distribution — histogram; the spread by group — box.
+      - text: How do you set the title of a subplot?
+        options:
+          - plt.title(), always
+          - ax.set_title()
+          - ax.title = ...
+          - fig.title()
+        explanation: Axes methods have the set_ prefix.
+      - text: What does `sns.barplot(..., estimator="sum", errorbar=None)` show?
+        options:
+          - The mean and an interval
+          - The sum, with no interval
+          - The count
+          - The median
+        explanation: estimator — the aggregation; errorbar=None — no interval.
+      - text: The correlation is 0.05. What's the conclusion?
+        options:
+          - A strong relationship
+          - There's practically no linear relationship
+          - A negative relationship
+          - There is causation
+        explanation: Close to 0 means there's no linear relationship.
+      - text: 'An outlier by the IQR rule:'
+        options:
+          - Twice as big as the mean
+          - Greater than Q3 + 1.5×IQR or smaller than Q1 − 1.5×IQR
+          - The maximum
+          - Smaller than the median
+        explanation: This rule defines the "whiskers" of a box plot.
+      - text: A clear arc appears in the residuals chart of a regression. What does this mean?
+        options:
+          - The model is perfect
+          - The model is missing part of the relationship (e.g. a non-linear one)
+          - There's too little data
+          - R² = 1
+        explanation: The residuals should be random.
+      - text: 'Plotly''s main advantage:'
+        options:
+          - The smallest file size
+          - 'Interactivity: hover, zoom'
+          - It's only for printing
+          - Statistical tests
+        explanation: Plotly creates interactive HTML charts.
+      - text: Where is the right place to keep an email password?
+        options:
+          - Inside the code
+          - In an environment variable or a password manager
+          - In a Markdown cell of the notebook
+          - In a CSV file
+        explanation: A password is never written in code.
+      - text: Which of these are seaborn functions? (Select all that apply)
+        options:
+          - histplot
+          - regplot
+          - pivot_table
+          - heatmap
+          - read_csv
+        explanation: pivot_table and read_csv are pandas functions.

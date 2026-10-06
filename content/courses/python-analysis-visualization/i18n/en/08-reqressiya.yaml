@@ -1,0 +1,289 @@
+title: 'Time for forecasting: regression models'
+description: Trend lines, simple and multiple linear regression, interpreting a model, forecasts and residual analysis.
+steps:
+  reqressiya-giris:
+    title: What is regression and how do you interpret it?
+    content: |
+      **Regression** is a statistical method that models how one variable (the dependent variable, y) depends on one or more other variables (the independent variables, X). The goal: to measure the relationship and to make **forecasts**.
+
+      - **Simple linear regression:** one X — `y = b₀ + b₁·x`
+      - **Multiple linear regression:** several X's — `y = b₀ + b₁·x₁ + b₂·x₂ + …`
+
+      ## The coefficients
+
+      - **b₀ (the intercept, the constant)** — the expected value of y when x = 0.
+      - **b₁ (the slope)** — how much y changes on average when x increases by 1 unit.
+
+      > Profit = −20 + 0.25 × Sales → every extra 100 AZN of sales brings in 25 AZN of profit on average.
+
+      ## The quality of the model
+
+      | Indicator | Meaning |
+      | --- | --- |
+      | **R²** | What percentage of the variability in y the model explains (0–1). 0.8 means 80% |
+      | **Adjusted R²** | R² adjusted for the number of variables — for comparisons in multiple regression |
+      | **t-value / p-value** | Is the coefficient statistically significant? p < 0.05 usually means "significant" |
+      | **Residuals** | The actual y − the forecast. They should be scattered randomly |
+
+      ## Checking the residuals
+
+      1. A **residuals vs. forecast** chart — the points should be scattered **randomly** around the 0 line. If a pattern appears (an arc, a funnel), the model is missing something.
+      2. A **Q-Q plot** — if the residuals are normally distributed, the points lie on a straight line.
+
+      ## Be careful
+
+      - Regression models **correlation** — it doesn't prove causation.
+      - Forecasts far outside the range of the data (extrapolation) are unreliable.
+      - Outliers can bend the line a lot.
+  reqressiya-kod:
+    title: 'Regression in Python: polyfit, scikit-learn, statsmodels'
+    content: |
+      ## 1. A trend line: np.polyfit
+
+      ```python
+      import numpy as np
+      meyl, sabit = np.polyfit(x, y, 1)        # 1 — linear (degree 1)
+      plt.scatter(x, y)
+      plt.plot(x, meyl * np.array(x) + sabit, color="red", linestyle="--", label="Trend line")
+      ```
+
+      (`meyl` — the slope, `sabit` — the intercept.)
+
+      ## 2. scikit-learn: LinearRegression
+
+      ```python
+      from sklearn.linear_model import LinearRegression
+
+      X = df[["Sales"]]          # must be 2-dimensional (a DataFrame or reshape(-1, 1))
+      y = df["Profit"]
+      model = LinearRegression()
+      model.fit(X, y)
+
+      model.coef_          # the slope(s)
+      model.intercept_     # the intercept
+      model.score(X, y)    # R²
+      model.predict(pd.DataFrame({"Sales": [1000]}))   # a forecast
+      ```
+
+      ## 3. statsmodels: OLS and a detailed summary
+
+      ```python
+      import statsmodels.api as sm
+
+      X = sm.add_constant(data[["mph", "hp", "wt"]])   # add the constant term
+      y = data["mpg"]
+      results = sm.OLS(y, X).fit()
+      print(results.summary())        # coefficients, t, p, R², Adjusted R²
+
+      results.params                  # the coefficients
+      results.rsquared                # R²
+      results.pvalues                 # the p-values
+
+      yeni = sm.add_constant(pd.DataFrame({"mph": [65], "hp": [155], "wt": [2450]}), has_constant="add")
+      results.predict(yeni)
+      ```
+
+      > ⚠️ If you forget `add_constant` in statsmodels, the model is built without a constant (the line passes through 0) — one of the most common mistakes.
+
+      ## Residuals and the Q-Q plot
+
+      ```python
+      qaliqlar = y - results.predict(X)
+
+      plt.scatter(results.predict(X), qaliqlar)
+      plt.axhline(y=0, color="red", linestyle="--")
+      plt.title("Residuals")
+
+      import scipy.stats as stats
+      stats.probplot(qaliqlar, dist="norm", plot=plt)    # a Q-Q plot
+      ```
+
+      (`yeni` — new data, `qaliqlar` — the residuals.)
+
+      | Tool | When |
+      | --- | --- |
+      | `np.polyfit` | A quick trend line |
+      | `sklearn` | Forecast-oriented work, machine learning pipelines |
+      | `statsmodels` | Statistical interpretation: p-values, confidence intervals, a detailed summary |
+  trend-xetti:
+    title: A trend line for monthly revenue
+    instructions: |
+      Day 7 (trend line): is monthly revenue going up or down? Find the linear trend with np.polyfit.
+    tasks:
+      - The revenue per month (24 months) → ayliq; x = 0, 1, …, 23 (np.arange).
+      - The slope and intercept with np.polyfit(x, ayliq.values, 1) → meyl, sabit (2 decimal places).
+      - Draw the points (scatter) and the trend line (red, "--", label="Trend line"); title="Revenue trend"; a legend.
+      - The forecast for the next month (x = 24) based on the trend, 2 decimal places → novbeti.
+    hints:
+      - ayliq = df.groupby(df["Date"].str[:7])["Total Revenue"].sum(); x = np.arange(len(ayliq))
+      - m_, s_ = np.polyfit(x, ayliq.values, 1); trend = m_ * x + s_
+      - novbeti = round(m_ * 24 + s_, 2)
+    solution: |
+      import pandas as pd
+      import numpy as np
+      import matplotlib.pyplot as plt
+
+      df = pd.read_csv("satislar.csv")
+
+      ayliq = df.groupby(df["Date"].str[:7])["Total Revenue"].sum()
+      x = np.arange(len(ayliq))
+      m_, s_ = np.polyfit(x, ayliq.values, 1)
+      meyl, sabit = round(m_, 2), round(s_, 2)
+      novbeti = round(m_ * 24 + s_, 2)
+
+      plt.figure(figsize=(9, 4))
+      plt.scatter(x, ayliq.values, label="Monthly revenue")
+      plt.plot(x, m_ * x + s_, color="red", linestyle="--", label="Trend line")
+      plt.title("Revenue trend")
+      plt.legend()
+    tests: |
+      # i18n-superset: the Azerbaijani title and line label are accepted too
+      import pandas as _pd
+      import numpy as _np
+      import matplotlib.pyplot as _plt
+      def _axes():
+          return [a for n in _plt.get_fignums() for a in _plt.figure(n).axes]
+      def _ax(*titles):
+          for a in _axes():
+              if a.get_title().strip() in titles:
+                  return a
+          _t = [a.get_title() for a in _axes()]
+          raise AssertionError(f'No chart titled "{titles[0]}" was found (pass title=...). Titles found: {_t}')
+
+      _s = _pd.read_csv("satislar.csv")
+
+      _m = _s.groupby(_s["Date"].str[:7])["Total Revenue"].sum()
+      _k, _b = _np.polyfit(_np.arange(24), _m.values, 1)
+      assert (meyl, sabit) == (round(_k, 2), round(_b, 2)), f"meyl, sabit should be {round(_k, 2)}, {round(_b, 2)}"
+      assert novbeti == round(_k * 24 + _b, 2), f"novbeti should be {round(_k * 24 + _b, 2)}"
+      _a = _ax("Revenue trend", "Gəlir trendi")
+      assert _a.collections and len(_a.collections[0].get_offsets()) == 24, "There should be 24 monthly points (scatter)"
+      _tl = [l for l in _a.get_lines() if l.get_label() in ("Trend line", "Trend xətti")]
+      assert _tl and _tl[0].get_linestyle() == "--", "There should be a line with label='Trend line' and linestyle='--'"
+  sklearn-reg:
+    title: 'Simple regression: scikit-learn'
+    instructions: |
+      Day 9: how much of the profit in the orders do sales explain? Build a model that predicts Profit from Sales.
+
+      > 📁 **`sifarisler.csv`** — Superstore-style orders (2023–2024, 5 countries): `OrderID`, `OrderDate`, `ShipDate`, `ShipMode`, `CustomerID`, `CustomerName`, `CustomerSegment`, `Country`, `City`, `ProductID`, `ProductName`, `Category`, `Sales`, `Quantity`, `Discount`, `Profit`.
+    tasks:
+      - X = o[["Sales"]], y = o["Profit"]; build a model with LinearRegression → model.
+      - The slope (coef_[0]) and the intercept (intercept_), 4 decimal places → meyl, sabit.
+      - R² (model.score), 3 decimal places → r2.
+      - The forecast for Sales = 1000, 2 decimal places → proqnoz_1000.
+    hints:
+      - X = o[["Sales"]] (two pairs of brackets — 2-dimensional); model = LinearRegression().fit(X, y)
+      - model.coef_[0], model.intercept_, model.score(X, y)
+      - 'model.predict(pd.DataFrame({"Sales": [1000]}))[0]'
+    tests: |
+      import pandas as _pd
+      import numpy as _np
+      _o = _pd.read_csv("sifarisler.csv")
+
+      _k, _b = _np.polyfit(_o["Sales"], _o["Profit"], 1)
+      assert hasattr(model, "coef_"), "model = LinearRegression(); model.fit(X, y)"
+      assert abs(meyl - round(_k, 4)) < 2e-4 and abs(sabit - round(_b, 4)) < 2e-3, f"meyl should be ≈ {round(_k, 4)} and sabit ≈ {round(_b, 4)}"
+      _r2 = _np.corrcoef(_o["Sales"], _o["Profit"])[0, 1] ** 2
+      assert abs(r2 - round(_r2, 3)) < 0.0011, f"r2 should be {round(_r2, 3)}"
+      assert abs(proqnoz_1000 - round(_k * 1000 + _b, 2)) < 0.02, f"proqnoz_1000 should be {round(_k * 1000 + _b, 2)}"
+  statsmodels-ols:
+    title: 'Multiple regression: statsmodels and residuals'
+    instructions: |
+      Day 9: explain profit with sales, discount and units. Which variable reduces profit?
+    tasks:
+      - X = sm.add_constant(o[["Sales", "Discount", "Quantity"]]), y = o["Profit"]; results = sm.OLS(y, X).fit().
+      - The Discount coefficient, 2 decimal places → endirim_emsali; R², 3 decimal places → r2; is the p-value of Discount smaller than 0.05 → ehemiyyetli.
+      - The forecast for Sales=1000, Discount=0.2, Quantity=3, 2 decimal places → proqnoz.
+      - Residuals = y − forecast; a scatter plot of the residuals vs. the forecast + plt.axhline(0, color="red", linestyle="--"); title="Residuals".
+    hints:
+      - X = sm.add_constant(o[["Sales", "Discount", "Quantity"]]); results = sm.OLS(o["Profit"], X).fit()
+      - results.params["Discount"], results.rsquared, results.pvalues["Discount"]
+      - 'The forecast also needs the const column: pd.DataFrame({"const": [1.0], "Sales": [1000], "Discount": [0.2], "Quantity": [3]})'
+    solution: |
+      import pandas as pd
+      import statsmodels.api as sm
+      import matplotlib.pyplot as plt
+
+      o = pd.read_csv("sifarisler.csv")
+
+      X = sm.add_constant(o[["Sales", "Discount", "Quantity"]])
+      y = o["Profit"]
+      results = sm.OLS(y, X).fit()
+      endirim_emsali = round(results.params["Discount"], 2)
+      r2 = round(results.rsquared, 3)
+      ehemiyyetli = bool(results.pvalues["Discount"] < 0.05)
+      yeni = pd.DataFrame({"const": [1.0], "Sales": [1000], "Discount": [0.2], "Quantity": [3]})
+      proqnoz = round(results.predict(yeni)[0], 2)
+
+      plt.figure()
+      texmin = results.predict(X)
+      qaliqlar = y - texmin
+      plt.scatter(texmin, qaliqlar, alpha=0.4)
+      plt.axhline(0, color="red", linestyle="--")
+      plt.title("Residuals")
+    tests: |
+      # i18n-superset: the Azerbaijani chart title is accepted too
+      import pandas as _pd
+      import numpy as _np
+      import matplotlib.pyplot as _plt
+      def _axes():
+          return [a for n in _plt.get_fignums() for a in _plt.figure(n).axes]
+      def _ax(*titles):
+          for a in _axes():
+              if a.get_title().strip() in titles:
+                  return a
+          _t = [a.get_title() for a in _axes()]
+          raise AssertionError(f'No chart titled "{titles[0]}" was found (pass title=...). Titles found: {_t}')
+
+      _o = _pd.read_csv("sifarisler.csv")
+
+      import statsmodels.api as _sm
+      _X = _sm.add_constant(_o[["Sales", "Discount", "Quantity"]])
+      _r = _sm.OLS(_o["Profit"], _X).fit()
+      assert abs(endirim_emsali - round(_r.params["Discount"], 2)) < 0.011, f"endirim_emsali should be {round(_r.params['Discount'], 2)} — don't forget add_constant"
+      assert r2 == round(_r.rsquared, 3), f"r2 should be {round(_r.rsquared, 3)}"
+      assert ehemiyyetli == bool(_r.pvalues["Discount"] < 0.05), "ehemiyyetli = results.pvalues['Discount'] < 0.05"
+      _p = _r.params["const"] + _r.params["Sales"] * 1000 + _r.params["Discount"] * 0.2 + _r.params["Quantity"] * 3
+      assert abs(proqnoz - round(_p, 2)) < 0.02, f"proqnoz should be {round(_p, 2)}"
+      _a = _ax("Residuals", "Qalıqlar")
+      assert _a.collections and len(_a.collections[0].get_offsets()) == len(_o), "There should be one residual point per order"
+      assert any(_np.allclose(l.get_ydata(), 0) for l in _a.get_lines()), "Draw the zero line with plt.axhline(0, ...)"
+  reqressiya-testi:
+    title: 'Quiz: regression'
+    questions:
+      - text: 'Model: Profit = −20 + 0.25 × Sales. What is the forecast when sales are 400 AZN?'
+        options:
+          - 80 AZN
+          - 100 AZN
+          - −20 AZN
+          - 120 AZN
+        explanation: −20 + 0.25 × 400 = 80.
+      - text: What does R² = 0.65 mean?
+        options:
+          - The model is right 65% of the time
+          - 65% of the variability in profit is explained by the model
+          - The correlation is 0.65
+          - The p-value is 0.65
+        explanation: R² is the share of the variability that the model explains.
+      - text: What is each tool or indicator for?
+        buckets:
+          - name: The quality of the model
+            items:
+              - R²
+              - Adjusted R²
+          - name: The significance of a coefficient
+            items:
+              - p-value
+              - t-value
+          - name: Checking the model's assumptions
+            items:
+              - A residuals vs. forecast chart
+              - A Q-Q plot
+        explanation: R² — explanatory power; p/t — the significance of a coefficient; residual charts — how well the model fits.
+      - text: What happens if you forget `sm.add_constant` in statsmodels?
+        options:
+          - It raises an error
+          - The model has no constant — the line passes through 0
+          - R² becomes 1
+          - Nothing
+        explanation: OLS doesn't add the constant automatically.

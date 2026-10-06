@@ -1,0 +1,159 @@
+title: 'Automate the report: sending email'
+description: smtplib, MIME messages, attachments, app passwords and security.
+steps:
+  email-ders:
+    title: 'Email with Python: smtplib and MIME'
+    content: |
+      Do you prepare the same report every morning and send it by email? Python can automate this.
+
+      ## Building the message: MIME
+
+      ```python
+      from email.mime.multipart import MIMEMultipart
+      from email.mime.text import MIMEText
+      from email.mime.base import MIMEBase
+      from email import encoders
+
+      msg = MIMEMultipart()
+      msg["From"] = "reports@example.com"
+      msg["To"] = "management@example.com"
+      msg["Subject"] = "Daily sales report"
+      msg.attach(MIMEText("Hello! Yesterday's report is attached.", "plain"))
+
+      with open("report.csv", "rb") as f:
+          hisse = MIMEBase("application", "octet-stream")
+          hisse.set_payload(f.read())
+      encoders.encode_base64(hisse)
+      hisse.add_header("Content-Disposition", "attachment; filename=report.csv")
+      msg.attach(hisse)
+      ```
+
+      (`hisse` — the attachment part.)
+
+      ## Sending it: smtplib
+
+      ```python
+      import os, smtplib
+
+      with smtplib.SMTP("smtp.gmail.com", 587) as server:
+          server.starttls()                                    # an encrypted connection
+          server.login(os.environ["EMAIL_USER"], os.environ["EMAIL_APP_PASSWORD"])
+          server.send_message(msg)
+      ```
+
+      - **587** is the standard secure SMTP port (STARTTLS).
+      - Services like Gmail require an **app password** instead of your normal password — two-factor authentication has to be turned on.
+
+      ## 🔒 Security — the most important part
+
+      > ⚠️ **Never write a password in your code.** Code files get shared, uploaded to GitHub and sent by email — and the password inside them spreads too. If you've seen a password in code, **revoke** it immediately and create a new one.
+
+      - Keep passwords in **environment variables** (`os.environ`), in a `.env` file (one that isn't added to git) or in a password manager.
+      - If the report contains personal data, check the list of recipients; encrypt the file if you can.
+      - When you send in bulk, stay within the service's limits.
+
+      > 💻 In the browser environment (DaCy), you can't open an SMTP connection to the internet. In the exercise, we **build** the message and check it; try the sending part on your own computer or in Colab.
+  email-tapsiriq:
+    title: Prepare a message with a report
+    instructions: |
+      Prepare the revenue summary by region as a CSV file and build a MIME message with the file attached (without sending it).
+    tasks:
+      - Write the revenue summary by region (2 decimal places) to the file region_hesabat.csv (index=True, column name "Revenue").
+      - 'A MIMEMultipart message → msg: From "hesabat@technar.az", To "rehberlik@technar.az", Subject "Revenue by region".'
+      - 'The text part: "Hello! The report on revenue by region is attached." (MIMEText, "plain").'
+      - 'Attach the CSV as a base64 attachment: filename=region_hesabat.csv. Don''t write a password — there''s no need to send the message.'
+    hints:
+      - xulase = df.groupby("Region")["Total Revenue"].sum().round(2).rename("Revenue"); xulase.to_csv("region_hesabat.csv")
+      - msg = MIMEMultipart(); msg["Subject"] = ...; msg.attach(MIMEText("...", "plain"))
+      - MIMEBase("application", "octet-stream") → set_payload → encoders.encode_base64 → add_header("Content-Disposition", "attachment; filename=region_hesabat.csv")
+    starter_code: |
+      import pandas as pd
+      from email.mime.multipart import MIMEMultipart
+      from email.mime.text import MIMEText
+      from email.mime.base import MIMEBase
+      from email import encoders
+
+      df = pd.read_csv("satislar.csv")
+
+      xulase = ...
+      # write the CSV
+
+      msg = ...
+    solution: |
+      import pandas as pd
+      from email.mime.multipart import MIMEMultipart
+      from email.mime.text import MIMEText
+      from email.mime.base import MIMEBase
+      from email import encoders
+
+      df = pd.read_csv("satislar.csv")
+
+      xulase = df.groupby("Region")["Total Revenue"].sum().round(2).rename("Revenue")
+      xulase.to_csv("region_hesabat.csv")
+
+      msg = MIMEMultipart()
+      msg["From"] = "hesabat@technar.az"
+      msg["To"] = "rehberlik@technar.az"
+      msg["Subject"] = "Revenue by region"
+      msg.attach(MIMEText("Hello! The report on revenue by region is attached.", "plain"))
+
+      with open("region_hesabat.csv", "rb") as f:
+          hisse = MIMEBase("application", "octet-stream")
+          hisse.set_payload(f.read())
+      encoders.encode_base64(hisse)
+      hisse.add_header("Content-Disposition", "attachment; filename=region_hesabat.csv")
+      msg.attach(hisse)
+    tests: |
+      # i18n-superset: the Azerbaijani column name, subject and text are accepted too
+      import pandas as _pd
+      import numpy as _np
+      _s = _pd.read_csv("satislar.csv")
+
+      import os as _os
+      assert _os.path.exists("region_hesabat.csv"), "The file region_hesabat.csv hasn't been created"
+      _csv = _pd.read_csv("region_hesabat.csv", index_col=0)
+      _e = _s.groupby("Region")["Total Revenue"].sum().round(2)
+      _col = list(_csv.columns)
+      assert _col in (["Revenue"], ["Gəlir"]) and _np.allclose(_csv[_col[0]].sort_index().values, _e.sort_index().values), "The CSV should have the Region index and a 'Revenue' column"
+      from email.mime.multipart import MIMEMultipart as _MM
+      assert isinstance(msg, _MM), "msg = MIMEMultipart()"
+      assert (msg["From"], msg["To"]) == ("hesabat@technar.az", "rehberlik@technar.az") and msg["Subject"] in ("Revenue by region", "Regionlar üzrə gəlir"), "From / To / Subject aren't correct"
+      _parts = msg.get_payload()
+      _txt = [p for p in _parts if p.get_content_type() == "text/plain"]
+      _body = _txt[0].get_payload(decode=True).decode("utf-8") if _txt else ""
+      assert "report on revenue by region is attached" in _body or "Regionlar üzrə gəlir hesabatı əlavədədir" in _body, "The text part (MIMEText) is missing or its text isn't correct"
+      _att = [p for p in _parts if p.get_filename() == "region_hesabat.csv"]
+      assert _att, "The region_hesabat.csv attachment is missing (Content-Disposition: attachment; filename=...)"
+      _pl = _att[0].get_payload(decode=True).decode("utf-8")
+      assert _att[0]["Content-Transfer-Encoding"] == "base64" and ("Revenue" in _pl or "Gəlir" in _pl), "The attachment should be base64-encoded and carry the CSV content"
+      assert "login(" not in dacy.code and "password" not in dacy.code.lower(), "Don't write a password or login(...) in this task"
+  email-testi:
+    title: 'Quiz: email and security'
+    questions:
+      - text: A real email password has been written in the code, and the file has been shared. What should you do?
+        options:
+          - Deleting the file is enough
+          - Revoke the password immediately, create a new one and move it to an environment variable
+          - Nothing — the file is private
+          - Encode the password with base64
+        explanation: A leaked password has to be revoked; base64 isn't encryption.
+      - text: Which part of the job does each step belong to?
+        buckets:
+          - name: Building the message (email.mime)
+            items:
+              - MIMEMultipart()
+              - MIMEText(text, "plain")
+              - encoders.encode_base64(part)
+          - name: Sending it (smtplib)
+            items:
+              - smtplib.SMTP(server, 587)
+              - server.starttls()
+              - server.send_message(msg)
+        explanation: MIME is the structure of the message; smtplib connects to the server and sends it.
+      - text: What are port 587 and `starttls()` for?
+        options:
+          - For speed
+          - To encrypt the connection
+          - To compress attachments
+          - To get past spam filters
+        explanation: STARTTLS switches the connection to an encrypted channel.
