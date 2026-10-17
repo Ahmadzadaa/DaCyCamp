@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Check, Compass, GraduationCap, Users } from 'lucide-react';
+import { Compass, GraduationCap, Users } from 'lucide-react';
 import {
   academyJoinCodeSchema,
   academyJoinRegisterSchema,
@@ -66,53 +66,34 @@ const PATHS = [
   },
 ] as const;
 
-/** Yol seçimi: kart basılanda seçilir və qalxır (kölgə, rəngli çərçivə), «Davam et» formaya keçir */
+/** Yol seçimi: üstünə gəlinən kart öz rəngini alıb qalxır (kölgə, rəngli çərçivə); basanda forma açılır */
 function PathChoice({ next, onContinue }: { next?: string; onContinue: (p: Path) => void }) {
-  const [picked, setPicked] = useState<Path | null>(null);
   return (
     <div className="flex flex-col gap-4" data-testid="register-choice">
       <div className="mb-2">
         <h1 className="text-[32px] font-bold tracking-[-0.01em]">{t('auth.choiceTitle')}</h1>
         <p className="mt-2 text-muted">{t('auth.choiceSubtitle')}</p>
       </div>
-      <div role="radiogroup" aria-label={t('auth.choiceSubtitle')} className="flex flex-col gap-3">
-        {PATHS.map((o) => {
-          const on = picked === o.id;
-          return (
-            <button
-              key={o.id}
-              type="button"
-              role="radio"
-              aria-checked={on}
-              className={`reg-choice${on ? ' on' : ''}`}
-              style={{ ['--ic' as string]: o.color }}
-              onClick={() => setPicked(o.id)}
-              onDoubleClick={() => onContinue(o.id)}
-              data-testid={`choose-${o.id}`}
-            >
-              <span className="reg-choice-ic">
-                <o.icon aria-hidden />
-              </span>
-              <span className="min-w-0 flex-1">
-                <b>{t(o.title)}</b>
-                <span>{t(o.text)}</span>
-              </span>
-              <span className="reg-choice-mark" aria-hidden>
-                <Check />
-              </span>
-            </button>
-          );
-        })}
+      <div className="flex flex-col gap-3">
+        {PATHS.map((o) => (
+          <button
+            key={o.id}
+            type="button"
+            className="reg-choice"
+            style={{ ['--ic' as string]: o.color }}
+            onClick={() => onContinue(o.id)}
+            data-testid={`choose-${o.id}`}
+          >
+            <span className="reg-choice-ic">
+              <o.icon aria-hidden />
+            </span>
+            <span className="min-w-0 flex-1">
+              <b>{t(o.title)}</b>
+              <span>{t(o.text)}</span>
+            </span>
+          </button>
+        ))}
       </div>
-      <Button
-        type="button"
-        size="full"
-        disabled={!picked}
-        onClick={() => picked && onContinue(picked)}
-        data-testid="choice-continue"
-      >
-        {t('catalog.continue')}
-      </Button>
       <p className="text-center text-sm text-muted">
         {t('auth.haveAccount')}{' '}
         <Link
