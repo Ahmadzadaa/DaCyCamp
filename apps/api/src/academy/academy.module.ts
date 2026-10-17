@@ -1,17 +1,33 @@
 import { Module } from '@nestjs/common';
 import { AuditModule } from '../audit/audit.module';
+import { LearnModule } from '../learn/learn.module';
+import { ProgressModule } from '../progress/progress.module';
 import { AcademyAccessService, AcademyEnabledGuard } from './access/academy-access.service';
+import { AcademyContentAdapter } from './integrations/content.adapter';
+import { AcademyEvaluationAdapter } from './integrations/evaluation.adapter';
 import { AcademyOrganizationController } from './organization/organization.controller';
 import { AcademyOrganizationService } from './organization/organization.service';
+import { AcademyAssignmentsController } from './assignments/assignments.controller';
+import { AcademyAssignmentsService } from './assignments/assignments.service';
+import { AcademyMeController } from './me/me.controller';
+import { AcademyStudentService } from './me/student.service';
 
 /**
  * Akademiya modulu (modul monolit). Öyrənmə nüvəsi ilə yalnız `integrations/` adapterləri vasitəsilə danışır:
  * məzmun kopyalanmır, qiymətləndirmə təkrar yazılmır, XP-yə toxunulmur.
  */
 @Module({
-  imports: [AuditModule],
-  controllers: [AcademyOrganizationController],
-  providers: [AcademyAccessService, AcademyEnabledGuard, AcademyOrganizationService],
+  imports: [AuditModule, LearnModule, ProgressModule],
+  controllers: [AcademyOrganizationController, AcademyAssignmentsController, AcademyMeController],
+  providers: [
+    AcademyAccessService,
+    AcademyEnabledGuard,
+    AcademyContentAdapter,
+    AcademyEvaluationAdapter,
+    AcademyOrganizationService,
+    AcademyAssignmentsService,
+    AcademyStudentService,
+  ],
   exports: [AcademyAccessService],
 })
 export class AcademyModule {}

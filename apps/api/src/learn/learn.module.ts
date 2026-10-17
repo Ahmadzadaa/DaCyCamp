@@ -9,5 +9,7 @@ import { LearnService } from './learn.service';
   imports: [ProgressModule, CatalogModule, AssetsModule, SqlCheckModule],
   controllers: [LearnController],
   providers: [LearnService],
+  // akademiya adapteri mövcud kursa yazılış qaydalarını təkrar yazmadan istifadə edir
+  exports: [LearnService],
 })
 export class LearnModule {}
