@@ -50,18 +50,36 @@ describe('Academy submissions (e2e)', () => {
     };
     for (const [k, u] of Object.entries(users)) ids[k] = u.id;
     const course = await prisma.course.create({
-      data: { trackId: b.track.id, slug: 'sql-esaslari', title: 'SQL əsasları', order: 1, isPublished: true },
+      data: {
+        trackId: b.track.id,
+        slug: 'sql-esaslari',
+        title: 'SQL əsasları',
+        order: 1,
+        isPublished: true,
+      },
     });
     const mod = await prisma.module.create({
       data: { courseId: course.id, key: 'select', title: 'SELECT', order: 1, isPublished: true },
     });
     const mk = (k: string, order: number, type: 'SQL' | 'QUIZ') =>
-      prisma.step.create({ data: { moduleId: mod.id, key: k, type, title: `Addım ${k}`, order, isPublished: true, xp: 20 } });
+      prisma.step.create({
+        data: {
+          moduleId: mod.id,
+          key: k,
+          type,
+          title: `Addım ${k}`,
+          order,
+          isPublished: true,
+          xp: 20,
+        },
+      });
     ids.stepSql = (await mk('where', 1, 'SQL')).id;
     ids.stepQuiz = (await mk('test', 2, 'QUIZ')).id;
 
     admin = await login(app, 'admin@test.local', 'Admin123!');
-    const de = await admin.post('/academy/programs').send({ title: 'Data Engineering', slug: 'de', status: 'ACTIVE' });
+    const de = await admin
+      .post('/academy/programs')
+      .send({ title: 'Data Engineering', slug: 'de', status: 'ACTIVE' });
     const g1 = await admin.post('/academy/groups').send({
       programId: de.body.id,
       code: 'DE-001',
@@ -72,10 +90,17 @@ describe('Academy submissions (e2e)', () => {
     });
     const g2 = await admin
       .post('/academy/groups')
-      .send({ programId: de.body.id, code: 'DE-002', name: 'DE-002', status: 'ACTIVE', leadInstructorId: ids.otherLead });
+      .send({
+        programId: de.body.id,
+        code: 'DE-002',
+        name: 'DE-002',
+        status: 'ACTIVE',
+        leadInstructorId: ids.otherLead,
+      });
     ids.de1 = g1.body.id;
     ids.de2 = g2.body.id;
-    for (const s of ['ali', 'aysel', 'paused']) await admin.post(`/academy/groups/${ids.de1}/enrollments`).send({ userId: ids[s] });
+    for (const s of ['ali', 'aysel', 'paused'])
+      await admin.post(`/academy/groups/${ids.de1}/enrollments`).send({ userId: ids[s] });
     await admin.post(`/academy/groups/${ids.de2}/enrollments`).send({ userId: ids.veli });
 
     const p = (e: string) => login(app, e, 'Parol123!');
@@ -105,7 +130,9 @@ describe('Academy submissions (e2e)', () => {
     });
     expect(proj.status).toBe(201);
     ids.proj = proj.body.id;
-    [items.text, items.file, items.link, items.code] = proj.body.items.map((i: { id: string }) => i.id);
+    [items.text, items.file, items.link, items.code] = proj.body.items.map(
+      (i: { id: string }) => i.id,
+    );
     // platforma tapşırığı: SQL + test (avtomatik, gecikmə 10 % cərimə ilə)
     const hw = await lead.post(`/academy/groups/${ids.de1}/assignments`).send({
       title: 'SQL ev tapşırığı',
@@ -138,13 +165,21 @@ describe('Academy submissions (e2e)', () => {
       [lead, ids.hw],
       [otherLead, ids.other],
     ] as const)
-      expect((await who.post(`/academy/assignments/${id}/publish`).send({ mode: 'now' })).status).toBe(200);
-    await admin.patch(`/academy/enrollments/${(await prisma.academyEnrollment.findFirstOrThrow({ where: { studentId: ids.paused } })).id}`).send({ status: 'PAUSED' });
+      expect(
+        (await who.post(`/academy/assignments/${id}/publish`).send({ mode: 'now' })).status,
+      ).toBe(200);
+    await admin
+      .patch(
+        `/academy/enrollments/${(await prisma.academyEnrollment.findFirstOrThrow({ where: { studentId: ids.paused } })).id}`,
+      )
+      .send({ status: 'PAUSED' });
   });
   afterAll(async () => app.close());
 
   it('fayl yükləmə: icazəli növ və məzmun yoxlanılır, açar generasiya olunur, endirmə yalnız sahibinə', async () => {
-    const up = await ali.post(`/academy/me/assignments/${ids.proj}/files`).attach('file', pdf(), 'hesabat ../../etc.pdf');
+    const up = await ali
+      .post(`/academy/me/assignments/${ids.proj}/files`)
+      .attach('file', pdf(), 'hesabat ../../etc.pdf');
     expect(up.status).toBe(201);
     expect(up.body).toMatchObject({ mimeType: 'application/pdf', sizeBytes: pdf().length });
     ids.aliPdf = up.body.id;
@@ -156,12 +191,18 @@ describe('Academy submissions (e2e)', () => {
     expect(await exists(row.storageKey)).toBe(true);
 
     const bad = async (buf: Buffer, name: string, code: string) => {
-      const r = await ali.post(`/academy/me/assignments/${ids.proj}/files`).attach('file', buf, name);
+      const r = await ali
+        .post(`/academy/me/assignments/${ids.proj}/files`)
+        .attach('file', buf, name);
       expect([r.status, r.body.code]).toEqual([422, code]);
     };
     await bad(Buffer.from('MZ\x90\x00'), 'virus.exe', 'ACADEMY_FILE_TYPE');
     await bad(Buffer.from('<svg onload="alert(1)"/>'), 'sekil.svg', 'ACADEMY_FILE_TYPE');
-    await bad(Buffer.from('<html><script>alert(1)</script>'), 'hesabat.pdf', 'ACADEMY_FILE_CONTENT');
+    await bad(
+      Buffer.from('<html><script>alert(1)</script>'),
+      'hesabat.pdf',
+      'ACADEMY_FILE_CONTENT',
+    );
     await bad(Buffer.from('{"cells": ['), 'defter.ipynb', 'ACADEMY_FILE_CONTENT');
     await bad(Buffer.from([0x41, 0x00, 0x42]), 'sorgu.sql', 'ACADEMY_FILE_CONTENT');
     await bad(Buffer.alloc(0), 'bos.txt', 'ACADEMY_FILE_EMPTY');
@@ -172,11 +213,28 @@ describe('Academy submissions (e2e)', () => {
     ids.aliNb = nb.body.id;
 
     // FILE elementi olmayan tapşırıq, yazılmamış / dayandırılmış istifadəçi
-    const noFiles = await ali.post(`/academy/me/assignments/${ids.hw}/files`).attach('file', pdf(), 'a.pdf');
+    const noFiles = await ali
+      .post(`/academy/me/assignments/${ids.hw}/files`)
+      .attach('file', pdf(), 'a.pdf');
     expect([noFiles.status, noFiles.body.code]).toEqual([422, 'ACADEMY_FILES_NOT_ACCEPTED']);
-    expect((await outsider.post(`/academy/me/assignments/${ids.proj}/files`).attach('file', pdf(), 'a.pdf')).status).toBe(403);
-    expect((await paused.post(`/academy/me/assignments/${ids.proj}/files`).attach('file', pdf(), 'a.pdf')).status).toBe(403);
-    expect((await veli.post(`/academy/me/assignments/${ids.proj}/files`).attach('file', pdf(), 'a.pdf')).status).toBe(403);
+    expect(
+      (
+        await outsider
+          .post(`/academy/me/assignments/${ids.proj}/files`)
+          .attach('file', pdf(), 'a.pdf')
+      ).status,
+    ).toBe(403);
+    expect(
+      (
+        await paused
+          .post(`/academy/me/assignments/${ids.proj}/files`)
+          .attach('file', pdf(), 'a.pdf')
+      ).status,
+    ).toBe(403);
+    expect(
+      (await veli.post(`/academy/me/assignments/${ids.proj}/files`).attach('file', pdf(), 'a.pdf'))
+        .status,
+    ).toBe(403);
 
     // endirmə: sahibi — attachment + nosniff; başqa tələbə və heyət (müvəqqəti fayl) — 403
     const dl = await ali.get(`/academy/files/${ids.aliPdf}`);
@@ -204,9 +262,13 @@ describe('Academy submissions (e2e)', () => {
       { itemId: items.text, text: 'Yarımçıq hesabat' },
       { itemId: items.file, fileIds: [ids.aliPdf] },
     ]);
-    expect(det.body.stagedFiles.map((f: { id: string }) => f.id).sort()).toEqual([ids.aliPdf, ids.aliNb].sort());
+    expect(det.body.stagedFiles.map((f: { id: string }) => f.id).sort()).toEqual(
+      [ids.aliPdf, ids.aliNb].sort(),
+    );
 
-    const aysFile = await aysel.post(`/academy/me/assignments/${ids.proj}/files`).attach('file', pdf(), 'aysel.pdf');
+    const aysFile = await aysel
+      .post(`/academy/me/assignments/${ids.proj}/files`)
+      .attach('file', pdf(), 'aysel.pdf');
     ids.ayselPdf = aysFile.body.id;
     const foreign = await ali
       .put(`/academy/me/assignments/${ids.proj}/draft`)
@@ -223,7 +285,9 @@ describe('Academy submissions (e2e)', () => {
       ali.post(`/academy/me/assignments/${ids.proj}/attempts`).send({ idempotencyKey: k, answers });
     const missing = await send([{ itemId: items.text, text: 'Hesabat' }]);
     expect([missing.status, missing.body.code]).toEqual([422, 'ACADEMY_ANSWER_REQUIRED']);
-    expect(missing.body.details.itemIds.sort()).toEqual([items.file, items.link, items.code].sort());
+    expect(missing.body.details.itemIds.sort()).toEqual(
+      [items.file, items.link, items.code].sort(),
+    );
     const kind = await send([
       { itemId: items.text, text: 'a' },
       { itemId: items.file, text: 'fayl əvəzinə mətn' },
@@ -258,25 +322,56 @@ describe('Academy submissions (e2e)', () => {
     };
     const r = await ali.post(`/academy/me/assignments/${ids.proj}/attempts`).send(body);
     expect(r.status).toBe(201);
-    expect(r.body).toMatchObject({ attemptNumber: 1, maxAttempts: 2, isLate: false, status: 'SUBMITTED', replayed: false });
+    expect(r.body).toMatchObject({
+      attemptNumber: 1,
+      maxAttempts: 2,
+      isLate: false,
+      status: 'SUBMITTED',
+      replayed: false,
+    });
     ids.aliAttempt1 = r.body.attemptId;
-    const files = await prisma.academyFile.findMany({ where: { id: { in: [ids.aliPdf, ids.aliNb] } } });
-    expect(files.every((f) => f.status === 'ATTACHED' && f.submissionItemId && f.attachedAt)).toBe(true);
+    const files = await prisma.academyFile.findMany({
+      where: { id: { in: [ids.aliPdf, ids.aliNb] } },
+    });
+    expect(files.every((f) => f.status === 'ATTACHED' && f.submissionItemId && f.attachedAt)).toBe(
+      true,
+    );
     expect(await prisma.academySubmissionDraft.count({ where: { studentId: ids.ali } })).toBe(0);
     expect(
-      await prisma.academyOutboxEvent.count({ where: { type: 'SUBMISSION_RECEIVED', payload: { path: ['attemptId'], equals: ids.aliAttempt1 } } }),
+      await prisma.academyOutboxEvent.count({
+        where: {
+          type: 'SUBMISSION_RECEIVED',
+          payload: { path: ['attemptId'], equals: ids.aliAttempt1 },
+        },
+      }),
     ).toBe(1);
     // bağlanmış fayl artıq silinmir
     expect((await ali.delete(`/academy/me/files/${ids.aliPdf}`)).status).toBe(404);
 
     const again = await ali.post(`/academy/me/assignments/${ids.proj}/attempts`).send(body);
     expect(again.status).toBe(200);
-    expect(again.body).toMatchObject({ attemptId: ids.aliAttempt1, attemptNumber: 1, replayed: true });
-    expect(await prisma.academySubmissionAttempt.count({ where: { submission: { studentId: ids.ali } } })).toBe(1);
+    expect(again.body).toMatchObject({
+      attemptId: ids.aliAttempt1,
+      attemptNumber: 1,
+      replayed: true,
+    });
+    expect(
+      await prisma.academySubmissionAttempt.count({
+        where: { submission: { studentId: ids.ali } },
+      }),
+    ).toBe(1);
 
     const det = await ali.get(`/academy/me/assignments/${ids.proj}`);
-    expect(det.body).toMatchObject({ status: 'SUBMITTED', attemptsUsed: 1, canSubmit: true, draft: null, stagedFiles: [] });
-    expect(det.body.attempts[0].answers.find((a: { itemId: string }) => a.itemId === items.file).files).toHaveLength(2);
+    expect(det.body).toMatchObject({
+      status: 'SUBMITTED',
+      attemptsUsed: 1,
+      canSubmit: true,
+      draft: null,
+      stagedFiles: [],
+    });
+    expect(
+      det.body.attempts[0].answers.find((a: { itemId: string }) => a.itemId === items.file).files,
+    ).toHaveLength(2);
 
     // heyət bağlanmış faylı endirə bilir (aparıcı və köməkçi), başqa qrupun müəllimi — yox
     expect((await lead.get(`/academy/files/${ids.aliPdf}`)).status).toBe(200);
@@ -292,7 +387,9 @@ describe('Academy submissions (e2e)', () => {
       { itemId: items.link, link: 'https://github.com/ali/etl' },
       { itemId: items.code, code: 'SELECT 2' },
     ];
-    const f = await ali.post(`/academy/me/assignments/${ids.proj}/files`).attach('file', Buffer.from('a,b\n1,2\n'), 'data.csv');
+    const f = await ali
+      .post(`/academy/me/assignments/${ids.proj}/files`)
+      .attach('file', Buffer.from('a,b\n1,2\n'), 'data.csv');
     answers[1]!.fileIds = [f.body.id];
     const k = key('dbl');
     const [r1, r2] = await Promise.all([
@@ -302,12 +399,20 @@ describe('Academy submissions (e2e)', () => {
     expect([r1.status, r2.status].sort()).toEqual([200, 201]);
     expect(r1.body.attemptId).toBe(r2.body.attemptId);
     expect(r1.body.attemptNumber).toBe(2);
-    expect(await prisma.academySubmissionAttempt.count({ where: { submission: { studentId: ids.ali } } })).toBe(2);
+    expect(
+      await prisma.academySubmissionAttempt.count({
+        where: { submission: { studentId: ids.ali } },
+      }),
+    ).toBe(2);
 
     // limit (2) doldu
-    const over = await ali.post(`/academy/me/assignments/${ids.proj}/attempts`).send({ idempotencyKey: key('3'), answers });
+    const over = await ali
+      .post(`/academy/me/assignments/${ids.proj}/attempts`)
+      .send({ idempotencyKey: key('3'), answers });
     expect([over.status, over.body.code]).toEqual([409, 'ACADEMY_ATTEMPT_LIMIT']);
-    const list = (await ali.get('/academy/me/assignments')).body.find((x: { id: string }) => x.id === ids.proj);
+    const list = (await ali.get('/academy/me/assignments')).body.find(
+      (x: { id: string }) => x.id === ids.proj,
+    );
     expect(list).toMatchObject({ attemptsUsed: 2, canSubmit: false });
 
     // Aysel: 1 cəhd edib, sonra iki fərqli açarla paralel — yalnız biri keçir
@@ -317,9 +422,17 @@ describe('Academy submissions (e2e)', () => {
       { itemId: items.link, link: 'https://github.com/aysel/etl' },
       { itemId: items.code, code: 'SELECT 1' },
     ];
-    expect((await aysel.post(`/academy/me/assignments/${ids.proj}/attempts`).send({ idempotencyKey: key('a1'), answers: ans('1') })).status).toBe(201);
+    expect(
+      (
+        await aysel
+          .post(`/academy/me/assignments/${ids.proj}/attempts`)
+          .send({ idempotencyKey: key('a1'), answers: ans('1') })
+      ).status,
+    ).toBe(201);
     const extra = async () => {
-      const ff = await aysel.post(`/academy/me/assignments/${ids.proj}/files`).attach('file', pdf(), 'x.pdf');
+      const ff = await aysel
+        .post(`/academy/me/assignments/${ids.proj}/files`)
+        .attach('file', pdf(), 'x.pdf');
       return [
         { itemId: items.text, text: 'p' },
         { itemId: items.file, fileIds: [ff.body.id] },
@@ -329,29 +442,47 @@ describe('Academy submissions (e2e)', () => {
     };
     const [a1, a2] = [await extra(), await extra()];
     const res = await Promise.all([
-      aysel.post(`/academy/me/assignments/${ids.proj}/attempts`).send({ idempotencyKey: key('p1'), answers: a1 }),
-      aysel.post(`/academy/me/assignments/${ids.proj}/attempts`).send({ idempotencyKey: key('p2'), answers: a2 }),
+      aysel
+        .post(`/academy/me/assignments/${ids.proj}/attempts`)
+        .send({ idempotencyKey: key('p1'), answers: a1 }),
+      aysel
+        .post(`/academy/me/assignments/${ids.proj}/attempts`)
+        .send({ idempotencyKey: key('p2'), answers: a2 }),
     ]);
     expect(res.map((x) => x.status).sort()).toEqual([201, 409]);
     const nums = (
-      await prisma.academySubmissionAttempt.findMany({ where: { submission: { studentId: ids.aysel } }, orderBy: { attemptNumber: 'asc' } })
+      await prisma.academySubmissionAttempt.findMany({
+        where: { submission: { studentId: ids.aysel } },
+        orderBy: { attemptNumber: 'asc' },
+      })
     ).map((x) => x.attemptNumber);
     expect(nums).toEqual([1, 2]);
   });
 
   it('dəyişməzlik bazada: cəhd və cavab yenilənmir; cavab başqa tapşırığın elementinə bağlana bilmir', async () => {
     await expect(
-      prisma.$executeRawUnsafe(`UPDATE "AcademySubmissionAttempt" SET "submittedAt" = now() - interval '1 day' WHERE id = '${ids.aliAttempt1}'`),
+      prisma.$executeRawUnsafe(
+        `UPDATE "AcademySubmissionAttempt" SET "submittedAt" = now() - interval '1 day' WHERE id = '${ids.aliAttempt1}'`,
+      ),
     ).rejects.toThrow();
     await expect(
-      prisma.$executeRawUnsafe(`UPDATE "AcademySubmissionItem" SET "textAnswer" = 'dəyişdirildi' WHERE "attemptId" = '${ids.aliAttempt1}'`),
+      prisma.$executeRawUnsafe(
+        `UPDATE "AcademySubmissionItem" SET "textAnswer" = 'dəyişdirildi' WHERE "attemptId" = '${ids.aliAttempt1}'`,
+      ),
     ).rejects.toThrow();
     await expect(
       prisma.academySubmissionItem.create({
-        data: { attemptId: ids.aliAttempt1, assignmentId: ids.proj, itemId: items.otherFile, kind: 'FILE' },
+        data: {
+          attemptId: ids.aliAttempt1,
+          assignmentId: ids.proj,
+          itemId: items.otherFile,
+          kind: 'FILE',
+        },
       }),
     ).rejects.toThrow();
-    const ans = await prisma.academySubmissionItem.findFirstOrThrow({ where: { attemptId: ids.aliAttempt1, itemId: items.text } });
+    const ans = await prisma.academySubmissionItem.findFirstOrThrow({
+      where: { attemptId: ids.aliAttempt1, itemId: items.text },
+    });
     expect(ans.textAnswer).toBe('Hesabat: ETL axını');
   });
 
@@ -359,26 +490,52 @@ describe('Academy submissions (e2e)', () => {
     const asg = await prisma.academyAssignment.findUniqueOrThrow({ where: { id: ids.hw } });
     // açılışdan əvvəlki 100 % test nəticəsi sayılmır; Ayselin SQL həlli Aliyə aid deyil
     await prisma.submission.create({
-      data: { userId: ids.ali, stepId: ids.stepQuiz, type: 'QUIZ', payload: {}, passed: true, score: 100, createdAt: new Date(asg.availableAt.getTime() - 60_000) },
+      data: {
+        userId: ids.ali,
+        stepId: ids.stepQuiz,
+        type: 'QUIZ',
+        payload: {},
+        passed: true,
+        score: 100,
+        createdAt: new Date(asg.availableAt.getTime() - 60_000),
+      },
     });
-    await prisma.submission.create({ data: { userId: ids.aysel, stepId: ids.stepSql, type: 'SQL', payload: {}, passed: true } });
+    await prisma.submission.create({
+      data: { userId: ids.aysel, stepId: ids.stepSql, type: 'SQL', payload: {}, passed: true },
+    });
 
     const inject = await ali
       .post(`/academy/me/assignments/${ids.hw}/attempts`)
       .send({ idempotencyKey: key('inj'), answers: [{ itemId: items.sql, text: '100' }] });
     expect([inject.status, inject.body.code]).toEqual([422, 'ACADEMY_ANSWER_KIND_MISMATCH']);
 
-    const first = await ali.post(`/academy/me/assignments/${ids.hw}/attempts`).send({ idempotencyKey: key('hw1') });
+    const first = await ali
+      .post(`/academy/me/assignments/${ids.hw}/attempts`)
+      .send({ idempotencyKey: key('hw1') });
     expect(first.status).toBe(201);
-    const a1 = await prisma.academySubmissionAttempt.findUniqueOrThrow({ where: { id: first.body.attemptId }, include: { answers: true } });
+    const a1 = await prisma.academySubmissionAttempt.findUniqueOrThrow({
+      where: { id: first.body.attemptId },
+      include: { answers: true },
+    });
     expect(a1).toMatchObject({ evaluationStatus: 'COMPLETED', autoScoreCenti: 0 });
     expect(a1.answers.map((x) => x.evaluationPassed)).toEqual([false, false]);
 
-    const sql = await prisma.submission.create({ data: { userId: ids.ali, stepId: ids.stepSql, type: 'SQL', payload: {}, passed: true } });
-    const quiz = await prisma.submission.create({
-      data: { userId: ids.ali, stepId: ids.stepQuiz, type: 'QUIZ', payload: {}, passed: false, score: 50 },
+    const sql = await prisma.submission.create({
+      data: { userId: ids.ali, stepId: ids.stepSql, type: 'SQL', payload: {}, passed: true },
     });
-    const second = await ali.post(`/academy/me/assignments/${ids.hw}/attempts`).send({ idempotencyKey: key('hw2') });
+    const quiz = await prisma.submission.create({
+      data: {
+        userId: ids.ali,
+        stepId: ids.stepQuiz,
+        type: 'QUIZ',
+        payload: {},
+        passed: false,
+        score: 50,
+      },
+    });
+    const second = await ali
+      .post(`/academy/me/assignments/${ids.hw}/attempts`)
+      .send({ idempotencyKey: key('hw2') });
     expect(second.status).toBe(201);
     expect(second.body.attemptNumber).toBe(2);
     const a2 = await prisma.academySubmissionAttempt.findUniqueOrThrow({
@@ -388,8 +545,18 @@ describe('Academy submissions (e2e)', () => {
     expect(a2.autoScoreCenti).toBe(6000 + 2000);
     const bySql = a2.answers.find((x) => x.itemId === items.sql)!;
     const byQuiz = a2.answers.find((x) => x.itemId === items.quiz)!;
-    expect(bySql).toMatchObject({ learningSubmissionId: sql.id, evaluationPassed: true, evaluationScoreCenti: 6000, evaluationTrust: 'SERVER_CHECKED' });
-    expect(byQuiz).toMatchObject({ learningSubmissionId: quiz.id, evaluationPassed: false, evaluationScoreCenti: 2000, evaluationTrust: 'SERVER_VERIFIED' });
+    expect(bySql).toMatchObject({
+      learningSubmissionId: sql.id,
+      evaluationPassed: true,
+      evaluationScoreCenti: 6000,
+      evaluationTrust: 'SERVER_CHECKED',
+    });
+    expect(byQuiz).toMatchObject({
+      learningSubmissionId: quiz.id,
+      evaluationPassed: false,
+      evaluationScoreCenti: 2000,
+      evaluationTrust: 'SERVER_VERIFIED',
+    });
     // tələbə detalında qiymət yoxdur (avtomatik bal qaralama sayılır), cəhd nəticəsi görünür
     const det = await ali.get(`/academy/me/assignments/${ids.hw}`);
     expect(det.body.grade).toBeNull();
@@ -398,30 +565,48 @@ describe('Academy submissions (e2e)', () => {
 
   it('son tarix: gecikmə siyasəti, fərdi uzadılma, son hədd — server vaxtı ilə', async () => {
     // test üçün son tarixi keçmişə çəkirik (API keçmiş tarixlə dərc etməyə icazə vermir)
-    await prisma.academyAssignment.update({ where: { id: ids.hw }, data: { dueAt: new Date(Date.now() - 3_600_000) } });
-    const late = await aysel.post(`/academy/me/assignments/${ids.hw}/attempts`).send({ idempotencyKey: key('late') });
+    await prisma.academyAssignment.update({
+      where: { id: ids.hw },
+      data: { dueAt: new Date(Date.now() - 3_600_000) },
+    });
+    const late = await aysel
+      .post(`/academy/me/assignments/${ids.hw}/attempts`)
+      .send({ idempotencyKey: key('late') });
     expect(late.status).toBe(201);
     // AUTOMATIC tapşırıq: avtomatik qaralama qiymət yaranır → tələbə üçün «yoxlanılır» (qiymət açıqlanana qədər)
     expect(late.body).toMatchObject({ isLate: true, status: 'UNDER_REVIEW' });
 
-    await prisma.academyAssignment.update({ where: { id: ids.hw }, data: { lateCutoffAt: new Date(Date.now() - 60_000) } });
-    const cut = await aysel.post(`/academy/me/assignments/${ids.hw}/attempts`).send({ idempotencyKey: key('cut') });
+    await prisma.academyAssignment.update({
+      where: { id: ids.hw },
+      data: { lateCutoffAt: new Date(Date.now() - 60_000) },
+    });
+    const cut = await aysel
+      .post(`/academy/me/assignments/${ids.hw}/attempts`)
+      .send({ idempotencyKey: key('cut') });
     expect([cut.status, cut.body.code]).toEqual([409, 'ACADEMY_CUTOFF_PASSED']);
 
     await prisma.academyAssignment.update({
       where: { id: ids.proj },
       data: { dueAt: new Date(Date.now() - 3_600_000), maxAttempts: 5 },
     });
-    const rejected = await aysel.post(`/academy/me/assignments/${ids.proj}/attempts`).send({ idempotencyKey: key('rej') });
+    const rejected = await aysel
+      .post(`/academy/me/assignments/${ids.proj}/attempts`)
+      .send({ idempotencyKey: key('rej') });
     expect([rejected.status, rejected.body.code]).toEqual([409, 'ACADEMY_DEADLINE_PASSED']);
     expect(rejected.body.details.effectiveDueAt).toBeTruthy();
-    const staged = await aysel.post(`/academy/me/assignments/${ids.proj}/files`).attach('file', pdf(), 'gec.pdf');
+    const staged = await aysel
+      .post(`/academy/me/assignments/${ids.proj}/files`)
+      .attach('file', pdf(), 'gec.pdf');
     expect([staged.status, staged.body.code]).toEqual([409, 'ACADEMY_DEADLINE_PASSED']);
 
     // fərdi uzadılma yalnız Ayselə: o vaxtında göndərir, Ali yox
-    const ext = await lead.post(`/academy/assignments/${ids.proj}/extensions`).send({ studentId: ids.aysel, extendedDueAt: iso(24), reason: 'xəstəlik' });
+    const ext = await lead
+      .post(`/academy/assignments/${ids.proj}/extensions`)
+      .send({ studentId: ids.aysel, extendedDueAt: iso(24), reason: 'xəstəlik' });
     expect(ext.status).toBe(200);
-    const f = await aysel.post(`/academy/me/assignments/${ids.proj}/files`).attach('file', pdf(), 'vaxtinda.pdf');
+    const f = await aysel
+      .post(`/academy/me/assignments/${ids.proj}/files`)
+      .attach('file', pdf(), 'vaxtinda.pdf');
     const ok = await aysel.post(`/academy/me/assignments/${ids.proj}/attempts`).send({
       idempotencyKey: key('ext'),
       answers: [
@@ -433,79 +618,144 @@ describe('Academy submissions (e2e)', () => {
     });
     expect(ok.status).toBe(201);
     expect(ok.body).toMatchObject({ isLate: false, attemptNumber: 3 });
-    const aliTry = await ali.post(`/academy/me/assignments/${ids.proj}/attempts`).send({ idempotencyKey: key('ali-late') });
+    const aliTry = await ali
+      .post(`/academy/me/assignments/${ids.proj}/attempts`)
+      .send({ idempotencyKey: key('ali-late') });
     expect([aliTry.status, aliTry.body.code]).toEqual([409, 'ACADEMY_DEADLINE_PASSED']);
-    await prisma.academyAssignment.update({ where: { id: ids.proj }, data: { dueAt: new Date(Date.now() + 48 * 3_600_000), maxAttempts: 2 } });
+    await prisma.academyAssignment.update({
+      where: { id: ids.proj },
+      data: { dueAt: new Date(Date.now() + 48 * 3_600_000), maxAttempts: 2 },
+    });
   });
 
   it('açıqlanmış qiymət yeni cəhdi bağlayır; qaytarılmış göndərişə limitdən asılı olmayaraq bir düzəliş cəhdi', async () => {
-    const sub = await prisma.academySubmission.findFirstOrThrow({ where: { assignmentId: ids.proj, studentId: ids.ali } });
-    const grade = await prisma.academyGrade.create({
-      data: { submissionId: sub.id, assignmentId: ids.proj, status: 'RETURNED', feedback: 'Hesabatı genişləndirin', version: 1 },
+    const sub = await prisma.academySubmission.findFirstOrThrow({
+      where: { assignmentId: ids.proj, studentId: ids.ali },
     });
-    const f = await ali.post(`/academy/me/assignments/${ids.proj}/files`).attach('file', pdf(), 'duzelis.pdf');
+    const grade = await prisma.academyGrade.create({
+      data: {
+        submissionId: sub.id,
+        assignmentId: ids.proj,
+        status: 'RETURNED',
+        feedback: 'Hesabatı genişləndirin',
+        version: 1,
+      },
+    });
+    const f = await ali
+      .post(`/academy/me/assignments/${ids.proj}/files`)
+      .attach('file', pdf(), 'duzelis.pdf');
     const answers = [
       { itemId: items.text, text: 'Genişləndirilmiş hesabat' },
       { itemId: items.file, fileIds: [f.body.id] },
       { itemId: items.link, link: 'https://github.com/ali/etl' },
       { itemId: items.code, code: 'SELECT 4' },
     ];
-    const fix = await ali.post(`/academy/me/assignments/${ids.proj}/attempts`).send({ idempotencyKey: key('fix'), answers });
+    const fix = await ali
+      .post(`/academy/me/assignments/${ids.proj}/attempts`)
+      .send({ idempotencyKey: key('fix'), answers });
     expect(fix.status).toBe(201);
     expect(fix.body).toMatchObject({ attemptNumber: 3, status: 'SUBMITTED' });
-    const more = await ali.post(`/academy/me/assignments/${ids.proj}/attempts`).send({ idempotencyKey: key('more'), answers: [] });
+    const more = await ali
+      .post(`/academy/me/assignments/${ids.proj}/attempts`)
+      .send({ idempotencyKey: key('more'), answers: [] });
     expect([more.status, more.body.code]).toEqual([409, 'ACADEMY_ATTEMPT_LIMIT']);
 
-    await prisma.academyGrade.update({ where: { id: grade.id }, data: { status: 'RELEASED', releasedAt: new Date(), version: 2 } });
+    await prisma.academyGrade.update({
+      where: { id: grade.id },
+      data: { status: 'RELEASED', releasedAt: new Date(), version: 2 },
+    });
     await prisma.academyAssignment.update({ where: { id: ids.proj }, data: { maxAttempts: 10 } });
-    const blocked = await ali.post(`/academy/me/assignments/${ids.proj}/attempts`).send({ idempotencyKey: key('rel'), answers });
+    const blocked = await ali
+      .post(`/academy/me/assignments/${ids.proj}/attempts`)
+      .send({ idempotencyKey: key('rel'), answers });
     expect([blocked.status, blocked.body.code]).toEqual([409, 'ACADEMY_ALREADY_GRADED']);
     await prisma.academyAssignment.update({ where: { id: ids.proj }, data: { maxAttempts: 2 } });
   });
 
   it('tapşırıq resursları: aparıcı yükləyir, köməkçi dərc olunmuşda yox; tələbə endirir, başqa qrup yox', async () => {
-    const up = await lead.post(`/academy/assignments/${ids.proj}/resources`).attach('file', Buffer.from('id,ad\n1,Ali\n'), 'melumat.csv');
+    const up = await lead
+      .post(`/academy/assignments/${ids.proj}/resources`)
+      .attach('file', Buffer.from('id,ad\n1,Ali\n'), 'melumat.csv');
     expect(up.status).toBe(201);
     ids.resource = up.body.id;
-    expect((await assistant.post(`/academy/assignments/${ids.proj}/resources`).attach('file', pdf(), 'k.pdf')).status).toBe(403);
-    expect((await ali.post(`/academy/assignments/${ids.proj}/resources`).attach('file', pdf(), 'k.pdf')).status).toBe(403);
-    expect((await ali.get(`/academy/me/assignments/${ids.proj}`)).body.resources.map((r: { id: string }) => r.id)).toEqual([ids.resource]);
+    expect(
+      (
+        await assistant
+          .post(`/academy/assignments/${ids.proj}/resources`)
+          .attach('file', pdf(), 'k.pdf')
+      ).status,
+    ).toBe(403);
+    expect(
+      (await ali.post(`/academy/assignments/${ids.proj}/resources`).attach('file', pdf(), 'k.pdf'))
+        .status,
+    ).toBe(403);
+    expect(
+      (await ali.get(`/academy/me/assignments/${ids.proj}`)).body.resources.map(
+        (r: { id: string }) => r.id,
+      ),
+    ).toEqual([ids.resource]);
     const dl = await ali.get(`/academy/files/${ids.resource}`);
     expect(dl.status).toBe(200);
     expect(dl.text).toContain('id,ad');
     expect((await veli.get(`/academy/files/${ids.resource}`)).status).toBe(403);
     expect((await otherLead.get(`/academy/files/${ids.resource}`)).status).toBe(403);
     expect((await paused.get(`/academy/files/${ids.resource}`)).status).toBe(403);
-    expect(await prisma.auditLog.count({ where: { action: 'academy.assignment.resource.add' } })).toBe(1);
+    expect(
+      await prisma.auditLog.count({ where: { action: 'academy.assignment.resource.add' } }),
+    ).toBe(1);
 
     const row = await prisma.academyFile.findUniqueOrThrow({ where: { id: ids.resource } });
-    expect((await lead.delete(`/academy/assignments/${ids.proj}/resources/${ids.resource}`)).status).toBe(200);
+    expect(
+      (await lead.delete(`/academy/assignments/${ids.proj}/resources/${ids.resource}`)).status,
+    ).toBe(200);
     expect(await exists(row.storageKey)).toBe(false);
     expect((await ali.get(`/academy/files/${ids.resource}`)).status).toBe(404);
   });
 
   it('dayandırılmış yazılış və bağlı qrup: göndəriş qəbul edilmir', async () => {
-    const p = await paused.post(`/academy/me/assignments/${ids.proj}/attempts`).send({ idempotencyKey: key('p') });
+    const p = await paused
+      .post(`/academy/me/assignments/${ids.proj}/attempts`)
+      .send({ idempotencyKey: key('p') });
     expect(p.status).toBe(403);
-    expect((await paused.put(`/academy/me/assignments/${ids.proj}/draft`).send({ answers: [] })).status).toBe(403);
-    expect((await outsider.post(`/academy/me/assignments/${ids.proj}/attempts`).send({ idempotencyKey: key('o') })).status).toBe(403);
+    expect(
+      (await paused.put(`/academy/me/assignments/${ids.proj}/draft`).send({ answers: [] })).status,
+    ).toBe(403);
+    expect(
+      (
+        await outsider
+          .post(`/academy/me/assignments/${ids.proj}/attempts`)
+          .send({ idempotencyKey: key('o') })
+      ).status,
+    ).toBe(403);
 
-    expect((await admin.patch(`/academy/groups/${ids.de2}`).send({ status: 'COMPLETED' })).status).toBe(200);
-    const closed = await veli.post(`/academy/me/assignments/${ids.other}/attempts`).send({ idempotencyKey: key('c') });
+    expect(
+      (await admin.patch(`/academy/groups/${ids.de2}`).send({ status: 'COMPLETED' })).status,
+    ).toBe(200);
+    const closed = await veli
+      .post(`/academy/me/assignments/${ids.other}/attempts`)
+      .send({ idempotencyKey: key('c') });
     expect([closed.status, closed.body.code]).toEqual([409, 'ACADEMY_GROUP_CLOSED']);
   });
 
   it('təmizləmə: köhnə müvəqqəti fayl silinir, açıq tapşırığın qaralamasındakı fayl saxlanılır', async () => {
     await prisma.academyAssignment.update({ where: { id: ids.proj }, data: { maxAttempts: 10 } });
-    const a = await aysel.post(`/academy/me/assignments/${ids.proj}/files`).attach('file', pdf(), 'kohne.pdf');
-    const b2 = await aysel.post(`/academy/me/assignments/${ids.proj}/files`).attach('file', pdf(), 'qaralamada.pdf');
+    const a = await aysel
+      .post(`/academy/me/assignments/${ids.proj}/files`)
+      .attach('file', pdf(), 'kohne.pdf');
+    const b2 = await aysel
+      .post(`/academy/me/assignments/${ids.proj}/files`)
+      .attach('file', pdf(), 'qaralamada.pdf');
     expect([a.status, b2.status]).toEqual([201, 201]);
     await aysel
       .put(`/academy/me/assignments/${ids.proj}/draft`)
       .send({ answers: [{ itemId: items.file, fileIds: [b2.body.id] }] });
     const old = new Date(Date.now() - 48 * 3_600_000);
-    await prisma.academyFile.updateMany({ where: { id: { in: [a.body.id, b2.body.id] } }, data: { createdAt: old } });
-    const keyA = (await prisma.academyFile.findUniqueOrThrow({ where: { id: a.body.id } })).storageKey;
+    await prisma.academyFile.updateMany({
+      where: { id: { in: [a.body.id, b2.body.id] } },
+      data: { createdAt: old },
+    });
+    const keyA = (await prisma.academyFile.findUniqueOrThrow({ where: { id: a.body.id } }))
+      .storageKey;
 
     const removed = await app.get(AcademyFilesService).cleanupStaged();
     expect(removed).toBeGreaterThanOrEqual(1);

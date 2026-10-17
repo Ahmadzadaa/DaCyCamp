@@ -56,7 +56,14 @@ const stepSelect = {
       title: true,
       isPublished: true,
       course: {
-        select: { id: true, slug: true, title: true, level: true, isPublished: true, deletedAt: true },
+        select: {
+          id: true,
+          slug: true,
+          title: true,
+          level: true,
+          isPublished: true,
+          deletedAt: true,
+        },
       },
     },
   },
@@ -64,7 +71,10 @@ const stepSelect = {
 type StepRow = Prisma.StepGetPayload<{ select: typeof stepSelect }>;
 
 const available = (s: StepRow) =>
-  s.isPublished && s.module.isPublished && s.module.course.isPublished && !s.module.course.deletedAt;
+  s.isPublished &&
+  s.module.isPublished &&
+  s.module.course.isPublished &&
+  !s.module.course.deletedAt;
 
 /**
  * Məzmun adapteri: akademiya platforma addımlarını axtarır, yoxlayır və onlara istinad edir (kopyalamır).
@@ -97,29 +107,43 @@ export class AcademyContentAdapter {
         },
       },
       select: stepSelect,
-      orderBy: [{ module: { course: { title: 'asc' } } }, { module: { order: 'asc' } }, { order: 'asc' }],
+      orderBy: [
+        { module: { course: { title: 'asc' } } },
+        { module: { order: 'asc' } },
+        { order: 'asc' },
+      ],
       take: q.limit,
     });
     return rows.map((s) => this.refFromRow(s));
   }
 
   /** Elementlər üçün addımları yoxlayır: mövcud və dərc olunmuş olmalıdır. Snapshot + versiya qaytarır. */
-  async resolve(stepIds: string[]): Promise<Map<string, { snapshot: StepSnapshot; version: string }>> {
+  async resolve(
+    stepIds: string[],
+  ): Promise<Map<string, { snapshot: StepSnapshot; version: string }>> {
     const uniq = [...new Set(stepIds)];
-    const rows = await this.prisma.step.findMany({ where: { id: { in: uniq } }, select: stepSelect });
+    const rows = await this.prisma.step.findMany({
+      where: { id: { in: uniq } },
+      select: stepSelect,
+    });
     const out = new Map<string, { snapshot: StepSnapshot; version: string }>();
     for (const id of uniq) {
       const s = rows.find((r) => r.id === id);
       if (!s) throw notFound('ACADEMY_STEP_NOT_FOUND', 'Platforma tapşırığı tapılmadı');
       if (!available(s))
-        throw unprocessable('ACADEMY_STEP_UNAVAILABLE', `«${s.title}» dərc olunmayıb və ya silinib`);
+        throw unprocessable(
+          'ACADEMY_STEP_UNAVAILABLE',
+          `«${s.title}» dərc olunmayıb və ya silinib`,
+        );
       out.set(id, { snapshot: this.snapshot(s), version: s.updatedAt.toISOString() });
     }
     return out;
   }
 
   /** Element üçün istinad: snapshot + canlı vəziyyət (addım gizlədilib / silinibsə available=false) */
-  async refs(items: Array<{ stepId: string | null; sourceSnapshot: unknown }>): Promise<Map<string, AcademyStepRefDto>> {
+  async refs(
+    items: Array<{ stepId: string | null; sourceSnapshot: unknown }>,
+  ): Promise<Map<string, AcademyStepRefDto>> {
     const ids = items.map((i) => i.stepId).filter((x): x is string => !!x);
     const rows = ids.length
       ? await this.prisma.step.findMany({ where: { id: { in: ids } }, select: stepSelect })
@@ -129,7 +153,10 @@ export class AcademyContentAdapter {
       const snap = it.sourceSnapshot as StepSnapshot | null;
       if (!snap) continue;
       const live = it.stepId ? rows.find((r) => r.id === it.stepId) : undefined;
-      out.set(snap.stepId, live ? this.refFromRow(live) : { ...this.refFromSnapshot(snap), available: false });
+      out.set(
+        snap.stepId,
+        live ? this.refFromRow(live) : { ...this.refFromSnapshot(snap), available: false },
+      );
     }
     return out;
   }
@@ -179,9 +206,14 @@ export class AcademyContentAdapter {
    * Tələbənin addımı açması üçün: mövcud qaydalarla kursa yazılış (LearnService.enroll) və ardıcıl kursda
    * kilidlidirsə StepUnlock (admin əl ilə açma mexanizmi). Qiymətləndirmə və XP mövcud mühərrikdə qalır.
    */
-  async ensureLearningAccess(studentId: string, stepId: string, grantedById: string | null): Promise<string> {
+  async ensureLearningAccess(
+    studentId: string,
+    stepId: string,
+    grantedById: string | null,
+  ): Promise<string> {
     const s = await this.prisma.step.findUnique({ where: { id: stepId }, select: stepSelect });
-    if (!s || !available(s)) throw unprocessable('ACADEMY_STEP_UNAVAILABLE', 'Bu tapşırıq hazırda əlçatan deyil');
+    if (!s || !available(s))
+      throw unprocessable('ACADEMY_STEP_UNAVAILABLE', 'Bu tapşırıq hazırda əlçatan deyil');
     await this.learn.enroll(studentId, s.module.course.slug);
     const shape = await this.progress.loadCourseShape(s.module.course.id);
     const map = await this.progress.mapFor(studentId, shape);

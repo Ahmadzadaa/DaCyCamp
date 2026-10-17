@@ -63,7 +63,8 @@ export class AcademySubmissionsService {
     // göndəriş yalnız ACTIVE yazılışda (PAUSED / WITHDRAWN / PENDING — 403)
     if (enr?.status !== 'ACTIVE' || !STUDENT_VISIBLE.includes(a.status)) throw academyForbidden();
     if (a.status !== 'PUBLISHED') throw conflict('ACADEMY_ASSIGNMENT_CLOSED', 'Tapşırıq bağlıdır');
-    if (!groupAcceptsSubmissions(a.group.status)) throw conflict('ACADEMY_GROUP_CLOSED', 'Qrup göndəriş qəbul etmir');
+    if (!groupAcceptsSubmissions(a.group.status))
+      throw conflict('ACADEMY_GROUP_CLOSED', 'Qrup göndəriş qəbul etmir');
     const ext = await this.prisma.academyAssignmentExtension.findUnique({
       where: { assignmentId_studentId: { assignmentId, studentId: user.id } },
       select: { extendedDueAt: true },
@@ -87,7 +88,9 @@ export class AcademySubmissionsService {
         DEADLINE_PASSED: 'Son tarix keçib',
         CUTOFF_PASSED: 'Gecikmiş göndəriş müddəti də bitib',
       }[w.reason];
-      throw conflict(`ACADEMY_${w.reason}`, msg, { effectiveDueAt: w.effectiveDueAt.toISOString() });
+      throw conflict(`ACADEMY_${w.reason}`, msg, {
+        effectiveDueAt: w.effectiveDueAt.toISOString(),
+      });
     }
     return w;
   }
@@ -96,12 +99,22 @@ export class AcademySubmissionsService {
    * Cavabları elementlərlə yoxlayır: başqa tapşırığın elementi, təkrar element, növə uyğun olmayan sahə — 422.
    * `requireAll`: göndərişdə hər mətn / kod / link / fayl elementinin cavabı olmalıdır.
    */
-  private normalize(items: AcademyAssignmentItem[], answers: AcademyAnswerInput[], requireAll: boolean): NormalizedAnswer[] {
+  private normalize(
+    items: AcademyAssignmentItem[],
+    answers: AcademyAnswerInput[],
+    requireAll: boolean,
+  ): NormalizedAnswer[] {
     const byId = new Map(items.map((i) => [i.id, i]));
     const given = new Map<string, AcademyAnswerInput>();
     for (const ans of answers) {
-      if (!byId.has(ans.itemId)) throw unprocessable('ACADEMY_ITEM_MISMATCH', 'Cavab bu tapşırığın elementinə aid deyil', { itemId: ans.itemId });
-      if (given.has(ans.itemId)) throw unprocessable('ACADEMY_DUPLICATE_ANSWER', 'Eyni elementə iki cavab', { itemId: ans.itemId });
+      if (!byId.has(ans.itemId))
+        throw unprocessable('ACADEMY_ITEM_MISMATCH', 'Cavab bu tapşırığın elementinə aid deyil', {
+          itemId: ans.itemId,
+        });
+      if (given.has(ans.itemId))
+        throw unprocessable('ACADEMY_DUPLICATE_ANSWER', 'Eyni elementə iki cavab', {
+          itemId: ans.itemId,
+        });
       given.set(ans.itemId, ans);
     }
     const missing: string[] = [];
@@ -113,11 +126,22 @@ export class AcademySubmissionsService {
         link: !blank(ans?.link),
         files: (ans?.fileIds?.length ?? 0) > 0,
       };
-      const allowedField = { LEARNING_STEP: null, TEXT: 'text', CODE: 'code', LINK: 'link', FILE: 'files' }[item.kind];
+      const allowedField = {
+        LEARNING_STEP: null,
+        TEXT: 'text',
+        CODE: 'code',
+        LINK: 'link',
+        FILE: 'files',
+      }[item.kind];
       for (const [field, has] of Object.entries(provided))
         if (has && field !== allowedField)
-          throw unprocessable('ACADEMY_ANSWER_KIND_MISMATCH', 'Cavab elementin növünə uyğun deyil', { itemId: item.id, field });
-      if (requireAll && allowedField && !provided[allowedField as keyof typeof provided]) missing.push(item.id);
+          throw unprocessable(
+            'ACADEMY_ANSWER_KIND_MISMATCH',
+            'Cavab elementin növünə uyğun deyil',
+            { itemId: item.id, field },
+          );
+      if (requireAll && allowedField && !provided[allowedField as keyof typeof provided])
+        missing.push(item.id);
       return {
         item,
         text: provided.text ? ans!.text! : null,
@@ -126,7 +150,10 @@ export class AcademySubmissionsService {
         fileIds: [...new Set(ans?.fileIds ?? [])],
       };
     });
-    if (missing.length) throw unprocessable('ACADEMY_ANSWER_REQUIRED', 'Bütün elementlərə cavab verin', { itemIds: missing });
+    if (missing.length)
+      throw unprocessable('ACADEMY_ANSWER_REQUIRED', 'Bütün elementlərə cavab verin', {
+        itemIds: missing,
+      });
     return out;
   }
 
@@ -134,9 +161,16 @@ export class AcademySubmissionsService {
   private async assertOwnStagedFiles(userId: string, assignmentId: string, fileIds: string[]) {
     if (!fileIds.length) return;
     const n = await this.prisma.academyFile.count({
-      where: { id: { in: fileIds }, ownerId: userId, assignmentId, purpose: 'SUBMISSION', status: 'STAGED' },
+      where: {
+        id: { in: fileIds },
+        ownerId: userId,
+        assignmentId,
+        purpose: 'SUBMISSION',
+        status: 'STAGED',
+      },
     });
-    if (n !== fileIds.length) throw unprocessable('ACADEMY_FILE_INVALID', 'Fayl tapılmadı və ya artıq istifadə olunub');
+    if (n !== fileIds.length)
+      throw unprocessable('ACADEMY_FILE_INVALID', 'Fayl tapılmadı və ya artıq istifadə olunub');
   }
 
   /**
@@ -144,34 +178,56 @@ export class AcademySubmissionsService {
    * cəhdi istisnadır). Kilid altında tranzaksiyada təkrar yoxlanılır — burada erkən və aydın xəta üçündür.
    */
   private assertAttemptAllowed(
-    state: { attempts: Array<{ submittedAt: Date }>; grade: { status: string; updatedAt: Date } | null } | null,
+    state: {
+      attempts: Array<{ submittedAt: Date }>;
+      grade: { status: string; updatedAt: Date } | null;
+    } | null,
     maxAttempts: number,
   ) {
     const attempts = state?.attempts ?? [];
     const grade = state?.grade ?? null;
-    if (grade?.status === 'RELEASED') throw conflict('ACADEMY_ALREADY_GRADED', 'Qiymət artıq açıqlanıb — yeni cəhd edilə bilməz');
-    const latest = attempts.reduce<Date | null>((d, x) => (!d || x.submittedAt > d ? x.submittedAt : d), null);
-    const returnedAwaitingResubmission = grade?.status === 'RETURNED' && !(latest && latest > grade.updatedAt);
-    if (attemptLimitReached({ attemptsUsed: attempts.length, maxAttempts, returnedAwaitingResubmission }))
+    if (grade?.status === 'RELEASED')
+      throw conflict('ACADEMY_ALREADY_GRADED', 'Qiymət artıq açıqlanıb — yeni cəhd edilə bilməz');
+    const latest = attempts.reduce<Date | null>(
+      (d, x) => (!d || x.submittedAt > d ? x.submittedAt : d),
+      null,
+    );
+    const returnedAwaitingResubmission =
+      grade?.status === 'RETURNED' && !(latest && latest > grade.updatedAt);
+    if (
+      attemptLimitReached({
+        attemptsUsed: attempts.length,
+        maxAttempts,
+        returnedAwaitingResubmission,
+      })
+    )
       throw conflict('ACADEMY_ATTEMPT_LIMIT', 'Cəhd limiti bitib', { maxAttempts });
   }
 
   private submissionState(assignmentId: string, studentId: string) {
     return this.prisma.academySubmission.findUnique({
       where: { assignmentId_studentId: { assignmentId, studentId } },
-      select: { attempts: { select: { submittedAt: true } }, grade: { select: { status: true, updatedAt: true } } },
+      select: {
+        attempts: { select: { submittedAt: true } },
+        grade: { select: { status: true, updatedAt: true } },
+      },
     });
   }
 
   // ───────────────────────── qaralama
 
-  async saveDraft(user: AuthUser, assignmentId: string, input: AcademyDraftInput): Promise<{ updatedAt: string }> {
+  async saveDraft(
+    user: AuthUser,
+    assignmentId: string,
+    input: AcademyDraftInput,
+  ): Promise<{ updatedAt: string }> {
     const { a } = await this.openContext(user, assignmentId);
     this.assertAttemptAllowed(await this.submissionState(assignmentId, user.id), a.maxAttempts);
     const items = await this.prisma.academyAssignmentItem.findMany({ where: { assignmentId } });
     const normalized = this.normalize(items, input.answers, false);
     const fileIds = normalized.flatMap((x) => x.fileIds);
-    if (new Set(fileIds).size !== fileIds.length) throw unprocessable('ACADEMY_FILE_INVALID', 'Eyni fayl iki elementdə');
+    if (new Set(fileIds).size !== fileIds.length)
+      throw unprocessable('ACADEMY_FILE_INVALID', 'Eyni fayl iki elementdə');
     await this.assertOwnStagedFiles(user.id, assignmentId, fileIds);
     // yalnız doldurulmuş cavablar saxlanılır
     const answers = normalized
@@ -192,7 +248,9 @@ export class AcademySubmissionsService {
   }
 
   async deleteDraft(user: AuthUser, assignmentId: string): Promise<{ ok: true }> {
-    await this.prisma.academySubmissionDraft.deleteMany({ where: { assignmentId, studentId: user.id } });
+    await this.prisma.academySubmissionDraft.deleteMany({
+      where: { assignmentId, studentId: user.id },
+    });
     return { ok: true };
   }
 
@@ -211,7 +269,10 @@ export class AcademySubmissionsService {
       return created.id;
     } catch (e) {
       if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002') {
-        const again = await this.prisma.academySubmission.findUnique({ where, select: { id: true } });
+        const again = await this.prisma.academySubmission.findUnique({
+          where,
+          select: { id: true },
+        });
         if (again) return again.id;
       }
       throw e;
@@ -225,7 +286,11 @@ export class AcademySubmissionsService {
     });
   }
 
-  async submit(user: AuthUser, assignmentId: string, input: AcademySubmitInput): Promise<AcademySubmitReceiptDto> {
+  async submit(
+    user: AuthUser,
+    assignmentId: string,
+    input: AcademySubmitInput,
+  ): Promise<AcademySubmitReceiptDto> {
     // təkrar sorğu (iki klik, şəbəkə xətası): yoxlamalardan ƏVVƏL — artıq qəbul olunmuş cəhd yenidən rədd edilməsin
     const previous = await this.findReplay(user.id, assignmentId, input.idempotencyKey);
     if (previous) return this.receipt(user.id, assignmentId, previous.id, true);
@@ -253,7 +318,8 @@ export class AcademySubmissionsService {
     });
     const answers = this.normalize(items, input.answers, true);
     const fileIds = answers.flatMap((x) => x.fileIds);
-    if (new Set(fileIds).size !== fileIds.length) throw unprocessable('ACADEMY_FILE_INVALID', 'Eyni fayl iki elementdə');
+    if (new Set(fileIds).size !== fileIds.length)
+      throw unprocessable('ACADEMY_FILE_INVALID', 'Eyni fayl iki elementdə');
     await this.assertOwnStagedFiles(user.id, assignmentId, fileIds);
 
     // platforma nəticəsi — server seçir (tapşırıq açılandan indiyədək, yalnız bu tələbənin qeydləri)
@@ -274,7 +340,9 @@ export class AcademySubmissionsService {
     return this.prisma.$transaction(async (tx) => {
       await tx.$queryRaw`SELECT id FROM "AcademySubmission" WHERE id = ${submissionId} FOR UPDATE`;
       const dup = await tx.academySubmissionAttempt.findUnique({
-        where: { submissionId_idempotencyKey: { submissionId, idempotencyKey: input.idempotencyKey } },
+        where: {
+          submissionId_idempotencyKey: { submissionId, idempotencyKey: input.idempotencyKey },
+        },
         select: { id: true },
       });
       if (dup) return { attemptId: dup.id, replayed: true };
@@ -283,7 +351,10 @@ export class AcademySubmissionsService {
         select: { attemptNumber: true, submittedAt: true },
         orderBy: { attemptNumber: 'desc' },
       });
-      const grade = await tx.academyGrade.findUnique({ where: { submissionId }, select: { status: true, updatedAt: true } });
+      const grade = await tx.academyGrade.findUnique({
+        where: { submissionId },
+        select: { status: true, updatedAt: true },
+      });
       this.assertAttemptAllowed({ attempts: prior, grade }, a.maxAttempts);
 
       // son tarix kilid altında, qəbul anının server vaxtı ilə
@@ -294,7 +365,8 @@ export class AcademySubmissionsService {
       let autoScoreCenti = 0;
       const rows = answers.map((x) => {
         const s = x.item.sourceSnapshot as StepSnapshot | null;
-        if (x.item.kind !== 'LEARNING_STEP' || !s) return { x, ev: null as StepEvidence | null, score: null as number | null };
+        if (x.item.kind !== 'LEARNING_STEP' || !s)
+          return { x, ev: null as StepEvidence | null, score: null as number | null };
         const ev = evidence.get(s.stepId) ?? null;
         const score = ev ? scaleScore(x.item.maxScoreCenti, ev.ratio) : 0;
         autoScoreCenti += score;
@@ -337,11 +409,20 @@ export class AcademySubmissionsService {
         });
         if (x.fileIds.length) {
           const bound = await tx.academyFile.updateMany({
-            where: { id: { in: x.fileIds }, ownerId: user.id, assignmentId, purpose: 'SUBMISSION', status: 'STAGED' },
+            where: {
+              id: { in: x.fileIds },
+              ownerId: user.id,
+              assignmentId,
+              purpose: 'SUBMISSION',
+              status: 'STAGED',
+            },
             data: { status: 'ATTACHED', submissionItemId: answer.id, attachedAt: now },
           });
           if (bound.count !== x.fileIds.length)
-            throw unprocessable('ACADEMY_FILE_INVALID', 'Fayl tapılmadı və ya artıq istifadə olunub');
+            throw unprocessable(
+              'ACADEMY_FILE_INVALID',
+              'Fayl tapılmadı və ya artıq istifadə olunub',
+            );
         }
       }
       await tx.academySubmissionDraft.deleteMany({ where: { assignmentId, studentId: user.id } });
@@ -353,10 +434,20 @@ export class AcademySubmissionsService {
   }
 
   /** Qəbz: cəhd + tələbənin indiki vəziyyəti */
-  async receipt(studentId: string, assignmentId: string, attemptId: string, replayed: boolean): Promise<AcademySubmitReceiptDto> {
-    const attempt = await this.prisma.academySubmissionAttempt.findUniqueOrThrow({ where: { id: attemptId } });
+  async receipt(
+    studentId: string,
+    assignmentId: string,
+    attemptId: string,
+    replayed: boolean,
+  ): Promise<AcademySubmitReceiptDto> {
+    const attempt = await this.prisma.academySubmissionAttempt.findUniqueOrThrow({
+      where: { id: attemptId },
+    });
     const [a, ext, sub] = await Promise.all([
-      this.prisma.academyAssignment.findUniqueOrThrow({ where: { id: assignmentId }, include: { group: { select: { status: true } } } }),
+      this.prisma.academyAssignment.findUniqueOrThrow({
+        where: { id: assignmentId },
+        include: { group: { select: { status: true } } },
+      }),
       this.prisma.academyAssignmentExtension.findUnique({
         where: { assignmentId_studentId: { assignmentId, studentId } },
         select: { extendedDueAt: true },
@@ -364,7 +455,10 @@ export class AcademySubmissionsService {
       this.prisma.academySubmission.findUniqueOrThrow({
         where: { id: attempt.submissionId },
         include: {
-          attempts: { select: { submittedAt: true, isLate: true }, orderBy: { attemptNumber: 'desc' } },
+          attempts: {
+            select: { submittedAt: true, isLate: true },
+            orderBy: { attemptNumber: 'desc' },
+          },
           grade: { select: { status: true, updatedAt: true } },
         },
       }),

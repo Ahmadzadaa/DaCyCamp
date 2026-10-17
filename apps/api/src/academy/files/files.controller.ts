@@ -1,4 +1,14 @@
-import { Controller, Delete, Get, Param, Post, Res, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
+import {
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Res,
+  UploadedFile,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import type { Response } from 'express';
 import { CurrentUser, type AuthUser } from '../../common/decorators';
@@ -14,8 +24,16 @@ export class AcademyFilesController {
   constructor(private readonly files: AcademyFilesService) {}
 
   @Post('assignments/:id/resources')
-  @UseInterceptors(FileInterceptor('file', { limits: { fileSize: env.ACADEMY_MAX_FILE_MB * 1024 * 1024, files: 1 } }))
-  addResource(@CurrentUser() u: AuthUser, @Param('id') id: string, @UploadedFile() file: Express.Multer.File | undefined) {
+  @UseInterceptors(
+    FileInterceptor('file', {
+      limits: { fileSize: env.ACADEMY_MAX_FILE_MB * 1024 * 1024, files: 1 },
+    }),
+  )
+  addResource(
+    @CurrentUser() u: AuthUser,
+    @Param('id') id: string,
+    @UploadedFile() file: Express.Multer.File | undefined,
+  ) {
     if (!file) throw badRequest('VALIDATION_FAILED', 'Fayl göndərilməyib');
     return this.files.addResource(u, id, {
       buffer: file.buffer,
@@ -24,7 +42,11 @@ export class AcademyFilesController {
   }
 
   @Delete('assignments/:id/resources/:fileId')
-  removeResource(@CurrentUser() u: AuthUser, @Param('id') id: string, @Param('fileId') fileId: string) {
+  removeResource(
+    @CurrentUser() u: AuthUser,
+    @Param('id') id: string,
+    @Param('fileId') fileId: string,
+  ) {
     return this.files.removeResource(u, id, fileId);
   }
 
@@ -38,7 +60,9 @@ export class AcademyFilesController {
     res.type(f.mime);
     res.sendFile(f.path, (err) => {
       if (err && !res.headersSent)
-        res.status(404).json({ code: 'ACADEMY_FILE_NOT_FOUND', message: 'Fayl tapılmadı', statusCode: 404 });
+        res
+          .status(404)
+          .json({ code: 'ACADEMY_FILE_NOT_FOUND', message: 'Fayl tapılmadı', statusCode: 404 });
     });
   }
 }

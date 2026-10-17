@@ -22,7 +22,11 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { AuditService } from '../../audit/audit.service';
 import type { AuthUser } from '../../common/decorators';
 import { conflict, notFound, unprocessable } from '../../common/errors';
-import { AcademyAccessService, academyForbidden, type GroupAccess } from '../access/academy-access.service';
+import {
+  AcademyAccessService,
+  academyForbidden,
+  type GroupAccess,
+} from '../access/academy-access.service';
 import { AcademyAssignmentsService, STUDENT_VISIBLE } from '../assignments/assignments.service';
 import { attemptDto, attemptInclude } from '../me/student.service';
 import { emitAcademyEvent } from '../notifications/academy-events';
@@ -61,8 +65,16 @@ export function staffGradeDto(g: GradeRow, maxScoreCenti: number, stale: boolean
     maxScore: fromCenti(maxScoreCenti),
     feedback: g.feedback,
     selectedAttemptId: g.selectedAttemptId,
-    itemScores: g.itemScores.map((x) => ({ itemId: x.itemId, score: fromCenti(x.scoreCenti), comment: x.comment })),
-    rubricScores: g.rubricScores.map((x) => ({ criterionId: x.criterionId, score: fromCenti(x.scoreCenti), comment: x.comment })),
+    itemScores: g.itemScores.map((x) => ({
+      itemId: x.itemId,
+      score: fromCenti(x.scoreCenti),
+      comment: x.comment,
+    })),
+    rubricScores: g.rubricScores.map((x) => ({
+      criterionId: x.criterionId,
+      score: fromCenti(x.scoreCenti),
+      comment: x.comment,
+    })),
     gradedBy: g.gradedBy,
     gradedAt: g.gradedAt?.toISOString() ?? null,
     releasedAt: g.releasedAt?.toISOString() ?? null,
@@ -107,15 +119,21 @@ export class AcademyGradingService {
   }
 
   private assertWritable(a: { status: string; group: { status: string } }) {
-    if (a.status === 'CANCELLED') throw conflict('ACADEMY_ASSIGNMENT_READ_ONLY', 'Ləğv olunmuş tapşırıq qiymətləndirilmir');
-    if (groupIsReadOnly(a.group.status)) throw conflict('ACADEMY_GROUP_READ_ONLY', 'Qrup yalnız oxunur');
+    if (a.status === 'CANCELLED')
+      throw conflict('ACADEMY_ASSIGNMENT_READ_ONLY', 'Ləğv olunmuş tapşırıq qiymətləndirilmir');
+    if (groupIsReadOnly(a.group.status))
+      throw conflict('ACADEMY_GROUP_READ_ONLY', 'Qrup yalnız oxunur');
   }
 
   private assertVersion(current: number | undefined, expected: number | undefined) {
     if (expected !== undefined && (current ?? 0) !== expected)
-      throw conflict('ACADEMY_VERSION_CONFLICT', 'Qiymət başqa müəllim tərəfindən dəyişdirilib — səhifəni yeniləyin', {
-        currentVersion: current ?? 0,
-      });
+      throw conflict(
+        'ACADEMY_VERSION_CONFLICT',
+        'Qiymət başqa müəllim tərəfindən dəyişdirilib — səhifəni yeniləyin',
+        {
+          currentVersion: current ?? 0,
+        },
+      );
   }
 
   // ───────────────────────── siyahı və detal
@@ -137,9 +155,20 @@ export class AcademyGradingService {
       this.prisma.academySubmission.findMany({
         where: { assignmentId },
         include: {
-          attempts: { select: { id: true, attemptNumber: true, submittedAt: true, isLate: true }, orderBy: { attemptNumber: 'desc' } },
+          attempts: {
+            select: { id: true, attemptNumber: true, submittedAt: true, isLate: true },
+            orderBy: { attemptNumber: 'desc' },
+          },
           grade: {
-            select: { id: true, status: true, finalScoreCenti: true, version: true, updatedAt: true, selectedAttemptId: true, gradedById: true },
+            select: {
+              id: true,
+              status: true,
+              finalScoreCenti: true,
+              version: true,
+              updatedAt: true,
+              selectedAttemptId: true,
+              gradedById: true,
+            },
           },
         },
       }),
@@ -180,7 +209,13 @@ export class AcademyGradingService {
           latestSubmittedAt: latest?.submittedAt.toISOString() ?? null,
           latestIsLate: latest?.isLate ?? false,
           grade: g
-            ? { id: g.id, status: g.status, finalScore: fromCenti(g.finalScoreCenti), maxScore: fromCenti(a.maxScoreCenti), version: g.version }
+            ? {
+                id: g.id,
+                status: g.status,
+                finalScore: fromCenti(g.finalScoreCenti),
+                maxScore: fromCenti(a.maxScoreCenti),
+                version: g.version,
+              }
             : null,
           needsReview: needsReview(attempts, g ?? null),
         };
@@ -193,7 +228,9 @@ export class AcademyGradingService {
     const [assignment, ext, history] = await Promise.all([
       this.assignments.loadRow(sub.assignmentId).then((r) => this.assignments.toDto(r)),
       this.prisma.academyAssignmentExtension.findUnique({
-        where: { assignmentId_studentId: { assignmentId: sub.assignmentId, studentId: sub.studentId } },
+        where: {
+          assignmentId_studentId: { assignmentId: sub.assignmentId, studentId: sub.studentId },
+        },
       }),
       this.history(sub.grade?.id),
     ]);
@@ -203,7 +240,9 @@ export class AcademyGradingService {
       student: sub.student,
       effectiveDueAt: effectiveDueAt(sub.assignment.dueAt, ext?.extendedDueAt).toISOString(),
       attempts: sub.attempts.map(attemptDto),
-      grade: sub.grade ? staffGradeDto(sub.grade, sub.assignment.maxScoreCenti, isStale(sub.grade, sub.attempts)) : null,
+      grade: sub.grade
+        ? staffGradeDto(sub.grade, sub.assignment.maxScoreCenti, isStale(sub.grade, sub.attempts))
+        : null,
       history,
       permissions: this.access.permissions(access),
     };
@@ -229,7 +268,11 @@ export class AcademyGradingService {
 
   // ───────────────────────── qiymət yazmaq
 
-  async grade(user: AuthUser, submissionId: string, input: AcademyGradeInput): Promise<AcademyGradeDto> {
+  async grade(
+    user: AuthUser,
+    submissionId: string,
+    input: AcademyGradeInput,
+  ): Promise<AcademyGradeDto> {
     const { sub, access } = await this.loadSubmission(user, submissionId);
     if (!this.access.can(access, 'grade.write')) throw academyForbidden();
     const a = sub.assignment;
@@ -239,7 +282,11 @@ export class AcademyGradingService {
     // açıqlanmış qiyməti dəyişmək — tələbənin gördüyünü dəyişir: yalnız aparıcı / admin və səbəblə
     if (prev?.status === 'RELEASED') {
       if (!this.access.can(access, 'grade.release')) throw academyForbidden();
-      if (!input.reason?.trim()) throw unprocessable('ACADEMY_REASON_REQUIRED', 'Açıqlanmış qiyməti dəyişməyin səbəbini yazın');
+      if (!input.reason?.trim())
+        throw unprocessable(
+          'ACADEMY_REASON_REQUIRED',
+          'Açıqlanmış qiyməti dəyişməyin səbəbini yazın',
+        );
     }
     this.assertVersion(prev?.version, input.expectedVersion);
 
@@ -247,13 +294,19 @@ export class AcademyGradingService {
     let selected;
     try {
       const wanted =
-        a.attemptSelection === 'INSTRUCTOR_SELECTED' ? (input.selectedAttemptId ?? prev?.selectedAttemptId ?? null) : null;
+        a.attemptSelection === 'INSTRUCTOR_SELECTED'
+          ? (input.selectedAttemptId ?? prev?.selectedAttemptId ?? null)
+          : null;
       selected = selectAttempt(sub.attempts, a.attemptSelection, wanted);
     } catch {
       throw unprocessable('ACADEMY_ATTEMPT_NOT_FOUND', 'Seçilmiş cəhd bu göndərişə aid deyil');
     }
     if (!selected) throw conflict('ACADEMY_NO_ATTEMPTS', 'Göndərilmiş cəhd yoxdur');
-    if (a.attemptSelection !== 'INSTRUCTOR_SELECTED' && input.selectedAttemptId && input.selectedAttemptId !== selected.id)
+    if (
+      a.attemptSelection !== 'INSTRUCTOR_SELECTED' &&
+      input.selectedAttemptId &&
+      input.selectedAttemptId !== selected.id
+    )
       throw unprocessable('ACADEMY_SELECTION_NOT_ALLOWED', 'Bu tapşırıqda cəhd siyasətlə seçilir');
 
     const { itemScores, rubricScores, rawCenti } = this.scores(a, selected, input);
@@ -269,7 +322,10 @@ export class AcademyGradingService {
 
     const gradeId = await this.prisma.$transaction(async (tx) => {
       await tx.$queryRaw`SELECT id FROM "AcademySubmission" WHERE id = ${sub.id} FOR UPDATE`;
-      const cur = await tx.academyGrade.findUnique({ where: { submissionId: sub.id }, select: { version: true, status: true } });
+      const cur = await tx.academyGrade.findUnique({
+        where: { submissionId: sub.id },
+        select: { version: true, status: true },
+      });
       this.assertVersion(cur?.version, input.expectedVersion ?? prev?.version ?? 0);
       const data = {
         selectedAttemptId: selected.id,
@@ -285,16 +341,30 @@ export class AcademyGradingService {
       } as const;
       const g = cur
         ? await tx.academyGrade.update({ where: { submissionId: sub.id }, data })
-        : await tx.academyGrade.create({ data: { submissionId: sub.id, assignmentId: a.id, ...data } });
+        : await tx.academyGrade.create({
+            data: { submissionId: sub.id, assignmentId: a.id, ...data },
+          });
       await tx.academyGradeItem.deleteMany({ where: { gradeId: g.id } });
       await tx.academyRubricScore.deleteMany({ where: { gradeId: g.id } });
       if (itemScores.length)
         await tx.academyGradeItem.createMany({
-          data: itemScores.map((x) => ({ gradeId: g.id, assignmentId: a.id, itemId: x.itemId, scoreCenti: x.scoreCenti, comment: x.comment })),
+          data: itemScores.map((x) => ({
+            gradeId: g.id,
+            assignmentId: a.id,
+            itemId: x.itemId,
+            scoreCenti: x.scoreCenti,
+            comment: x.comment,
+          })),
         });
       if (rubricScores.length)
         await tx.academyRubricScore.createMany({
-          data: rubricScores.map((x) => ({ gradeId: g.id, assignmentId: a.id, criterionId: x.criterionId, scoreCenti: x.scoreCenti, comment: x.comment })),
+          data: rubricScores.map((x) => ({
+            gradeId: g.id,
+            assignmentId: a.id,
+            criterionId: x.criterionId,
+            scoreCenti: x.scoreCenti,
+            comment: x.comment,
+          })),
         });
       await tx.academyGradeHistory.create({
         data: {
@@ -304,11 +374,18 @@ export class AcademyGradingService {
           previousStatus: prev?.status ?? null,
           newStatus,
           reason: input.reason?.trim() || null,
-          snapshot: { selectedAttemptId: selected.id, rawScoreCenti: fin.rawCenti, latePenaltyCenti: fin.penaltyCenti, itemScores, rubricScores },
+          snapshot: {
+            selectedAttemptId: selected.id,
+            rawScoreCenti: fin.rawCenti,
+            latePenaltyCenti: fin.penaltyCenti,
+            itemScores,
+            rubricScores,
+          },
           changedById: user.id,
         },
       });
-      if (newStatus === 'RELEASED') await emitAcademyEvent(tx, { type: 'GRADE_RELEASED', gradeId: g.id, version: g.version });
+      if (newStatus === 'RELEASED')
+        await emitAcademyEvent(tx, { type: 'GRADE_RELEASED', gradeId: g.id, version: g.version });
       return g.id;
     });
 
@@ -344,35 +421,67 @@ export class AcademyGradingService {
     const givenItems = new Map<string, { scoreCenti: number; comment: string | null }>();
     for (const x of input.itemScores ?? []) {
       const item = itemById.get(x.itemId);
-      if (!item) throw unprocessable('ACADEMY_ITEM_MISMATCH', 'Element bu tapşırığa aid deyil', { itemId: x.itemId });
-      if (givenItems.has(x.itemId)) throw unprocessable('ACADEMY_DUPLICATE_SCORE', 'Eyni elementə iki bal', { itemId: x.itemId });
+      if (!item)
+        throw unprocessable('ACADEMY_ITEM_MISMATCH', 'Element bu tapşırığa aid deyil', {
+          itemId: x.itemId,
+        });
+      if (givenItems.has(x.itemId))
+        throw unprocessable('ACADEMY_DUPLICATE_SCORE', 'Eyni elementə iki bal', {
+          itemId: x.itemId,
+        });
       const c = toCenti(x.score);
       if (c < 0 || c > item.maxScoreCenti)
-        throw unprocessable('ACADEMY_SCORE_OUT_OF_RANGE', 'Bal elementin maksimumundan böyükdür', { itemId: x.itemId, max: fromCenti(item.maxScoreCenti) });
+        throw unprocessable('ACADEMY_SCORE_OUT_OF_RANGE', 'Bal elementin maksimumundan böyükdür', {
+          itemId: x.itemId,
+          max: fromCenti(item.maxScoreCenti),
+        });
       givenItems.set(x.itemId, { scoreCenti: c, comment: x.comment?.trim() || null });
     }
 
     if (a.rubric) {
-      if (!input.rubricScores) throw unprocessable('ACADEMY_RUBRIC_REQUIRED', 'Rubrika üzrə balları daxil edin');
+      if (!input.rubricScores)
+        throw unprocessable('ACADEMY_RUBRIC_REQUIRED', 'Rubrika üzrə balları daxil edin');
       const critById = new Map(a.rubric.criteria.map((c) => [c.id, c]));
-      const rubricScores: Array<{ criterionId: string; scoreCenti: number; comment: string | null }> = [];
+      const rubricScores: Array<{
+        criterionId: string;
+        scoreCenti: number;
+        comment: string | null;
+      }> = [];
       for (const x of input.rubricScores) {
         const c = critById.get(x.criterionId);
-        if (!c) throw unprocessable('ACADEMY_CRITERION_MISMATCH', 'Meyar bu rubrikaya aid deyil', { criterionId: x.criterionId });
+        if (!c)
+          throw unprocessable('ACADEMY_CRITERION_MISMATCH', 'Meyar bu rubrikaya aid deyil', {
+            criterionId: x.criterionId,
+          });
         if (rubricScores.some((r) => r.criterionId === x.criterionId))
-          throw unprocessable('ACADEMY_DUPLICATE_SCORE', 'Eyni meyara iki bal', { criterionId: x.criterionId });
+          throw unprocessable('ACADEMY_DUPLICATE_SCORE', 'Eyni meyara iki bal', {
+            criterionId: x.criterionId,
+          });
         const s = toCenti(x.score);
         if (s < 0 || s > c.maxScoreCenti)
-          throw unprocessable('ACADEMY_SCORE_OUT_OF_RANGE', 'Bal meyarın maksimumundan böyükdür', { criterionId: c.id, max: fromCenti(c.maxScoreCenti) });
+          throw unprocessable('ACADEMY_SCORE_OUT_OF_RANGE', 'Bal meyarın maksimumundan böyükdür', {
+            criterionId: c.id,
+            max: fromCenti(c.maxScoreCenti),
+          });
         rubricScores.push({ criterionId: c.id, scoreCenti: s, comment: x.comment?.trim() || null });
       }
-      const missing = a.rubric.criteria.filter((c) => !rubricScores.some((r) => r.criterionId === c.id)).map((c) => c.id);
-      if (missing.length) throw unprocessable('ACADEMY_SCORE_REQUIRED', 'Bütün meyarları qiymətləndirin', { criterionIds: missing });
+      const missing = a.rubric.criteria
+        .filter((c) => !rubricScores.some((r) => r.criterionId === c.id))
+        .map((c) => c.id);
+      if (missing.length)
+        throw unprocessable('ACADEMY_SCORE_REQUIRED', 'Bütün meyarları qiymətləndirin', {
+          criterionIds: missing,
+        });
       // element balları rubrika rejimində məlumat xarakterlidir (cəmə daxil deyil)
       const itemScores = [...givenItems].map(([itemId, v]) => ({ itemId, ...v }));
-      return { itemScores, rubricScores, rawCenti: rubricScores.reduce((s, r) => s + r.scoreCenti, 0) };
+      return {
+        itemScores,
+        rubricScores,
+        rawCenti: rubricScores.reduce((s, r) => s + r.scoreCenti, 0),
+      };
     }
-    if (input.rubricScores?.length) throw unprocessable('ACADEMY_RUBRIC_NOT_SET', 'Bu tapşırığın rubrikası yoxdur');
+    if (input.rubricScores?.length)
+      throw unprocessable('ACADEMY_RUBRIC_NOT_SET', 'Bu tapşırığın rubrikası yoxdur');
 
     const missing: string[] = [];
     const itemScores = a.items.flatMap((item) => {
@@ -385,36 +494,61 @@ export class AcademyGradingService {
       missing.push(item.id);
       return [];
     });
-    if (missing.length) throw unprocessable('ACADEMY_SCORE_REQUIRED', 'Bütün elementləri qiymətləndirin', { itemIds: missing });
-    return { itemScores, rubricScores: [], rawCenti: itemScores.reduce((s, x) => s + x.scoreCenti, 0) };
+    if (missing.length)
+      throw unprocessable('ACADEMY_SCORE_REQUIRED', 'Bütün elementləri qiymətləndirin', {
+        itemIds: missing,
+      });
+    return {
+      itemScores,
+      rubricScores: [],
+      rawCenti: itemScores.reduce((s, x) => s + x.scoreCenti, 0),
+    };
   }
 
   private async gradeDto(submissionId: string): Promise<AcademyGradeDto> {
     const g = await this.prisma.academyGrade.findUniqueOrThrow({
       where: { submissionId },
-      include: { ...gradeInclude, submission: { select: { attempts: { select: { id: true, attemptNumber: true } } } } },
+      include: {
+        ...gradeInclude,
+        submission: { select: { attempts: { select: { id: true, attemptNumber: true } } } },
+      },
     });
-    const max = await this.prisma.academyAssignment.findUniqueOrThrow({ where: { id: g.assignmentId }, select: { maxScoreCenti: true } });
+    const max = await this.prisma.academyAssignment.findUniqueOrThrow({
+      where: { id: g.assignmentId },
+      select: { maxScoreCenti: true },
+    });
     return staffGradeDto(g, max.maxScoreCenti, isStale(g, g.submission.attempts));
   }
 
   // ───────────────────────── açıqlama və qaytarma
 
-  async release(user: AuthUser, submissionId: string, expectedVersion?: number): Promise<AcademyGradeDto> {
+  async release(
+    user: AuthUser,
+    submissionId: string,
+    expectedVersion?: number,
+  ): Promise<AcademyGradeDto> {
     const { sub, access } = await this.loadSubmission(user, submissionId);
     if (!this.access.can(access, 'grade.release')) throw academyForbidden();
     this.assertWritable(sub.assignment);
     const g = sub.grade;
     if (!g) throw conflict('ACADEMY_NOT_GRADED', 'Əvvəlcə qiymət yazın');
-    if (g.status !== 'DRAFT') throw conflict('ACADEMY_GRADE_NOT_DRAFT', 'Qiymət artıq açıqlanıb və ya qaytarılıb');
-    if (isStale(g, sub.attempts)) throw conflict('ACADEMY_GRADE_STALE', 'Seçilmiş cəhddən sonra yeni cəhd var — yenidən qiymətləndirin');
+    if (g.status !== 'DRAFT')
+      throw conflict('ACADEMY_GRADE_NOT_DRAFT', 'Qiymət artıq açıqlanıb və ya qaytarılıb');
+    if (isStale(g, sub.attempts))
+      throw conflict(
+        'ACADEMY_GRADE_STALE',
+        'Seçilmiş cəhddən sonra yeni cəhd var — yenidən qiymətləndirin',
+      );
     this.assertVersion(g.version, expectedVersion);
     await this.transition(user, sub, g, 'RELEASED', null);
     return this.gradeDto(sub.id);
   }
 
   /** Bütün hazır qaralamaları açıqlamaq (köhnəlmiş / qiymətsiz olanlar keçilir) */
-  async releaseAll(user: AuthUser, assignmentId: string): Promise<{ released: number; skipped: Array<{ submissionId: string; reason: string }> }> {
+  async releaseAll(
+    user: AuthUser,
+    assignmentId: string,
+  ): Promise<{ released: number; skipped: Array<{ submissionId: string; reason: string }> }> {
     const { assignment, access } = await this.access.assignmentAccess(user, assignmentId);
     if (!this.access.can(access, 'grade.release')) throw academyForbidden();
     const subs = await this.prisma.academySubmission.findMany({
@@ -436,13 +570,18 @@ export class AcademyGradingService {
   }
 
   /** Düzəliş üçün qaytarmaq: tələbə rəyi görür (bal yox) və bir düzəliş cəhdi edə bilər */
-  async returnForRevision(user: AuthUser, submissionId: string, input: AcademyReturnInput): Promise<AcademyGradeDto> {
+  async returnForRevision(
+    user: AuthUser,
+    submissionId: string,
+    input: AcademyReturnInput,
+  ): Promise<AcademyGradeDto> {
     const { sub, access } = await this.loadSubmission(user, submissionId);
     if (!this.access.can(access, 'grade.release')) throw academyForbidden();
     this.assertWritable(sub.assignment);
     if (!sub.attempts.length) throw conflict('ACADEMY_NO_ATTEMPTS', 'Göndərilmiş cəhd yoxdur');
     const g = sub.grade;
-    if (g && g.status !== 'DRAFT') throw conflict('ACADEMY_GRADE_NOT_DRAFT', 'Açıqlanmış / qaytarılmış qiymət qaytarılmır');
+    if (g && g.status !== 'DRAFT')
+      throw conflict('ACADEMY_GRADE_NOT_DRAFT', 'Açıqlanmış / qaytarılmış qiymət qaytarılmır');
     this.assertVersion(g?.version, input.expectedVersion);
     await this.transition(user, sub, g, 'RETURNED', input.feedback);
     return this.gradeDto(sub.id);
@@ -450,7 +589,12 @@ export class AcademyGradingService {
 
   private async transition(
     user: AuthUser,
-    sub: { id: string; assignmentId: string; student: { name: string }; assignment: { title: string; group: { code: string } } },
+    sub: {
+      id: string;
+      assignmentId: string;
+      student: { name: string };
+      assignment: { title: string; group: { code: string } };
+    },
     g: GradeRow | null,
     to: 'RELEASED' | 'RETURNED',
     feedback: string | null,
@@ -458,17 +602,30 @@ export class AcademyGradingService {
     const now = new Date();
     const gradeId = await this.prisma.$transaction(async (tx: Tx) => {
       await tx.$queryRaw`SELECT id FROM "AcademySubmission" WHERE id = ${sub.id} FOR UPDATE`;
-      const cur = await tx.academyGrade.findUnique({ where: { submissionId: sub.id }, select: { version: true, status: true } });
-      if ((cur?.version ?? 0) !== (g?.version ?? 0) || (cur?.status ?? null) !== (g?.status ?? null))
-        throw conflict('ACADEMY_VERSION_CONFLICT', 'Qiymət bu arada dəyişdirilib — səhifəni yeniləyin');
+      const cur = await tx.academyGrade.findUnique({
+        where: { submissionId: sub.id },
+        select: { version: true, status: true },
+      });
+      if (
+        (cur?.version ?? 0) !== (g?.version ?? 0) ||
+        (cur?.status ?? null) !== (g?.status ?? null)
+      )
+        throw conflict(
+          'ACADEMY_VERSION_CONFLICT',
+          'Qiymət bu arada dəyişdirilib — səhifəni yeniləyin',
+        );
       const data = {
         status: to,
         version: (cur?.version ?? 0) + 1,
-        ...(to === 'RELEASED' ? { releasedAt: now } : { feedback, gradedById: user.id, gradedAt: now }),
+        ...(to === 'RELEASED'
+          ? { releasedAt: now }
+          : { feedback, gradedById: user.id, gradedAt: now }),
       };
       const row = cur
         ? await tx.academyGrade.update({ where: { submissionId: sub.id }, data })
-        : await tx.academyGrade.create({ data: { submissionId: sub.id, assignmentId: sub.assignmentId, ...data } });
+        : await tx.academyGrade.create({
+            data: { submissionId: sub.id, assignmentId: sub.assignmentId, ...data },
+          });
       await tx.academyGradeHistory.create({
         data: {
           gradeId: row.id,
@@ -517,12 +674,16 @@ export class AcademyGradingService {
     if (a.gradingType !== 'AUTOMATIC') return;
     const g = sub.grade;
     if (g && (g.status !== 'DRAFT' || g.gradedById)) return;
-    const policy = a.attemptSelection === 'INSTRUCTOR_SELECTED' ? 'LATEST_ATTEMPT' : a.attemptSelection;
+    const policy =
+      a.attemptSelection === 'INSTRUCTOR_SELECTED' ? 'LATEST_ATTEMPT' : a.attemptSelection;
     const selected = selectAttempt(sub.attempts, policy);
     if (!selected) return;
     const itemScores = a.items.map((item) => ({
       itemId: item.id,
-      scoreCenti: Math.min(selected.answers.find((x) => x.itemId === item.id)?.evaluationScoreCenti ?? 0, item.maxScoreCenti),
+      scoreCenti: Math.min(
+        selected.answers.find((x) => x.itemId === item.id)?.evaluationScoreCenti ?? 0,
+        item.maxScoreCenti,
+      ),
     }));
     const fin = computeFinalScore({
       rawCenti: itemScores.reduce((s, x) => s + x.scoreCenti, 0),
@@ -544,7 +705,9 @@ export class AcademyGradingService {
       ? await tx.academyGrade.update({ where: { id: g.id }, data })
       : await tx.academyGrade.create({ data: { submissionId, assignmentId: a.id, ...data } });
     await tx.academyGradeItem.deleteMany({ where: { gradeId: row.id } });
-    await tx.academyGradeItem.createMany({ data: itemScores.map((x) => ({ gradeId: row.id, assignmentId: a.id, ...x })) });
+    await tx.academyGradeItem.createMany({
+      data: itemScores.map((x) => ({ gradeId: row.id, assignmentId: a.id, ...x })),
+    });
     await tx.academyGradeHistory.create({
       data: {
         gradeId: row.id,
@@ -561,7 +724,10 @@ export class AcademyGradingService {
   // ───────────────────────── jurnal
 
   async gradebook(user: AuthUser, groupId: string): Promise<AcademyGradebookDto> {
-    const access: GroupAccess = await this.access.requireAny(user, groupId, ['submission.review', 'analytics.view']);
+    const access: GroupAccess = await this.access.requireAny(user, groupId, [
+      'submission.review',
+      'analytics.view',
+    ]);
     const [assignments, enrollments, subs, exts] = await Promise.all([
       this.prisma.academyAssignment.findMany({
         where: { groupId, status: { in: STUDENT_VISIBLE } },
@@ -575,7 +741,10 @@ export class AcademyGradingService {
       this.prisma.academySubmission.findMany({
         where: { groupId },
         include: {
-          attempts: { select: { submittedAt: true, isLate: true }, orderBy: { attemptNumber: 'desc' } },
+          attempts: {
+            select: { submittedAt: true, isLate: true },
+            orderBy: { attemptNumber: 'desc' },
+          },
           grade: { select: { status: true, finalScoreCenti: true, updatedAt: true } },
         },
       }),
@@ -611,7 +780,8 @@ export class AcademyGradingService {
             latestAttemptAt: latest?.submittedAt ?? null,
             hasDraft: false,
             grade: g ? { status: g.status, updatedAt: g.updatedAt } : null,
-            closed: a.status !== 'PUBLISHED' || access.group.status !== 'ACTIVE' || e.status !== 'ACTIVE',
+            closed:
+              a.status !== 'PUBLISHED' || access.group.status !== 'ACTIVE' || e.status !== 'ACTIVE',
           });
           if (g?.status === 'RELEASED') {
             earned += g.finalScoreCenti;
@@ -624,7 +794,12 @@ export class AcademyGradingService {
             gradeStatus: g?.status ?? null,
           };
         });
-        return { student: e.student, enrollmentStatus: e.status, cells, average: percent(earned, possible) };
+        return {
+          student: e.student,
+          enrollmentStatus: e.status,
+          cells,
+          average: percent(earned, possible),
+        };
       }),
     };
   }
@@ -637,11 +812,21 @@ export class AcademyGradingService {
       if (/^[=+\-@\t\r]/.test(s)) s = `'${s}`;
       return /[",\n\r;]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
     };
-    const header = ['Tələbə', 'Vəziyyət', ...gb.assignments.map((a) => `${a.title} (${a.maxScore})`), 'Orta %'];
+    const header = [
+      'Tələbə',
+      'Vəziyyət',
+      ...gb.assignments.map((a) => `${a.title} (${a.maxScore})`),
+      'Orta %',
+    ];
     const lines = [header.map(cell).join(',')];
     for (const r of gb.rows)
       lines.push(
-        [r.student.name, r.enrollmentStatus, ...r.cells.map((c) => (c.gradeStatus === 'RELEASED' ? c.finalScore : null)), r.average]
+        [
+          r.student.name,
+          r.enrollmentStatus,
+          ...r.cells.map((c) => (c.gradeStatus === 'RELEASED' ? c.finalScore : null)),
+          r.average,
+        ]
           .map(cell)
           .join(','),
       );

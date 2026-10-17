@@ -1,4 +1,16 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Put, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  Param,
+  Patch,
+  Post,
+  Put,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { z } from 'zod';
 import {
   academyAssignmentCreateSchema,
@@ -28,12 +40,19 @@ export class AcademyAssignmentsController {
   constructor(private readonly svc: AcademyAssignmentsService) {}
 
   @Get('steps/search')
-  search(@CurrentUser() u: AuthUser, @Query(new ZodPipe(academyStepSearchQuery)) q: AcademyStepSearchQuery) {
+  search(
+    @CurrentUser() u: AuthUser,
+    @Query(new ZodPipe(academyStepSearchQuery)) q: AcademyStepSearchQuery,
+  ) {
     return this.svc.searchSteps(u, q);
   }
 
   @Get('groups/:id/assignments')
-  list(@CurrentUser() u: AuthUser, @Param('id') id: string, @Query(new ZodPipe(statusQuery)) q: { status?: string }) {
+  list(
+    @CurrentUser() u: AuthUser,
+    @Param('id') id: string,
+    @Query(new ZodPipe(statusQuery)) q: { status?: string },
+  ) {
     return this.svc.listForGroup(u, id, q.status);
   }
 
@@ -77,13 +96,21 @@ export class AcademyAssignmentsController {
 
   @Post('assignments/:id/cancel')
   @HttpCode(200)
-  cancel(@CurrentUser() u: AuthUser, @Param('id') id: string, @Body(new ZodPipe(closeSchema)) body: { reason?: string }) {
+  cancel(
+    @CurrentUser() u: AuthUser,
+    @Param('id') id: string,
+    @Body(new ZodPipe(closeSchema)) body: { reason?: string },
+  ) {
     return this.svc.close(u, id, 'CANCELLED', body.reason);
   }
 
   @Post('assignments/:id/archive')
   @HttpCode(200)
-  archive(@CurrentUser() u: AuthUser, @Param('id') id: string, @Body(new ZodPipe(closeSchema)) body: { reason?: string }) {
+  archive(
+    @CurrentUser() u: AuthUser,
+    @Param('id') id: string,
+    @Body(new ZodPipe(closeSchema)) body: { reason?: string },
+  ) {
     return this.svc.close(u, id, 'ARCHIVED', body.reason);
   }
 
@@ -103,7 +130,11 @@ export class AcademyAssignmentsController {
   }
 
   @Delete('assignments/:id/extensions/:studentId')
-  removeExtension(@CurrentUser() u: AuthUser, @Param('id') id: string, @Param('studentId') studentId: string) {
+  removeExtension(
+    @CurrentUser() u: AuthUser,
+    @Param('id') id: string,
+    @Param('studentId') studentId: string,
+  ) {
     return this.svc.deleteExtension(u, id, studentId);
   }
 

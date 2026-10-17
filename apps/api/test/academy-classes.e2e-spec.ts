@@ -40,7 +40,9 @@ describe('Academy classes & attendance (e2e)', () => {
     };
     for (const [k, u] of Object.entries(users)) ids[k] = u.id;
     admin = await login(app, 'admin@test.local', 'Admin123!');
-    const de = await admin.post('/academy/programs').send({ title: 'Data Engineering', slug: 'de', status: 'ACTIVE' });
+    const de = await admin
+      .post('/academy/programs')
+      .send({ title: 'Data Engineering', slug: 'de', status: 'ACTIVE' });
     const g1 = await admin.post('/academy/groups').send({
       programId: de.body.id,
       code: 'DE-001',
@@ -52,15 +54,25 @@ describe('Academy classes & attendance (e2e)', () => {
     });
     const g2 = await admin
       .post('/academy/groups')
-      .send({ programId: de.body.id, code: 'DE-002', name: 'DE-002', status: 'ACTIVE', leadInstructorId: ids.otherLead });
+      .send({
+        programId: de.body.id,
+        code: 'DE-002',
+        name: 'DE-002',
+        status: 'ACTIVE',
+        leadInstructorId: ids.otherLead,
+      });
     ids.de1 = g1.body.id;
     ids.de2 = g2.body.id;
-    for (const s of ['ali', 'aysel', 'paused', 'alumni']) await admin.post(`/academy/groups/${ids.de1}/enrollments`).send({ userId: ids[s] });
+    for (const s of ['ali', 'aysel', 'paused', 'alumni'])
+      await admin.post(`/academy/groups/${ids.de1}/enrollments`).send({ userId: ids[s] });
     await admin.post(`/academy/groups/${ids.de2}/enrollments`).send({ userId: ids.veli });
     const enr = async (studentId: string) =>
-      (await prisma.academyEnrollment.findFirstOrThrow({ where: { studentId, groupId: ids.de1 } })).id;
+      (await prisma.academyEnrollment.findFirstOrThrow({ where: { studentId, groupId: ids.de1 } }))
+        .id;
     await admin.patch(`/academy/enrollments/${await enr(ids.paused)}`).send({ status: 'PAUSED' });
-    await admin.patch(`/academy/enrollments/${await enr(ids.alumni)}`).send({ status: 'COMPLETED' });
+    await admin
+      .patch(`/academy/enrollments/${await enr(ids.alumni)}`)
+      .send({ status: 'COMPLETED' });
 
     const p = (e: string) => login(app, e, 'Parol123!');
     lead = await p('ziyad@test.local');
@@ -75,19 +87,47 @@ describe('Academy classes & attendance (e2e)', () => {
   afterAll(async () => app.close());
 
   it('dərs yaratmaq: yalnız aparıcı / admin; müəllim qrupun müəllimi olmalıdır; vaxt sırası', async () => {
-    const body = { title: 'Giriş dərsi', startsAt: iso(-2), endsAt: iso(-0.5), meetingUrl: URL_, instructorId: ids.lead };
+    const body = {
+      title: 'Giriş dərsi',
+      startsAt: iso(-2),
+      endsAt: iso(-0.5),
+      meetingUrl: URL_,
+      instructorId: ids.lead,
+    };
     const r = await lead.post(`/academy/groups/${ids.de1}/sessions`).send(body);
     expect(r.status).toBe(201);
-    expect(r.body).toMatchObject({ status: 'SCHEDULED', meetingUrl: URL_, instructor: { id: ids.lead }, groupCode: 'DE-001' });
+    expect(r.body).toMatchObject({
+      status: 'SCHEDULED',
+      meetingUrl: URL_,
+      instructor: { id: ids.lead },
+      groupCode: 'DE-001',
+    });
     ids.past = r.body.id;
-    expect((await assistant.post(`/academy/groups/${ids.de1}/sessions`).send(body)).status).toBe(403);
+    expect((await assistant.post(`/academy/groups/${ids.de1}/sessions`).send(body)).status).toBe(
+      403,
+    );
     expect((await ali.post(`/academy/groups/${ids.de1}/sessions`).send(body)).status).toBe(403);
-    expect((await otherLead.post(`/academy/groups/${ids.de1}/sessions`).send(body)).status).toBe(403);
-    const foreign = await lead.post(`/academy/groups/${ids.de1}/sessions`).send({ ...body, instructorId: ids.otherLead });
+    expect((await otherLead.post(`/academy/groups/${ids.de1}/sessions`).send(body)).status).toBe(
+      403,
+    );
+    const foreign = await lead
+      .post(`/academy/groups/${ids.de1}/sessions`)
+      .send({ ...body, instructorId: ids.otherLead });
     expect([foreign.status, foreign.body.code]).toEqual([422, 'ACADEMY_NOT_GROUP_INSTRUCTOR']);
-    expect((await lead.post(`/academy/groups/${ids.de1}/sessions`).send({ ...body, endsAt: iso(-3) })).status).toBe(400);
-    expect((await lead.post(`/academy/groups/${ids.de1}/sessions`).send({ ...body, meetingUrl: 'javascript:alert(1)' })).status).toBe(400);
-    const adm = await admin.post(`/academy/groups/${ids.de1}/sessions`).send({ title: 'Admin dərsi', startsAt: iso(170), endsAt: iso(171) });
+    expect(
+      (await lead.post(`/academy/groups/${ids.de1}/sessions`).send({ ...body, endsAt: iso(-3) }))
+        .status,
+    ).toBe(400);
+    expect(
+      (
+        await lead
+          .post(`/academy/groups/${ids.de1}/sessions`)
+          .send({ ...body, meetingUrl: 'javascript:alert(1)' })
+      ).status,
+    ).toBe(400);
+    const adm = await admin
+      .post(`/academy/groups/${ids.de1}/sessions`)
+      .send({ title: 'Admin dərsi', startsAt: iso(170), endsAt: iso(171) });
     expect(adm.status).toBe(201);
     ids.future = adm.body.id;
   });
@@ -133,7 +173,9 @@ describe('Academy classes & attendance (e2e)', () => {
       durationMinutes: 60,
     });
     expect([empty.status, empty.body.code]).toEqual([422, 'ACADEMY_SCHEDULE_EMPTY']);
-    expect((await assistant.post(`/academy/groups/${ids.de1}/sessions/series`).send({})).status).toBe(400);
+    expect(
+      (await assistant.post(`/academy/groups/${ids.de1}/sessions/series`).send({})).status,
+    ).toBe(400);
   });
 
   it('tək dərsi köçürmək digərlərinə təsir etmir; ləğv → link gizlənir; hər ikisi outbox-a düşür; audit', async () => {
@@ -143,24 +185,39 @@ describe('Academy classes & attendance (e2e)', () => {
       reason: 'Bayram',
     });
     expect(moved.status).toBe(200);
-    expect(moved.body).toMatchObject({ status: 'RESCHEDULED', startsAt: '2026-11-03T15:00:00.000Z' });
+    expect(moved.body).toMatchObject({
+      status: 'RESCHEDULED',
+      startsAt: '2026-11-03T15:00:00.000Z',
+    });
     const other = await prisma.academyClassSession.findUniqueOrThrow({ where: { id: ids.s2 } });
     expect(other).toMatchObject({ status: 'SCHEDULED' });
     expect(other.startsAt.toISOString()).toBe('2026-11-04T15:00:00.000Z');
 
-    const cancelled = await lead.patch(`/academy/sessions/${ids.s3}`).send({ status: 'CANCELLED', reason: 'Müəllim xəstədir' });
+    const cancelled = await lead
+      .patch(`/academy/sessions/${ids.s3}`)
+      .send({ status: 'CANCELLED', reason: 'Müəllim xəstədir' });
     expect(cancelled.body).toMatchObject({ status: 'CANCELLED', meetingUrl: null });
     expect(await prisma.academyOutboxEvent.count({ where: { type: 'CLASS_RESCHEDULED' } })).toBe(1);
     expect(await prisma.academyOutboxEvent.count({ where: { type: 'CLASS_CANCELLED' } })).toBe(1);
-    expect((await assistant.patch(`/academy/sessions/${ids.s2}`).send({ title: 'x' })).status).toBe(403);
-    const bad = await lead.patch(`/academy/sessions/${ids.s2}`).send({ endsAt: '2026-11-04T14:00:00.000Z' });
+    expect((await assistant.patch(`/academy/sessions/${ids.s2}`).send({ title: 'x' })).status).toBe(
+      403,
+    );
+    const bad = await lead
+      .patch(`/academy/sessions/${ids.s2}`)
+      .send({ endsAt: '2026-11-04T14:00:00.000Z' });
     expect([bad.status, bad.body.code]).toEqual([422, 'ACADEMY_SESSION_TIME']);
-    const log = await prisma.auditLog.findFirstOrThrow({ where: { action: 'academy.session.update', entityId: ids.s1 } });
-    expect(log.details).toMatchObject({ before: { startsAt: '2026-11-02T15:00:00.000Z' }, reason: 'Bayram' });
+    const log = await prisma.auditLog.findFirstOrThrow({
+      where: { action: 'academy.session.update', entityId: ids.s1 },
+    });
+    expect(log.details).toMatchObject({
+      before: { startsAt: '2026-11-02T15:00:00.000Z' },
+      reason: 'Bayram',
+    });
   });
 
   it('görüş linki: aktiv tələbə və heyət görür; bitirmiş tələbə görmür; dayandırılmış və başqa qrup — 403', async () => {
-    const pick = (rows: Array<{ id: string; meetingUrl: string | null }>) => rows.find((s) => s.id === ids.s2)?.meetingUrl;
+    const pick = (rows: Array<{ id: string; meetingUrl: string | null }>) =>
+      rows.find((s) => s.id === ids.s2)?.meetingUrl;
     expect(pick((await ali.get(`/academy/groups/${ids.de1}/sessions`)).body)).toBe(URL_);
     expect(pick((await assistant.get(`/academy/groups/${ids.de1}/sessions`)).body)).toBe(URL_);
     const alum = await alumni.get(`/academy/groups/${ids.de1}/sessions`);
@@ -170,18 +227,29 @@ describe('Academy classes & attendance (e2e)', () => {
     expect((await veli.get(`/academy/groups/${ids.de1}/sessions`)).status).toBe(403);
     expect((await otherLead.get(`/academy/groups/${ids.de1}/sessions`)).status).toBe(403);
     // aralıq filtri
-    const nov = await ali.get(`/academy/groups/${ids.de1}/sessions?from=2026-11-04T00:00:00Z&to=2026-11-10T00:00:00Z`);
+    const nov = await ali.get(
+      `/academy/groups/${ids.de1}/sessions?from=2026-11-04T00:00:00Z&to=2026-11-10T00:00:00Z`,
+    );
     expect(nov.body.map((s: { id: string }) => s.id)).toEqual([ids.s2, ids.s3]);
 
-    const mine = await ali.get('/academy/me/schedule?from=2026-11-01T00:00:00Z&to=2026-11-30T00:00:00Z');
+    const mine = await ali.get(
+      '/academy/me/schedule?from=2026-11-01T00:00:00Z&to=2026-11-30T00:00:00Z',
+    );
     expect(mine.status).toBe(200);
     expect(mine.body).toHaveLength(4);
     expect(mine.body.find((s: { id: string }) => s.id === ids.s2).meetingUrl).toBe(URL_);
     expect(mine.body.find((s: { id: string }) => s.id === ids.s3).meetingUrl).toBeNull();
-    const alumMine = await alumni.get('/academy/me/schedule?from=2026-11-01T00:00:00Z&to=2026-11-30T00:00:00Z');
-    expect(alumMine.body.every((s: { meetingUrl: string | null }) => s.meetingUrl === null)).toBe(true);
+    const alumMine = await alumni.get(
+      '/academy/me/schedule?from=2026-11-01T00:00:00Z&to=2026-11-30T00:00:00Z',
+    );
+    expect(alumMine.body.every((s: { meetingUrl: string | null }) => s.meetingUrl === null)).toBe(
+      true,
+    );
     expect((await paused.get('/academy/me/schedule')).body).toEqual([]);
-    expect((await veli.get('/academy/me/schedule?from=2026-11-01T00:00:00Z&to=2026-11-30T00:00:00Z')).body).toEqual([]);
+    expect(
+      (await veli.get('/academy/me/schedule?from=2026-11-01T00:00:00Z&to=2026-11-30T00:00:00Z'))
+        .body,
+    ).toEqual([]);
   });
 
   it('davamiyyət: köməkçi qeyd edir (upsert), yalnız bu qrupun tələbələri; gələcək / ləğv olunmuş dərs — 409', async () => {
@@ -193,19 +261,32 @@ describe('Academy classes & attendance (e2e)', () => {
       ],
     });
     expect(r.status).toBe(200);
-    const row = (id: string) => r.body.find((x: { student: { id: string } }) => x.student.id === id);
+    const row = (id: string) =>
+      r.body.find((x: { student: { id: string } }) => x.student.id === id);
     expect(row(ids.ali)).toMatchObject({ status: 'PRESENT', enrollmentStatus: 'ACTIVE' });
     expect(row(ids.aysel)).toMatchObject({ status: 'LATE', note: '10 dəq' });
     expect(row(ids.alumni)).toBeUndefined();
 
-    const again = await lead.put(`/academy/sessions/${ids.past}/attendance`).send({ records: [{ studentId: ids.ali, status: 'EXCUSED' }] });
+    const again = await lead
+      .put(`/academy/sessions/${ids.past}/attendance`)
+      .send({ records: [{ studentId: ids.ali, status: 'EXCUSED' }] });
     expect(again.status).toBe(200);
     expect(await prisma.academyAttendance.count({ where: { sessionId: ids.past } })).toBe(3);
-    expect((await prisma.academyAttendance.findFirstOrThrow({ where: { sessionId: ids.past, studentId: ids.ali } })).status).toBe('EXCUSED');
+    expect(
+      (
+        await prisma.academyAttendance.findFirstOrThrow({
+          where: { sessionId: ids.past, studentId: ids.ali },
+        })
+      ).status,
+    ).toBe('EXCUSED');
 
-    const foreign = await lead.put(`/academy/sessions/${ids.past}/attendance`).send({ records: [{ studentId: ids.veli, status: 'PRESENT' }] });
+    const foreign = await lead
+      .put(`/academy/sessions/${ids.past}/attendance`)
+      .send({ records: [{ studentId: ids.veli, status: 'PRESENT' }] });
     expect([foreign.status, foreign.body.code]).toEqual([422, 'ACADEMY_NOT_ENROLLED']);
-    const alum = await lead.put(`/academy/sessions/${ids.past}/attendance`).send({ records: [{ studentId: ids.alumni, status: 'PRESENT' }] });
+    const alum = await lead
+      .put(`/academy/sessions/${ids.past}/attendance`)
+      .send({ records: [{ studentId: ids.alumni, status: 'PRESENT' }] });
     expect([alum.status, alum.body.code]).toEqual([422, 'ACADEMY_NOT_ENROLLED']);
     const dup = await lead.put(`/academy/sessions/${ids.past}/attendance`).send({
       records: [
@@ -214,39 +295,72 @@ describe('Academy classes & attendance (e2e)', () => {
       ],
     });
     expect([dup.status, dup.body.code]).toEqual([422, 'ACADEMY_DUPLICATE_STUDENT']);
-    const future = await lead.put(`/academy/sessions/${ids.future}/attendance`).send({ records: [{ studentId: ids.ali, status: 'PRESENT' }] });
+    const future = await lead
+      .put(`/academy/sessions/${ids.future}/attendance`)
+      .send({ records: [{ studentId: ids.ali, status: 'PRESENT' }] });
     expect([future.status, future.body.code]).toEqual([409, 'ACADEMY_SESSION_NOT_STARTED']);
-    const canc = await lead.put(`/academy/sessions/${ids.s3}/attendance`).send({ records: [{ studentId: ids.ali, status: 'PRESENT' }] });
+    const canc = await lead
+      .put(`/academy/sessions/${ids.s3}/attendance`)
+      .send({ records: [{ studentId: ids.ali, status: 'PRESENT' }] });
     expect([canc.status, canc.body.code]).toEqual([409, 'ACADEMY_SESSION_CANCELLED']);
-    expect((await ali.put(`/academy/sessions/${ids.past}/attendance`).send({ records: [{ studentId: ids.ali, status: 'PRESENT' }] })).status).toBe(403);
+    expect(
+      (
+        await ali
+          .put(`/academy/sessions/${ids.past}/attendance`)
+          .send({ records: [{ studentId: ids.ali, status: 'PRESENT' }] })
+      ).status,
+    ).toBe(403);
     expect((await ali.get(`/academy/sessions/${ids.past}/attendance`)).status).toBe(403);
     expect((await otherLead.get(`/academy/sessions/${ids.past}/attendance`)).status).toBe(403);
 
     // bazada: başqa qrupun tələbəsi bu dərsə yazıla bilməz (kompozit açar)
     await expect(
-      prisma.academyAttendance.create({ data: { sessionId: ids.past, groupId: ids.de1, studentId: ids.veli, status: 'PRESENT' } }),
+      prisma.academyAttendance.create({
+        data: { sessionId: ids.past, groupId: ids.de1, studentId: ids.veli, status: 'PRESENT' },
+      }),
     ).rejects.toThrow();
   });
 
   it('tələbənin öz davamiyyəti və faizi; üzrlü məxrəcə daxil deyil; davamiyyətli dərs silinmir', async () => {
     const a = await ali.get('/academy/me/attendance');
     expect(a.status).toBe(200);
-    expect(a.body.records).toEqual([expect.objectContaining({ sessionId: ids.past, status: 'EXCUSED', groupCode: 'DE-001' })]);
+    expect(a.body.records).toEqual([
+      expect.objectContaining({ sessionId: ids.past, status: 'EXCUSED', groupCode: 'DE-001' }),
+    ]);
     expect(a.body.groups[0]).toMatchObject({ groupCode: 'DE-001', rate: null, excused: 1 });
     const y = await aysel.get('/academy/me/attendance');
     expect(y.body.groups[0]).toMatchObject({ rate: 100, late: 1 });
     // dayandırılmış tələbə öz qeydini görür (öz qeydləri — PENDING-dən başqa)
-    expect((await paused.get('/academy/me/attendance')).body.groups[0]).toMatchObject({ rate: 0, absent: 1 });
+    expect((await paused.get('/academy/me/attendance')).body.groups[0]).toMatchObject({
+      rate: 0,
+      absent: 1,
+    });
 
     const del = await lead.delete(`/academy/sessions/${ids.past}`);
     expect([del.status, del.body.code]).toEqual([409, 'ACADEMY_SESSION_HAS_ATTENDANCE']);
     expect((await lead.delete(`/academy/sessions/${ids.future}`)).status).toBe(200);
   });
 
+  it('tək dərs: qrup və icazələr; başqa qrup — 403', async () => {
+    const r = await assistant.get(`/academy/sessions/${ids.s2}`);
+    expect(r.status).toBe(200);
+    expect(r.body.session).toMatchObject({ id: ids.s2, meetingUrl: URL_ });
+    expect(r.body.group).toMatchObject({ code: 'DE-001', timezone: 'Asia/Baku' });
+    expect(r.body.permissions).toContain('attendance.manage');
+    expect(r.body.permissions).not.toContain('session.manage');
+    expect((await alumni.get(`/academy/sessions/${ids.s2}`)).body.session.meetingUrl).toBeNull();
+    expect((await veli.get(`/academy/sessions/${ids.s2}`)).status).toBe(403);
+    expect((await paused.get(`/academy/sessions/${ids.s2}`)).status).toBe(403);
+  });
+
   it('tələbə ümumi baxışında növbəti dərs (ləğv olunmuşlar keçilir, link ilə)', async () => {
     const o = await ali.get('/academy/me/overview');
     expect(o.status).toBe(200);
-    expect(o.body.nextSession).toMatchObject({ id: ids.s1, meetingUrl: URL_, status: 'RESCHEDULED' });
+    expect(o.body.nextSession).toMatchObject({
+      id: ids.s1,
+      meetingUrl: URL_,
+      status: 'RESCHEDULED',
+    });
     expect((await veli.get('/academy/me/overview')).body.nextSession).toBeNull();
   });
 });

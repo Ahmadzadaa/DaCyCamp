@@ -56,7 +56,12 @@ export class AcademyWorkerService implements OnModuleInit, OnModuleDestroy {
   ) {}
 
   onModuleInit() {
-    if (process.env.NODE_ENV === 'test' || !env.ACADEMY_MANAGEMENT_ENABLED || env.ACADEMY_WORKER_INTERVAL_SEC <= 0) return;
+    if (
+      process.env.NODE_ENV === 'test' ||
+      !env.ACADEMY_MANAGEMENT_ENABLED ||
+      env.ACADEMY_WORKER_INTERVAL_SEC <= 0
+    )
+      return;
     this.timer = setInterval(() => void this.runOnce(), env.ACADEMY_WORKER_INTERVAL_SEC * 1000);
     this.timer.unref();
   }
@@ -70,7 +75,8 @@ export class AcademyWorkerService implements OnModuleInit, OnModuleDestroy {
     if (this.running) return { ...out, skipped: true };
     this.running = true;
     try {
-      out.published = (await this.step('publish', () => this.assignments.publishScheduled(now))) ?? 0;
+      out.published =
+        (await this.step('publish', () => this.assignments.publishScheduled(now))) ?? 0;
       const r = await this.step('outbox', () => this.processOutbox(now));
       out.processed = r?.processed ?? 0;
       out.failed = r?.failed ?? 0;
@@ -109,17 +115,26 @@ export class AcademyWorkerService implements OnModuleInit, OnModuleDestroy {
         where: { id: { in: rows.map((r) => r.id) } },
         data: { availableAt: new Date(now.getTime() + 5 * 60_000) },
       });
-      return tx.academyOutboxEvent.findMany({ where: { id: { in: rows.map((r) => r.id) } }, orderBy: { createdAt: 'asc' } });
+      return tx.academyOutboxEvent.findMany({
+        where: { id: { in: rows.map((r) => r.id) } },
+        orderBy: { createdAt: 'asc' },
+      });
     });
     let processed = 0;
     let failed = 0;
     for (const ev of batch) {
       try {
         const drafts = await this.recipients(ev.payload as unknown as AcademyEvent);
-        if (drafts.length) await this.prisma.academyNotification.createMany({ data: drafts, skipDuplicates: true });
+        if (drafts.length)
+          await this.prisma.academyNotification.createMany({ data: drafts, skipDuplicates: true });
         await this.prisma.academyOutboxEvent.update({
           where: { id: ev.id },
-          data: { status: 'DONE', processedAt: new Date(), attempts: ev.attempts + 1, lastError: null },
+          data: {
+            status: 'DONE',
+            processedAt: new Date(),
+            attempts: ev.attempts + 1,
+            lastError: null,
+          },
         });
         processed++;
       } catch (e) {
@@ -205,7 +220,11 @@ export class AcademyWorkerService implements OnModuleInit, OnModuleDestroy {
       case 'SUBMISSION_RECEIVED': {
         const at = await this.prisma.academySubmissionAttempt.findUnique({
           where: { id: e.attemptId },
-          include: { submission: { include: { assignment: { include: { group: { select: { code: true } } } } } } },
+          include: {
+            submission: {
+              include: { assignment: { include: { group: { select: { code: true } } } } },
+            },
+          },
         });
         if (!at) return [];
         const a = at.submission.assignment;
@@ -226,7 +245,11 @@ export class AcademyWorkerService implements OnModuleInit, OnModuleDestroy {
       case 'GRADE_RELEASED': {
         const g = await this.prisma.academyGrade.findUnique({
           where: { id: e.gradeId },
-          include: { submission: { include: { assignment: { include: { group: { select: { code: true } } } } } } },
+          include: {
+            submission: {
+              include: { assignment: { include: { group: { select: { code: true } } } } },
+            },
+          },
         });
         const want = e.type === 'GRADE_RELEASED' ? 'RELEASED' : 'RETURNED';
         if (!g || g.status !== want) return [];
@@ -251,7 +274,11 @@ export class AcademyWorkerService implements OnModuleInit, OnModuleDestroy {
           include: { group: { select: { code: true } } },
         });
         if (!s) return [];
-        if (e.type === 'CLASS_RESCHEDULED' && (s.status === 'CANCELLED' || s.startsAt.toISOString() !== e.startsAt)) return [];
+        if (
+          e.type === 'CLASS_RESCHEDULED' &&
+          (s.status === 'CANCELLED' || s.startsAt.toISOString() !== e.startsAt)
+        )
+          return [];
         const students = await this.activeStudents(s.groupId);
         return students.map((userId) => ({
           userId,
@@ -261,14 +288,18 @@ export class AcademyWorkerService implements OnModuleInit, OnModuleDestroy {
           url: '/akademiya/cedvel',
           referenceType: 'SESSION',
           referenceId: s.id,
-          dedupeKey: e.type === 'CLASS_CANCELLED' ? `class-cancel:${s.id}` : `class:${s.id}:${e.startsAt}`,
+          dedupeKey:
+            e.type === 'CLASS_CANCELLED' ? `class-cancel:${s.id}` : `class:${s.id}:${e.startsAt}`,
         }));
       }
     }
   }
 
   private async activeStudents(groupId: string): Promise<string[]> {
-    const rows = await this.prisma.academyEnrollment.findMany({ where: { groupId, status: 'ACTIVE' }, select: { studentId: true } });
+    const rows = await this.prisma.academyEnrollment.findMany({
+      where: { groupId, status: 'ACTIVE' },
+      select: { studentId: true },
+    });
     return rows.map((r) => r.studentId);
   }
 
@@ -287,7 +318,10 @@ export class AcademyWorkerService implements OnModuleInit, OnModuleDestroy {
         status: 'PUBLISHED',
         availableAt: { lte: now },
         group: { status: 'ACTIVE' },
-        OR: [{ dueAt: { gt: now, lte: horizon } }, { extensions: { some: { extendedDueAt: { gt: now, lte: horizon } } } }],
+        OR: [
+          { dueAt: { gt: now, lte: horizon } },
+          { extensions: { some: { extendedDueAt: { gt: now, lte: horizon } } } },
+        ],
       },
       include: { group: { select: { code: true } }, extensions: true },
     });
@@ -322,8 +356,10 @@ export class AcademyWorkerService implements OnModuleInit, OnModuleDestroy {
       }
     }
     if (!drafts.length) return 0;
-    const r = await this.prisma.academyNotification.createMany({ data: drafts, skipDuplicates: true });
+    const r = await this.prisma.academyNotification.createMany({
+      data: drafts,
+      skipDuplicates: true,
+    });
     return r.count;
   }
 }
-

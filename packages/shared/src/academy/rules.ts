@@ -21,10 +21,7 @@ export const fromCenti = (centi: number): number => centi / 100;
 export class ScoreError extends Error {
   constructor(
     public readonly code:
-      | 'SCORE_OUT_OF_RANGE'
-      | 'SCORE_TOTAL_MISMATCH'
-      | 'RUBRIC_TOTAL_MISMATCH'
-      | 'ATTEMPT_NOT_FOUND',
+      'SCORE_OUT_OF_RANGE' | 'SCORE_TOTAL_MISMATCH' | 'RUBRIC_TOTAL_MISMATCH' | 'ATTEMPT_NOT_FOUND',
     message?: string,
   ) {
     super(message ?? code);
@@ -47,7 +44,10 @@ export function assertRubricTotal(
   criteria: ReadonlyArray<{ maxScoreCenti: number }>,
   rubricMaxCenti: number,
 ): void {
-  if (criteria.length === 0 || criteria.some((c) => !Number.isInteger(c.maxScoreCenti) || c.maxScoreCenti <= 0))
+  if (
+    criteria.length === 0 ||
+    criteria.some((c) => !Number.isInteger(c.maxScoreCenti) || c.maxScoreCenti <= 0)
+  )
     throw new ScoreError('SCORE_OUT_OF_RANGE');
   if (sumItemMax(criteria) !== rubricMaxCenti) throw new ScoreError('RUBRIC_TOTAL_MISMATCH');
 }
@@ -218,7 +218,8 @@ export function deriveStudentStatus(i: StudentStatusInput): {
   if (g?.status === 'RELEASED') return { status: 'GRADED', overdue: false, canSubmit: false };
   if (g?.status === 'RETURNED' && !resubmittedAfterReturn)
     return { status: 'RETURNED', overdue: false, canSubmit: canSubmitByTime };
-  if (g?.status === 'DRAFT') return { status: 'UNDER_REVIEW', overdue: false, canSubmit: canSubmitByTime };
+  if (g?.status === 'DRAFT')
+    return { status: 'UNDER_REVIEW', overdue: false, canSubmit: canSubmitByTime };
   return {
     status: i.latestAttemptLate ? 'SUBMITTED_LATE' : 'SUBMITTED',
     overdue: false,

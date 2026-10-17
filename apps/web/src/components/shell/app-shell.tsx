@@ -74,6 +74,7 @@ export function AppShell({
             footer={footer}
             staff={staff}
             counts={{ support: summary?.supportUnread ?? 0 }}
+            academy={summary?.academy ?? null}
           />
         </Suspense>
         <main className="content" id="main">
@@ -82,7 +83,12 @@ export function AppShell({
       </div>
       <HelpButton />
       <Suspense fallback={null}>
-        <BottomNav footer={footer} authed={!!user} staff={staff} />
+        <BottomNav
+          footer={footer}
+          authed={!!user}
+          staff={staff}
+          academy={summary?.academy ?? null}
+        />
       </Suspense>
     </div>
   );

@@ -23,7 +23,11 @@ import { conflict, notFound } from '../../common/errors';
 import { academyForbidden } from '../access/academy-access.service';
 import { AcademyContentAdapter, type StepSnapshot } from '../integrations/content.adapter';
 import { AcademyEvaluationAdapter } from '../integrations/evaluation.adapter';
-import { AcademyAssignmentsService, fileDto, STUDENT_VISIBLE } from '../assignments/assignments.service';
+import {
+  AcademyAssignmentsService,
+  fileDto,
+  STUDENT_VISIBLE,
+} from '../assignments/assignments.service';
 import { AcademyClassesService } from '../classes/classes.service';
 
 /** Tələbənin akademiya görünüşü: məzmun ACTIVE (və bitirmiş — yalnız oxu) yazılışda, qiymət yalnız buraxılandan sonra */
@@ -46,27 +50,25 @@ export function attemptDto(a: AttemptRow): AcademyAttemptDto {
     isLate: a.isLate,
     evaluationStatus: a.evaluationStatus,
     autoScore: a.autoScoreCenti === null ? null : fromCenti(a.autoScoreCenti),
-    answers: a.answers.map(
-      (x): AcademyAnswerDto => ({
-        itemId: x.itemId,
-        kind: x.kind,
-        text: x.textAnswer,
-        code: x.codeAnswer,
-        link: x.linkUrl,
-        files: x.files.map(fileDto),
-        evaluation:
-          x.kind === 'LEARNING_STEP'
-            ? {
-                status: x.evaluationStatus,
-                passed: x.evaluationPassed,
-                score: x.evaluationScoreCenti === null ? null : fromCenti(x.evaluationScoreCenti),
-                trust: x.evaluationTrust,
-                learningSubmissionId: x.learningSubmissionId,
-                evaluatedAt: x.evidenceAt?.toISOString() ?? null,
-              }
-            : null,
-      }),
-    ),
+    answers: a.answers.map((x): AcademyAnswerDto => ({
+      itemId: x.itemId,
+      kind: x.kind,
+      text: x.textAnswer,
+      code: x.codeAnswer,
+      link: x.linkUrl,
+      files: x.files.map(fileDto),
+      evaluation:
+        x.kind === 'LEARNING_STEP'
+          ? {
+              status: x.evaluationStatus,
+              passed: x.evaluationPassed,
+              score: x.evaluationScoreCenti === null ? null : fromCenti(x.evaluationScoreCenti),
+              trust: x.evaluationTrust,
+              learningSubmissionId: x.learningSubmissionId,
+              evaluatedAt: x.evidenceAt?.toISOString() ?? null,
+            }
+          : null,
+    })),
   };
 }
 
@@ -81,9 +83,16 @@ export class AcademyStudentService {
   ) {}
 
   /** Tələbənin tapşırıq siyahısı (bir neçə qrup — nəticələr ayrı-ayrı) */
-  async myAssignments(user: AuthUser, opts: { type?: string; groupId?: string } = {}): Promise<AcademyMyAssignmentDto[]> {
+  async myAssignments(
+    user: AuthUser,
+    opts: { type?: string; groupId?: string } = {},
+  ): Promise<AcademyMyAssignmentDto[]> {
     const enrollments = await this.prisma.academyEnrollment.findMany({
-      where: { studentId: user.id, status: { in: CONTENT_STATUSES }, ...(opts.groupId ? { groupId: opts.groupId } : {}) },
+      where: {
+        studentId: user.id,
+        status: { in: CONTENT_STATUSES },
+        ...(opts.groupId ? { groupId: opts.groupId } : {}),
+      },
       select: { groupId: true, status: true },
     });
     if (!enrollments.length) return [];
@@ -102,16 +111,25 @@ export class AcademyStudentService {
 
   private async summaries(
     user: AuthUser,
-    rows: Array<Prisma.AcademyAssignmentGetPayload<{ include: { group: { select: { code: true; name: true; status: true } } } }>>,
+    rows: Array<
+      Prisma.AcademyAssignmentGetPayload<{
+        include: { group: { select: { code: true; name: true; status: true } } };
+      }>
+    >,
     enrollments: Array<{ groupId: string; status: string }>,
   ): Promise<AcademyMyAssignmentDto[]> {
     const ids = rows.map((r) => r.id);
     const [exts, subs, drafts] = await Promise.all([
-      this.prisma.academyAssignmentExtension.findMany({ where: { assignmentId: { in: ids }, studentId: user.id } }),
+      this.prisma.academyAssignmentExtension.findMany({
+        where: { assignmentId: { in: ids }, studentId: user.id },
+      }),
       this.prisma.academySubmission.findMany({
         where: { assignmentId: { in: ids }, studentId: user.id },
         include: {
-          attempts: { select: { submittedAt: true, isLate: true, attemptNumber: true }, orderBy: { attemptNumber: 'desc' } },
+          attempts: {
+            select: { submittedAt: true, isLate: true, attemptNumber: true },
+            orderBy: { attemptNumber: 'desc' },
+          },
           grade: { select: { status: true, updatedAt: true, finalScoreCenti: true } },
         },
       }),
@@ -162,7 +180,12 @@ export class AcademyStudentService {
         status: st.status,
         overdue: st.overdue,
         canSubmit:
-          st.canSubmit && !attemptLimitReached({ attemptsUsed, maxAttempts: r.maxAttempts, returnedAwaitingResubmission }),
+          st.canSubmit &&
+          !attemptLimitReached({
+            attemptsUsed,
+            maxAttempts: r.maxAttempts,
+            returnedAwaitingResubmission,
+          }),
         finalScore: sub?.grade?.status === 'RELEASED' ? fromCenti(sub.grade.finalScoreCenti) : null,
       };
     });
@@ -183,7 +206,8 @@ export class AcademyStudentService {
       instructorRole: null,
       enrollmentStatus: (enr?.status as AcademyEnrollmentStatus | undefined) ?? null,
     };
-    if (!enr || !academyCan(ctx, 'group.view') || !STUDENT_VISIBLE.includes(a.status)) throw academyForbidden();
+    if (!enr || !academyCan(ctx, 'group.view') || !STUDENT_VISIBLE.includes(a.status))
+      throw academyForbidden();
     return { a, enr };
   }
 
@@ -211,7 +235,9 @@ export class AcademyStudentService {
       const ev = evidence.get(s.stepId);
       return {
         itemId: i.id,
-        evidence: ev ? { passed: ev.passed, at: ev.at?.toISOString() ?? null, trust: ev.trust } : null,
+        evidence: ev
+          ? { passed: ev.passed, at: ev.at?.toISOString() ?? null, trust: ev.trust }
+          : null,
         openUrl: i.stepId ? this.content.workspaceUrl(s) : null,
       };
     });
@@ -220,7 +246,13 @@ export class AcademyStudentService {
         where: { assignmentId_studentId: { assignmentId, studentId: user.id } },
         include: {
           attempts: { include: attemptInclude, orderBy: { attemptNumber: 'asc' } },
-          grade: { include: { itemScores: true, rubricScores: true, gradedBy: { select: { id: true, name: true } } } },
+          grade: {
+            include: {
+              itemScores: true,
+              rubricScores: true,
+              gradedBy: { select: { id: true, name: true } },
+            },
+          },
         },
       }),
       this.prisma.academySubmissionDraft.findUnique({
@@ -246,11 +278,19 @@ export class AcademyStudentService {
             selectedAttemptId: g.selectedAttemptId,
             itemScores:
               g.status === 'RELEASED'
-                ? g.itemScores.map((x) => ({ itemId: x.itemId, score: fromCenti(x.scoreCenti), comment: x.comment }))
+                ? g.itemScores.map((x) => ({
+                    itemId: x.itemId,
+                    score: fromCenti(x.scoreCenti),
+                    comment: x.comment,
+                  }))
                 : [],
             rubricScores:
               g.status === 'RELEASED'
-                ? g.rubricScores.map((x) => ({ criterionId: x.criterionId, score: fromCenti(x.scoreCenti), comment: x.comment }))
+                ? g.rubricScores.map((x) => ({
+                    criterionId: x.criterionId,
+                    score: fromCenti(x.scoreCenti),
+                    comment: x.comment,
+                  }))
                 : [],
             gradedBy: g.gradedBy,
             gradedAt: g.gradedAt?.toISOString() ?? null,
@@ -270,7 +310,13 @@ export class AcademyStudentService {
       resources: dto.resources,
       draft: draft
         ? {
-            answers: draft.answers as Array<{ itemId: string; text?: string; code?: string; link?: string; fileIds?: string[] }>,
+            answers: draft.answers as Array<{
+              itemId: string;
+              text?: string;
+              code?: string;
+              link?: string;
+              fileIds?: string[];
+            }>,
             updatedAt: draft.updatedAt.toISOString(),
           }
         : null,
@@ -290,7 +336,9 @@ export class AcademyStudentService {
     if (enr.status !== 'ACTIVE') throw academyForbidden();
     if (a.status !== 'PUBLISHED') throw conflict('ACADEMY_ASSIGNMENT_CLOSED', 'Tapşırıq bağlıdır');
     if (new Date() < a.availableAt) throw conflict('ACADEMY_NOT_OPEN', 'Tapşırıq hələ açılmayıb');
-    const item = await this.prisma.academyAssignmentItem.findFirst({ where: { id: itemId, assignmentId } });
+    const item = await this.prisma.academyAssignmentItem.findFirst({
+      where: { id: itemId, assignmentId },
+    });
     if (!item || item.kind !== 'LEARNING_STEP' || !item.stepId)
       throw notFound('ACADEMY_ITEM_NOT_FOUND', 'Element tapılmadı');
     const url = await this.content.ensureLearningAccess(user.id, item.stepId, a.createdById);
@@ -311,7 +359,16 @@ export class AcademyStudentService {
       },
       include: {
         submission: {
-          select: { assignment: { select: { id: true, title: true, maxScoreCenti: true, group: { select: { code: true } } } } },
+          select: {
+            assignment: {
+              select: {
+                id: true,
+                title: true,
+                maxScoreCenti: true,
+                group: { select: { code: true } },
+              },
+            },
+          },
         },
       },
       orderBy: { releasedAt: 'desc' },
@@ -336,7 +393,10 @@ export class AcademyStudentService {
         group: {
           include: {
             program: { select: { title: true } },
-            instructors: { where: { removedAt: null }, select: { user: { select: { name: true } }, role: true } },
+            instructors: {
+              where: { removedAt: null },
+              select: { user: { select: { name: true } }, role: true },
+            },
           },
         },
       },

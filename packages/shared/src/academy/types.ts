@@ -202,7 +202,13 @@ export interface AcademyRubricDto {
   id: string;
   title: string;
   maxScore: number;
-  criteria: Array<{ id: string; title: string; description: string; maxScore: number; sortOrder: number }>;
+  criteria: Array<{
+    id: string;
+    title: string;
+    description: string;
+    maxScore: number;
+    sortOrder: number;
+  }>;
 }
 
 // ───────────────────────── tələbə görünüşü
@@ -250,7 +256,13 @@ export interface AcademyMyAssignmentDetailDto extends AcademyMyAssignmentDto {
   itemProgress: AcademyItemProgressDto[];
   resources: AcademyFileDto[];
   draft: {
-    answers: Array<{ itemId: string; text?: string; code?: string; link?: string; fileIds?: string[] }>;
+    answers: Array<{
+      itemId: string;
+      text?: string;
+      code?: string;
+      link?: string;
+      fileIds?: string[];
+    }>;
     updatedAt: string;
   } | null;
   /** bu tapşırıq üçün yüklənmiş, hələ göndərişə bağlanmamış fayllarım */
@@ -361,7 +373,13 @@ export interface AcademySubmissionDetailDto {
 
 export interface AcademyGradebookDto {
   group: { id: string; code: string; name: string };
-  assignments: Array<{ id: string; title: string; maxScore: number; dueAt: string; status: AcademyAssignmentStatus }>;
+  assignments: Array<{
+    id: string;
+    title: string;
+    maxScore: number;
+    dueAt: string;
+    status: AcademyAssignmentStatus;
+  }>;
   rows: Array<{
     student: AcademyUserRef;
     enrollmentStatus: AcademyEnrollmentStatus;

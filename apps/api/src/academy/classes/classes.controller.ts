@@ -1,4 +1,15 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Put,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { z } from 'zod';
 import {
   academyAttendanceSchema,
@@ -15,7 +26,10 @@ import { ZodPipe } from '../../common/pipes/zod.pipe';
 import { AcademyEnabledGuard } from '../access/academy-access.service';
 import { AcademyClassesService } from './classes.service';
 
-const rangeQuery = z.object({ from: z.iso.datetime({ offset: true }).optional(), to: z.iso.datetime({ offset: true }).optional() });
+const rangeQuery = z.object({
+  from: z.iso.datetime({ offset: true }).optional(),
+  to: z.iso.datetime({ offset: true }).optional(),
+});
 type Range = z.infer<typeof rangeQuery>;
 
 /** Dərs cədvəli və davamiyyət */
@@ -25,22 +39,43 @@ export class AcademyClassesController {
   constructor(private readonly svc: AcademyClassesService) {}
 
   @Get('groups/:id/sessions')
-  list(@CurrentUser() u: AuthUser, @Param('id') id: string, @Query(new ZodPipe(rangeQuery)) q: Range) {
+  list(
+    @CurrentUser() u: AuthUser,
+    @Param('id') id: string,
+    @Query(new ZodPipe(rangeQuery)) q: Range,
+  ) {
     return this.svc.list(u, id, q);
   }
 
   @Post('groups/:id/sessions')
-  create(@CurrentUser() u: AuthUser, @Param('id') id: string, @Body(new ZodPipe(academySessionCreateSchema)) body: AcademySessionCreateInput) {
+  create(
+    @CurrentUser() u: AuthUser,
+    @Param('id') id: string,
+    @Body(new ZodPipe(academySessionCreateSchema)) body: AcademySessionCreateInput,
+  ) {
     return this.svc.create(u, id, body);
   }
 
   @Post('groups/:id/sessions/series')
-  series(@CurrentUser() u: AuthUser, @Param('id') id: string, @Body(new ZodPipe(academyScheduleSchema)) body: AcademyScheduleInput) {
+  series(
+    @CurrentUser() u: AuthUser,
+    @Param('id') id: string,
+    @Body(new ZodPipe(academyScheduleSchema)) body: AcademyScheduleInput,
+  ) {
     return this.svc.createSeries(u, id, body);
   }
 
+  @Get('sessions/:id')
+  get(@CurrentUser() u: AuthUser, @Param('id') id: string) {
+    return this.svc.get(u, id);
+  }
+
   @Patch('sessions/:id')
-  update(@CurrentUser() u: AuthUser, @Param('id') id: string, @Body(new ZodPipe(academySessionUpdateSchema)) body: AcademySessionUpdateInput) {
+  update(
+    @CurrentUser() u: AuthUser,
+    @Param('id') id: string,
+    @Body(new ZodPipe(academySessionUpdateSchema)) body: AcademySessionUpdateInput,
+  ) {
     return this.svc.update(u, id, body);
   }
 
@@ -55,7 +90,11 @@ export class AcademyClassesController {
   }
 
   @Put('sessions/:id/attendance')
-  mark(@CurrentUser() u: AuthUser, @Param('id') id: string, @Body(new ZodPipe(academyAttendanceSchema)) body: AcademyAttendanceInput) {
+  mark(
+    @CurrentUser() u: AuthUser,
+    @Param('id') id: string,
+    @Body(new ZodPipe(academyAttendanceSchema)) body: AcademyAttendanceInput,
+  ) {
     return this.svc.markAttendance(u, id, body);
   }
 

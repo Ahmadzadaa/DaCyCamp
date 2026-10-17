@@ -1,4 +1,15 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Put,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { z } from 'zod';
 import {
   academyEnrollmentCreateSchema,
@@ -95,7 +106,11 @@ export class AcademyOrganizationController {
   }
 
   @Delete('groups/:id/instructors/:userId')
-  removeInstructor(@CurrentUser() u: AuthUser, @Param('id') id: string, @Param('userId') userId: string) {
+  removeInstructor(
+    @CurrentUser() u: AuthUser,
+    @Param('id') id: string,
+    @Param('userId') userId: string,
+  ) {
     return this.org.removeInstructor(u, id, userId);
   }
 

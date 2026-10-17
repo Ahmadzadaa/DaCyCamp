@@ -104,7 +104,12 @@ export const ACADEMY_STUDENT_STATUSES = [
 ] as const;
 export type AcademyStudentStatus = (typeof ACADEMY_STUDENT_STATUSES)[number];
 
-export const ACADEMY_CLASS_STATUSES = ['SCHEDULED', 'RESCHEDULED', 'CANCELLED', 'COMPLETED'] as const;
+export const ACADEMY_CLASS_STATUSES = [
+  'SCHEDULED',
+  'RESCHEDULED',
+  'CANCELLED',
+  'COMPLETED',
+] as const;
 export type AcademyClassStatus = (typeof ACADEMY_CLASS_STATUSES)[number];
 
 export const ACADEMY_ATTENDANCE_STATUSES = ['PRESENT', 'ABSENT', 'LATE', 'EXCUSED'] as const;

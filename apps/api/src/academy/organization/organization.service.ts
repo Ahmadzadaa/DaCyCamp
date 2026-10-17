@@ -22,7 +22,11 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { AuditService } from '../../audit/audit.service';
 import type { AuthUser } from '../../common/decorators';
 import { badRequest, conflict, notFound } from '../../common/errors';
-import { AcademyAccessService, academyForbidden, type GroupAccess } from '../access/academy-access.service';
+import {
+  AcademyAccessService,
+  academyForbidden,
+  type GroupAccess,
+} from '../access/academy-access.service';
 import { emitAcademyEvent } from '../notifications/academy-events';
 
 /** Qrupun həyat dövrü: arxiv geri qaytarılmır, akademik tarix silinmir */
@@ -49,7 +53,11 @@ const groupInclude = {
   instructors: {
     where: { removedAt: null },
     orderBy: [{ role: 'asc' as const }, { assignedAt: 'asc' as const }],
-    select: { role: true, assignedAt: true, user: { select: { id: true, name: true, email: true } } },
+    select: {
+      role: true,
+      assignedAt: true,
+      user: { select: { id: true, name: true, email: true } },
+    },
   },
   _count: { select: { enrollments: { where: { status: 'ACTIVE' as const } } } },
 } satisfies Prisma.AcademyGroupInclude;
@@ -78,7 +86,10 @@ export class AcademyOrganizationService {
     return rows.map((p) => this.programDto(p, p._count.groups));
   }
 
-  async createProgram(user: AuthUser, input: AcademyProgramCreateInput): Promise<AcademyProgramDto> {
+  async createProgram(
+    user: AuthUser,
+    input: AcademyProgramCreateInput,
+  ): Promise<AcademyProgramDto> {
     this.access.requireAdmin(user);
     try {
       const p = await this.prisma.academyProgram.create({ data: input });
@@ -124,7 +135,15 @@ export class AcademyOrganizationService {
   }
 
   private programDto(
-    p: { id: string; title: string; slug: string; description: string; status: string; createdAt: Date; updatedAt: Date },
+    p: {
+      id: string;
+      title: string;
+      slug: string;
+      description: string;
+      status: string;
+      createdAt: Date;
+      updatedAt: Date;
+    },
     groupCount: number,
   ): AcademyProgramDto {
     return {
@@ -163,7 +182,11 @@ export class AcademyOrganizationService {
         : {
             OR: [
               { instructors: { some: { userId: user.id, removedAt: null } } },
-              { enrollments: { some: { studentId: user.id, status: { in: ['ACTIVE', 'COMPLETED'] } } } },
+              {
+                enrollments: {
+                  some: { studentId: user.id, status: { in: ['ACTIVE', 'COMPLETED'] } },
+                },
+              },
             ],
           }),
     };
@@ -184,7 +207,10 @@ export class AcademyOrganizationService {
 
   async getGroup(user: AuthUser, id: string): Promise<AcademyGroupDto> {
     const a = await this.access.require(user, id, 'group.view');
-    const g = await this.prisma.academyGroup.findUniqueOrThrow({ where: { id }, include: groupInclude });
+    const g = await this.prisma.academyGroup.findUniqueOrThrow({
+      where: { id },
+      include: groupInclude,
+    });
     return this.groupDto(g, a);
   }
 
@@ -202,7 +228,11 @@ export class AcademyOrganizationService {
       endAt: g.endAt?.toISOString() ?? null,
       program: g.program,
       instructors: g.instructors.map((i) => ({
-        user: { id: i.user.id, name: i.user.name, email: a.ctx.isAdmin || a.ctx.instructorRole ? i.user.email : undefined },
+        user: {
+          id: i.user.id,
+          name: i.user.name,
+          email: a.ctx.isAdmin || a.ctx.instructorRole ? i.user.email : undefined,
+        },
         role: i.role as 'LEAD' | 'ASSISTANT',
         assignedAt: i.assignedAt.toISOString(),
       })),
@@ -275,14 +305,21 @@ export class AcademyOrganizationService {
     }
   }
 
-  async updateGroup(user: AuthUser, id: string, input: AcademyGroupUpdateInput): Promise<AcademyGroupDto> {
+  async updateGroup(
+    user: AuthUser,
+    id: string,
+    input: AcademyGroupUpdateInput,
+  ): Promise<AcademyGroupDto> {
     this.access.requireAdmin(user);
     const before = await this.prisma.academyGroup.findUnique({ where: { id } });
     if (!before) throw notFound('ACADEMY_GROUP_NOT_FOUND', 'Qrup tapılmadı');
     if (input.status && input.status !== before.status) {
       const allowed = GROUP_TRANSITIONS[before.status as AcademyGroupStatus];
       if (!allowed.includes(input.status))
-        throw conflict('ACADEMY_GROUP_TRANSITION', `Vəziyyət ${before.status} → ${input.status} mümkün deyil`);
+        throw conflict(
+          'ACADEMY_GROUP_TRANSITION',
+          `Vəziyyət ${before.status} → ${input.status} mümkün deyil`,
+        );
     }
     if (before.status === 'ARCHIVED' && Object.keys(input).some((k) => k !== 'status'))
       throw conflict('ACADEMY_GROUP_ARCHIVED', 'Arxivdəki qrup dəyişdirilmir');
@@ -328,7 +365,8 @@ export class AcademyOrganizationService {
     this.access.requireAdmin(user);
     const group = await this.prisma.academyGroup.findUnique({ where: { id: groupId } });
     if (!group) throw notFound('ACADEMY_GROUP_NOT_FOUND', 'Qrup tapılmadı');
-    if (group.status === 'ARCHIVED') throw conflict('ACADEMY_GROUP_ARCHIVED', 'Arxivdəki qrup dəyişdirilmir');
+    if (group.status === 'ARCHIVED')
+      throw conflict('ACADEMY_GROUP_ARCHIVED', 'Arxivdəki qrup dəyişdirilmir');
     const target = await this.prisma.user.findUnique({ where: { id: input.userId } });
     if (!target) throw notFound('USER_NOT_FOUND', 'İstifadəçi tapılmadı');
     // eyni qrupda həm tələbə, həm müəllim olmaq ziddiyyətlidir
@@ -357,7 +395,10 @@ export class AcademyOrganizationService {
       });
     } catch (e) {
       if (isUnique(e))
-        throw conflict('ACADEMY_LEAD_EXISTS', 'Qrupun artıq aparıcı müəllimi var — əvvəlcə onu dəyişin');
+        throw conflict(
+          'ACADEMY_LEAD_EXISTS',
+          'Qrupun artıq aparıcı müəllimi var — əvvəlcə onu dəyişin',
+        );
       throw e;
     }
     await this.audit.record(user, {
@@ -377,7 +418,8 @@ export class AcademyOrganizationService {
       where: { groupId_userId: { groupId, userId } },
       include: { group: { select: { code: true } }, user: { select: { email: true } } },
     });
-    if (!row || row.removedAt) throw notFound('ACADEMY_INSTRUCTOR_NOT_FOUND', 'Bu müəllim qrupda deyil');
+    if (!row || row.removedAt)
+      throw notFound('ACADEMY_INSTRUCTOR_NOT_FOUND', 'Bu müəllim qrupda deyil');
     await this.prisma.academyGroupInstructor.update({
       where: { id: row.id },
       data: { removedAt: new Date(), leadSlot: null },
@@ -394,7 +436,11 @@ export class AcademyOrganizationService {
 
   // ───────────────────────── tələbələr
 
-  async listStudents(user: AuthUser, groupId: string, q: AcademyPageQuery): Promise<AcademyPage<AcademyEnrollmentDto>> {
+  async listStudents(
+    user: AuthUser,
+    groupId: string,
+    q: AcademyPageQuery,
+  ): Promise<AcademyPage<AcademyEnrollmentDto>> {
     await this.access.require(user, groupId, 'group.viewRoster');
     const where: Prisma.AcademyEnrollmentWhereInput = {
       groupId,
@@ -420,7 +466,12 @@ export class AcademyOrganizationService {
         take: q.pageSize,
       }),
     ]);
-    return { items: rows.map((r) => this.enrollmentDto(r)), total, page: q.page, pageSize: q.pageSize };
+    return {
+      items: rows.map((r) => this.enrollmentDto(r)),
+      total,
+      page: q.page,
+      pageSize: q.pageSize,
+    };
   }
 
   enrollmentDto(r: {
@@ -445,7 +496,11 @@ export class AcademyOrganizationService {
    * Yazılış: tutum yoxlaması qrup sətrini kilidləyərək (SELECT … FOR UPDATE) eyni tranzaksiyada aparılır —
    * paralel sorğular tutumu keçə bilməz. Mövcud (çıxmış / bitirmiş) yazılış yenidən aktivləşir, tarixçə qalır.
    */
-  async enroll(user: AuthUser, groupId: string, input: AcademyEnrollmentCreateInput): Promise<AcademyEnrollmentDto> {
+  async enroll(
+    user: AuthUser,
+    groupId: string,
+    input: AcademyEnrollmentCreateInput,
+  ): Promise<AcademyEnrollmentDto> {
     this.access.requireAdmin(user);
     const student = input.userId
       ? await this.prisma.user.findUnique({ where: { id: input.userId } })
@@ -457,7 +512,9 @@ export class AcademyOrganizationService {
     if (inst) throw conflict('ACADEMY_STUDENT_IS_INSTRUCTOR', 'Bu istifadəçi qrupun müəllimidir');
 
     const result = await this.prisma.$transaction(async (tx) => {
-      const locked = await tx.$queryRaw<Array<{ id: string; status: string; capacity: number | null; code: string }>>`
+      const locked = await tx.$queryRaw<
+        Array<{ id: string; status: string; capacity: number | null; code: string }>
+      >`
         SELECT "id", "status"::text AS "status", "capacity", "code" FROM "AcademyGroup" WHERE "id" = ${groupId} FOR UPDATE`;
       const group = locked[0];
       if (!group) throw notFound('ACADEMY_GROUP_NOT_FOUND', 'Qrup tapılmadı');
@@ -469,8 +526,11 @@ export class AcademyOrganizationService {
       if (existing && SEAT_STATUSES.includes(existing.status as AcademyEnrollmentStatus))
         throw conflict('ACADEMY_ALREADY_ENROLLED', 'Tələbə artıq bu qrupdadır');
       if (group.capacity != null && !input.overrideCapacity) {
-        const seats = await tx.academyEnrollment.count({ where: { groupId, status: { in: SEAT_STATUSES } } });
-        if (seats >= group.capacity) throw conflict('ACADEMY_CAPACITY_REACHED', 'Qrupun tutumu dolub');
+        const seats = await tx.academyEnrollment.count({
+          where: { groupId, status: { in: SEAT_STATUSES } },
+        });
+        if (seats >= group.capacity)
+          throw conflict('ACADEMY_CAPACITY_REACHED', 'Qrupun tutumu dolub');
       }
       const now = new Date();
       const enr = existing
@@ -492,7 +552,8 @@ export class AcademyOrganizationService {
           actorId: user.id,
         },
       });
-      if (input.status === 'ACTIVE') await emitAcademyEvent(tx, { type: 'ENROLLMENT_CREATED', enrollmentId: enr.id });
+      if (input.status === 'ACTIVE')
+        await emitAcademyEvent(tx, { type: 'ENROLLMENT_CREATED', enrollmentId: enr.id });
       return { enr, code: group.code };
     });
     await this.audit.record(user, {
@@ -516,10 +577,16 @@ export class AcademyOrganizationService {
       const enr = await tx.academyEnrollment.findUnique({ where: { id: enrollmentId } });
       if (!enr) throw notFound('ACADEMY_ENROLLMENT_NOT_FOUND', 'Yazılış tapılmadı');
       const from = enr.status as AcademyEnrollmentStatus;
-      if (from === input.status) throw conflict('ACADEMY_ENROLLMENT_SAME_STATUS', 'Vəziyyət artıq belədir');
+      if (from === input.status)
+        throw conflict('ACADEMY_ENROLLMENT_SAME_STATUS', 'Vəziyyət artıq belədir');
       if (!ENROLLMENT_TRANSITIONS[from].includes(input.status))
-        throw conflict('ACADEMY_ENROLLMENT_TRANSITION', `Vəziyyət ${from} → ${input.status} mümkün deyil`);
-      const locked = await tx.$queryRaw<Array<{ status: string; capacity: number | null; code: string }>>`
+        throw conflict(
+          'ACADEMY_ENROLLMENT_TRANSITION',
+          `Vəziyyət ${from} → ${input.status} mümkün deyil`,
+        );
+      const locked = await tx.$queryRaw<
+        Array<{ status: string; capacity: number | null; code: string }>
+      >`
         SELECT "status"::text AS "status", "capacity", "code" FROM "AcademyGroup" WHERE "id" = ${enr.groupId} FOR UPDATE`;
       const group = locked[0]!;
       // yer tutmayan vəziyyətdən yer tutana keçid → tutum yoxlaması
@@ -530,7 +597,8 @@ export class AcademyOrganizationService {
           const seats = await tx.academyEnrollment.count({
             where: { groupId: enr.groupId, status: { in: SEAT_STATUSES } },
           });
-          if (seats >= group.capacity) throw conflict('ACADEMY_CAPACITY_REACHED', 'Qrupun tutumu dolub');
+          if (seats >= group.capacity)
+            throw conflict('ACADEMY_CAPACITY_REACHED', 'Qrupun tutumu dolub');
         }
       }
       const ended = input.status === 'COMPLETED' || input.status === 'WITHDRAWN';
@@ -540,7 +608,13 @@ export class AcademyOrganizationService {
         include: { student: { select: { id: true, name: true, email: true } } },
       });
       await tx.academyEnrollmentEvent.create({
-        data: { enrollmentId: enr.id, fromStatus: from, toStatus: input.status, reason: input.reason ?? null, actorId: user.id },
+        data: {
+          enrollmentId: enr.id,
+          fromStatus: from,
+          toStatus: input.status,
+          reason: input.reason ?? null,
+          actorId: user.id,
+        },
       });
       if (input.status === 'ACTIVE' && (from === 'PENDING' || from === 'WITHDRAWN'))
         await emitAcademyEvent(tx, { type: 'ENROLLMENT_CREATED', enrollmentId: enr.id });
@@ -556,7 +630,10 @@ export class AcademyOrganizationService {
     return this.enrollmentDto(result.upd);
   }
 
-  async enrollmentHistory(user: AuthUser, enrollmentId: string): Promise<AcademyEnrollmentEventDto[]> {
+  async enrollmentHistory(
+    user: AuthUser,
+    enrollmentId: string,
+  ): Promise<AcademyEnrollmentEventDto[]> {
     const enr = await this.prisma.academyEnrollment.findUnique({ where: { id: enrollmentId } });
     if (!enr) throw notFound('ACADEMY_ENROLLMENT_NOT_FOUND', 'Yazılış tapılmadı');
     const a = await this.access.groupAccess(user, enr.groupId);
@@ -589,7 +666,11 @@ export class AcademyOrganizationService {
     return rows.map((r) => ({ courseId: r.course.id, slug: r.course.slug, title: r.course.title }));
   }
 
-  async setCourseLinks(user: AuthUser, groupId: string, courseIds: string[]): Promise<AcademyCourseLinkDto[]> {
+  async setCourseLinks(
+    user: AuthUser,
+    groupId: string,
+    courseIds: string[],
+  ): Promise<AcademyCourseLinkDto[]> {
     this.access.requireAdmin(user);
     const group = await this.prisma.academyGroup.findUnique({ where: { id: groupId } });
     if (!group) throw notFound('ACADEMY_GROUP_NOT_FOUND', 'Qrup tapılmadı');

@@ -237,9 +237,7 @@ export const academyDraftSchema = z.object({
 
 export const academyGradeSchema = z.object({
   itemScores: z
-    .array(
-      z.object({ itemId: idSchema, score: pointsSchema, comment: longText(2000).optional() }),
-    )
+    .array(z.object({ itemId: idSchema, score: pointsSchema, comment: longText(2000).optional() }))
     .max(50)
     .default([]),
   rubricScores: z

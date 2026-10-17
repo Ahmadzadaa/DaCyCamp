@@ -19,7 +19,11 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { AuditService } from '../../audit/audit.service';
 import type { AuthUser } from '../../common/decorators';
 import { conflict, notFound, unprocessable } from '../../common/errors';
-import { AcademyAccessService, academyForbidden, type GroupAccess } from '../access/academy-access.service';
+import {
+  AcademyAccessService,
+  academyForbidden,
+  type GroupAccess,
+} from '../access/academy-access.service';
 import { emitAcademyEvent } from '../notifications/academy-events';
 
 const sessionInclude = {
@@ -69,30 +73,46 @@ export class AcademyClassesService {
   }
 
   private async loadSession(user: AuthUser, sessionId: string) {
-    const s = await this.prisma.academyClassSession.findUnique({ where: { id: sessionId }, include: sessionInclude });
+    const s = await this.prisma.academyClassSession.findUnique({
+      where: { id: sessionId },
+      include: sessionInclude,
+    });
     if (!s) throw notFound('ACADEMY_SESSION_NOT_FOUND', 'Dərs tapılmadı');
     return { s, access: await this.access.groupAccess(user, s.groupId) };
   }
 
   private assertWritableGroup(a: GroupAccess) {
-    if (groupIsReadOnly(a.group.status)) throw conflict('ACADEMY_GROUP_READ_ONLY', 'Qrup yalnız oxunur');
+    if (groupIsReadOnly(a.group.status))
+      throw conflict('ACADEMY_GROUP_READ_ONLY', 'Qrup yalnız oxunur');
   }
 
   private async assertGroupInstructor(groupId: string, instructorId: string | null | undefined) {
     if (!instructorId) return;
-    const ok = await this.prisma.academyGroupInstructor.count({ where: { groupId, userId: instructorId, removedAt: null } });
-    if (!ok) throw unprocessable('ACADEMY_NOT_GROUP_INSTRUCTOR', 'Bu istifadəçi qrupun müəllimi deyil');
+    const ok = await this.prisma.academyGroupInstructor.count({
+      where: { groupId, userId: instructorId, removedAt: null },
+    });
+    if (!ok)
+      throw unprocessable('ACADEMY_NOT_GROUP_INSTRUCTOR', 'Bu istifadəçi qrupun müəllimi deyil');
   }
 
   // ───────────────────────── cədvəl
 
-  async list(user: AuthUser, groupId: string, range: { from?: string; to?: string }): Promise<AcademySessionDto[]> {
+  async list(
+    user: AuthUser,
+    groupId: string,
+    range: { from?: string; to?: string },
+  ): Promise<AcademySessionDto[]> {
     const a = await this.access.require(user, groupId, 'group.view');
     const rows = await this.prisma.academyClassSession.findMany({
       where: {
         groupId,
         ...(range.from || range.to
-          ? { startsAt: { ...(range.from ? { gte: new Date(range.from) } : {}), ...(range.to ? { lte: new Date(range.to) } : {}) } }
+          ? {
+              startsAt: {
+                ...(range.from ? { gte: new Date(range.from) } : {}),
+                ...(range.to ? { lte: new Date(range.to) } : {}),
+              },
+            }
           : {}),
       },
       include: sessionInclude,
@@ -103,7 +123,27 @@ export class AcademyClassesService {
     return rows.map((s) => this.dto(s, this.canSeeLink(a), staff));
   }
 
-  async create(user: AuthUser, groupId: string, input: AcademySessionCreateInput): Promise<AcademySessionDto> {
+  /** Tək dərs + qrup məlumatı + cari istifadəçinin icazələri (UI üçün) */
+  async get(user: AuthUser, sessionId: string) {
+    const { s, access } = await this.loadSession(user, sessionId);
+    if (!academyCan(access.ctx, 'group.view')) throw academyForbidden();
+    return {
+      session: this.dto(s, this.canSeeLink(access), academyCan(access.ctx, 'attendance.manage')),
+      group: {
+        id: access.group.id,
+        code: access.group.code,
+        name: access.group.name,
+        timezone: access.group.timezone,
+      },
+      permissions: this.access.permissions(access),
+    };
+  }
+
+  async create(
+    user: AuthUser,
+    groupId: string,
+    input: AcademySessionCreateInput,
+  ): Promise<AcademySessionDto> {
     const a = await this.access.require(user, groupId, 'session.manage');
     this.assertWritableGroup(a);
     await this.assertGroupInstructor(groupId, input.instructorId);
@@ -131,7 +171,11 @@ export class AcademyClassesService {
   }
 
   /** Həftəlik təkrarlanan cədvəl: qrupun vaxt zonasında yerli saat (yay vaxtı nəzərə alınır) */
-  async createSeries(user: AuthUser, groupId: string, input: AcademyScheduleInput): Promise<AcademySessionDto[]> {
+  async createSeries(
+    user: AuthUser,
+    groupId: string,
+    input: AcademyScheduleInput,
+  ): Promise<AcademySessionDto[]> {
     const a = await this.access.require(user, groupId, 'session.manage');
     this.assertWritableGroup(a);
     const slots = expandWeeklySchedule({
@@ -143,7 +187,8 @@ export class AcademyClassesService {
       timezone: a.group.timezone,
       maxSessions: MAX_SERIES + 1,
     });
-    if (!slots.length) throw unprocessable('ACADEMY_SCHEDULE_EMPTY', 'Seçilmiş aralıqda dərs günü yoxdur');
+    if (!slots.length)
+      throw unprocessable('ACADEMY_SCHEDULE_EMPTY', 'Seçilmiş aralıqda dərs günü yoxdur');
     if (slots.length > MAX_SERIES)
       throw unprocessable('ACADEMY_SCHEDULE_TOO_LONG', `Bir cədvəldə ən çox ${MAX_SERIES} dərs`);
     const seriesId = randomUUID();
@@ -163,22 +208,38 @@ export class AcademyClassesService {
       entityType: 'ACADEMY',
       entityId: seriesId,
       entityTitle: `${a.group.code} · ${input.title}`,
-      details: { count: slots.length, startDate: input.startDate, endDate: input.endDate, weekdays: input.weekdays, startTime: input.startTime },
+      details: {
+        count: slots.length,
+        startDate: input.startDate,
+        endDate: input.endDate,
+        weekdays: input.weekdays,
+        startTime: input.startTime,
+      },
     });
-    const rows = await this.prisma.academyClassSession.findMany({ where: { seriesId }, include: sessionInclude, orderBy: { startsAt: 'asc' } });
+    const rows = await this.prisma.academyClassSession.findMany({
+      where: { seriesId },
+      include: sessionInclude,
+      orderBy: { startsAt: 'asc' },
+    });
     return rows.map((s) => this.dto(s, true, true));
   }
 
   /** Tək dərsi dəyişmək: vaxt dəyişsə RESCHEDULED + bildiriş, ləğv — CANCELLED + bildiriş */
-  async update(user: AuthUser, sessionId: string, input: AcademySessionUpdateInput): Promise<AcademySessionDto> {
+  async update(
+    user: AuthUser,
+    sessionId: string,
+    input: AcademySessionUpdateInput,
+  ): Promise<AcademySessionDto> {
     const { s, access } = await this.loadSession(user, sessionId);
     if (!academyCan(access.ctx, 'session.manage')) throw academyForbidden();
     this.assertWritableGroup(access);
     await this.assertGroupInstructor(s.groupId, input.instructorId);
     const startsAt = input.startsAt ? new Date(input.startsAt) : s.startsAt;
     const endsAt = input.endsAt ? new Date(input.endsAt) : s.endsAt;
-    if (endsAt <= startsAt) throw unprocessable('ACADEMY_SESSION_TIME', 'Bitmə vaxtı başlanğıcdan sonra olmalıdır');
-    const timeChanged = startsAt.getTime() !== s.startsAt.getTime() || endsAt.getTime() !== s.endsAt.getTime();
+    if (endsAt <= startsAt)
+      throw unprocessable('ACADEMY_SESSION_TIME', 'Bitmə vaxtı başlanğıcdan sonra olmalıdır');
+    const timeChanged =
+      startsAt.getTime() !== s.startsAt.getTime() || endsAt.getTime() !== s.endsAt.getTime();
     let status = input.status ?? s.status;
     if (timeChanged && !input.status && s.status === 'SCHEDULED') status = 'RESCHEDULED';
 
@@ -196,9 +257,14 @@ export class AcademyClassesService {
         },
         include: sessionInclude,
       });
-      if (status === 'CANCELLED' && s.status !== 'CANCELLED') await emitAcademyEvent(tx, { type: 'CLASS_CANCELLED', sessionId: s.id });
+      if (status === 'CANCELLED' && s.status !== 'CANCELLED')
+        await emitAcademyEvent(tx, { type: 'CLASS_CANCELLED', sessionId: s.id });
       else if (timeChanged && status !== 'CANCELLED')
-        await emitAcademyEvent(tx, { type: 'CLASS_RESCHEDULED', sessionId: s.id, startsAt: startsAt.toISOString() });
+        await emitAcademyEvent(tx, {
+          type: 'CLASS_RESCHEDULED',
+          sessionId: s.id,
+          startsAt: startsAt.toISOString(),
+        });
       return r;
     });
     await this.audit.record(user, {
@@ -207,7 +273,11 @@ export class AcademyClassesService {
       entityId: s.id,
       entityTitle: `${access.group.code} · ${row.title}`,
       details: {
-        before: { startsAt: s.startsAt.toISOString(), endsAt: s.endsAt.toISOString(), status: s.status },
+        before: {
+          startsAt: s.startsAt.toISOString(),
+          endsAt: s.endsAt.toISOString(),
+          status: s.status,
+        },
         after: { startsAt: startsAt.toISOString(), endsAt: endsAt.toISOString(), status },
         reason: input.reason ?? null,
       },
@@ -219,7 +289,11 @@ export class AcademyClassesService {
     const { s, access } = await this.loadSession(user, sessionId);
     if (!academyCan(access.ctx, 'session.manage')) throw academyForbidden();
     this.assertWritableGroup(access);
-    if (s._count.attendance) throw conflict('ACADEMY_SESSION_HAS_ATTENDANCE', 'Davamiyyəti olan dərs silinmir — ləğv edin');
+    if (s._count.attendance)
+      throw conflict(
+        'ACADEMY_SESSION_HAS_ATTENDANCE',
+        'Davamiyyəti olan dərs silinmir — ləğv edin',
+      );
     await this.prisma.academyClassSession.delete({ where: { id: s.id } });
     await this.audit.record(user, {
       action: 'academy.session.delete',
@@ -237,14 +311,22 @@ export class AcademyClassesService {
     if (!academyCan(access.ctx, 'attendance.manage')) throw academyForbidden();
     const [enrollments, records] = await Promise.all([
       this.prisma.academyEnrollment.findMany({
-        where: { groupId: s.groupId, status: { in: ['ACTIVE', 'PAUSED', 'COMPLETED', 'WITHDRAWN'] } },
+        where: {
+          groupId: s.groupId,
+          status: { in: ['ACTIVE', 'PAUSED', 'COMPLETED', 'WITHDRAWN'] },
+        },
         include: { student: { select: { id: true, name: true } } },
         orderBy: { student: { name: 'asc' } },
       }),
       this.prisma.academyAttendance.findMany({ where: { sessionId: s.id } }),
     ]);
     return enrollments
-      .filter((e) => e.status === 'ACTIVE' || e.status === 'PAUSED' || records.some((r) => r.studentId === e.studentId))
+      .filter(
+        (e) =>
+          e.status === 'ACTIVE' ||
+          e.status === 'PAUSED' ||
+          records.some((r) => r.studentId === e.studentId),
+      )
       .map((e) => {
         const r = records.find((x) => x.studentId === e.studentId);
         return {
@@ -258,28 +340,43 @@ export class AcademyClassesService {
   }
 
   /** Toplu qeyd (upsert). Tələbə bu qrupa yazılmalıdır (bazada da kompozit açarla təmin olunur) */
-  async markAttendance(user: AuthUser, sessionId: string, input: AcademyAttendanceInput): Promise<AcademyAttendanceRowDto[]> {
+  async markAttendance(
+    user: AuthUser,
+    sessionId: string,
+    input: AcademyAttendanceInput,
+  ): Promise<AcademyAttendanceRowDto[]> {
     const { s, access } = await this.loadSession(user, sessionId);
     if (!academyCan(access.ctx, 'attendance.manage')) throw academyForbidden();
     this.assertWritableGroup(access);
-    if (s.status === 'CANCELLED') throw conflict('ACADEMY_SESSION_CANCELLED', 'Ləğv olunmuş dərs üçün davamiyyət qeyd olunmur');
+    if (s.status === 'CANCELLED')
+      throw conflict('ACADEMY_SESSION_CANCELLED', 'Ləğv olunmuş dərs üçün davamiyyət qeyd olunmur');
     if (Date.now() < s.startsAt.getTime() - EARLY_MARK_MS)
       throw conflict('ACADEMY_SESSION_NOT_STARTED', 'Dərs hələ başlamayıb');
     const ids = input.records.map((r) => r.studentId);
-    if (new Set(ids).size !== ids.length) throw unprocessable('ACADEMY_DUPLICATE_STUDENT', 'Eyni tələbə iki dəfə');
+    if (new Set(ids).size !== ids.length)
+      throw unprocessable('ACADEMY_DUPLICATE_STUDENT', 'Eyni tələbə iki dəfə');
     const enrolled = await this.prisma.academyEnrollment.findMany({
       where: { groupId: s.groupId, studentId: { in: ids }, status: { in: ['ACTIVE', 'PAUSED'] } },
       select: { studentId: true },
     });
     const ok = new Set(enrolled.map((e) => e.studentId));
     const bad = ids.filter((id) => !ok.has(id));
-    if (bad.length) throw unprocessable('ACADEMY_NOT_ENROLLED', 'Tələbə bu qrupda deyil', { studentIds: bad });
+    if (bad.length)
+      throw unprocessable('ACADEMY_NOT_ENROLLED', 'Tələbə bu qrupda deyil', { studentIds: bad });
     const now = new Date();
     await this.prisma.$transaction(
       input.records.map((r) =>
         this.prisma.academyAttendance.upsert({
           where: { sessionId_studentId: { sessionId: s.id, studentId: r.studentId } },
-          create: { sessionId: s.id, groupId: s.groupId, studentId: r.studentId, status: r.status, note: r.note ?? null, markedById: user.id, markedAt: now },
+          create: {
+            sessionId: s.id,
+            groupId: s.groupId,
+            studentId: r.studentId,
+            status: r.status,
+            note: r.note ?? null,
+            markedById: user.id,
+            markedAt: now,
+          },
           update: { status: r.status, note: r.note ?? null, markedById: user.id, markedAt: now },
         }),
       ),
@@ -297,7 +394,10 @@ export class AcademyClassesService {
   // ───────────────────────── tələbə
 
   /** Tələbənin cədvəli: ACTIVE yazılış — link ilə; bitirmiş (COMPLETED) — linksiz, yalnız tarixçə */
-  async mySchedule(user: AuthUser, range: { from?: string; to?: string }): Promise<AcademySessionDto[]> {
+  async mySchedule(
+    user: AuthUser,
+    range: { from?: string; to?: string },
+  ): Promise<AcademySessionDto[]> {
     const enrollments = await this.prisma.academyEnrollment.findMany({
       where: { studentId: user.id, status: { in: ['ACTIVE', 'COMPLETED'] } },
       select: { groupId: true, status: true },
@@ -306,7 +406,10 @@ export class AcademyClassesService {
     const from = range.from ? new Date(range.from) : new Date(Date.now() - DAY);
     const to = range.to ? new Date(range.to) : new Date(Date.now() + 30 * DAY);
     const rows = await this.prisma.academyClassSession.findMany({
-      where: { groupId: { in: enrollments.map((e) => e.groupId) }, startsAt: { gte: from, lte: to } },
+      where: {
+        groupId: { in: enrollments.map((e) => e.groupId) },
+        startsAt: { gte: from, lte: to },
+      },
       include: sessionInclude,
       orderBy: { startsAt: 'asc' },
       take: 500,
@@ -317,10 +420,17 @@ export class AcademyClassesService {
 
   async nextSession(user: AuthUser): Promise<AcademySessionDto | null> {
     const now = new Date();
-    const enr = await this.prisma.academyEnrollment.findMany({ where: { studentId: user.id, status: 'ACTIVE' }, select: { groupId: true } });
+    const enr = await this.prisma.academyEnrollment.findMany({
+      where: { studentId: user.id, status: 'ACTIVE' },
+      select: { groupId: true },
+    });
     if (!enr.length) return null;
     const s = await this.prisma.academyClassSession.findFirst({
-      where: { groupId: { in: enr.map((e) => e.groupId) }, endsAt: { gte: now }, status: { not: 'CANCELLED' } },
+      where: {
+        groupId: { in: enr.map((e) => e.groupId) },
+        endsAt: { gte: now },
+        status: { not: 'CANCELLED' },
+      },
       include: sessionInclude,
       orderBy: { startsAt: 'asc' },
     });
@@ -330,15 +440,29 @@ export class AcademyClassesService {
   /** Öz davamiyyəti (PENDING-dən başqa hər yazılış vəziyyətində) və qrup üzrə faiz */
   async myAttendance(user: AuthUser): Promise<{
     records: AcademyMyAttendanceDto[];
-    groups: Array<{ groupId: string; groupCode: string; rate: number | null; present: number; late: number; absent: number; excused: number }>;
+    groups: Array<{
+      groupId: string;
+      groupCode: string;
+      rate: number | null;
+      present: number;
+      late: number;
+      absent: number;
+      excused: number;
+    }>;
   }> {
     const enrollments = await this.prisma.academyEnrollment.findMany({
       where: { studentId: user.id, status: { not: 'PENDING' as AcademyEnrollmentStatus } },
       include: { group: { select: { code: true } } },
     });
     const rows = await this.prisma.academyAttendance.findMany({
-      where: { studentId: user.id, groupId: { in: enrollments.map((e) => e.groupId) }, session: { status: { not: 'CANCELLED' } } },
-      include: { session: { select: { title: true, startsAt: true, group: { select: { code: true } } } } },
+      where: {
+        studentId: user.id,
+        groupId: { in: enrollments.map((e) => e.groupId) },
+        session: { status: { not: 'CANCELLED' } },
+      },
+      include: {
+        session: { select: { title: true, startsAt: true, group: { select: { code: true } } } },
+      },
       orderBy: { session: { startsAt: 'desc' } },
     });
     return {

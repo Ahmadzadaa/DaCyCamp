@@ -33,7 +33,15 @@ const KEY = {
   CLASS_CANCELLED: 'notif.academy.classCancelled',
 } as const satisfies Record<AcademyNotificationType, string>;
 
-type Row = { id: string; type: string; title: string; body: string | null; url: string | null; createdAt: Date; readAt: Date | null };
+type Row = {
+  id: string;
+  type: string;
+  title: string;
+  body: string | null;
+  url: string | null;
+  createdAt: Date;
+  readAt: Date | null;
+};
 
 /**
  * Akademiya bildirişləri: işçinin yazdığı sətirlər. Başlıq oxuyanın dilində (tr) qurulur, saxlanan «title» —
@@ -95,13 +103,18 @@ export class AcademyNotificationsService {
 
   /** Müəllimin qruplarında yoxlama gözləyən göndərişlər (yalnız aktiv müəllim əlaqəsi olanlar üçün) */
   private async pendingReviews(userId: string): Promise<{ count: number; latest: Date | null }> {
-    const groups = await this.prisma.academyGroupInstructor.findMany({ where: { userId, removedAt: null }, select: { groupId: true } });
+    const groups = await this.prisma.academyGroupInstructor.findMany({
+      where: { userId, removedAt: null },
+      select: { groupId: true },
+    });
     if (!groups.length) return { count: 0, latest: null };
     const subs = await this.prisma.academySubmission.findMany({
       where: { groupId: { in: groups.map((g) => g.groupId) }, attempts: { some: {} } },
       select: {
         attempts: { select: { id: true, attemptNumber: true, submittedAt: true } },
-        grade: { select: { status: true, gradedById: true, selectedAttemptId: true, updatedAt: true } },
+        grade: {
+          select: { status: true, gradedById: true, selectedAttemptId: true, updatedAt: true },
+        },
       },
     });
     let count = 0;
@@ -124,14 +137,23 @@ export class AcademyNotificationsService {
   }
 
   async markRead(user: AuthUser, id: string): Promise<{ ok: true }> {
-    const r = await this.prisma.academyNotification.updateMany({ where: { id, userId: user.id, readAt: null }, data: { readAt: new Date() } });
-    if (!r.count && !(await this.prisma.academyNotification.count({ where: { id, userId: user.id } })))
+    const r = await this.prisma.academyNotification.updateMany({
+      where: { id, userId: user.id, readAt: null },
+      data: { readAt: new Date() },
+    });
+    if (
+      !r.count &&
+      !(await this.prisma.academyNotification.count({ where: { id, userId: user.id } }))
+    )
       throw notFound('ACADEMY_NOTIFICATION_NOT_FOUND', 'Bildiriş tapılmadı');
     return { ok: true };
   }
 
   async markAllRead(userId: string): Promise<{ ok: true }> {
-    await this.prisma.academyNotification.updateMany({ where: { userId, readAt: null }, data: { readAt: new Date() } });
+    await this.prisma.academyNotification.updateMany({
+      where: { userId, readAt: null },
+      data: { readAt: new Date() },
+    });
     return { ok: true };
   }
 }

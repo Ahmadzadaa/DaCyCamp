@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { MoreHorizontal, X } from 'lucide-react';
+import type { AcademySummaryDto } from '@dacy/shared';
 import { t } from '@/lib/i18n';
 import { BOTTOM_NAV, STUDENT_NAV, isActive, visibleSections } from './nav-config';
 
@@ -11,12 +12,14 @@ export function BottomNav({
   footer,
   authed,
   staff = false,
+  academy = null,
 }: {
   footer?: React.ReactNode;
   authed: boolean;
   staff?: boolean;
+  academy?: AcademySummaryDto | null;
 }) {
-  const sections = visibleSections(STUDENT_NAV, { staff });
+  const sections = visibleSections(STUDENT_NAV, { staff, academy });
   const path = usePathname();
   const search = useSearchParams().toString();
   const main = BOTTOM_NAV.filter((it) => authed || !it.auth);

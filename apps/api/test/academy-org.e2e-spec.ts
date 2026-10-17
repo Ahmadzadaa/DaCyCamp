@@ -78,7 +78,10 @@ describe('Academy organization (e2e)', () => {
       .send({ title: 'Cyber Security', slug: 'cyber-security', status: 'ACTIVE' });
     ids.cs = cs.body.id;
     const list = await admin.get('/academy/programs');
-    expect(list.body.map((p: { slug: string }) => p.slug).sort()).toEqual(['cyber-security', 'data-engineering']);
+    expect(list.body.map((p: { slug: string }) => p.slug).sort()).toEqual([
+      'cyber-security',
+      'data-engineering',
+    ]);
     expect((await globalInstructor.get('/academy/programs')).status).toBe(403);
   });
 
@@ -93,11 +96,17 @@ describe('Academy organization (e2e)', () => {
       assistantInstructorIds: [ids.assistant],
     });
     expect(r.status).toBe(201);
-    expect(r.body).toMatchObject({ code: 'DE-001', timezone: 'Asia/Baku', format: 'ONLINE', myRole: 'ADMIN' });
+    expect(r.body).toMatchObject({
+      code: 'DE-001',
+      timezone: 'Asia/Baku',
+      format: 'ONLINE',
+      myRole: 'ADMIN',
+    });
     expect(r.body.instructors.map((i: { role: string }) => i.role)).toEqual(['LEAD', 'ASSISTANT']);
     ids.de1 = r.body.id;
     expect(
-      (await admin.post('/academy/groups').send({ programId: ids.de, code: 'DE-001', name: 'x' })).status,
+      (await admin.post('/academy/groups').send({ programId: ids.de, code: 'DE-001', name: 'x' }))
+        .status,
     ).toBe(409);
     const cs = await admin.post('/academy/groups').send({
       programId: ids.cs,
@@ -107,11 +116,19 @@ describe('Academy organization (e2e)', () => {
       leadInstructorId: ids.lead2,
     });
     ids.cs1 = cs.body.id;
-    expect((await globalInstructor.post('/academy/groups').send({ programId: ids.de, code: 'X-1', name: 'x' })).status).toBe(403);
+    expect(
+      (
+        await globalInstructor
+          .post('/academy/groups')
+          .send({ programId: ids.de, code: 'X-1', name: 'x' })
+      ).status,
+    ).toBe(403);
   });
 
   it('qrupda bir aktiv aparıcı müəllim (bazada unikal), müəllimin rolu dəyişir', async () => {
-    const r = await admin.post(`/academy/groups/${ids.de1}/instructors`).send({ userId: ids.lead2, role: 'LEAD' });
+    const r = await admin
+      .post(`/academy/groups/${ids.de1}/instructors`)
+      .send({ userId: ids.lead2, role: 'LEAD' });
     expect(r.status).toBe(409);
     expect(r.body.code).toBe('ACADEMY_LEAD_EXISTS');
     const ok = await admin
@@ -126,14 +143,20 @@ describe('Academy organization (e2e)', () => {
   });
 
   it('yazılış: e-poçt ilə, təkrar yazılış 409, müəllim eyni qrupa tələbə ola bilməz', async () => {
-    const r = await admin.post(`/academy/groups/${ids.de1}/enrollments`).send({ email: 'ali@test.local' });
+    const r = await admin
+      .post(`/academy/groups/${ids.de1}/enrollments`)
+      .send({ email: 'ali@test.local' });
     expect(r.status).toBe(201);
     expect(r.body).toMatchObject({ status: 'ACTIVE', student: { id: ids.ali } });
     ids.aliEnr = r.body.id;
-    const dup = await admin.post(`/academy/groups/${ids.de1}/enrollments`).send({ userId: ids.ali });
+    const dup = await admin
+      .post(`/academy/groups/${ids.de1}/enrollments`)
+      .send({ userId: ids.ali });
     expect(dup.status).toBe(409);
     expect(dup.body.code).toBe('ACADEMY_ALREADY_ENROLLED');
-    const asStudent = await admin.post(`/academy/groups/${ids.de1}/enrollments`).send({ userId: ids.lead });
+    const asStudent = await admin
+      .post(`/academy/groups/${ids.de1}/enrollments`)
+      .send({ userId: ids.lead });
     expect(asStudent.body.code).toBe('ACADEMY_STUDENT_IS_INSTRUCTOR');
     await admin.post(`/academy/groups/${ids.de1}/enrollments`).send({ userId: ids.student });
     const asInstr = await admin
@@ -156,7 +179,9 @@ describe('Academy organization (e2e)', () => {
     const loser = a.status === 409 ? a : b;
     expect(loser.body.code).toBe('ACADEMY_CAPACITY_REACHED');
     expect(
-      await prisma.academyEnrollment.count({ where: { groupId: ids.de1, status: { in: ['ACTIVE', 'PENDING', 'PAUSED'] } } }),
+      await prisma.academyEnrollment.count({
+        where: { groupId: ids.de1, status: { in: ['ACTIVE', 'PENDING', 'PAUSED'] } },
+      }),
     ).toBe(3);
     // admin tutumu açıq şəkildə keçə bilər (auditdə qeyd)
     const loserId = a.status === 409 ? ids.aysel : ids.spare;
@@ -169,7 +194,9 @@ describe('Academy organization (e2e)', () => {
       where: { groupId_studentId: { groupId: ids.de1, studentId: ids.spare } },
     });
     if (spareEnr)
-      await admin.patch(`/academy/enrollments/${spareEnr.id}`).send({ status: 'WITHDRAWN', reason: 'test' });
+      await admin
+        .patch(`/academy/enrollments/${spareEnr.id}`)
+        .send({ status: 'WITHDRAWN', reason: 'test' });
     const ayselEnr = await prisma.academyEnrollment.findUnique({
       where: { groupId_studentId: { groupId: ids.de1, studentId: ids.aysel } },
     });
@@ -190,8 +217,13 @@ describe('Academy organization (e2e)', () => {
     expect((await lead.get(`/academy/groups/${ids.cs1}`)).status).toBe(403);
     expect((await lead.get(`/academy/groups/${ids.cs1}/students`)).status).toBe(403);
     // müəllim təşkilati əməliyyat edə bilmir
-    expect((await lead.post(`/academy/groups/${ids.de1}/enrollments`).send({ userId: ids.outsider })).status).toBe(403);
-    expect((await lead.patch(`/academy/groups/${ids.de1}`).send({ capacity: 50 })).status).toBe(403);
+    expect(
+      (await lead.post(`/academy/groups/${ids.de1}/enrollments`).send({ userId: ids.outsider }))
+        .status,
+    ).toBe(403);
+    expect((await lead.patch(`/academy/groups/${ids.de1}`).send({ capacity: 50 })).status).toBe(
+      403,
+    );
     // qlobal INSTRUCTOR (məzmun heyəti) — heç bir qrupa aid deyil
     const gi = await globalInstructor.get('/academy/groups');
     expect(gi.body.items).toEqual([]);
@@ -214,18 +246,28 @@ describe('Academy organization (e2e)', () => {
     expect((await ali.get(`/academy/groups/${ids.de1}/students`)).status).toBe(403);
     expect((await ali.get(`/academy/groups/${ids.cs1}`)).status).toBe(403);
     const sum = await ali.get('/me/summary');
-    expect(sum.body.academy).toEqual({ enabled: true, student: true, instructor: false, admin: false });
+    expect(sum.body.academy).toEqual({
+      enabled: true,
+      student: true,
+      instructor: false,
+      admin: false,
+    });
 
     const out = await as('kenar@test.local');
     expect((await out.get(`/academy/groups/${ids.de1}`)).status).toBe(403);
     expect((await out.get('/academy/groups')).body.items).toEqual([]);
-    expect((await out.get('/me/summary')).body.academy).toMatchObject({ student: false, instructor: false });
+    expect((await out.get('/me/summary')).body.academy).toMatchObject({
+      student: false,
+      instructor: false,
+    });
     expect((await out.get('/academy/groups/yoxdur')).status).toBe(404);
   });
 
   it('yazılış dayandırılanda məzmun hüququ dərhal itir, tarixçə qalır; yenidən aktivləşir', async () => {
     const ali = await as('ali@test.local');
-    const p = await admin.patch(`/academy/enrollments/${ids.aliEnr}`).send({ status: 'PAUSED', reason: 'ödəniş' });
+    const p = await admin
+      .patch(`/academy/enrollments/${ids.aliEnr}`)
+      .send({ status: 'PAUSED', reason: 'ödəniş' });
     expect(p.status).toBe(200);
     expect((await ali.get(`/academy/groups/${ids.de1}`)).status).toBe(403);
     expect((await ali.get('/me/summary')).body.academy.student).toBe(true);
@@ -236,7 +278,11 @@ describe('Academy organization (e2e)', () => {
     expect((await ali.get(`/academy/groups/${ids.de1}`)).status).toBe(200);
     const hist = await ali.get(`/academy/enrollments/${ids.aliEnr}/history`);
     expect(hist.status).toBe(200);
-    expect(hist.body.map((e: { toStatus: string }) => e.toStatus)).toEqual(['ACTIVE', 'PAUSED', 'ACTIVE']);
+    expect(hist.body.map((e: { toStatus: string }) => e.toStatus)).toEqual([
+      'ACTIVE',
+      'PAUSED',
+      'ACTIVE',
+    ]);
     expect(hist.body[1].reason).toBe('ödəniş');
     // başqa tələbə bu tarixçəni görə bilməz
     const aysel = await as('aysel@test.local');
@@ -249,7 +295,9 @@ describe('Academy organization (e2e)', () => {
     await admin.delete(`/academy/groups/${ids.de1}/instructors/${ids.assistant}`);
     expect((await asst.get(`/academy/groups/${ids.de1}`)).status).toBe(403);
     expect((await asst.get('/academy/groups')).body.items).toEqual([]);
-    await admin.post(`/academy/groups/${ids.de1}/instructors`).send({ userId: ids.assistant, role: 'ASSISTANT' });
+    await admin
+      .post(`/academy/groups/${ids.de1}/instructors`)
+      .send({ userId: ids.assistant, role: 'ASSISTANT' });
     const g = await asst.get(`/academy/groups/${ids.de1}`);
     expect(g.status).toBe(200);
     expect(g.body.myRole).toBe('ASSISTANT');
@@ -260,13 +308,25 @@ describe('Academy organization (e2e)', () => {
     const r = await admin.patch(`/academy/groups/${ids.cs1}`).send({ status: 'ARCHIVED' });
     expect(r.status).toBe(409);
     expect(r.body.code).toBe('ACADEMY_GROUP_TRANSITION');
-    const tmp = await admin.post('/academy/groups').send({ programId: ids.cs, code: 'CS-002', name: 'CS-002' });
-    expect((await admin.patch(`/academy/groups/${tmp.body.id}`).send({ status: 'CANCELLED' })).status).toBe(200);
-    expect((await admin.patch(`/academy/groups/${tmp.body.id}`).send({ status: 'ARCHIVED' })).status).toBe(200);
-    expect((await admin.patch(`/academy/groups/${tmp.body.id}`).send({ name: 'yeni' })).status).toBe(409);
-    expect((await admin.post(`/academy/groups/${tmp.body.id}/enrollments`).send({ userId: ids.outsider })).body.code).toBe(
-      'ACADEMY_GROUP_CLOSED',
-    );
+    const tmp = await admin
+      .post('/academy/groups')
+      .send({ programId: ids.cs, code: 'CS-002', name: 'CS-002' });
+    expect(
+      (await admin.patch(`/academy/groups/${tmp.body.id}`).send({ status: 'CANCELLED' })).status,
+    ).toBe(200);
+    expect(
+      (await admin.patch(`/academy/groups/${tmp.body.id}`).send({ status: 'ARCHIVED' })).status,
+    ).toBe(200);
+    expect(
+      (await admin.patch(`/academy/groups/${tmp.body.id}`).send({ name: 'yeni' })).status,
+    ).toBe(409);
+    expect(
+      (
+        await admin
+          .post(`/academy/groups/${tmp.body.id}/enrollments`)
+          .send({ userId: ids.outsider })
+      ).body.code,
+    ).toBe('ACADEMY_GROUP_CLOSED');
     // tutumu mövcud tələbə sayından aşağı salmaq olmur
     const cap = await admin.patch(`/academy/groups/${ids.de1}`).send({ capacity: 1 });
     expect(cap.status).toBe(409);
@@ -284,10 +344,17 @@ describe('Academy organization (e2e)', () => {
       },
     });
     const lead = await as('ziyad@test.local');
-    expect((await lead.put(`/academy/groups/${ids.de1}/courses`).send({ courseIds: [course.id] })).status).toBe(403);
-    const r = await admin.put(`/academy/groups/${ids.de1}/courses`).send({ courseIds: [course.id] });
+    expect(
+      (await lead.put(`/academy/groups/${ids.de1}/courses`).send({ courseIds: [course.id] }))
+        .status,
+    ).toBe(403);
+    const r = await admin
+      .put(`/academy/groups/${ids.de1}/courses`)
+      .send({ courseIds: [course.id] });
     expect(r.status).toBe(200);
-    expect(r.body).toEqual([{ courseId: course.id, slug: 'sql-baslangic', title: 'SQL başlanğıc' }]);
+    expect(r.body).toEqual([
+      { courseId: course.id, slug: 'sql-baslangic', title: 'SQL başlanğıc' },
+    ]);
     const ali = await as('ali@test.local');
     expect((await ali.get(`/academy/groups/${ids.de1}/courses`)).body).toHaveLength(1);
     const out = await as('kenar@test.local');

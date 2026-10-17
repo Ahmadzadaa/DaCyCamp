@@ -37,13 +37,21 @@ export class AcademyGradingController {
   }
 
   @Put('submissions/:id/grade')
-  grade(@CurrentUser() u: AuthUser, @Param('id') id: string, @Body(new ZodPipe(academyGradeSchema)) body: AcademyGradeInput) {
+  grade(
+    @CurrentUser() u: AuthUser,
+    @Param('id') id: string,
+    @Body(new ZodPipe(academyGradeSchema)) body: AcademyGradeInput,
+  ) {
     return this.svc.grade(u, id, body);
   }
 
   @Post('submissions/:id/grade/release')
   @HttpCode(200)
-  release(@CurrentUser() u: AuthUser, @Param('id') id: string, @Body(new ZodPipe(releaseSchema)) body: { expectedVersion?: number }) {
+  release(
+    @CurrentUser() u: AuthUser,
+    @Param('id') id: string,
+    @Body(new ZodPipe(releaseSchema)) body: { expectedVersion?: number },
+  ) {
     return this.svc.release(u, id, body.expectedVersion);
   }
 

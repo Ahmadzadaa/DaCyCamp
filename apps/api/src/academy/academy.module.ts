@@ -29,7 +29,15 @@ import { AcademyWorkerService } from './notifications/academy-worker.service';
  */
 @Module({
   imports: [AuditModule, LearnModule, ProgressModule],
-  controllers: [AcademyOrganizationController, AcademyAssignmentsController, AcademyMeController, AcademyFilesController, AcademyGradingController, AcademyClassesController, AcademyAnalyticsController],
+  controllers: [
+    AcademyOrganizationController,
+    AcademyAssignmentsController,
+    AcademyMeController,
+    AcademyFilesController,
+    AcademyGradingController,
+    AcademyClassesController,
+    AcademyAnalyticsController,
+  ],
   providers: [
     AcademyAccessService,
     AcademyEnabledGuard,

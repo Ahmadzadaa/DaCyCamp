@@ -6,11 +6,13 @@ import {
   FlaskConical,
   Folder,
   FolderKanban,
+  GraduationCap,
   History,
   Layers,
   LayoutDashboard,
   LifeBuoy,
   Map,
+  Presentation,
   Route,
   ShieldCheck,
   SquareTerminal,
@@ -22,6 +24,7 @@ import {
   Users,
   type LucideIcon,
 } from 'lucide-react';
+import type { AcademySummaryDto } from '@dacy/shared';
 import type { TKey } from '@/lib/i18n';
 import { FEATURES } from '@/lib/features';
 
@@ -43,6 +46,8 @@ export interface NavItem {
   countKey?: 'reviews' | 'support';
   /** ikon kafelinin rəngi (iOS üslubu, `--ic`) */
   tint?: string;
+  /** akademiya: yalnız /me/summary.academy-də uyğun rol varsa (instructor — müəllim və ya admin) */
+  academy?: 'student' | 'instructor' | 'admin';
 }
 export interface NavSection {
   title?: TKey;
@@ -62,6 +67,27 @@ export const STUDENT_NAV: NavSection[] = [
         tint: '#30D158',
       },
       { href: '/liderler', label: 'shell.leaderboard', icon: Trophy, isNew: true, tint: '#FF9F0A' },
+    ],
+  },
+  {
+    title: 'shell.secAcademy',
+    items: [
+      {
+        href: '/akademiya',
+        label: 'shell.myAcademy',
+        icon: GraduationCap,
+        auth: true,
+        academy: 'student',
+        tint: '#0A84FF',
+      },
+      {
+        href: '/muellim',
+        label: 'shell.teacherPanel',
+        icon: Presentation,
+        auth: true,
+        academy: 'instructor',
+        tint: '#5E5CE6',
+      },
     ],
   },
   {
@@ -271,6 +297,14 @@ export const ADMIN_NAV: NavSection[] = [
         tint: '#FF9F0A',
       },
       { href: '/admin/lablar', label: 'shell.labSessions', icon: SquareTerminal, tint: '#1C1C1E' },
+      {
+        href: '/admin/akademiya',
+        label: 'shell.academy',
+        icon: GraduationCap,
+        adminOnly: true,
+        academy: 'admin',
+        tint: '#0A84FF',
+      },
     ],
   },
   {
@@ -297,13 +331,23 @@ export const ADMIN_NAV: NavSection[] = [
 /** Rola görə görünən elementlər (boş bölmələr atılır) */
 export function visibleSections(
   sections: NavSection[],
-  opts: { staff?: boolean; isAdmin?: boolean },
+  opts: { staff?: boolean; isAdmin?: boolean; academy?: AcademySummaryDto | null },
 ): NavSection[] {
+  const academyOk = (it: NavItem) => {
+    if (!it.academy) return true;
+    const a = opts.academy;
+    if (!a) return false;
+    if (it.academy === 'instructor') return a.instructor || a.admin;
+    return a[it.academy];
+  };
   return sections
     .map((sec) => ({
       ...sec,
       items: sec.items.filter(
-        (it) => (opts.isAdmin !== false || !it.adminOnly) && (!it.staffOnly || opts.staff),
+        (it) =>
+          (opts.isAdmin !== false || !it.adminOnly) &&
+          (!it.staffOnly || opts.staff) &&
+          academyOk(it),
       ),
     }))
     .filter((sec) => sec.items.length > 0);

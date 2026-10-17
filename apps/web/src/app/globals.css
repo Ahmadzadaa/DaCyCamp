@@ -6710,3 +6710,172 @@
     }
   }
 }
+
+/* ───────── Akademiya (tələbə, müəllim, admin) ───────── */
+@layer components {
+  .ac-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 6px 16px;
+    align-items: center;
+  }
+  .ac-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 14px;
+    font-size: 0.82rem;
+    color: var(--muted);
+  }
+  .ac-meta b {
+    color: var(--ink);
+    font-weight: 600;
+  }
+  .ac-side {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+    text-align: right;
+  }
+  .ac-score {
+    font: 700 1.05rem var(--font-sans);
+    color: var(--ink);
+  }
+  .ac-score small {
+    font-weight: 500;
+    color: var(--muted);
+  }
+  .ac-cards {
+    display: grid;
+    gap: 16px;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  }
+  .ac-card {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 18px;
+    border-radius: 16px;
+    border: 1px solid var(--line);
+    background: var(--card);
+    color: var(--ink);
+    text-decoration: none;
+  }
+  a.ac-card:hover {
+    border-color: color-mix(in srgb, var(--navy) 35%, var(--line));
+  }
+  .ac-card h3 {
+    font-size: 1.05rem;
+    line-height: 1.3;
+  }
+  .ac-kv {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 12px;
+  }
+  .ac-kv div {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .ac-kv dt {
+    font-size: 0.78rem;
+    color: var(--muted);
+  }
+  .ac-kv dd {
+    margin: 0;
+    font-weight: 600;
+  }
+  .ac-item {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 16px;
+    border-radius: 14px;
+    border: 1px solid var(--line);
+    background: var(--card);
+  }
+  .ac-item-h {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .ac-files {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .ac-file {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border-radius: 10px;
+    background: var(--soft);
+    font-size: 0.85rem;
+    color: var(--ink);
+    text-decoration: none;
+    max-width: 100%;
+  }
+  .ac-file span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .ac-day {
+    font: 600 0.8rem var(--font-sans);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+    margin: 18px 0 6px;
+  }
+  .ac-day:first-child {
+    margin-top: 0;
+  }
+  .ac-gb th,
+  .ac-gb td {
+    white-space: nowrap;
+    text-align: center;
+  }
+  .ac-gb th:first-child,
+  .ac-gb td:first-child {
+    text-align: left;
+    position: sticky;
+    left: 0;
+    background: var(--card);
+    z-index: 1;
+  }
+  .ac-att {
+    display: inline-flex;
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+  .ac-att button {
+    padding: 6px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: var(--card);
+    color: var(--muted);
+    font: 600 0.8rem var(--font-sans);
+    cursor: pointer;
+  }
+  .ac-att button[aria-pressed='true'] {
+    background: var(--navy);
+    border-color: var(--navy);
+    color: #fff;
+  }
+  [data-theme='dark'] .ac-att button[aria-pressed='true'] {
+    background: var(--brand);
+    border-color: var(--brand);
+    color: var(--brand-ink);
+  }
+  .ac-flag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.78rem;
+    color: var(--danger);
+  }
+}

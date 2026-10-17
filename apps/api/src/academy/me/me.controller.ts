@@ -33,7 +33,9 @@ import { AcademySubmissionsService } from '../submissions/submissions.service';
 import { AcademyStudentService } from './student.service';
 
 const myAssignmentsQuery = z.object({
-  type: z.enum(['EXISTING_CHALLENGE', 'CUSTOM_TASK', 'CODING_TASK', 'FILE_BASED', 'LAB', 'PROJECT']).optional(),
+  type: z
+    .enum(['EXISTING_CHALLENGE', 'CUSTOM_TASK', 'CODING_TASK', 'FILE_BASED', 'LAB', 'PROJECT'])
+    .optional(),
   groupId: idSchema.optional(),
 });
 
@@ -100,8 +102,16 @@ export class AcademyMeController {
 
   /** Göndəriş faylı (müvəqqəti; göndərişdə cəhdə bağlanır) */
   @Post('assignments/:id/files')
-  @UseInterceptors(FileInterceptor('file', { limits: { fileSize: env.ACADEMY_MAX_FILE_MB * 1024 * 1024, files: 1 } }))
-  stage(@CurrentUser() u: AuthUser, @Param('id') id: string, @UploadedFile() file: Express.Multer.File | undefined) {
+  @UseInterceptors(
+    FileInterceptor('file', {
+      limits: { fileSize: env.ACADEMY_MAX_FILE_MB * 1024 * 1024, files: 1 },
+    }),
+  )
+  stage(
+    @CurrentUser() u: AuthUser,
+    @Param('id') id: string,
+    @UploadedFile() file: Express.Multer.File | undefined,
+  ) {
     if (!file) throw badRequest('VALIDATION_FAILED', 'Fayl göndərilməyib');
     return this.files.stageSubmissionFile(u, id, {
       buffer: file.buffer,

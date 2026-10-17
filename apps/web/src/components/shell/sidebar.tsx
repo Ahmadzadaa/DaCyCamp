@@ -1,6 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
+import type { AcademySummaryDto } from '@dacy/shared';
 import { t } from '@/lib/i18n';
 import { ADMIN_NAV, STUDENT_NAV, isActive, visibleSections } from './nav-config';
 
@@ -15,6 +16,7 @@ export function Sidebar({
   staff = false,
   counts,
   label,
+  academy,
 }: {
   /** ikon komponentləri serverdən ötürülə bilmədiyi üçün konfiq açarla seçilir */
   nav: 'student' | 'admin';
@@ -24,10 +26,16 @@ export function Sidebar({
   staff?: boolean;
   counts?: Partial<Record<'reviews' | 'support', number>>;
   label?: string;
+  /** akademiya bölmələri (rol əsaslı); null — modul söndürülüb və ya rol yoxdur */
+  academy?: AcademySummaryDto | null;
 }) {
   const path = usePathname();
   const search = useSearchParams().toString();
-  const sections = visibleSections(nav === 'admin' ? ADMIN_NAV : STUDENT_NAV, { staff, isAdmin });
+  const sections = visibleSections(nav === 'admin' ? ADMIN_NAV : STUDENT_NAV, {
+    staff,
+    isAdmin,
+    academy,
+  });
   return (
     <aside className="sb" aria-label={label ?? t('shell.sideNav')}>
       <nav className="sb-nav">

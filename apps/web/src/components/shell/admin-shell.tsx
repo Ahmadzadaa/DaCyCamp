@@ -54,6 +54,7 @@ export function AdminShell({
             nav="admin"
             isAdmin={isAdmin}
             counts={{ reviews: summary?.pendingReviews ?? 0, support: summary?.openSupport ?? 0 }}
+            academy={summary?.academy ?? null}
             label="Admin menyu"
             footer={
               <div className="sb-user">

@@ -16,13 +16,21 @@ import { PrismaService } from '../../prisma/prisma.service';
 @Injectable()
 export class AcademyEnabledGuard implements CanActivate {
   canActivate(): boolean {
-    if (!env.ACADEMY_MANAGEMENT_ENABLED) throw notFound('ACADEMY_DISABLED', 'Akademiya modulu söndürülüb');
+    if (!env.ACADEMY_MANAGEMENT_ENABLED)
+      throw notFound('ACADEMY_DISABLED', 'Akademiya modulu söndürülüb');
     return true;
   }
 }
 
 export interface GroupAccess {
-  group: { id: string; code: string; name: string; status: string; timezone: string; programId: string };
+  group: {
+    id: string;
+    code: string;
+    name: string;
+    status: string;
+    timezone: string;
+    programId: string;
+  };
   ctx: AcademyActorContext;
   role: 'ADMIN' | AcademyInstructorRole | 'STUDENT' | null;
   enrollmentId: string | null;
@@ -45,7 +53,8 @@ export class AcademyAccessService {
 
   /** Admin deyilsə 403 */
   requireAdmin(user: AuthUser): void {
-    if (!this.isAdmin(user)) throw forbidden('ACADEMY_ADMIN_ONLY', 'Bu əməliyyat yalnız admin üçündür');
+    if (!this.isAdmin(user))
+      throw forbidden('ACADEMY_ADMIN_ONLY', 'Bu əməliyyat yalnız admin üçündür');
   }
 
   async groupAccess(user: AuthUser, groupId: string): Promise<GroupAccess> {
@@ -118,7 +127,11 @@ export class AcademyAccessService {
   }
 
   /** Bir neçə əməliyyatdan ən azı biri */
-  async requireAny(user: AuthUser, groupId: string, actions: AcademyAction[]): Promise<GroupAccess> {
+  async requireAny(
+    user: AuthUser,
+    groupId: string,
+    actions: AcademyAction[],
+  ): Promise<GroupAccess> {
     const a = await this.groupAccess(user, groupId);
     if (!actions.some((x) => academyCan(a.ctx, x))) throw academyForbidden();
     return a;
@@ -158,7 +171,10 @@ export class AcademyAccessService {
     if (!env.ACADEMY_MANAGEMENT_ENABLED) return null;
     const [enr, inst] = await Promise.all([
       this.prisma.academyEnrollment.count({
-        where: { studentId: user.id, status: { in: ['ACTIVE', 'PAUSED', 'COMPLETED', 'WITHDRAWN'] } },
+        where: {
+          studentId: user.id,
+          status: { in: ['ACTIVE', 'PAUSED', 'COMPLETED', 'WITHDRAWN'] },
+        },
       }),
       this.prisma.academyGroupInstructor.count({ where: { userId: user.id, removedAt: null } }),
     ]);

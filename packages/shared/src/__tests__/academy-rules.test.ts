@@ -39,7 +39,11 @@ describe('toCenti / fromCenti — yuvarlaqlaşdırma', () => {
 });
 
 describe('computeFinalScore — bal yoxlaması və gecikmə cəriməsi', () => {
-  const base = { maxCenti: 10000, latePolicy: 'ACCEPT_WITH_PENALTY' as const, latePenaltyPercent: 10 };
+  const base = {
+    maxCenti: 10000,
+    latePolicy: 'ACCEPT_WITH_PENALTY' as const,
+    latePenaltyPercent: 10,
+  };
   it('vaxtında — cərimə yoxdur', () => {
     expect(computeFinalScore({ ...base, rawCenti: 8550, isLate: false })).toEqual({
       rawCenti: 8550,
@@ -64,7 +68,10 @@ describe('computeFinalScore — bal yoxlaması və gecikmə cəriməsi', () => {
       'SCORE_OUT_OF_RANGE',
     );
     expect(() => computeFinalScore({ ...base, rawCenti: -1, isLate: false })).toThrow();
-    expect(computeFinalScore({ ...base, latePenaltyPercent: 100, rawCenti: 7000, isLate: true }).finalCenti).toBe(0);
+    expect(
+      computeFinalScore({ ...base, latePenaltyPercent: 100, rawCenti: 7000, isLate: true })
+        .finalCenti,
+    ).toBe(0);
   });
 });
 
@@ -153,7 +160,9 @@ describe('cəhd seçimi', () => {
   });
   it('müəllimin seçdiyi cəhd bu göndərişə aid olmalıdır', () => {
     expect(selectAttempt(at, 'INSTRUCTOR_SELECTED', 'a2')?.id).toBe('a2');
-    expect(() => selectAttempt(at, 'INSTRUCTOR_SELECTED', 'başqasının')).toThrow('ATTEMPT_NOT_FOUND');
+    expect(() => selectAttempt(at, 'INSTRUCTOR_SELECTED', 'başqasının')).toThrow(
+      'ATTEMPT_NOT_FOUND',
+    );
     expect(selectAttempt([], 'LATEST_ATTEMPT')).toBeNull();
   });
 });
@@ -170,13 +179,17 @@ describe('tələbə vaxtiyyəti', () => {
     grade: null,
   };
   it('açılmamış tapşırıq MISSED deyil', () => {
-    expect(deriveStudentStatus({ ...base, now: d('2026-10-19T00:00:00Z') }).status).toBe('NOT_OPEN');
+    expect(deriveStudentStatus({ ...base, now: d('2026-10-19T00:00:00Z') }).status).toBe(
+      'NOT_OPEN',
+    );
   });
   it('başlanmayıb / davam edir / buraxılıb', () => {
-    expect(deriveStudentStatus({ ...base, now: d('2026-10-21T00:00:00Z') }).status).toBe('NOT_STARTED');
-    expect(deriveStudentStatus({ ...base, hasDraft: true, now: d('2026-10-21T00:00:00Z') }).status).toBe(
-      'IN_PROGRESS',
+    expect(deriveStudentStatus({ ...base, now: d('2026-10-21T00:00:00Z') }).status).toBe(
+      'NOT_STARTED',
     );
+    expect(
+      deriveStudentStatus({ ...base, hasDraft: true, now: d('2026-10-21T00:00:00Z') }).status,
+    ).toBe('IN_PROGRESS');
     expect(deriveStudentStatus({ ...base, now: d('2026-10-26T00:00:00Z') })).toMatchObject({
       status: 'MISSED',
       canSubmit: false,
@@ -197,11 +210,16 @@ describe('tələbə vaxtiyyəti', () => {
     expect(deriveStudentStatus(sent).status).toBe('SUBMITTED');
     expect(deriveStudentStatus({ ...sent, latestAttemptLate: true }).status).toBe('SUBMITTED_LATE');
     expect(
-      deriveStudentStatus({ ...sent, grade: { status: 'DRAFT', updatedAt: d('2026-10-22T12:00:00Z') } })
-        .status,
+      deriveStudentStatus({
+        ...sent,
+        grade: { status: 'DRAFT', updatedAt: d('2026-10-22T12:00:00Z') },
+      }).status,
     ).toBe('UNDER_REVIEW');
     expect(
-      deriveStudentStatus({ ...sent, grade: { status: 'RELEASED', updatedAt: d('2026-10-22T12:00:00Z') } }),
+      deriveStudentStatus({
+        ...sent,
+        grade: { status: 'RELEASED', updatedAt: d('2026-10-22T12:00:00Z') },
+      }),
     ).toMatchObject({ status: 'GRADED', canSubmit: false });
     const returned = { status: 'RETURNED' as const, updatedAt: d('2026-10-22T12:00:00Z') };
     expect(deriveStudentStatus({ ...sent, grade: returned }).status).toBe('RETURNED');
@@ -302,7 +320,10 @@ describe('analitika düsturları', () => {
     expect(attendanceRate({ present: 8, late: 1, absent: 1, excused: 2 })).toBe(90);
   });
   it('risk göstəriciləri yalnız məlumatdır', () => {
-    expect(riskFlags({ missed: 2, attendanceRate: 59 })).toEqual({ attention: true, attendanceWarning: true });
+    expect(riskFlags({ missed: 2, attendanceRate: 59 })).toEqual({
+      attention: true,
+      attendanceWarning: true,
+    });
     expect(riskFlags({ missed: 1, attendanceRate: null })).toEqual({
       attention: false,
       attendanceWarning: false,
@@ -312,7 +333,11 @@ describe('analitika düsturları', () => {
 
 describe('giriş şəmaları', () => {
   it('qrup: kod formatı və tarix sırası', () => {
-    const ok = academyGroupCreateSchema.safeParse({ programId: 'p1', code: 'de-001', name: 'DE-001' });
+    const ok = academyGroupCreateSchema.safeParse({
+      programId: 'p1',
+      code: 'de-001',
+      name: 'DE-001',
+    });
     expect(ok.success && ok.data.code).toBe('DE-001');
     expect(ok.success && ok.data.timezone).toBe('Asia/Baku');
     expect(
@@ -328,8 +353,12 @@ describe('giriş şəmaları', () => {
       academyGroupCreateSchema.safeParse({ programId: 'p1', code: 'DE 001', name: 'x' }).success,
     ).toBe(false);
     expect(
-      academyGroupCreateSchema.safeParse({ programId: 'p1', code: 'DE-1', name: 'x', timezone: 'Mars/Base' })
-        .success,
+      academyGroupCreateSchema.safeParse({
+        programId: 'p1',
+        code: 'DE-1',
+        name: 'x',
+        timezone: 'Mars/Base',
+      }).success,
     ).toBe(false);
   });
   it('tapşırıq: son tarix açılışdan sonra, defolt siyasətlər', () => {
@@ -383,9 +412,15 @@ describe('yeniləmə şəmaları defolt yazmır (zod 4 partial)', () => {
 describe('cəhd limiti və avtomatik bal', () => {
   it('limit dolubsa yeni cəhd yoxdur; qaytarılmış göndərişə bir düzəliş cəhdi', async () => {
     const { attemptLimitReached } = await import('../index');
-    expect(attemptLimitReached({ attemptsUsed: 2, maxAttempts: 3, returnedAwaitingResubmission: false })).toBe(false);
-    expect(attemptLimitReached({ attemptsUsed: 3, maxAttempts: 3, returnedAwaitingResubmission: false })).toBe(true);
-    expect(attemptLimitReached({ attemptsUsed: 3, maxAttempts: 3, returnedAwaitingResubmission: true })).toBe(false);
+    expect(
+      attemptLimitReached({ attemptsUsed: 2, maxAttempts: 3, returnedAwaitingResubmission: false }),
+    ).toBe(false);
+    expect(
+      attemptLimitReached({ attemptsUsed: 3, maxAttempts: 3, returnedAwaitingResubmission: false }),
+    ).toBe(true);
+    expect(
+      attemptLimitReached({ attemptsUsed: 3, maxAttempts: 3, returnedAwaitingResubmission: true }),
+    ).toBe(false);
   });
 
   it('maksimum × nisbət, sərhədlər daxilində', async () => {

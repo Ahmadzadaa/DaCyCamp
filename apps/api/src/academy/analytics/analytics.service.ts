@@ -15,7 +15,12 @@ import type { AuthUser } from '../../common/decorators';
 import { AcademyAccessService } from '../access/academy-access.service';
 import { STUDENT_VISIBLE } from '../assignments/assignments.service';
 
-type GradeLite = { status: string; gradedById: string | null; selectedAttemptId: string | null; updatedAt: Date };
+type GradeLite = {
+  status: string;
+  gradedById: string | null;
+  selectedAttemptId: string | null;
+  updatedAt: Date;
+};
 type AttemptLite = { id: string; attemptNumber: number; submittedAt: Date };
 
 /** Müəllimin baxması lazım olan göndəriş (siyahıdakı «needsReview» ilə eyni qayda) */
@@ -62,7 +67,15 @@ export class AcademyAnalyticsService {
         where: { groupId },
         include: {
           attempts: { select: { id: true, attemptNumber: true, submittedAt: true, isLate: true } },
-          grade: { select: { status: true, gradedById: true, selectedAttemptId: true, updatedAt: true, finalScoreCenti: true } },
+          grade: {
+            select: {
+              status: true,
+              gradedById: true,
+              selectedAttemptId: true,
+              updatedAt: true,
+              finalScoreCenti: true,
+            },
+          },
         },
       }),
       this.prisma.academyAssignmentExtension.findMany({ where: { assignment: { groupId } } }),
@@ -162,7 +175,12 @@ export class AcademyAnalyticsService {
       include: {
         program: { select: { title: true } },
         instructors: { where: { userId: user.id, removedAt: null }, select: { role: true } },
-        _count: { select: { enrollments: { where: { status: 'ACTIVE' } }, assignments: { where: { status: 'PUBLISHED' } } } },
+        _count: {
+          select: {
+            enrollments: { where: { status: 'ACTIVE' } },
+            assignments: { where: { status: 'PUBLISHED' } },
+          },
+        },
       },
       orderBy: [{ startAt: 'desc' }, { code: 'asc' }],
     });
@@ -171,7 +189,9 @@ export class AcademyAnalyticsService {
       select: {
         groupId: true,
         attempts: { select: { id: true, attemptNumber: true, submittedAt: true } },
-        grade: { select: { status: true, gradedById: true, selectedAttemptId: true, updatedAt: true } },
+        grade: {
+          select: { status: true, gradedById: true, selectedAttemptId: true, updatedAt: true },
+        },
       },
     });
     const rows = groups.map((g) => ({
@@ -183,7 +203,8 @@ export class AcademyAnalyticsService {
       role: (g.instructors[0]?.role ?? 'ADMIN') as 'ADMIN' | 'LEAD' | 'ASSISTANT',
       activeStudents: g._count.enrollments,
       activeAssignments: g._count.assignments,
-      pendingReviews: subs.filter((s) => s.groupId === g.id && needsReview(s.attempts, s.grade)).length,
+      pendingReviews: subs.filter((s) => s.groupId === g.id && needsReview(s.attempts, s.grade))
+        .length,
     }));
     return {
       groups: rows,
@@ -199,26 +220,47 @@ export class AcademyAnalyticsService {
   async adminOverview(user: AuthUser): Promise<AcademyAdminOverviewDto> {
     this.access.requireAdmin(user);
     const now = new Date();
-    const [programs, byStatus, activeEnrollments, instructors, publishedAssignments, subs, upcomingSessions, pending, failed] =
-      await Promise.all([
-        this.prisma.academyProgram.count(),
-        this.prisma.academyGroup.groupBy({ by: ['status'], _count: { _all: true } }),
-        this.prisma.academyEnrollment.count({ where: { status: 'ACTIVE' } }),
-        this.prisma.academyGroupInstructor.findMany({ where: { removedAt: null }, distinct: ['userId'], select: { userId: true } }),
-        this.prisma.academyAssignment.count({ where: { status: 'PUBLISHED' } }),
-        this.prisma.academySubmission.findMany({
-          select: {
-            attempts: { select: { id: true, attemptNumber: true, submittedAt: true } },
-            grade: { select: { status: true, gradedById: true, selectedAttemptId: true, updatedAt: true } },
+    const [
+      programs,
+      byStatus,
+      activeEnrollments,
+      instructors,
+      publishedAssignments,
+      subs,
+      upcomingSessions,
+      pending,
+      failed,
+    ] = await Promise.all([
+      this.prisma.academyProgram.count(),
+      this.prisma.academyGroup.groupBy({ by: ['status'], _count: { _all: true } }),
+      this.prisma.academyEnrollment.count({ where: { status: 'ACTIVE' } }),
+      this.prisma.academyGroupInstructor.findMany({
+        where: { removedAt: null },
+        distinct: ['userId'],
+        select: { userId: true },
+      }),
+      this.prisma.academyAssignment.count({ where: { status: 'PUBLISHED' } }),
+      this.prisma.academySubmission.findMany({
+        select: {
+          attempts: { select: { id: true, attemptNumber: true, submittedAt: true } },
+          grade: {
+            select: { status: true, gradedById: true, selectedAttemptId: true, updatedAt: true },
           },
-        }),
-        this.prisma.academyClassSession.count({
-          where: { startsAt: { gte: now, lte: new Date(now.getTime() + 7 * 86_400_000) }, status: { not: 'CANCELLED' } },
-        }),
-        this.prisma.academyOutboxEvent.count({ where: { status: 'PENDING' } }),
-        this.prisma.academyOutboxEvent.count({ where: { status: 'FAILED' } }),
-      ]);
-    const groups = Object.fromEntries(ACADEMY_GROUP_STATUSES.map((s) => [s, 0])) as Record<AcademyGroupStatus, number>;
+        },
+      }),
+      this.prisma.academyClassSession.count({
+        where: {
+          startsAt: { gte: now, lte: new Date(now.getTime() + 7 * 86_400_000) },
+          status: { not: 'CANCELLED' },
+        },
+      }),
+      this.prisma.academyOutboxEvent.count({ where: { status: 'PENDING' } }),
+      this.prisma.academyOutboxEvent.count({ where: { status: 'FAILED' } }),
+    ]);
+    const groups = Object.fromEntries(ACADEMY_GROUP_STATUSES.map((s) => [s, 0])) as Record<
+      AcademyGroupStatus,
+      number
+    >;
     for (const r of byStatus) groups[r.status] = r._count._all;
     return {
       programs,

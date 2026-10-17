@@ -47,8 +47,19 @@ export class AcademyEvaluationAdapter {
     const [subs, progress, tasks, solves] = await Promise.all([
       repeatable.length
         ? this.prisma.submission.findMany({
-            where: { userId: studentId, stepId: { in: repeatable }, createdAt: { gte: since, lte: until } },
-            select: { id: true, stepId: true, passed: true, score: true, createdAt: true, type: true },
+            where: {
+              userId: studentId,
+              stepId: { in: repeatable },
+              createdAt: { gte: since, lte: until },
+            },
+            select: {
+              id: true,
+              stepId: true,
+              passed: true,
+              score: true,
+              createdAt: true,
+              type: true,
+            },
             orderBy: { createdAt: 'desc' },
           })
         : [],
@@ -59,11 +70,18 @@ export class AcademyEvaluationAdapter {
           })
         : [],
       ctf.length
-        ? this.prisma.ctfTask.findMany({ where: { stepId: { in: ctf } }, select: { id: true, stepId: true, points: true } })
+        ? this.prisma.ctfTask.findMany({
+            where: { stepId: { in: ctf } },
+            select: { id: true, stepId: true, points: true },
+          })
         : [],
       ctf.length
         ? this.prisma.ctfSolve.findMany({
-            where: { userId: studentId, ctfTask: { stepId: { in: ctf } }, solvedAt: { lte: until } },
+            where: {
+              userId: studentId,
+              ctfTask: { stepId: { in: ctf } },
+              solvedAt: { lte: until },
+            },
             select: { ctfTaskId: true, solvedAt: true },
           })
         : [],
@@ -117,10 +135,16 @@ export class AcademyEvaluationAdapter {
         const totalPts = mineTasks.reduce((a, t) => a + t.points, 0);
         const ratio = mineTasks.length
           ? totalPts > 0
-            ? solved.reduce((a, x) => a + (mineTasks.find((t) => t.id === x.ctfTaskId)?.points ?? 0), 0) / totalPts
+            ? solved.reduce(
+                (a, x) => a + (mineTasks.find((t) => t.id === x.ctfTaskId)?.points ?? 0),
+                0,
+              ) / totalPts
             : solved.length / mineTasks.length
           : 0;
-        const last = solved.reduce<Date | null>((d, x) => (!d || x.solvedAt > d ? x.solvedAt : d), null);
+        const last = solved.reduce<Date | null>(
+          (d, x) => (!d || x.solvedAt > d ? x.solvedAt : d),
+          null,
+        );
         out.set(s.stepId, {
           stepId: s.stepId,
           passed: mineTasks.length > 0 && solved.length === mineTasks.length,

@@ -26,7 +26,15 @@ export interface UploadedBlob {
 
 const READ_ONLY: AcademyAssignmentStatus[] = ['ARCHIVED', 'CANCELLED'];
 const MAX_RESOURCES = 20;
-const TEXT_TYPES: ReadonlySet<AcademyFileExtension> = new Set(['csv', 'txt', 'md', 'py', 'sql', 'json', 'ipynb']);
+const TEXT_TYPES: ReadonlySet<AcademyFileExtension> = new Set([
+  'csv',
+  'txt',
+  'md',
+  'py',
+  'sql',
+  'json',
+  'ipynb',
+]);
 const ZIP_TYPES: ReadonlySet<AcademyFileExtension> = new Set(['zip', 'docx', 'xlsx', 'pptx']);
 
 const startsWith = (buf: Buffer, bytes: number[]) => bytes.every((b, i) => buf[i] === b);
@@ -39,7 +47,8 @@ export function contentMatches(ext: AcademyFileExtension, buf: Buffer): boolean 
   if (ext === 'pdf') return startsWith(buf, [0x25, 0x50, 0x44, 0x46, 0x2d]);
   if (ext === 'png') return startsWith(buf, [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
   if (ext === 'jpg' || ext === 'jpeg') return startsWith(buf, [0xff, 0xd8, 0xff]);
-  if (ZIP_TYPES.has(ext)) return startsWith(buf, [0x50, 0x4b, 0x03, 0x04]) || startsWith(buf, [0x50, 0x4b, 0x05, 0x06]);
+  if (ZIP_TYPES.has(ext))
+    return startsWith(buf, [0x50, 0x4b, 0x03, 0x04]) || startsWith(buf, [0x50, 0x4b, 0x05, 0x06]);
   if (!TEXT_TYPES.has(ext)) return false;
   if (buf.includes(0)) return false;
   let text: string;
@@ -75,11 +84,17 @@ export class AcademyFilesService {
   ) {}
 
   /** Uzantı və məzmun yoxlanılır; MIME növü uzantıdan təyin olunur */
-  private validate(blob: UploadedBlob): { ext: AcademyFileExtension; mime: string; filename: string } {
+  private validate(blob: UploadedBlob): {
+    ext: AcademyFileExtension;
+    mime: string;
+    filename: string;
+  } {
     const filename = safeFilename(blob.filename);
     const ext = extname(filename).slice(1).toLowerCase() as AcademyFileExtension;
     if (!Object.hasOwn(ACADEMY_FILE_TYPES, ext))
-      throw unprocessable('ACADEMY_FILE_TYPE', 'Bu fayl növü qəbul edilmir', { allowed: Object.keys(ACADEMY_FILE_TYPES) });
+      throw unprocessable('ACADEMY_FILE_TYPE', 'Bu fayl növü qəbul edilmir', {
+        allowed: Object.keys(ACADEMY_FILE_TYPES),
+      });
     if (blob.buffer.length === 0) throw unprocessable('ACADEMY_FILE_EMPTY', 'Fayl boşdur');
     if (!contentMatches(ext, blob.buffer))
       throw unprocessable('ACADEMY_FILE_CONTENT', 'Faylın məzmunu uzantısına uyğun deyil');
@@ -97,10 +112,17 @@ export class AcademyFilesService {
   // ───────────────────────── tələbə: müvəqqəti yükləmə
 
   /** Göndəriş üçün fayl: yalnız ACTIVE yazılış, açıq tapşırıq, FILE elementi olan tapşırıq */
-  async stageSubmissionFile(user: AuthUser, assignmentId: string, blob: UploadedBlob): Promise<AcademyFileDto> {
+  async stageSubmissionFile(
+    user: AuthUser,
+    assignmentId: string,
+    blob: UploadedBlob,
+  ): Promise<AcademyFileDto> {
     const a = await this.prisma.academyAssignment.findUnique({
       where: { id: assignmentId },
-      include: { group: { select: { status: true } }, items: { where: { kind: 'FILE' }, select: { id: true } } },
+      include: {
+        group: { select: { status: true } },
+        items: { where: { kind: 'FILE' }, select: { id: true } },
+      },
     });
     if (!a) throw notFound('ACADEMY_ASSIGNMENT_NOT_FOUND', 'Tapşırıq tapılmadı');
     const enr = await this.prisma.academyEnrollment.findUnique({
@@ -109,8 +131,10 @@ export class AcademyFilesService {
     });
     if (enr?.status !== 'ACTIVE' || !STUDENT_VISIBLE.includes(a.status)) throw academyForbidden();
     if (a.status !== 'PUBLISHED') throw conflict('ACADEMY_ASSIGNMENT_CLOSED', 'Tapşırıq bağlıdır');
-    if (!groupAcceptsSubmissions(a.group.status)) throw conflict('ACADEMY_GROUP_CLOSED', 'Qrup göndəriş qəbul etmir');
-    if (!a.items.length) throw unprocessable('ACADEMY_FILES_NOT_ACCEPTED', 'Bu tapşırıq fayl qəbul etmir');
+    if (!groupAcceptsSubmissions(a.group.status))
+      throw conflict('ACADEMY_GROUP_CLOSED', 'Qrup göndəriş qəbul etmir');
+    if (!a.items.length)
+      throw unprocessable('ACADEMY_FILES_NOT_ACCEPTED', 'Bu tapşırıq fayl qəbul etmir');
     const ext = await this.prisma.academyAssignmentExtension.findUnique({
       where: { assignmentId_studentId: { assignmentId, studentId: user.id } },
       select: { extendedDueAt: true },
@@ -124,9 +148,14 @@ export class AcademyFilesService {
       lateCutoffAt: a.lateCutoffAt,
     });
     if (!w.allowed) throw conflict(`ACADEMY_${w.reason}`, 'Göndəriş pəncərəsi bağlıdır');
-    const staged = await this.prisma.academyFile.count({ where: { ownerId: user.id, status: 'STAGED' } });
+    const staged = await this.prisma.academyFile.count({
+      where: { ownerId: user.id, status: 'STAGED' },
+    });
     if (staged >= ACADEMY_DEFAULTS.maxStagedFiles)
-      throw conflict('ACADEMY_TOO_MANY_FILES', 'Göndərilməmiş fayl çoxdur — əvvəlcə göndərin və ya silin');
+      throw conflict(
+        'ACADEMY_TOO_MANY_FILES',
+        'Göndərilməmiş fayl çoxdur — əvvəlcə göndərin və ya silin',
+      );
 
     const v = this.validate(blob);
     const key = await this.store(`submissions/${assignmentId}`, v.ext, blob.buffer);
@@ -156,7 +185,9 @@ export class AcademyFilesService {
     const f = await this.prisma.academyFile.findUnique({ where: { id: fileId } });
     if (!f || f.ownerId !== user.id || f.status !== 'STAGED' || f.purpose !== 'SUBMISSION')
       throw notFound('ACADEMY_FILE_NOT_FOUND', 'Fayl tapılmadı');
-    const del = await this.prisma.academyFile.deleteMany({ where: { id: fileId, status: 'STAGED' } });
+    const del = await this.prisma.academyFile.deleteMany({
+      where: { id: fileId, status: 'STAGED' },
+    });
     if (del.count) await removeFromStorage(f.storageKey).catch(() => undefined);
     return { ok: true };
   }
@@ -174,17 +205,28 @@ export class AcademyFilesService {
 
   private async resourceAccess(user: AuthUser, assignmentId: string) {
     const { assignment, access } = await this.access.assignmentAccess(user, assignmentId);
-    const need = assignment.status === 'DRAFT' ? 'assignment.editDraft' : 'assignment.editPublished';
+    const need =
+      assignment.status === 'DRAFT' ? 'assignment.editDraft' : 'assignment.editPublished';
     if (!this.access.can(access, need)) throw academyForbidden();
     if (READ_ONLY.includes(assignment.status))
-      throw conflict('ACADEMY_ASSIGNMENT_READ_ONLY', 'Arxivləşdirilmiş / ləğv olunmuş tapşırıq dəyişdirilmir');
+      throw conflict(
+        'ACADEMY_ASSIGNMENT_READ_ONLY',
+        'Arxivləşdirilmiş / ləğv olunmuş tapşırıq dəyişdirilmir',
+      );
     return { assignment, access };
   }
 
-  async addResource(user: AuthUser, assignmentId: string, blob: UploadedBlob): Promise<AcademyFileDto> {
+  async addResource(
+    user: AuthUser,
+    assignmentId: string,
+    blob: UploadedBlob,
+  ): Promise<AcademyFileDto> {
     const { access } = await this.resourceAccess(user, assignmentId);
-    const count = await this.prisma.academyFile.count({ where: { assignmentId, purpose: 'ASSIGNMENT_RESOURCE' } });
-    if (count >= MAX_RESOURCES) throw conflict('ACADEMY_TOO_MANY_FILES', `Ən çox ${MAX_RESOURCES} resurs`);
+    const count = await this.prisma.academyFile.count({
+      where: { assignmentId, purpose: 'ASSIGNMENT_RESOURCE' },
+    });
+    if (count >= MAX_RESOURCES)
+      throw conflict('ACADEMY_TOO_MANY_FILES', `Ən çox ${MAX_RESOURCES} resurs`);
     const v = this.validate(blob);
     const key = await this.store(`resources/${assignmentId}`, v.ext, blob.buffer);
     let f;
@@ -217,7 +259,11 @@ export class AcademyFilesService {
     return fileDto(f);
   }
 
-  async removeResource(user: AuthUser, assignmentId: string, fileId: string): Promise<{ ok: true }> {
+  async removeResource(
+    user: AuthUser,
+    assignmentId: string,
+    fileId: string,
+  ): Promise<{ ok: true }> {
     const { access } = await this.resourceAccess(user, assignmentId);
     const f = await this.prisma.academyFile.findFirst({
       where: { id: fileId, assignmentId, purpose: 'ASSIGNMENT_RESOURCE' },
@@ -281,20 +327,27 @@ export class AcademyFilesService {
     const drafts = await this.prisma.academySubmissionDraft.findMany({
       where: {
         studentId: { in: [...new Set(old.map((f) => f.ownerId).filter((x): x is string => !!x))] },
-        assignmentId: { in: [...new Set(old.map((f) => f.assignmentId).filter((x): x is string => !!x))] },
+        assignmentId: {
+          in: [...new Set(old.map((f) => f.assignmentId).filter((x): x is string => !!x))],
+        },
         assignment: { status: 'PUBLISHED' },
       },
       select: { answers: true },
     });
     const kept = new Set<string>();
     for (const d of drafts)
-      for (const a of (d.answers as Array<{ fileIds?: string[] }> | null) ?? []) for (const id of a.fileIds ?? []) kept.add(id);
+      for (const a of (d.answers as Array<{ fileIds?: string[] }> | null) ?? [])
+        for (const id of a.fileIds ?? []) kept.add(id);
     let removed = 0;
     for (const f of old) {
       if (kept.has(f.id)) continue;
-      const del = await this.prisma.academyFile.deleteMany({ where: { id: f.id, status: 'STAGED' } });
+      const del = await this.prisma.academyFile.deleteMany({
+        where: { id: f.id, status: 'STAGED' },
+      });
       if (!del.count) continue;
-      await removeFromStorage(f.storageKey).catch((e) => this.log.warn(`Fayl silinmədi: ${String(e)}`));
+      await removeFromStorage(f.storageKey).catch((e) =>
+        this.log.warn(`Fayl silinmədi: ${String(e)}`),
+      );
       removed++;
     }
     return removed;
