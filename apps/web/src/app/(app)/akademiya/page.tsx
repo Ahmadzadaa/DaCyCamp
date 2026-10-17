@@ -9,6 +9,7 @@ import { EmptyState } from '@/components/app/empty-state';
 import { AssignmentRows } from '@/components/academy/assignment-rows';
 import { ClassStatusBadge, EnrollmentBadge } from '@/components/academy/badges';
 import { fmtScore, fmtZoned } from '@/components/academy/format';
+import { JoinGroupForm } from '@/components/app/register-flow';
 
 export function generateMetadata(): Metadata {
   return { title: t('academy.title') };
@@ -17,13 +18,22 @@ export function generateMetadata(): Metadata {
 export default async function AcademyOverviewPage() {
   const o = await apiTry<AcademyStudentOverviewDto>('/academy/me/overview');
   if (!o) notFound();
+  // hələ qrupu yoxdur: admin verdiyi kodla özü qoşula bilər
   if (o.groups.length === 0)
     return (
-      <EmptyState
-        icon={GraduationCap}
-        title={t('academy.empty.groups')}
-        description={t('academy.empty.groupsDesc')}
-      />
+      <div className="flex flex-col gap-6">
+        <EmptyState
+          icon={GraduationCap}
+          title={t('academy.empty.groups')}
+          description={t('academy.empty.groupsDesc')}
+        />
+        <section className="box mx-auto w-full max-w-[520px]" aria-labelledby="ac-join">
+          <h2 id="ac-join" className="box-h">
+            {t('academy.join.title')}
+          </h2>
+          <JoinGroupForm />
+        </section>
+      </div>
     );
   const next = o.nextSession;
   return (

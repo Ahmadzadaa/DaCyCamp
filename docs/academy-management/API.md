@@ -1,7 +1,7 @@
 # Academy Management System — API
 
 All routes are under `/academy` (the browser calls `/api/academy/...`; Next.js rewrites to NestJS). Every route
-requires a signed-in user (global `AuthGuard`) and passes `AcademyEnabledGuard` (404 `ACADEMY_DISABLED` when
+except the three public join routes below requires a signed-in user (global `AuthGuard`) and passes `AcademyEnabledGuard` (404 `ACADEMY_DISABLED` when
 `ACADEMY_MANAGEMENT_ENABLED=false`). Bodies and queries are validated with zod schemas from
 `packages/shared/src/academy/schemas.ts` (400 `VALIDATION_FAILED`). Permissions are resource-scoped and checked
 on every request from the database; "Action" refers to `packages/shared/src/academy/permissions.ts`.
@@ -31,6 +31,23 @@ and are translated in both dictionaries (`errors.ACADEMY_*`). Main ones: 403 `AC
 | PATCH | `/academy/enrollments/:id` | admin | `{ status, reason? }`; history event |
 | GET | `/academy/enrollments/:id/history` | the student or roster viewers | |
 | GET / PUT | `/academy/groups/:id/courses` | view: group members; edit: admin | linked platform courses |
+| POST | `/academy/groups/:id/join-code/rotate` | admin | new random join code; the old one stops working at once; audit records the fact, not the code |
+
+The group DTO contains `joinCode` and `joinEnabled` **only for admins**. `PATCH /academy/groups/:id` accepts
+`joinEnabled` (open / close joining with the code).
+
+## Joining with a group code
+
+| Method | Path | Who | Notes |
+| --- | --- | --- | --- |
+| GET | `/academy/join/status` | public | `{ enabled: true }`; 404 when the module is off (the sign-up page hides the Academy option) |
+| POST | `/academy/join/check` | public, 20 / min / IP | `{ code }` → `{ group: { code, name, startAt, format }, program: { title } }`; 422 `ACADEMY_JOIN_CODE_INVALID`, 409 `ACADEMY_JOIN_CLOSED` |
+| POST | `/academy/join/register` | public, 20 / min / IP | `{ name, email, password, code }` → `{ user, joined }` + session cookies. The account and the ACTIVE enrollment are created in **one transaction**: if the code is wrong, joining is closed or the group is full, no account is created |
+| POST | `/academy/join` | signed-in, 20 / min | `{ code }` → `{ groupId, groupCode, groupName }`; for Camp users who receive a code later. 409 `ACADEMY_ALREADY_MEMBER`, `ACADEMY_JOIN_NOT_ALLOWED` (withdrawn / completed — only the admin can re-enroll), `ACADEMY_TEACHER_ACCOUNT` |
+
+Codes are 8 characters from `ABCDEFGHJKLMNPQRSTUVWXYZ23456789` (no 0/O/1/I), generated with `crypto.randomInt`;
+input is normalised (case, spaces and dashes ignored), so `k7q4-xp9m` equals `K7Q4XP9M`. The group's own code
+(`DE-002`) is not a join code.
 
 ## Assignments (staff)
 
@@ -109,5 +126,6 @@ and are translated in both dictionaries (`errors.ACADEMY_*`). Main ones: 403 `AC
 
 ## Existing endpoints changed
 
-- `GET /me/summary` now includes `academy: { enabled, student, instructor, admin } | null` (null when the module is off).
+- `GET /me/summary` now includes `academy: { enabled, student, instructor, admin, teacherAccount } | null` (null when the module is off).
+- `POST /admin/users` and the role endpoints accept the new role `TEACHER` (Academy teacher account).
 - `GET /me/notifications` now also returns Academy notifications (kinds `academy_*`); `POST /me/notifications/seen` also marks them read.

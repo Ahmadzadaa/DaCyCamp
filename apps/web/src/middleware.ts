@@ -32,7 +32,8 @@ function homeFor(token: string | undefined): string {
     const part = token?.split('.')[1];
     if (!part) return '/panel';
     const json = JSON.parse(atob(part.replace(/-/g, '+').replace(/_/g, '/'))) as { role?: string };
-    return json.role === 'ADMIN' || json.role === 'INSTRUCTOR' ? '/admin' : '/panel';
+    if (json.role === 'ADMIN' || json.role === 'INSTRUCTOR') return '/admin';
+    return json.role === 'TEACHER' ? '/muellim' : '/panel';
   } catch {
     return '/panel';
   }

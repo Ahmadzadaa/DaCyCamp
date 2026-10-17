@@ -2,12 +2,13 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { Award, Zap } from 'lucide-react';
-import type { CertificateSummaryDto } from '@dacy/shared';
+import type { CertificateSummaryDto, MeSummaryDto } from '@dacy/shared';
 import { apiTry, getCurrentUser } from '@/lib/api/server';
 import { t } from '@/lib/i18n';
 import { fmtNum, initials } from '@/lib/utils';
 import { fmtDate } from '@/components/admin/format';
 import { ProfileForms } from '@/components/app/profile-forms';
+import { JoinGroupForm } from '@/components/app/register-flow';
 
 export function generateMetadata(): Metadata {
   return { title: t('nav.profile') };
@@ -16,7 +17,13 @@ export function generateMetadata(): Metadata {
 export default async function ProfilePage() {
   const user = await getCurrentUser();
   if (!user) redirect('/giris?next=/profil');
-  const certs = (await apiTry<CertificateSummaryDto[]>('/me/certificates')) ?? [];
+  const [certs, summary] = await Promise.all([
+    apiTry<CertificateSummaryDto[]>('/me/certificates').then((x) => x ?? []),
+    apiTry<MeSummaryDto>('/me/summary'),
+  ]);
+  // Camp ilə qeydiyyatdan keçən sonra kod alsa, buradan akademiya qrupuna qoşulur
+  const academy = summary?.academy;
+  const canJoin = !!academy && !academy.teacherAccount && user.role !== 'ADMIN';
   return (
     <div className="mx-auto flex max-w-[960px] flex-col gap-6">
       <section className="box profile-head">
@@ -44,6 +51,14 @@ export default async function ProfilePage() {
         </div>
       </section>
       <ProfileForms user={user} />
+      {canJoin ? (
+        <section className="box" aria-labelledby="pf-join">
+          <h2 id="pf-join" className="box-h">
+            {t('academy.join.title')}
+          </h2>
+          <JoinGroupForm />
+        </section>
+      ) : null}
     </div>
   );
 }

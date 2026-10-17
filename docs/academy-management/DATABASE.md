@@ -8,6 +8,13 @@ column or row is altered or deleted. Foreign keys from Academy tables to existin
 Applied in this environment to the local development database and the test database only. It has **not** been
 applied to any production database.
 
+Follow-up migrations (additive only, applied to the same local databases only, after a `pg_dump` of the dev database):
+
+- `20261017120000_academy_join_codes` — `AcademyGroup.joinCode` (unique, NOT NULL; existing groups get a random
+  8-character code in the migration) and `AcademyGroup.joinEnabled` (default `true`).
+- `20261017120100_role_teacher` — `ALTER TYPE "Role" ADD VALUE 'TEACHER'` (Academy teacher account). Existing roles
+  and users are unchanged.
+
 ## Tables
 
 | Group | Tables |
@@ -74,6 +81,11 @@ DROP TYPE IF EXISTS
 DELETE FROM "_prisma_migrations" WHERE migration_name = '20261017005426_academy_management';
 COMMIT;
 ```
+
+The two follow-up migrations need no separate schema rollback when the script above is run (the columns belong to
+`AcademyGroup`); also remove their rows: `DELETE FROM "_prisma_migrations" WHERE migration_name IN
+('20261017120000_academy_join_codes', '20261017120100_role_teacher');`. PostgreSQL cannot remove a value from an enum; if `TEACHER` must go, first move such users to
+another role (`UPDATE "User" SET role = 'STUDENT' WHERE role = 'TEACHER'`) — the unused value is harmless.
 
 Uploaded Academy files live under `STORAGE_DIR/academy/` and can be removed separately after the rollback.
 The rollback script has been reviewed but **not executed** in this environment (it is destructive by design).

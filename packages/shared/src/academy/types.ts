@@ -39,6 +39,8 @@ export interface AcademySummaryDto {
   student: boolean;
   instructor: boolean;
   admin: boolean;
+  /** akademiya müəllimi hesabı (TEACHER) — hələ qrupa təyin olunmasa da «Müəllim paneli» görünür */
+  teacherAccount: boolean;
 }
 
 export interface AcademyProgramDto {
@@ -75,8 +77,24 @@ export interface AcademyGroupDto {
   /** cari istifadəçinin bu qrupdakı icazələri (UI üçün; server yenə yoxlayır) */
   permissions: AcademyAction[];
   myRole: 'ADMIN' | AcademyInstructorRole | 'STUDENT' | null;
+  /** qoşulma kodu — yalnız admin görür */
+  joinCode?: string;
+  joinEnabled?: boolean;
   createdAt: string;
   updatedAt: string;
+}
+
+/** Qoşulma kodu yoxlananda qrupun qısa ön baxışı (tələbə hansı qrupa düşəcəyini görür) */
+export interface AcademyJoinPreviewDto {
+  group: { code: string; name: string; startAt: string | null; format: AcademyLearningFormat };
+  program: { title: string };
+}
+
+/** Kodla qoşulmanın nəticəsi */
+export interface AcademyJoinResultDto {
+  groupId: string;
+  groupCode: string;
+  groupName: string;
 }
 
 export interface AcademyEnrollmentDto {

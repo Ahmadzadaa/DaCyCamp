@@ -1,4 +1,5 @@
-export const ROLES = ['STUDENT', 'INSTRUCTOR', 'ADMIN'] as const;
+/** TEACHER — akademiya müəllimi (qlobal hüququ yoxdur); INSTRUCTOR — Camp məzmun heyəti */
+export const ROLES = ['STUDENT', 'TEACHER', 'INSTRUCTOR', 'ADMIN'] as const;
 export type Role = (typeof ROLES)[number];
 export const STAFF_ROLES: readonly Role[] = ['INSTRUCTOR', 'ADMIN'];
 

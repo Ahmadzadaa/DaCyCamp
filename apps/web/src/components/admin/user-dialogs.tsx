@@ -15,11 +15,21 @@ import { Input, Select } from '@/components/ui/input';
 export function CreateUserDialog({
   onClose,
   onCreated,
+  fixedRole,
+  title,
 }: {
   onClose: () => void;
   onCreated: (u: PublicUser) => void;
+  /** rol seçimi gizlənir (məs. akademiyada «Yeni müəllim hesabı» — TEACHER) */
+  fixedRole?: Role;
+  title?: string;
 }) {
-  const [v, setV] = useState({ name: '', email: '', password: '', role: 'STUDENT' as Role });
+  const [v, setV] = useState({
+    name: '',
+    email: '',
+    password: '',
+    role: fixedRole ?? ('STUDENT' as Role),
+  });
   const [errors, setErrors] = useState<Partial<Record<keyof typeof v, string>>>({});
   const [busy, setBusy] = useState(false);
 
@@ -52,7 +62,7 @@ export function CreateUserDialog({
   return (
     <Dialog open onOpenChange={(o) => !o && onClose()}>
       <DialogContent
-        title={t('users.createTitle')}
+        title={title ?? t('users.createTitle')}
         description={t('users.createDesc')}
         icon={<UserPlus />}
       >
@@ -84,15 +94,17 @@ export function CreateUserDialog({
               invalid={!!errors.password}
             />
           </Field>
-          <Field label={t('users.role')}>
-            <Select value={v.role} onChange={set('role')}>
-              {ROLES.map((r) => (
-                <option key={r} value={r}>
-                  {t(`role.${r}`)}
-                </option>
-              ))}
-            </Select>
-          </Field>
+          {fixedRole ? null : (
+            <Field label={t('users.role')}>
+              <Select value={v.role} onChange={set('role')}>
+                {ROLES.map((r) => (
+                  <option key={r} value={r}>
+                    {t(`role.${r}`)}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+          )}
           <div className="flex justify-end gap-2">
             <DialogClose asChild>
               <Button type="button" variant="ghost">
@@ -100,7 +112,7 @@ export function CreateUserDialog({
               </Button>
             </DialogClose>
             <Button type="submit" loading={busy}>
-              {t('users.new')}
+              {title ?? t('users.new')}
             </Button>
           </div>
         </form>

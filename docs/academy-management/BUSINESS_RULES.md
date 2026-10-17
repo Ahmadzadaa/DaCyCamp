@@ -3,6 +3,22 @@
 Pure rules live in `packages/shared/src/academy/rules.ts` (unit-tested) and are applied by the API. The web uses
 the same functions only for display; the server is always authoritative.
 
+## Sign-up: Camp or Academy
+
+- The sign-up page first asks for the path. **DaCy Camp**: an ordinary account (courses, labs, roadmap) — no
+  Academy menu. **DaCy Academy**: the student enters the group's join code; the account is created and the student
+  is enrolled in that group as `ACTIVE` in one step. Academy students keep full Camp access.
+- Every group gets its own random join code when it is created (existing groups received one in the migration).
+  DE-001 and DE-002 therefore have different codes, and a code always leads to exactly one group.
+- The admin sees the code (and a sign-up link with the code filled in, `/qeydiyyat?kod=…`) on the group page and in
+  the group list, can copy it, generate a new one, or switch joining off.
+- Joining is possible while the group is `PLANNED` or `ACTIVE`, the code is switched on and the program is not
+  archived; capacity counts `PENDING`, `ACTIVE` and `PAUSED` seats. A `PENDING` enrollment becomes `ACTIVE`.
+- A Camp user who receives a code later joins from the profile page or the empty «Mənim akademiyam» page.
+- Teacher accounts (`TEACHER`) are created by the admin (Admin → Akademiya → «Müəllim hesabları», or the users page).
+  They sign in with their own email and password, land on «Müəllim paneli» and see a group once the admin assigns
+  them. A teacher account cannot join a group as a student.
+
 ## Time and deadlines
 
 - All decisions use the **server clock**; times are stored in UTC and shown in the group timezone (default `Asia/Baku`).

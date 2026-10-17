@@ -39,6 +39,9 @@ Date: 2026-10-17 · Branch `claude/clever-dirac-f7c6aa` · Not deployed anywhere
 | Analytics (group), instructor overview, admin overview | ✅ | formulas in BUSINESS_RULES.md |
 | Audit log for Academy actions | ✅ | |
 | Seed data for the two programs | ⛔ | optional; programs are created by the admin in the UI |
+| Group join codes (random, per group, rotate / disable, admin-only) | ✅ | `academy-join.e2e-spec.ts` |
+| Academy sign-up with a code (account + enrollment in one transaction, capacity under lock) | ✅ | including parallel sign-ups |
+| Separate teacher account type `TEACHER` (no Camp staff rights) | ✅ | |
 
 ## Frontend
 
@@ -57,6 +60,10 @@ Date: 2026-10-17 · Branch `claude/clever-dirac-f7c6aa` · Not deployed anywhere
 | Admin: instructors management, group settings, course links | 🟡 | |
 | Admin: program edit / archive UI, enrollment history UI, group dates / format / timezone edit UI | ⛔ | API exists (`PATCH /academy/programs/:id`, `/enrollments/:id/history`, `PATCH /academy/groups/:id`) |
 | Azerbaijani primary, English complete (incl. error codes) | ✅ | English verified in the acceptance test; dictionary parity enforced by the compiler |
+| Sign-up asks Camp / Academy; Academy form with code check and group preview; `?kod=` link | ✅ | Playwright `academy-join.spec.ts` |
+| Join with a code from the profile page / empty «Mənim akademiyam» | 🟡 | API path ✅ (e2e); the web form itself is not covered by Playwright |
+| Admin: join code box (copy, sign-up link, new code, on / off), code column in the group list | ✅ / 🟡 | display ✅ Playwright; copy / rotate / toggle buttons 🟡 (API ✅) |
+| Admin: «Müəllim hesabları» (list + new teacher account) | ✅ | Playwright |
 | Mobile layout | ✅ | Playwright at 390 px: no horizontal page overflow on student overview, assignments, grades, schedule, assignment detail and teacher pages; screenshots in `docs/screenshots/academy-mobile-*.png` |
 
 ## Documentation

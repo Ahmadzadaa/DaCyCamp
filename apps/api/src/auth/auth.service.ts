@@ -14,7 +14,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { env } from '../config/env';
 import { conflict, unauthorized } from '../common/errors';
 import type { AccessPayload } from '../common/guards/auth.guard';
-import type { User } from '@prisma/client';
+import type { Prisma, User } from '@prisma/client';
 
 export interface Tokens {
   accessToken: string;
@@ -46,16 +46,24 @@ export class AuthService {
     return hash(p);
   }
 
-  async register(dto: RegisterInput, meta: { ua?: string; ip?: string }) {
+  /**
+   * `alsoInTx` — hesabla eyni tranzaksiyada görüləcək iş (məs. akademiya qrupuna qoşulma):
+   * o uğursuz olsa hesab da yaranmır.
+   */
+  async register(
+    dto: RegisterInput,
+    meta: { ua?: string; ip?: string },
+    alsoInTx?: (tx: Prisma.TransactionClient, user: User) => Promise<void>,
+  ) {
     const exists = await this.prisma.user.findUnique({ where: { email: dto.email } });
     if (exists) throw conflict('AUTH_EMAIL_TAKEN', 'Bu e-poçt artıq qeydiyyatdan keçib');
-    const user = await this.prisma.user.create({
-      data: {
-        email: dto.email,
-        name: dto.name,
-        passwordHash: await hash(dto.password),
-        role: 'STUDENT',
-      },
+    const passwordHash = await hash(dto.password);
+    const user = await this.prisma.$transaction(async (tx) => {
+      const u = await tx.user.create({
+        data: { email: dto.email, name: dto.name, passwordHash, role: 'STUDENT' },
+      });
+      if (alsoInTx) await alsoInTx(tx, u);
+      return u;
     });
     return { user, tokens: await this.issue(user, meta) };
   }

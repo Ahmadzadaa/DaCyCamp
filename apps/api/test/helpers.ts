@@ -77,7 +77,7 @@ export async function login(app: INestApplication, email: string, password: stri
 export async function makeUser(
   prisma: PrismaService,
   email: string,
-  role: 'STUDENT' | 'INSTRUCTOR' | 'ADMIN' = 'STUDENT',
+  role: 'STUDENT' | 'TEACHER' | 'INSTRUCTOR' | 'ADMIN' = 'STUDENT',
   password = 'Parol123!',
 ) {
   return prisma.user.create({

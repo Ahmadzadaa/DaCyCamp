@@ -124,6 +124,8 @@ test('admin: yol API ilə yaradılır, redaktor açılır, addım əlavə dialoq
 
 test('qeydiyyat → onboarding → istiqamət → «Bu yola başla» → yol səhifəsi', async ({ page }) => {
   await page.goto('/qeydiyyat');
+  // qeydiyyat əvvəlcə yol soruşur: Camp (adi) və ya Akademiya (qrup kodu ilə)
+  await page.getByTestId('choose-camp').click();
   await page.getByLabel('Ad və soyad').fill(fresh.name);
   await page.getByLabel('E-poçt', { exact: true }).fill(fresh.email);
   await page.getByLabel('Şifrə', { exact: true }).fill(fresh.password);

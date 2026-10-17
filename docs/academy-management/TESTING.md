@@ -28,10 +28,15 @@ directly with controlled clocks.
 | `apps/api/test/academy-grading.e2e-spec.ts` | 13 | staff submission list, validation (range, missing, foreign item, rubric misuse, selection policy), assistant drafts and cannot release, release visibility, XP unchanged, changing a released grade (reason, audit before/after, version conflict), late penalty rounding, return + resubmission, automatic drafts, rubric grading, stale detection, bulk release, gradebook averages, CSV formula-injection protection, INSTRUCTOR_SELECTED (older attempt is not stale, foreign attempt rejected), DB score triggers, cancelled assignment read-only |
 | `apps/api/test/academy-classes.e2e-spec.ts` | 8 | single sessions and permissions, weekly schedule in Asia/Baku, too long / empty schedules, reschedule one session, cancel, outbox, audit, meeting-link visibility, schedule ranges, attendance upsert and rules, DB composite FK, own attendance rates, delete rules, session detail endpoint, next class in overview |
 | `apps/api/test/academy-notifications.e2e-spec.ts` | 10 | outbox → notifications, idempotent processing, duplicate events, retry with backoff → FAILED, bell integration (az / en, read state, feature flag), deadline reminders with extensions and no duplicates, scheduled publish by the worker, grade / return / class notifications, instructor review counter, analytics formulas, instructor and admin overviews, LAB assignments |
+| `apps/api/test/academy-join.e2e-spec.ts` | 12 | join code visible to admins only, unique random codes, check (normalised input, group code is not a join code), Academy sign-up = account + ACTIVE enrollment + outbox + audit without the code, wrong code / full group create no account, Camp-only sign-up has no Academy, signed-in join and «already a member», 4 parallel sign-ups for 1 seat, rotate (old code dead, members stay, non-admin 403), disabled code, completed group, withdrawn student cannot rejoin, TEACHER account (no Camp admin rights, empty panel, cannot be a student, sees the group after assignment), role field ignored, feature flag |
+| `apps/web/e2e/academy-join.spec.ts` (Playwright) | 6 | admin sees the group code; sign-up asks Camp / Academy; Academy + code lands in «Mənim akademiyam» with Camp open; wrong code shows an error and creates no account; Camp-only user has no Academy menu; admin creates a teacher account, the teacher lands on «Müəllim paneli» and sees the group after assignment; 390 px without horizontal overflow |
 | `apps/web/e2e/academy.spec.ts` (Playwright) | 6 | full acceptance flow in the browser: admin creates program and group, assigns the lead, enrolls the student → teacher creates and publishes → student submits → teacher grades and releases → student sees the grade; mobile (390 px, no horizontal overflow); English UI |
 
-Totals after the Academy work: shared 105 (67 before), API e2e 22 suites / 202 tests (16 / 132 before),
-API unit 11 (unchanged), web unit 9 (unchanged).
+Totals after the Academy work: shared 107 (67 before), API e2e 23 suites / 214 tests (16 / 132 before),
+API unit 11 (unchanged), web unit 9 (unchanged), Playwright Academy 12 (6 + 6).
+
+`e2e/phase4.spec.ts` and `e2e/student-flow.spec.ts` gained one step (choose «DaCy Camp» on the sign-up page), because
+sign-up now asks for the path first.
 
 ## Not covered by automated tests
 

@@ -455,3 +455,44 @@ describe('köhnəlmiş qiymət', () => {
     expect(gradeIsStale(null, [a1])).toBe(false);
   });
 });
+
+describe('qrupa qoşulma kodu', () => {
+  it('yazılış normallaşdırılır, forma yoxlanılır, göstəriş üçün tire qoyulur', async () => {
+    const {
+      ACADEMY_JOIN_CODE_ALPHABET,
+      academyJoinCodeSchema,
+      academyJoinRegisterSchema,
+      formatJoinCode,
+      isJoinCodeShape,
+      normalizeJoinCode,
+    } = await import('../index');
+    expect(normalizeJoinCode(' k7q4-xp9m ')).toBe('K7Q4XP9M');
+    expect(normalizeJoinCode('K7Q4 XP9M')).toBe('K7Q4XP9M');
+    expect(isJoinCodeShape('K7Q4XP9M')).toBe(true);
+    // qarışan simvollar (0, O, 1, I) əlifbada yoxdur
+    for (const c of ['0', 'O', '1', 'I']) expect(ACADEMY_JOIN_CODE_ALPHABET).not.toContain(c);
+    expect(isJoinCodeShape('K7Q4XP9O')).toBe(false);
+    expect(isJoinCodeShape('K7Q4XP9')).toBe(false);
+    expect(formatJoinCode('K7Q4XP9M')).toBe('K7Q4-XP9M');
+    expect(academyJoinCodeSchema.parse('k7q4-xp9m')).toBe('K7Q4XP9M');
+    // qrupun daxili kodu (DE-002) qoşulma kodu kimi qəbul olunmur
+    expect(academyJoinCodeSchema.safeParse('DE-002').success).toBe(false);
+    const r = academyJoinRegisterSchema.safeParse({
+      name: 'Leyla',
+      email: 'Leyla@Test.local',
+      password: 'Parol123!',
+      code: 'k7q4 xp9m',
+    });
+    expect(r.success && r.data.code).toBe('K7Q4XP9M');
+    expect(
+      academyJoinRegisterSchema.safeParse({ name: 'Leyla', email: 'l@t.az', password: 'x' })
+        .success,
+    ).toBe(false);
+  });
+
+  it('TEACHER rolu var və heyət rolu deyil', async () => {
+    const { ROLES, STAFF_ROLES } = await import('../index');
+    expect(ROLES).toContain('TEACHER');
+    expect(STAFF_ROLES).not.toContain('TEACHER');
+  });
+});

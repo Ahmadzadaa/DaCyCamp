@@ -28,7 +28,11 @@ export default async function TeacherHomePage() {
         <HeroArt kind="dashboard" />
       </section>
       {o.groups.length === 0 ? (
-        <EmptyState icon={Presentation} title={t('academy.empty.teacherGroups')} />
+        <EmptyState
+          icon={Presentation}
+          title={t('academy.empty.teacherGroups')}
+          description={t('academy.empty.teacherGroupsDesc')}
+        />
       ) : (
         <>
           <div className="kpis">

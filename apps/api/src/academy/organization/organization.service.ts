@@ -28,6 +28,8 @@ import {
   type GroupAccess,
 } from '../access/academy-access.service';
 import { emitAcademyEvent } from '../notifications/academy-events';
+import { uniqueJoinCode } from '../join/join-code';
+import { teacherAccount } from '../join/join.service';
 
 /** Qrupun həyat dövrü: arxiv geri qaytarılmır, akademik tarix silinmir */
 const GROUP_TRANSITIONS: Record<AcademyGroupStatus, AcademyGroupStatus[]> = {
@@ -239,6 +241,7 @@ export class AcademyOrganizationService {
       activeStudents: g._count.enrollments,
       permissions: this.access.permissions(a),
       myRole: a.role,
+      ...(a.ctx.isAdmin ? { joinCode: g.joinCode, joinEnabled: g.joinEnabled } : {}),
       createdAt: g.createdAt.toISOString(),
       updatedAt: g.updatedAt.toISOString(),
     };
@@ -258,10 +261,13 @@ export class AcademyOrganizationService {
       const found = await this.prisma.user.count({ where: { id: { in: staffIds } } });
       if (found !== staffIds.length) throw notFound('USER_NOT_FOUND', 'Müəllim tapılmadı');
     }
+    const joinCode = await uniqueJoinCode(this.prisma);
     try {
       const id = await this.prisma.$transaction(async (tx) => {
         const g = await tx.academyGroup.create({
           data: {
+            joinCode,
+            joinEnabled: input.joinEnabled,
             programId: input.programId,
             code: input.code,
             name: input.name,
@@ -355,6 +361,27 @@ export class AcademyOrganizationService {
         before: { status: before.status, capacity: before.capacity, name: before.name },
         changes: Object.keys(input),
       },
+    });
+    return this.getGroup(user, id);
+  }
+
+  /** Yeni qoşulma kodu (köhnə kod dərhal etibarsız olur; artıq qoşulanlar qrupda qalır) */
+  async rotateJoinCode(user: AuthUser, id: string): Promise<AcademyGroupDto> {
+    this.access.requireAdmin(user);
+    const before = await this.prisma.academyGroup.findUnique({ where: { id } });
+    if (!before) throw notFound('ACADEMY_GROUP_NOT_FOUND', 'Qrup tapılmadı');
+    if (before.status === 'ARCHIVED')
+      throw conflict('ACADEMY_GROUP_ARCHIVED', 'Arxivdəki qrup dəyişdirilmir');
+    await this.prisma.academyGroup.update({
+      where: { id },
+      data: { joinCode: await uniqueJoinCode(this.prisma) },
+    });
+    // kodun özü jurnala yazılmır — yalnız dəyişdirilməsi faktı
+    await this.audit.record(user, {
+      action: 'academy.group.joinCode.rotate',
+      entityType: 'ACADEMY',
+      entityId: id,
+      entityTitle: `${before.code} · ${before.name}`,
     });
     return this.getGroup(user, id);
   }
@@ -506,6 +533,7 @@ export class AcademyOrganizationService {
       ? await this.prisma.user.findUnique({ where: { id: input.userId } })
       : await this.prisma.user.findUnique({ where: { email: input.email! } });
     if (!student) throw notFound('USER_NOT_FOUND', 'İstifadəçi tapılmadı');
+    if (student.role === 'TEACHER') throw teacherAccount();
     const inst = await this.prisma.academyGroupInstructor.findFirst({
       where: { groupId, userId: student.id, removedAt: null },
     });

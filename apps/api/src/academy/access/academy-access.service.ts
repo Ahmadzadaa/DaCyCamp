@@ -183,6 +183,7 @@ export class AcademyAccessService {
       student: enr > 0,
       instructor: inst > 0,
       admin: this.isAdmin(user),
+      teacherAccount: user.role === 'TEACHER',
     };
   }
 }

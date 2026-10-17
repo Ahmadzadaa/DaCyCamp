@@ -251,6 +251,7 @@ describe('Academy organization (e2e)', () => {
       student: true,
       instructor: false,
       admin: false,
+      teacherAccount: false,
     });
 
     const out = await as('kenar@test.local');

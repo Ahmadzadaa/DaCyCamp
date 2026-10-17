@@ -149,6 +149,13 @@ export const ACADEMY_DEFAULTS = {
 } as const;
 
 /**
+ * Qrupa qoşulma kodu: 8 simvol, bir-birinə bənzəyən simvollar (0/O, 1/I) yoxdur.
+ * 32⁸ ≈ 1,1·10¹² variant — qrup kodundan (DE-002) fərqli olaraq təxmin edilmir.
+ */
+export const ACADEMY_JOIN_CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+export const ACADEMY_JOIN_CODE_LENGTH = 8;
+
+/**
  * Qəbul olunan fayl növləri (həm tələbə göndərişi, həm tapşırıq resursu). Uzantıya görə məzmun (sehrli baytlar,
  * UTF-8 / JSON) serverdə yoxlanılır; MIME növü müştəridən götürülmür. SVG və HTML (skript daşıya bilər) qəbul edilmir.
  */

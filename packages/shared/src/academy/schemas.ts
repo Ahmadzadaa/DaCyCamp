@@ -1,6 +1,6 @@
 // Akademiya API girişləri (zod) — server ZodPipe ilə yoxlayır, web formalar eyni şəmaları istifadə edir.
 import { z } from 'zod';
-import { idSchema, slugSchema, titleSchema } from '../api/dto';
+import { idSchema, registerSchema, slugSchema, titleSchema } from '../api/dto';
 import {
   ACADEMY_ASSIGNMENT_TYPES,
   ACADEMY_ATTEMPT_SELECTIONS,
@@ -16,7 +16,7 @@ import {
   ACADEMY_PROGRAM_STATUSES,
   ACADEMY_DEFAULTS,
 } from './enums';
-import { isValidTimeZone } from './rules';
+import { isJoinCodeShape, isValidTimeZone, normalizeJoinCode } from './rules';
 
 const isoDate = z
   .string()
@@ -76,6 +76,8 @@ const groupFields = {
   capacity: z.number().int().min(1).max(10_000).nullable(),
   startAt: isoDate.nullable(),
   endAt: isoDate.nullable(),
+  /** qoşulma kodu ilə özü yazılmaq açıqdır */
+  joinEnabled: z.boolean(),
 };
 const groupBase = z.object({
   ...groupFields,
@@ -86,6 +88,7 @@ const groupBase = z.object({
   capacity: groupFields.capacity.optional(),
   startAt: groupFields.startAt.optional(),
   endAt: groupFields.endAt.optional(),
+  joinEnabled: groupFields.joinEnabled.default(true),
 });
 export const academyGroupCreateSchema = groupBase
   .extend({
@@ -120,6 +123,16 @@ export const academyEnrollmentCreateSchema = z
     overrideCapacity: z.boolean().default(false),
   })
   .refine((v) => !!v.userId !== !!v.email, 'İstifadəçi ID-si və ya e-poçt (yalnız biri)');
+/** Qoşulma kodu: «k7q4-xp9m», «K7Q4 XP9M» də qəbul olunur */
+export const academyJoinCodeSchema = z
+  .string()
+  .max(40)
+  .transform(normalizeJoinCode)
+  .refine(isJoinCodeShape, { message: 'Kod 8 simvoldan ibarətdir (məs. K7Q4-XP9M)' });
+export const academyJoinSchema = z.object({ code: academyJoinCodeSchema });
+/** Akademiyaya qeydiyyat: adi qeydiyyat sahələri + qrupun qoşulma kodu */
+export const academyJoinRegisterSchema = registerSchema.extend({ code: academyJoinCodeSchema });
+
 export const academyEnrollmentUpdateSchema = z.object({
   status: z.enum(ACADEMY_ENROLLMENT_STATUSES),
   reason: longText(500).optional(),
@@ -342,6 +355,8 @@ export type AcademyGroupUpdateInput = z.infer<typeof academyGroupUpdateSchema>;
 export type AcademyInstructorAssignInput = z.infer<typeof academyInstructorAssignSchema>;
 export type AcademyEnrollmentCreateInput = z.infer<typeof academyEnrollmentCreateSchema>;
 export type AcademyEnrollmentUpdateInput = z.infer<typeof academyEnrollmentUpdateSchema>;
+export type AcademyJoinInput = z.infer<typeof academyJoinSchema>;
+export type AcademyJoinRegisterInput = z.infer<typeof academyJoinRegisterSchema>;
 export type AcademyItemInput = z.infer<typeof academyItemInputSchema>;
 export type AcademyAssignmentCreateInput = z.infer<typeof academyAssignmentCreateSchema>;
 export type AcademyAssignmentUpdateInput = z.infer<typeof academyAssignmentUpdateSchema>;

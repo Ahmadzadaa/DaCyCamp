@@ -5,6 +5,7 @@ import type {
   AcademyLatePolicy,
   AcademyStudentStatus,
 } from './enums';
+import { ACADEMY_JOIN_CODE_ALPHABET, ACADEMY_JOIN_CODE_LENGTH } from './enums';
 
 // ───────────────────────── ballar: yüzdə bir bal (tam ədəd) ─────────────────────────
 
@@ -353,4 +354,24 @@ export function riskFlags(i: { missed: number; attendanceRate: number | null }):
     attention: i.missed >= 2,
     attendanceWarning: i.attendanceRate !== null && i.attendanceRate < 60,
   };
+}
+
+// ───────────────────────── qrupa qoşulma kodu ─────────────────────────
+
+/** İstifadəçinin yazdığı kodu normallaşdırır: boşluq və tire atılır, böyük hərfə çevrilir */
+export function normalizeJoinCode(raw: string): string {
+  return raw.replace(/[\s-]+/g, '').toUpperCase();
+}
+
+/** Normallaşdırılmış kod düzgün formadadırmı (uzunluq və icazəli simvollar) */
+export function isJoinCodeShape(code: string): boolean {
+  return (
+    code.length === ACADEMY_JOIN_CODE_LENGTH &&
+    [...code].every((c) => ACADEMY_JOIN_CODE_ALPHABET.includes(c))
+  );
+}
+
+/** Göstərmək üçün: K7Q4XP9M → K7Q4-XP9M */
+export function formatJoinCode(code: string): string {
+  return code.length === ACADEMY_JOIN_CODE_LENGTH ? `${code.slice(0, 4)}-${code.slice(4)}` : code;
 }

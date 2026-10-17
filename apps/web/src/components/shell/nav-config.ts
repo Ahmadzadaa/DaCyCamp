@@ -337,7 +337,8 @@ export function visibleSections(
     if (!it.academy) return true;
     const a = opts.academy;
     if (!a) return false;
-    if (it.academy === 'instructor') return a.instructor || a.admin;
+    // akademiya müəllimi hesabı hələ qrupa təyin olunmasa da öz panelini görür (boş vəziyyət)
+    if (it.academy === 'instructor') return a.instructor || a.admin || !!a.teacherAccount;
     return a[it.academy];
   };
   return sections

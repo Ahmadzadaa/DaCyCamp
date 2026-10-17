@@ -6,6 +6,8 @@ const email = `e2e+${Date.now()}@dacy.local`;
 
 test('qeydiyyat → kataloq → kurs → yazılma → nəzəri → quiz → irəliləyiş', async ({ page }) => {
   await page.goto('/qeydiyyat');
+  // qeydiyyat əvvəlcə yol soruşur: Camp (adi) və ya Akademiya (qrup kodu ilə)
+  await page.getByTestId('choose-camp').click();
   await page.getByLabel('Ad və soyad').fill('E2E Tələbə');
   await page.getByLabel('E-poçt').fill(email);
   await page.getByLabel('Şifrə').fill('Sifre1234');

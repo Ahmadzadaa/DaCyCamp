@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { ArrowLeft } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
@@ -20,7 +21,16 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Field } from '@/components/ui/field';
 
-export function AuthForm({ mode, next }: { mode: 'login' | 'register'; next?: string }) {
+export function AuthForm({
+  mode,
+  next,
+  onBack,
+}: {
+  mode: 'login' | 'register';
+  next?: string;
+  /** qeydiyyatda «Camp / Akademiya» seçiminə qayıtmaq */
+  onBack?: () => void;
+}) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const isLogin = mode === 'login';
@@ -39,16 +49,18 @@ export function AuthForm({ mode, next }: { mode: 'login' | 'register'; next?: st
         method: 'POST',
         body: values,
       });
-      // admin və müəllim birbaşa admin panelə düşür (tələbə panelində admin girişi gözə dəymirdi)
+      // admin və məzmun heyəti birbaşa admin panelə, akademiya müəllimi öz panelinə düşür
       const staff = me.role === 'ADMIN' || me.role === 'INSTRUCTOR';
       const target =
         next && next.startsWith('/') && !next.startsWith('//')
           ? next
           : staff
             ? '/admin'
-            : isLogin
-              ? '/panel'
-              : '/baslangic';
+            : me.role === 'TEACHER'
+              ? '/muellim'
+              : isLogin
+                ? '/panel'
+                : '/baslangic';
       // dil seçimi: cihazdakı seçim ↔ profil; dil dəyişibsə tam yükləmə (bütün mətnlər yeni dildə)
       if (syncLocaleAfterLogin(isLocale(me.locale) ? me.locale : undefined))
         window.location.assign(target);
@@ -62,6 +74,7 @@ export function AuthForm({ mode, next }: { mode: 'login' | 'register'; next?: st
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4" noValidate>
       <div className="mb-2">
+        {onBack ? <BackToChoice onBack={onBack} /> : null}
         <h1 className="text-[32px] font-bold tracking-[-0.01em]">
           {isLogin ? t('auth.loginTitle') : t('auth.registerTitle')}
         </h1>
@@ -116,5 +129,15 @@ export function AuthForm({ mode, next }: { mode: 'login' | 'register'; next?: st
         </Link>
       </p>
     </form>
+  );
+}
+
+/** «Başqa yol seç» — qeydiyyat formasından Camp / Akademiya seçiminə qayıdış */
+export function BackToChoice({ onBack }: { onBack: () => void }) {
+  return (
+    <button type="button" onClick={onBack} className="auth-switch-back">
+      <ArrowLeft aria-hidden />
+      {t('auth.changePath')}
+    </button>
   );
 }

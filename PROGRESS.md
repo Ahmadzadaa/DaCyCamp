@@ -459,3 +459,13 @@ Müəllimin apardığı təhsil eyni tətbiqə əlavə olundu: bir hesab, bir gi
 - ✅ **Testlər:** shared 105, API unit 11, API e2e 22 suite / 202 test, web 9 — hamısı keçir; Playwright qəbul ssenarisi (`e2e/academy.spec.ts`, 6 test, mobil 390px daxil) keçir; mövcud Playwright testləri ayrı-ayrılıqda keçir; web typecheck, lint və production build təmiz.
 - ℹ️ Miqrasiya yalnız yeni cədvəllər yaradır; yalnız lokal inkişaf və test bazalarına tətbiq olunub, production-a deploy edilməyib.
 - ℹ️ Tam olmayanlar (IMPLEMENTATION_STATUS.md): e-poçt bildirişləri yoxdur; proqram redaktəsi / yazılış tarixçəsi / qrup tarixlərinin redaktəsi üçün UI yoxdur (API var); bəzi UI hissələri avtomatik testlə əhatə olunmayıb.
+
+## Akademiya: qrup kodu ilə qeydiyyat və müəllim hesabı — 17 oktyabr 2026
+
+- ✅ **Qeydiyyat yol soruşur:** «DaCy Camp» (adi qeydiyyat, yalnız kurslar) və ya «DaCy Academy» (admin verdiyi qrup kodu ilə). Akademiya seçən tələbə kodu yazır, «Yoxla» ilə hansı qrupa düşəcəyini görür; hesab və qrupa ACTIVE yazılış bir tranzaksiyada yaranır — kod yanlışdırsa və ya qrup doludursa, hesab da yaranmır. Akademiya tələbəsinə Camp da açıqdır.
+- ✅ **Qrup kodu:** hər qrupun öz təsadüfi 8 simvollu kodu var (DE-001 və DE-002-nin kodları fərqlidir; qrupun öz kodundan təxmin edilmir). Kodu yalnız admin görür: qrup səhifəsində (kopyala, kod yazılmış qeydiyyat linki `/qeydiyyat?kod=…`, yeni kod yarat, kodla qoşulmanı aç/bağla) və qruplar siyahısında. Mövcud qruplara kod miqrasiyada verildi.
+- ✅ **Sonradan qoşulma:** Camp ilə qeydiyyatdan keçən istifadəçi kodu profil səhifəsində və ya boş «Mənim akademiyam» səhifəsində yazıb qrupa qoşulur. Admin çıxardığı tələbə kodla geri qayıda bilmir.
+- ✅ **Müəllim hesabı (`TEACHER`):** admin «Akademiya → Müəllim hesabları»nda (və ya istifadəçilər səhifəsində) yaradır; müəllim öz e-poçtu və şifrəsi ilə daxil olub «Müəllim paneli»nə düşür, qrupa təyin olunanda qrupu görür. Camp admin panelinə, istifadəçi siyahısına və kurs redaktəsinə hüququ yoxdur; tələbə kimi qrupa yazıla bilmir.
+- ✅ **Təhlükəsizlik:** kod `crypto.randomInt` ilə, yoxlama və qeydiyyat dəqiqədə 20 sorğu/IP; qoşulma qrup sətrini kilidləyir (paralel 4 qeydiyyat 1 yerə — yalnız biri keçir); kod jurnala yazılmır; qeydiyyat rol seçə bilməz.
+- ✅ **Miqrasiyalar (yalnız əlavə):** `20261017120000_academy_join_codes`, `20261017120100_role_teacher` — yalnız lokal inkişaf (əvvəl `pg_dump`) və test bazalarına tətbiq olunub.
+- ✅ **Testlər:** API `academy-join.e2e-spec.ts` (12), shared +2, Playwright `e2e/academy-join.spec.ts` (6); `phase4` və `student-flow` spec-lərinə «DaCy Camp» seçimi addımı əlavə olundu. Ekran şəkilləri: `docs/screenshots/academy-join-*.png`.

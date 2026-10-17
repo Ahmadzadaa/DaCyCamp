@@ -9,6 +9,7 @@ import {
   GraduationCap,
   Users,
 } from 'lucide-react';
+import { formatJoinCode } from '@dacy/shared';
 import type {
   AcademyAdminOverviewDto,
   AcademyGroupDto,
@@ -21,6 +22,7 @@ import { PageHeader } from '@/components/admin/page-header';
 import { GroupStatusBadge } from '@/components/academy/badges';
 import { fmtZoned } from '@/components/academy/format';
 import { GroupForm, ProgramForm } from '@/components/academy/admin/admin-forms';
+import { TeacherAccounts } from '@/components/academy/admin/join-code';
 
 export function generateMetadata(): Metadata {
   return { title: `${t('academy.adminTitle')} · ${t('app.admin')}` };
@@ -89,6 +91,7 @@ export default async function AdminAcademyPage({
                     <th>{t('academy.f.code')}</th>
                     <th>{t('academy.f.program')}</th>
                     <th>{t('academy.f.status')}</th>
+                    <th>{t('academy.admin.joinCode')}</th>
                     <th>{t('academy.f.students')}</th>
                     <th>{t('academy.f.lead')}</th>
                     <th>{t('academy.f.startDate')}</th>
@@ -109,6 +112,15 @@ export default async function AdminAcademyPage({
                       <td>{g.program.title}</td>
                       <td>
                         <GroupStatusBadge status={g.status} />
+                      </td>
+                      <td>
+                        {g.joinCode ? (
+                          <code className={`join-chip${g.joinEnabled ? '' : ' off'}`}>
+                            {formatJoinCode(g.joinCode)}
+                          </code>
+                        ) : (
+                          '—'
+                        )}
                       </td>
                       <td>
                         {g.capacity
@@ -142,6 +154,12 @@ export default async function AdminAcademyPage({
           ) : null}
         </section>
         <div className="flex min-w-0 flex-col gap-6">
+          <section className="box" aria-labelledby="at">
+            <h2 id="at" className="box-h">
+              {t('academy.admin.teachers')}
+            </h2>
+            <TeacherAccounts />
+          </section>
           {programs.length ? (
             <section className="box" aria-labelledby="ng">
               <h2 id="ng" className="box-h">

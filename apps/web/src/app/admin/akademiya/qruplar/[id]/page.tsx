@@ -9,6 +9,7 @@ import { PageHeader } from '@/components/admin/page-header';
 import { GroupStatusBadge } from '@/components/academy/badges';
 import { fetchRoster } from '@/components/academy/server';
 import { GroupEditor } from '@/components/academy/admin/admin-forms';
+import { JoinCodeBox } from '@/components/academy/admin/join-code';
 import {
   CourseLinks,
   EnrollmentsManager,
@@ -54,6 +55,12 @@ export default async function AdminGroupPage({ params }: { params: Promise<{ id:
           <EnrollmentsManager groupId={g.id} rows={students} />
         </section>
         <div className="flex min-w-0 flex-col gap-6">
+          <section className="box" aria-labelledby="aj">
+            <h2 id="aj" className="box-h">
+              {t('academy.admin.joinCode')}
+            </h2>
+            <JoinCodeBox g={g} />
+          </section>
           <section className="box" aria-labelledby="ai">
             <h2 id="ai" className="box-h">
               {t('academy.admin.instructors')}

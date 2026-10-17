@@ -2,6 +2,7 @@ import { Audit } from '../audit/audit.interceptor';
 import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Query } from '@nestjs/common';
 import { verify } from '@node-rs/argon2';
 import {
+  ROLES,
   changePasswordSchema,
   createUserSchema,
   setPasswordSchema,
@@ -24,7 +25,7 @@ import { badRequest, conflict, notFound } from '../common/errors';
 
 const listQuery = z.object({
   q: z.string().trim().max(100).optional(),
-  role: z.enum(['STUDENT', 'INSTRUCTOR', 'ADMIN']).optional(),
+  role: z.enum(ROLES).optional(),
   page: z.coerce.number().int().min(1).default(1),
   pageSize: z.coerce.number().int().min(1).max(100).default(25),
 });

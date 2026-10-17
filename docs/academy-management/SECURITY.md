@@ -10,6 +10,10 @@ database on every request. Academy routes have no anonymous access.
 - **Resource-scoped**, evaluated per request from the database (no permission cache): removing an instructor, pausing
   or withdrawing an enrollment, or archiving a group takes effect on the next request.
 - Only `Role.ADMIN` is a global Academy privilege. The global `INSTRUCTOR` role gives **no** Academy rights (tested).
+- `Role.TEACHER` (Academy teacher account, created by the admin) is **not** a staff role: no Camp admin panel, no
+  user list, no content editing. It only shows the empty Teacher panel until the admin assigns the teacher to a
+  group; rights then come from that assignment like for any instructor. A TEACHER account cannot be enrolled as a
+  student (409 `ACADEMY_TEACHER_ACCOUNT`), so teacher and student accounts stay separate.
 - Users come from the session, never from the request body, for all student endpoints (`/academy/me/...`).
 
 | Action | Admin | Lead | Assistant | Student (by enrollment status) |
@@ -68,11 +72,24 @@ A user cannot be both instructor and student of the same group (409). Cross-grou
 - Existing rate limits apply (300 requests/min per user, 20 logins/min per IP).
 - The feature flag hides and disables the module; it is not an authorization mechanism.
 
+## Join codes
+
+- Random, 8 characters, ~1.1·10¹² combinations, generated with `crypto.randomInt`; unrelated to the guessable group
+  code. Check and register are public but limited to 20 requests per minute per IP (same as login).
+- Visible only to admins. Rotating a code invalidates the old one immediately; codes are never written to the audit
+  log. A disabled code, an archived program or a rotated code all answer `ACADEMY_JOIN_CODE_INVALID`.
+- Joining locks the group row (`SELECT … FOR UPDATE`) and re-checks the code, status and capacity inside the
+  transaction, so parallel sign-ups cannot exceed capacity (tested with 4 parallel requests for 1 seat).
+- A student withdrawn by the admin cannot rejoin with the code (`ACADEMY_JOIN_NOT_ALLOWED`).
+- Registration cannot choose a role: the account is always `STUDENT` (tested with a `role: ADMIN` field).
+
 ## Remaining risks
 
 - **Python results are client-attested** (pre-existing platform design). Mitigation: Academy auto grades are drafts and
   require explicit release; staff see the trust level. Recommended: server-side sandboxed Python evaluation.
 - SQL results are compared with a client-computed hash (moderate trust).
+- A join code works for anyone who has it (by design: the admin shares it). If it leaks, the admin rotates or
+  disables it; group capacity still applies, and the admin can withdraw unknown students.
 - Uploaded files are not virus-scanned (no scanner available in this environment); they are never executed and are
   served only as downloads.
 - The in-process worker runs in every API instance. This is safe (outbox claiming uses `FOR UPDATE SKIP LOCKED`,

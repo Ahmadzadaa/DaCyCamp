@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
   Param,
   Patch,
   Post,
@@ -94,6 +95,12 @@ export class AcademyOrganizationController {
     @Body(new ZodPipe(academyGroupUpdateSchema)) body: AcademyGroupUpdateInput,
   ) {
     return this.org.updateGroup(u, id, body);
+  }
+
+  @HttpCode(200)
+  @Post('groups/:id/join-code/rotate')
+  rotateJoinCode(@CurrentUser() u: AuthUser, @Param('id') id: string) {
+    return this.org.rotateJoinCode(u, id);
   }
 
   @Post('groups/:id/instructors')

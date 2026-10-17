@@ -20,10 +20,13 @@ datasource db {
 
 // ───────────────────────── enums ─────────────────────────
 
+/// TEACHER — akademiya müəllimi: qlobal heç bir hüquq vermir, yalnız təyin olunduğu qrupları görür.
+/// INSTRUCTOR isə Camp məzmun heyətidir (kurs, mövzu, dəstək).
 enum Role {
   STUDENT
   INSTRUCTOR
   ADMIN
+  TEACHER
 }
 
 enum Level {
@@ -967,6 +970,9 @@ model AcademyGroup {
   capacity    Int?
   startAt     DateTime?
   endAt       DateTime?
+  /// Qoşulma kodu: tələbə qeydiyyatda yazır və birbaşa bu qrupa düşür. Təsadüfi, təxmin edilmir; admin yeniləyə bilər
+  joinCode    String                @unique
+  joinEnabled Boolean               @default(true)
   createdById String?
   createdAt   DateTime              @default(now())
   updatedAt   DateTime              @updatedAt
