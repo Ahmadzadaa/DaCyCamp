@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { ChevronRight, Compass, GraduationCap, Users } from 'lucide-react';
+import { Check, Compass, GraduationCap, Users } from 'lucide-react';
 import {
   academyJoinCodeSchema,
   academyJoinRegisterSchema,
@@ -52,42 +52,67 @@ export function RegisterFlow({
     );
   if (path === 'academy')
     return <AcademyRegisterForm initialCode={initialCode} onBack={() => setPath(null)} />;
+  return <PathChoice next={next} onContinue={setPath} />;
+}
+
+const PATHS = [
+  { id: 'camp', icon: Compass, color: '#12B886', title: 'auth.campTitle', text: 'auth.campText' },
+  {
+    id: 'academy',
+    icon: GraduationCap,
+    color: '#0A84FF',
+    title: 'auth.academyTitle',
+    text: 'auth.academyText',
+  },
+] as const;
+
+/** Yol seçimi: kart basılanda seçilir və qalxır (kölgə, rəngli çərçivə), «Davam et» formaya keçir */
+function PathChoice({ next, onContinue }: { next?: string; onContinue: (p: Path) => void }) {
+  const [picked, setPicked] = useState<Path | null>(null);
   return (
     <div className="flex flex-col gap-4" data-testid="register-choice">
       <div className="mb-2">
         <h1 className="text-[32px] font-bold tracking-[-0.01em]">{t('auth.choiceTitle')}</h1>
         <p className="mt-2 text-muted">{t('auth.choiceSubtitle')}</p>
       </div>
-      <button
+      <div role="radiogroup" aria-label={t('auth.choiceSubtitle')} className="flex flex-col gap-3">
+        {PATHS.map((o) => {
+          const on = picked === o.id;
+          return (
+            <button
+              key={o.id}
+              type="button"
+              role="radio"
+              aria-checked={on}
+              className={`reg-choice${on ? ' on' : ''}`}
+              style={{ ['--ic' as string]: o.color }}
+              onClick={() => setPicked(o.id)}
+              onDoubleClick={() => onContinue(o.id)}
+              data-testid={`choose-${o.id}`}
+            >
+              <span className="reg-choice-ic">
+                <o.icon aria-hidden />
+              </span>
+              <span className="min-w-0 flex-1">
+                <b>{t(o.title)}</b>
+                <span>{t(o.text)}</span>
+              </span>
+              <span className="reg-choice-mark" aria-hidden>
+                <Check />
+              </span>
+            </button>
+          );
+        })}
+      </div>
+      <Button
         type="button"
-        className="reg-choice"
-        onClick={() => setPath('camp')}
-        data-testid="choose-camp"
+        size="full"
+        disabled={!picked}
+        onClick={() => picked && onContinue(picked)}
+        data-testid="choice-continue"
       >
-        <span className="reg-choice-ic" style={{ ['--ic' as string]: '#12B886' }}>
-          <Compass aria-hidden />
-        </span>
-        <span className="min-w-0 flex-1">
-          <b>{t('auth.campTitle')}</b>
-          <span>{t('auth.campText')}</span>
-        </span>
-        <ChevronRight aria-hidden className="reg-choice-go" />
-      </button>
-      <button
-        type="button"
-        className="reg-choice"
-        onClick={() => setPath('academy')}
-        data-testid="choose-academy"
-      >
-        <span className="reg-choice-ic" style={{ ['--ic' as string]: '#0A84FF' }}>
-          <GraduationCap aria-hidden />
-        </span>
-        <span className="min-w-0 flex-1">
-          <b>{t('auth.academyTitle')}</b>
-          <span>{t('auth.academyText')}</span>
-        </span>
-        <ChevronRight aria-hidden className="reg-choice-go" />
-      </button>
+        {t('catalog.continue')}
+      </Button>
       <p className="text-center text-sm text-muted">
         {t('auth.haveAccount')}{' '}
         <Link

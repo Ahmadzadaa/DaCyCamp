@@ -81,9 +81,13 @@ test('qeydiyyat yol soruşur; «DaCy Academy» + kod → birbaşa qrupa, Camp da
   await page.goto('/qeydiyyat');
   await expect(page.getByTestId('register-choice')).toBeVisible();
   await expect(page.getByRole('heading', { level: 1, name: 'Qeydiyyat' })).toBeVisible();
+  await expect(page.getByTestId('choice-continue')).toBeDisabled();
+  // seçilmiş kart qalxır və işarələnir; «Davam et» formaya keçir
+  await page.getByTestId('choose-academy').click();
+  await expect(page.getByTestId('choose-academy')).toHaveAttribute('aria-checked', 'true');
   await shot(page, 'register-choice');
 
-  await page.getByTestId('choose-academy').click();
+  await page.getByTestId('choice-continue').click();
   const form = page.getByTestId('academy-register');
   await form.getByTestId('join-code').fill(joinCode.toLowerCase());
   await form.getByRole('button', { name: 'Yoxla' }).click();
@@ -122,6 +126,7 @@ test('yanlış kod: forma xəta göstərir, hesab yaranmır', async ({ page }) =
 test('yalnız «DaCy Camp» seçən tələbədə akademiya menyusu yoxdur', async ({ page }) => {
   await page.goto('/qeydiyyat');
   await page.getByTestId('choose-camp').click();
+  await page.getByTestId('choice-continue').click();
   await page.getByLabel('Ad və soyad').fill(camper.name);
   await page.getByLabel('E-poçt').fill(camper.email);
   await page.getByLabel('Şifrə', { exact: true }).fill(camper.password);
@@ -189,6 +194,7 @@ test('mobil (390px): qeydiyyat seçimi və akademiya forması sığır', async (
   expect(await overflow()).toBeLessThanOrEqual(0);
   await shot(p, 'mobile-choice', true);
   await p.getByTestId('choose-academy').click();
+  await p.getByTestId('choice-continue').click();
   await expect(p.getByTestId('academy-register')).toBeVisible();
   expect(await overflow()).toBeLessThanOrEqual(0);
   await ctx.close();
