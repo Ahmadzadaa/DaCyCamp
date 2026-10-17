@@ -32,7 +32,16 @@ export type NotificationKind =
   | 'new_course'
   | 'reviews_pending'
   | 'support_reply'
-  | 'support_open';
+  | 'support_open'
+  // akademiya (AcademyNotification cədvəlindən + müəllim üçün yoxlama gözləyənlərin sayı)
+  | 'academy_enrolled'
+  | 'academy_assignment'
+  | 'academy_deadline'
+  | 'academy_submission'
+  | 'academy_returned'
+  | 'academy_grade'
+  | 'academy_class'
+  | 'academy_reviews';
 /** Zəng menyusu: mövcud məlumatdan törədilir (ayrıca cədvəl yoxdur) */
 export interface NotificationDto {
   id: string;

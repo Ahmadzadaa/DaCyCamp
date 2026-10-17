@@ -24,6 +24,7 @@ import { academyForbidden } from '../access/academy-access.service';
 import { AcademyContentAdapter, type StepSnapshot } from '../integrations/content.adapter';
 import { AcademyEvaluationAdapter } from '../integrations/evaluation.adapter';
 import { AcademyAssignmentsService, fileDto, STUDENT_VISIBLE } from '../assignments/assignments.service';
+import { AcademyClassesService } from '../classes/classes.service';
 
 /** Tələbənin akademiya görünüşü: məzmun ACTIVE (və bitirmiş — yalnız oxu) yazılışda, qiymət yalnız buraxılandan sonra */
 const CONTENT_STATUSES: AcademyEnrollmentStatus[] = ['ACTIVE', 'COMPLETED'];
@@ -76,6 +77,7 @@ export class AcademyStudentService {
     private readonly assignments: AcademyAssignmentsService,
     private readonly content: AcademyContentAdapter,
     private readonly evaluation: AcademyEvaluationAdapter,
+    private readonly classes: AcademyClassesService,
   ) {}
 
   /** Tələbənin tapşırıq siyahısı (bir neçə qrup — nəticələr ayrı-ayrı) */
@@ -327,7 +329,7 @@ export class AcademyStudentService {
     }));
   }
 
-  async overview(user: AuthUser): Promise<Omit<AcademyStudentOverviewDto, 'nextSession'>> {
+  async overview(user: AuthUser): Promise<AcademyStudentOverviewDto> {
     const enrollments = await this.prisma.academyEnrollment.findMany({
       where: { studentId: user.id, status: { not: 'PENDING' } },
       include: {
@@ -346,6 +348,7 @@ export class AcademyStudentService {
       .sort((p, q) => p.effectiveDueAt.localeCompare(q.effectiveDueAt))
       .slice(0, 5);
     const grades = (await this.myGrades(user)).slice(0, 5);
+    const nextSession = await this.classes.nextSession(user);
     return {
       groups: enrollments.map((e) => ({
         id: e.group.id,
@@ -359,6 +362,7 @@ export class AcademyStudentService {
           .map((i) => i.user.name),
       })),
       upcoming,
+      nextSession,
       recentGrades: grades,
     };
   }

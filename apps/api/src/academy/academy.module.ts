@@ -16,6 +16,12 @@ import { AcademyFilesService } from './files/files.service';
 import { AcademySubmissionsService } from './submissions/submissions.service';
 import { AcademyGradingController } from './grading/grading.controller';
 import { AcademyGradingService } from './grading/grading.service';
+import { AcademyClassesController } from './classes/classes.controller';
+import { AcademyClassesService } from './classes/classes.service';
+import { AcademyAnalyticsController } from './analytics/analytics.controller';
+import { AcademyAnalyticsService } from './analytics/analytics.service';
+import { AcademyNotificationsService } from './notifications/academy-notifications.service';
+import { AcademyWorkerService } from './notifications/academy-worker.service';
 
 /**
  * Akademiya modulu (modul monolit). Öyrənmə nüvəsi ilə yalnız `integrations/` adapterləri vasitəsilə danışır:
@@ -23,7 +29,7 @@ import { AcademyGradingService } from './grading/grading.service';
  */
 @Module({
   imports: [AuditModule, LearnModule, ProgressModule],
-  controllers: [AcademyOrganizationController, AcademyAssignmentsController, AcademyMeController, AcademyFilesController, AcademyGradingController],
+  controllers: [AcademyOrganizationController, AcademyAssignmentsController, AcademyMeController, AcademyFilesController, AcademyGradingController, AcademyClassesController, AcademyAnalyticsController],
   providers: [
     AcademyAccessService,
     AcademyEnabledGuard,
@@ -35,7 +41,11 @@ import { AcademyGradingService } from './grading/grading.service';
     AcademyFilesService,
     AcademySubmissionsService,
     AcademyGradingService,
+    AcademyClassesService,
+    AcademyAnalyticsService,
+    AcademyNotificationsService,
+    AcademyWorkerService,
   ],
-  exports: [AcademyAccessService],
+  exports: [AcademyAccessService, AcademyNotificationsService],
 })
 export class AcademyModule {}

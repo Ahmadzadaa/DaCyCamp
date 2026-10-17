@@ -26,6 +26,7 @@ import { AcademyAccessService, academyForbidden, type GroupAccess } from '../acc
 import { AcademyAssignmentsService, STUDENT_VISIBLE } from '../assignments/assignments.service';
 import { attemptDto, attemptInclude } from '../me/student.service';
 import { emitAcademyEvent } from '../notifications/academy-events';
+import { needsReview } from '../analytics/analytics.service';
 
 type Tx = Prisma.TransactionClient;
 
@@ -167,10 +168,6 @@ export class AcademyGradingService {
           closed: a.status !== 'PUBLISHED' || a.group.status !== 'ACTIVE' || e.status !== 'ACTIVE',
         });
         const attempts = sub?.attempts ?? [];
-        const resubmitted = g?.status === 'RETURNED' && latest && latest.submittedAt > g.updatedAt;
-        // yoxlanılmalıdır: qiymət yoxdur, avtomatik (təsdiqlənməmiş) və ya köhnəlmiş qaralama, qaytarılandan sonra yeni cəhd
-        const needsReview =
-          attempts.length > 0 && (!g || (g.status === 'DRAFT' && (!g.gradedById || isStale(g, attempts))) || !!resubmitted);
         return {
           id: sub?.id ?? null,
           assignmentId,
@@ -185,7 +182,7 @@ export class AcademyGradingService {
           grade: g
             ? { id: g.id, status: g.status, finalScore: fromCenti(g.finalScoreCenti), maxScore: fromCenti(a.maxScoreCenti), version: g.version }
             : null,
-          needsReview,
+          needsReview: needsReview(attempts, g ?? null),
         };
       });
   }

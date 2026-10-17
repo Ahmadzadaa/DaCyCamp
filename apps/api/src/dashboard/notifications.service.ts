@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import type { NotificationDto } from '@dacy/shared';
 import { PrismaService } from '../prisma/prisma.service';
 import { tr } from '../common/i18n/request-locale';
+import { AcademyNotificationsService } from '../academy/notifications/academy-notifications.service';
 
 const DAY = 86_400_000;
 const WINDOW_DAYS = 30;
@@ -16,7 +17,10 @@ type Snap = { courseTitle?: string; pathTitle?: string };
  */
 @Injectable()
 export class NotificationsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly academy: AcademyNotificationsService,
+  ) {}
 
   async list(userId: string): Promise<NotificationDto[]> {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
@@ -157,10 +161,11 @@ export class NotificationsService {
         url: '/admin/destek',
         at: openTickets[0]!.lastMessageAt.toISOString(),
       });
-    return items
+    // akademiya: saxlanılan bildirişlər (oxunma — readAt) + müəllim üçün yoxlama gözləyənlər
+    const academy = await this.academy.bellItems(userId, since, seen);
+    return [...items.map((n) => ({ ...n, unread: new Date(n.at).getTime() > seen })), ...academy]
       .sort((a, b) => b.at.localeCompare(a.at))
-      .slice(0, MAX_ITEMS)
-      .map((n) => ({ ...n, unread: new Date(n.at).getTime() > seen }));
+      .slice(0, MAX_ITEMS);
   }
 
   async unreadCount(userId: string): Promise<number> {
@@ -172,6 +177,7 @@ export class NotificationsService {
       where: { id: userId },
       data: { notificationsSeenAt: new Date() },
     });
+    await this.academy.markAllRead(userId);
     return { ok: true };
   }
 }

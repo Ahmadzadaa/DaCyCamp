@@ -6,11 +6,17 @@ import {
   Award,
   Bell,
   BookOpen,
+  CalendarClock,
   CheckCircle2,
   ClipboardCheck,
+  ClipboardList,
+  GraduationCap,
+  Hourglass,
+  Inbox,
   LifeBuoy,
   MessageCircleReply,
   RotateCcw,
+  Users,
 } from 'lucide-react';
 import type { NotificationDto, NotificationKind } from '@dacy/shared';
 import { api } from '@/lib/api/client';
@@ -26,6 +32,14 @@ const ICON: Record<NotificationKind, typeof Bell> = {
   reviews_pending: ClipboardCheck,
   support_reply: MessageCircleReply,
   support_open: LifeBuoy,
+  academy_enrolled: Users,
+  academy_assignment: ClipboardList,
+  academy_deadline: Hourglass,
+  academy_submission: Inbox,
+  academy_returned: RotateCcw,
+  academy_grade: GraduationCap,
+  academy_class: CalendarClock,
+  academy_reviews: ClipboardCheck,
 };
 
 /** Zəng: açılanda siyahı yüklənir və hamısı «oxunmuş» sayılır */

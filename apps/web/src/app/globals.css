@@ -947,6 +947,22 @@
     background: color-mix(in srgb, var(--da) 16%, transparent);
     color: var(--da);
   }
+  .notif-ic.k-academy_grade,
+  .notif-ic.k-academy_submission {
+    background: color-mix(in srgb, var(--ok) 18%, transparent);
+    color: var(--ok-ink);
+  }
+  .notif-ic.k-academy_returned,
+  .notif-ic.k-academy_deadline {
+    background: color-mix(in srgb, var(--de) 20%, transparent);
+    color: #b87610;
+  }
+  .notif-ic.k-academy_assignment,
+  .notif-ic.k-academy_class,
+  .notif-ic.k-academy_enrolled {
+    background: color-mix(in srgb, var(--da) 16%, transparent);
+    color: var(--da);
+  }
   .notif-empty {
     display: flex;
     flex-direction: column;
