@@ -3,6 +3,7 @@ import {
   ACADEMY_GROUP_STATUSES,
   attendanceRate,
   deriveStudentStatus,
+  gradeIsStale,
   percent,
   riskFlags,
   type AcademyAdminOverviewDto,
@@ -18,21 +19,18 @@ import { STUDENT_VISIBLE } from '../assignments/assignments.service';
 type GradeLite = {
   status: string;
   gradedById: string | null;
-  selectedAttemptId: string | null;
+  gradedAt: Date | null;
   updatedAt: Date;
 };
-type AttemptLite = { id: string; attemptNumber: number; submittedAt: Date };
+type AttemptLite = { submittedAt: Date };
 
 /** Müəllimin baxması lazım olan göndəriş (siyahıdakı «needsReview» ilə eyni qayda) */
 export function needsReview(attempts: AttemptLite[], g: GradeLite | null): boolean {
   if (!attempts.length) return false;
   if (!g) return true;
-  const latest = attempts.reduce((m, a) => (a.attemptNumber > m.attemptNumber ? a : m));
-  if (g.status === 'DRAFT') {
-    const sel = attempts.find((a) => a.id === g.selectedAttemptId);
-    return !g.gradedById || (!!sel && latest.attemptNumber > sel.attemptNumber);
-  }
-  return g.status === 'RETURNED' && latest.submittedAt > g.updatedAt;
+  // təsdiqlənməmiş avtomatik qaralama və ya qiymətdən sonra gələn yeni cəhd
+  if (g.status === 'DRAFT') return !g.gradedById || gradeIsStale(g, attempts);
+  return g.status === 'RETURNED' && attempts.some((a) => a.submittedAt > g.updatedAt);
 }
 
 /**
@@ -71,7 +69,7 @@ export class AcademyAnalyticsService {
             select: {
               status: true,
               gradedById: true,
-              selectedAttemptId: true,
+              gradedAt: true,
               updatedAt: true,
               finalScoreCenti: true,
             },
@@ -190,7 +188,7 @@ export class AcademyAnalyticsService {
         groupId: true,
         attempts: { select: { id: true, attemptNumber: true, submittedAt: true } },
         grade: {
-          select: { status: true, gradedById: true, selectedAttemptId: true, updatedAt: true },
+          select: { status: true, gradedById: true, gradedAt: true, updatedAt: true },
         },
       },
     });
@@ -244,7 +242,7 @@ export class AcademyAnalyticsService {
         select: {
           attempts: { select: { id: true, attemptNumber: true, submittedAt: true } },
           grade: {
-            select: { status: true, gradedById: true, selectedAttemptId: true, updatedAt: true },
+            select: { status: true, gradedById: true, gradedAt: true, updatedAt: true },
           },
         },
       }),

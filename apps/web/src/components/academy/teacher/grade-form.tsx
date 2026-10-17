@@ -208,7 +208,7 @@ export function GradeForm({ d }: { d: AcademySubmissionDetailDto }) {
             data-testid="grade-save"
           >
             <Save className="size-4" />
-            {t('academy.gradeForm.save')}
+            {released ? t('academy.form.saveChanges') : t('academy.gradeForm.save')}
           </Button>
         ) : null}
         {can('grade.release') && g?.status === 'DRAFT' ? (

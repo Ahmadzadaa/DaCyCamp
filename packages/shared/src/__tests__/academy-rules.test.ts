@@ -443,3 +443,15 @@ describe('cəhd limiti və avtomatik bal', () => {
     expect(ACADEMY_FILE_EXTENSIONS).not.toContain('html');
   });
 });
+
+describe('köhnəlmiş qiymət', () => {
+  it('yalnız qiymətdən sonra göndərilən cəhd köhnəldir; köhnə cəhdin bilərəkdən seçilməsi yox', async () => {
+    const { gradeIsStale } = await import('../index');
+    const a1 = { submittedAt: d('2026-10-20T10:00:00Z') };
+    const a2 = { submittedAt: d('2026-10-20T12:00:00Z') };
+    expect(gradeIsStale({ gradedAt: d('2026-10-20T13:00:00Z') }, [a1, a2])).toBe(false);
+    expect(gradeIsStale({ gradedAt: d('2026-10-20T11:00:00Z') }, [a1, a2])).toBe(true);
+    expect(gradeIsStale({ gradedAt: null }, [a1])).toBe(false);
+    expect(gradeIsStale(null, [a1])).toBe(false);
+  });
+});

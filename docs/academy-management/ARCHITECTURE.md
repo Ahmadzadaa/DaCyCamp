@@ -1,6 +1,6 @@
 # Academy Management System — architecture
 
-Status: Phase 0 audit (2026-10-17), updated as the implementation progresses.
+Status: implemented (Phases 0–9, 2026-10-17). See [IMPLEMENTATION_STATUS.md](IMPLEMENTATION_STATUS.md) for the per-requirement state.
 Checkpoint before the work: commit `5709187` (tag `pre-academy-checkpoint`, branch `claude/clever-dirac-f7c6aa` on GitHub).
 
 ## 1. Current architecture (audit)

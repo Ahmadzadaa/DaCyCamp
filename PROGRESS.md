@@ -444,3 +444,18 @@ Mənbə: `Python_Day_1/2.pptx` (nəzəri) + `Python_Day_1/2.docx` (35 tapşırı
 - ✅ **Yoxlama (6 oktyabr):** `i18n_tools check` — 8 paket, 0 problem; API validasiyası — 0 xəta; bazada 320 dərc olunmuş addımın hamısında ingiliscə variant var; tələbə API-si ilə 320 addımın ingiliscə görünüşündə (kod və dırnaqdakı data xaric) azərbaycanca mətn qalmayıb (nəzarət: AZ rejimində 4/4 tapılır); EN tarama (qonaq, tələbə, admin) — azərbaycanca yalnız istifadəçi datası, «Azərbaycan dili» seçimi və köhnə Python4Business kursu. Testlər: shared 67, API unit 11, API e2e 132 — hamısı keçir; web typecheck təmiz.
 - ℹ️ Köhnə «Python4Business» kursu paket deyil və tərcümə olunmayıb — onu Python Basics əvəz edir, admin paneldən silmək olar.
 - ℹ️ «Statistika» dərsindəki `|r|` cədvəli azərbaycanca variantda cədvəl kimi görünmür (başlıqdakı `|` sütun ayırıcısıdır); ingiliscə variantda düzəldilib. Azərbaycanca mətni dəyişmək mövcud bazalarda həmin dərsin tərcüməsini köhnəlmiş edərdi, ona görə toxunulmayıb.
+
+## Akademiya İdarəetmə Sistemi (AMS) — 17 oktyabr 2026
+
+Müəllimin apardığı təhsil eyni tətbiqə əlavə olundu: bir hesab, bir giriş, ortaq öyrənmə mühərriki. Ətraflı: `docs/academy-management/` (ARCHITECTURE, DOMAIN_MODEL, DATABASE + geri qaytarma skripti, API, BUSINESS_RULES, SECURITY, TESTING, IMPLEMENTATION_STATUS).
+
+- ✅ **Təşkilat:** proqramlar, qruplar (DE-001 …), aparıcı / köməkçi müəllimlər, yazılışlar (tutum kilid altında yoxlanılır), status tarixçəsi. Hüquqlar qrup üzrədir; qlobal INSTRUCTOR rolu akademiya hüququ vermir.
+- ✅ **Tapşırıqlar:** mövcud platforma tapşırıqlarına istinad (kopya yox), fərdi / kod / fayl / layihə / laboratoriya tapşırıqları, versiyalı redaktə, dərhal və ya planlaşdırılmış dərc, son tarix, gecikmə siyasəti, son hədd, tələbəyə görə uzadılma, rubrika.
+- ✅ **Göndərişlər:** dəyişməz cəhdlər (baza trigger-i), idempotency açarı (iki klik yeni cəhd yaratmır), cəhd limiti, qaralama, fayl yükləmə (növ + məzmun yoxlaması, icazəli endirmə). Platforma nəticəsini server özü seçir; XP-yə toxunulmur.
+- ✅ **Qiymətləndirmə:** element və ya rubrika balları, gecikmə cəriməsi, cəhd seçimi, versiya toqquşmasından qorunma, tarixçə, açıqlama və qaytarma (yalnız aparıcı / admin), avtomatik qaralama, jurnal + CSV.
+- ✅ **Dərslər və davamiyyət**, **bildirişlər** (tranzaksion outbox, təkrarsız, son tarix xatırlatmaları, zəng menyusunda), **analitika** (düsturlar sənədləşdirilib).
+- ✅ **İnterfeys:** «Mənim akademiyam» (`/akademiya`), «Müəllim paneli» (`/muellim`), admin «Akademiya» bölməsi (`/admin/akademiya`); menyu rola görə görünür; azərbaycan dili əsas, ingilis dili tam (xəta kodları da).
+- ✅ **Bayraq:** `ACADEMY_MANAGEMENT_ENABLED` (false — modul gizlənir, endpoint-lər 404). Yeni env: `ACADEMY_WORKER_INTERVAL_SEC`, `ACADEMY_MAX_FILE_MB`.
+- ✅ **Testlər:** shared 105, API unit 11, API e2e 22 suite / 202 test, web 9 — hamısı keçir; Playwright qəbul ssenarisi (`e2e/academy.spec.ts`, 5 addım) keçir; web typecheck, lint və production build təmiz.
+- ℹ️ Miqrasiya yalnız yeni cədvəllər yaradır; yalnız lokal inkişaf və test bazalarına tətbiq olunub, production-a deploy edilməyib.
+- ℹ️ Tam olmayanlar (IMPLEMENTATION_STATUS.md): e-poçt bildirişləri yoxdur; proqram redaktəsi / yazılış tarixçəsi / qrup tarixlərinin redaktəsi üçün UI yoxdur (API var); bəzi UI hissələri avtomatik testlə əhatə olunmayıb.

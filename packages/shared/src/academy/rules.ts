@@ -175,6 +175,19 @@ export function attemptLimitReached(i: {
   return i.attemptsUsed >= i.maxAttempts;
 }
 
+/**
+ * Qiymət köhnəlibmi: qiymət yazılandan SONRA yeni cəhd göndərilib. (Müəllimin bilərəkdən köhnə cəhdi seçməsi
+ * köhnəlmə deyil — həmin anda bütün cəhdlər artıq mövcud idi.)
+ */
+export function gradeIsStale(
+  grade: { gradedAt: Date | null } | null | undefined,
+  attempts: ReadonlyArray<{ submittedAt: Date }>,
+): boolean {
+  const at = grade?.gradedAt;
+  if (!at) return false;
+  return attempts.some((a) => a.submittedAt.getTime() > at.getTime());
+}
+
 /** Elementin avtomatik balı: maksimum × nisbət (0..1), sentlərlə yuvarlaq, [0, max] aralığında */
 export function scaleScore(maxCenti: number, ratio: number): number {
   const r = Number.isFinite(ratio) ? Math.min(1, Math.max(0, ratio)) : 0;

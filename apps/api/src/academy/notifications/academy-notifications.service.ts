@@ -113,7 +113,7 @@ export class AcademyNotificationsService {
       select: {
         attempts: { select: { id: true, attemptNumber: true, submittedAt: true } },
         grade: {
-          select: { status: true, gradedById: true, selectedAttemptId: true, updatedAt: true },
+          select: { status: true, gradedById: true, gradedAt: true, updatedAt: true },
         },
       },
     });

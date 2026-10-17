@@ -4,6 +4,7 @@ import {
   computeFinalScore,
   deriveStudentStatus,
   effectiveDueAt,
+  gradeIsStale,
   fromCenti,
   groupIsReadOnly,
   percent,
@@ -44,16 +45,8 @@ type GradeRow = Prisma.AcademyGradeGetPayload<{ include: typeof gradeInclude }>;
 /** Gradebook və siyahılarda göstərilən yazılışlar (PENDING — hələ qrupda deyil) */
 const ROSTER_STATUSES: AcademyEnrollmentStatus[] = ['ACTIVE', 'PAUSED', 'COMPLETED', 'WITHDRAWN'];
 
-/** Seçilmiş cəhddən sonra yeni cəhd varmı (müəllim yenidən baxmalıdır) */
-function isStale(
-  grade: { selectedAttemptId: string | null } | null | undefined,
-  attempts: ReadonlyArray<{ id: string; attemptNumber: number }>,
-): boolean {
-  if (!grade?.selectedAttemptId || !attempts.length) return false;
-  const sel = attempts.find((a) => a.id === grade.selectedAttemptId);
-  const latest = Math.max(...attempts.map((a) => a.attemptNumber));
-  return !!sel && latest > sel.attemptNumber;
-}
+/** Qiymət yazılandan sonra yeni cəhd varmı (müəllim yenidən baxmalıdır) — paylaşılan qayda */
+const isStale = gradeIsStale;
 
 export function staffGradeDto(g: GradeRow, maxScoreCenti: number, stale: boolean): AcademyGradeDto {
   return {
@@ -168,6 +161,7 @@ export class AcademyGradingService {
               updatedAt: true,
               selectedAttemptId: true,
               gradedById: true,
+              gradedAt: true,
             },
           },
         },
@@ -510,7 +504,7 @@ export class AcademyGradingService {
       where: { submissionId },
       include: {
         ...gradeInclude,
-        submission: { select: { attempts: { select: { id: true, attemptNumber: true } } } },
+        submission: { select: { attempts: { select: { submittedAt: true } } } },
       },
     });
     const max = await this.prisma.academyAssignment.findUniqueOrThrow({

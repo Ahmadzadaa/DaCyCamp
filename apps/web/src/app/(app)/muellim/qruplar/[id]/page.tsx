@@ -4,7 +4,6 @@ import { notFound } from 'next/navigation';
 import { AlertTriangle, ArrowLeft, Download, Plus } from 'lucide-react';
 import type {
   AcademyAssignmentListItemDto,
-  AcademyEnrollmentDto,
   AcademyGradebookDto,
   AcademyGroupAnalyticsDto,
   AcademyGroupDto,
@@ -20,6 +19,7 @@ import {
   GroupStatusBadge,
 } from '@/components/academy/badges';
 import { fmtPct, fmtScore, fmtZoned } from '@/components/academy/format';
+import { fetchRoster } from '@/components/academy/server';
 import { SubNav } from '@/components/academy/sub-nav';
 import { SessionForms } from '@/components/academy/teacher/session-forms';
 
@@ -39,7 +39,8 @@ export default async function TeacherGroupPage({
 }) {
   const { id } = await params;
   const sp = await searchParams;
-  const tab: Tab = (TABS as readonly string[]).includes(sp.tab ?? '') ? (sp.tab as Tab) : '';
+  const requested = sp.tab ?? '';
+  const tab: Tab = (TABS as readonly string[]).includes(requested) ? (requested as Tab) : '';
   const g = await apiTry<AcademyGroupDto>(`/academy/groups/${id}`);
   if (!g || !g.permissions.includes('assignment.viewAll')) notFound();
   const can = (a: string) => g.permissions.includes(a as never);
@@ -157,7 +158,7 @@ async function AssignmentsTab({ groupId }: { groupId: string }) {
 }
 
 async function StudentsTab({ groupId }: { groupId: string }) {
-  const rows = (await apiTry<AcademyEnrollmentDto[]>(`/academy/groups/${groupId}/students`)) ?? [];
+  const rows = (await fetchRoster(groupId)) ?? [];
   if (!rows.length) return <EmptyState title={t('academy.empty.groups')} />;
   return (
     <div className="tbl-wrap">

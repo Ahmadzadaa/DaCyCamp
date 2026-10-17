@@ -86,15 +86,13 @@ describe('Academy grading (e2e)', () => {
       leadInstructorId: ids.lead,
       assistantInstructorIds: [ids.assistant],
     });
-    const g2 = await admin
-      .post('/academy/groups')
-      .send({
-        programId: de.body.id,
-        code: 'DE-002',
-        name: 'DE-002',
-        status: 'ACTIVE',
-        leadInstructorId: ids.otherLead,
-      });
+    const g2 = await admin.post('/academy/groups').send({
+      programId: de.body.id,
+      code: 'DE-002',
+      name: 'DE-002',
+      status: 'ACTIVE',
+      leadInstructorId: ids.otherLead,
+    });
     ids.de1 = g1.body.id;
     ids.de2 = g2.body.id;
     for (const s of ['ali', 'aysel'])
@@ -611,6 +609,54 @@ describe('Academy grading (e2e)', () => {
     expect(csv.text.charCodeAt(0)).toBe(0xfeff);
     expect(csv.text).toContain("'=2+3");
     expect(csv.text).not.toMatch(/(^|,)=2\+3/m);
+  });
+
+  it('müəllim seçimi: köhnə cəhdi bilərəkdən qiymətləndirmək köhnəlmə deyil; başqa göndərişin cəhdi — 422', async () => {
+    const c = await lead.post(`/academy/groups/${ids.de1}/assignments`).send({
+      title: 'Seçimli esse',
+      type: 'CUSTOM_TASK',
+      availableAt: iso(-1),
+      dueAt: iso(48),
+      attemptSelection: 'INSTRUCTOR_SELECTED',
+      items: [{ kind: 'TEXT', title: 'Esse', maxScore: 10 }],
+    });
+    expect((await lead.post(`/academy/assignments/${c.body.id}/publish`).send({})).status).toBe(
+      200,
+    );
+    const itemId = c.body.items[0].id;
+    for (const v of ['v1', 'v2'])
+      expect(
+        (
+          await ali
+            .post(`/academy/me/assignments/${c.body.id}/attempts`)
+            .send({ idempotencyKey: key(v), answers: [{ itemId, text: v }] })
+        ).status,
+      ).toBe(201);
+    const sid = await subId(c.body.id, ids.ali);
+    const [a1] = await prisma.academySubmissionAttempt.findMany({
+      where: { submissionId: sid },
+      orderBy: { attemptNumber: 'asc' },
+    });
+    const foreign = await prisma.academySubmissionAttempt.findFirstOrThrow({
+      where: { submissionId: ids.aliProj },
+    });
+    const bad = await lead
+      .put(`/academy/submissions/${sid}/grade`)
+      .send({ itemScores: [{ itemId, score: 7 }], selectedAttemptId: foreign.id });
+    expect([bad.status, bad.body.code]).toEqual([422, 'ACADEMY_ATTEMPT_NOT_FOUND']);
+
+    const g = await lead
+      .put(`/academy/submissions/${sid}/grade`)
+      .send({ itemScores: [{ itemId, score: 7 }], selectedAttemptId: a1!.id });
+    expect(g.status).toBe(200);
+    expect(g.body).toMatchObject({ selectedAttemptId: a1!.id, stale: false, finalScore: 7 });
+    expect((await lead.post(`/academy/submissions/${sid}/grade/release`).send({})).status).toBe(
+      200,
+    );
+    expect((await ali.get(`/academy/me/assignments/${c.body.id}`)).body.grade).toMatchObject({
+      selectedAttemptId: a1!.id,
+      finalScore: 7,
+    });
   });
 
   it('bazada qorunma: bal elementin / tapşırığın maksimumundan böyük ola bilməz', async () => {

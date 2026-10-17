@@ -4,7 +4,6 @@ import { notFound } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import type {
   AcademyAssignmentDto,
-  AcademyEnrollmentDto,
   AcademyExtensionDto,
   AcademyGroupDto,
   AcademyRevisionDto,
@@ -14,6 +13,7 @@ import { apiTry } from '@/lib/api/server';
 import { t } from '@/lib/i18n';
 import { Markdown } from '@/components/app/markdown';
 import { AssignmentStatusBadge } from '@/components/academy/badges';
+import { fetchRoster } from '@/components/academy/server';
 import { fmtScore, fmtZoned } from '@/components/academy/format';
 import { AssignmentActions } from '@/components/academy/teacher/assignment-actions';
 import {
@@ -39,7 +39,7 @@ export default async function TeacherAssignmentPage({
     apiTry<AcademyGroupDto>(`/academy/groups/${a.groupId}`),
     apiTry<AcademySubmissionDto[]>(`/academy/assignments/${id}/submissions`),
     apiTry<AcademyExtensionDto[]>(`/academy/assignments/${id}/extensions`),
-    apiTry<AcademyEnrollmentDto[]>(`/academy/groups/${a.groupId}/students`),
+    fetchRoster(a.groupId),
     apiTry<AcademyRevisionDto[]>(`/academy/assignments/${id}/revisions`),
   ]);
   if (!g) notFound();

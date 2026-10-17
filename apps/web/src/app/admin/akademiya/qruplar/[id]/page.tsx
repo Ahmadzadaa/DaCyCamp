@@ -2,16 +2,12 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
-import type {
-  AcademyCourseLinkDto,
-  AcademyEnrollmentDto,
-  AcademyGroupDto,
-  AdminCourseDto,
-} from '@dacy/shared';
+import type { AcademyCourseLinkDto, AcademyGroupDto, AdminCourseListDto } from '@dacy/shared';
 import { apiTry } from '@/lib/api/server';
 import { t } from '@/lib/i18n';
 import { PageHeader } from '@/components/admin/page-header';
 import { GroupStatusBadge } from '@/components/academy/badges';
+import { fetchRoster } from '@/components/academy/server';
 import { GroupEditor } from '@/components/academy/admin/admin-forms';
 import {
   CourseLinks,
@@ -28,11 +24,9 @@ export default async function AdminGroupPage({ params }: { params: Promise<{ id:
   const g = await apiTry<AcademyGroupDto>(`/academy/groups/${id}`);
   if (!g || !g.permissions.includes('group.manage')) notFound();
   const [students, links, courses] = await Promise.all([
-    apiTry<AcademyEnrollmentDto[]>(`/academy/groups/${id}/students`).then((x) => x ?? []),
+    fetchRoster(id).then((x) => x ?? []),
     apiTry<AcademyCourseLinkDto[]>(`/academy/groups/${id}/courses`).then((x) => x ?? []),
-    apiTry<AdminCourseDto[]>('/admin/courses?published=true').then((x) =>
-      Array.isArray(x) ? x : [],
-    ),
+    apiTry<AdminCourseListDto>('/admin/courses?published=true').then((x) => x?.courses ?? []),
   ]);
   return (
     <div className="flex flex-col gap-6">

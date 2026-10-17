@@ -9,7 +9,12 @@ import {
   GraduationCap,
   Users,
 } from 'lucide-react';
-import type { AcademyAdminOverviewDto, AcademyGroupDto, AcademyProgramDto } from '@dacy/shared';
+import type {
+  AcademyAdminOverviewDto,
+  AcademyGroupDto,
+  AcademyPage,
+  AcademyProgramDto,
+} from '@dacy/shared';
 import { apiTry } from '@/lib/api/server';
 import { t } from '@/lib/i18n';
 import { PageHeader } from '@/components/admin/page-header';
@@ -22,13 +27,22 @@ export function generateMetadata(): Metadata {
 }
 
 /** Akademiya idarəetməsi (yalnız admin): proqramlar, qruplar, ümumi göstəricilər */
-export default async function AdminAcademyPage() {
+const PAGE_SIZE = 50;
+
+export default async function AdminAcademyPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ sehife?: string }>;
+}) {
+  const page = Math.max(1, Number((await searchParams).sehife) || 1);
   const o = await apiTry<AcademyAdminOverviewDto>('/academy/admin/overview');
   if (!o) notFound();
-  const [programs, groups] = await Promise.all([
+  const [programs, paged] = await Promise.all([
     apiTry<AcademyProgramDto[]>('/academy/programs').then((x) => x ?? []),
-    apiTry<AcademyGroupDto[]>('/academy/groups').then((x) => x ?? []),
+    apiTry<AcademyPage<AcademyGroupDto>>(`/academy/groups?page=${page}&pageSize=${PAGE_SIZE}`),
   ]);
+  const groups = paged?.items ?? [];
+  const pages = paged ? Math.max(1, Math.ceil(paged.total / PAGE_SIZE)) : 1;
   const tiles = [
     { icon: GraduationCap, label: t('academy.admin.programs'), value: o.programs },
     { icon: Users, label: t('academy.admin.activeEnrollments'), value: o.activeEnrollments },
@@ -109,6 +123,23 @@ export default async function AdminAcademyPage() {
               </table>
             </div>
           )}
+          {pages > 1 ? (
+            <nav className="flex items-center gap-2 text-sm" aria-label={t('academy.admin.groups')}>
+              {page > 1 ? (
+                <Link href={`/admin/akademiya?sehife=${page - 1}`} className="b b-ghost b-sm">
+                  ←
+                </Link>
+              ) : null}
+              <span className="text-muted">
+                {page} / {pages}
+              </span>
+              {page < pages ? (
+                <Link href={`/admin/akademiya?sehife=${page + 1}`} className="b b-ghost b-sm">
+                  →
+                </Link>
+              ) : null}
+            </nav>
+          ) : null}
         </section>
         <div className="flex min-w-0 flex-col gap-6">
           {programs.length ? (
