@@ -162,6 +162,25 @@ export function selectAttempt<T extends AttemptLike>(
   return byNumber[byNumber.length - 1]!;
 }
 
+/**
+ * Cəhd limiti: istifadə olunan cəhdlər maksimuma çatıbsa yeni cəhd yoxdur. İstisna: müəllim göndərişi
+ * qaytarıbsa (RETURNED) və tələbə ondan sonra hələ göndərməyibsə — bir düzəliş cəhdinə icazə verilir.
+ */
+export function attemptLimitReached(i: {
+  attemptsUsed: number;
+  maxAttempts: number;
+  returnedAwaitingResubmission: boolean;
+}): boolean {
+  if (i.returnedAwaitingResubmission) return false;
+  return i.attemptsUsed >= i.maxAttempts;
+}
+
+/** Elementin avtomatik balı: maksimum × nisbət (0..1), sentlərlə yuvarlaq, [0, max] aralığında */
+export function scaleScore(maxCenti: number, ratio: number): number {
+  const r = Number.isFinite(ratio) ? Math.min(1, Math.max(0, ratio)) : 0;
+  return Math.min(maxCenti, Math.max(0, Math.round(maxCenti * r)));
+}
+
 // ───────────────────────── tələbə vəziyyəti ─────────────────────────
 
 export interface StudentStatusInput extends DeadlineInput {

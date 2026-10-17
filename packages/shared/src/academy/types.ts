@@ -249,7 +249,12 @@ export interface AcademyMyAssignmentDetailDto extends AcademyMyAssignmentDto {
   items: AcademyItemDto[];
   itemProgress: AcademyItemProgressDto[];
   resources: AcademyFileDto[];
-  draft: { answers: Array<{ itemId: string; text?: string; code?: string; link?: string }>; updatedAt: string } | null;
+  draft: {
+    answers: Array<{ itemId: string; text?: string; code?: string; link?: string; fileIds?: string[] }>;
+    updatedAt: string;
+  } | null;
+  /** bu tapşırıq üçün yüklənmiş, hələ göndərişə bağlanmamış fayllarım */
+  stagedFiles: AcademyFileDto[];
   attempts: AcademyAttemptDto[];
   grade: AcademyGradeDto | null;
   serverTime: string;

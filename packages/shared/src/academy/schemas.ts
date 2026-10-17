@@ -228,8 +228,9 @@ export const academySubmitSchema = z.object({
     .regex(/^[A-Za-z0-9_-]+$/),
   answers: z.array(academyAnswerSchema).max(50).default([]),
 });
+/** Qaralama: cavablar və yüklənmiş (hələ bağlanmamış) faylların elementlərə bölgüsü — cəhd sayılmır */
 export const academyDraftSchema = z.object({
-  answers: z.array(academyAnswerSchema.omit({ fileIds: true })).max(50),
+  answers: z.array(academyAnswerSchema).max(50),
 });
 
 // ───────────────────────── qiymətləndirmə

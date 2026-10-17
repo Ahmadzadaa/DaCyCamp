@@ -137,4 +137,32 @@ export const ACADEMY_DEFAULTS = {
   reminderHours: [24, 3] as const,
   /** müvəqqəti (göndərişə bağlanmamış) fayllar bu qədər saatdan sonra silinir */
   stagedFileTtlHours: 24,
+  /** bir faylın ən böyük ölçüsü (MB); server ACADEMY_MAX_FILE_MB ilə dəyişə bilər */
+  maxFileMb: 20,
+  /** bir istifadəçinin eyni anda saxlaya biləcəyi müvəqqəti fayl sayı */
+  maxStagedFiles: 30,
 } as const;
+
+/**
+ * Qəbul olunan fayl növləri (həm tələbə göndərişi, həm tapşırıq resursu). Uzantıya görə məzmun (sehrli baytlar,
+ * UTF-8 / JSON) serverdə yoxlanılır; MIME növü müştəridən götürülmür. SVG və HTML (skript daşıya bilər) qəbul edilmir.
+ */
+export const ACADEMY_FILE_TYPES = {
+  pdf: 'application/pdf',
+  zip: 'application/zip',
+  docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  pptx: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+  png: 'image/png',
+  jpg: 'image/jpeg',
+  jpeg: 'image/jpeg',
+  csv: 'text/csv',
+  txt: 'text/plain',
+  md: 'text/markdown',
+  py: 'text/x-python',
+  sql: 'application/sql',
+  json: 'application/json',
+  ipynb: 'application/x-ipynb+json',
+} as const;
+export type AcademyFileExtension = keyof typeof ACADEMY_FILE_TYPES;
+export const ACADEMY_FILE_EXTENSIONS = Object.keys(ACADEMY_FILE_TYPES) as AcademyFileExtension[];

@@ -70,6 +70,8 @@ const schema = z.object({
     .transform((v) => v !== 'false'),
   // bildiriş işçisi (outbox + xatırlatmalar) neçə saniyədən bir işləsin; 0 — söndürülüb (testlərdə əl ilə çağırılır)
   ACADEMY_WORKER_INTERVAL_SEC: z.coerce.number().int().min(0).default(30),
+  /** akademiya faylının (göndəriş / resurs) ən böyük ölçüsü, MB */
+  ACADEMY_MAX_FILE_MB: z.coerce.number().int().min(1).max(200).default(20),
 });
 
 const parsed = schema.safeParse(process.env);

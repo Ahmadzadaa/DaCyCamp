@@ -379,3 +379,32 @@ describe('yeniləmə şəmaları defolt yazmır (zod 4 partial)', () => {
     expect(academyAssignmentUpdateSchema.parse({ title: 'Yeni' })).toEqual({ title: 'Yeni' });
   });
 });
+
+describe('cəhd limiti və avtomatik bal', () => {
+  it('limit dolubsa yeni cəhd yoxdur; qaytarılmış göndərişə bir düzəliş cəhdi', async () => {
+    const { attemptLimitReached } = await import('../index');
+    expect(attemptLimitReached({ attemptsUsed: 2, maxAttempts: 3, returnedAwaitingResubmission: false })).toBe(false);
+    expect(attemptLimitReached({ attemptsUsed: 3, maxAttempts: 3, returnedAwaitingResubmission: false })).toBe(true);
+    expect(attemptLimitReached({ attemptsUsed: 3, maxAttempts: 3, returnedAwaitingResubmission: true })).toBe(false);
+  });
+
+  it('maksimum × nisbət, sərhədlər daxilində', async () => {
+    const { scaleScore } = await import('../index');
+    expect(scaleScore(2550, 1)).toBe(2550);
+    expect(scaleScore(2550, 0.5)).toBe(1275);
+    expect(scaleScore(1000, 2 / 3)).toBe(667);
+    expect(scaleScore(1000, 1.4)).toBe(1000);
+    expect(scaleScore(1000, -1)).toBe(0);
+    expect(scaleScore(1000, Number.NaN)).toBe(0);
+  });
+
+  it('qaralama fayl bölgüsünü saxlayır; uzantı siyahısında SVG / HTML yoxdur', async () => {
+    const { academyDraftSchema, ACADEMY_FILE_EXTENSIONS } = await import('../index');
+    const id = 'ckxxxxxxxxxxxxxxxxxxxxxxx';
+    const r = academyDraftSchema.safeParse({ answers: [{ itemId: id, fileIds: [id] }] });
+    expect(r.success).toBe(true);
+    expect(ACADEMY_FILE_EXTENSIONS).toContain('ipynb');
+    expect(ACADEMY_FILE_EXTENSIONS).not.toContain('svg');
+    expect(ACADEMY_FILE_EXTENSIONS).not.toContain('html');
+  });
+});

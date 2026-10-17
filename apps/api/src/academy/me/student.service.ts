@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import {
   academyCan,
+  attemptLimitReached,
   deriveStudentStatus,
   effectiveDueAt,
   fromCenti,
@@ -140,6 +141,8 @@ export class AcademyStudentService {
         closed,
       });
       const attemptsUsed = sub?.attempts.length ?? 0;
+      const returnedAwaitingResubmission =
+        sub?.grade?.status === 'RETURNED' && !(latest && latest.submittedAt > sub.grade.updatedAt);
       return {
         id: r.id,
         groupId: r.groupId,
@@ -156,7 +159,8 @@ export class AcademyStudentService {
         attemptsUsed,
         status: st.status,
         overdue: st.overdue,
-        canSubmit: st.canSubmit && attemptsUsed < r.maxAttempts,
+        canSubmit:
+          st.canSubmit && !attemptLimitReached({ attemptsUsed, maxAttempts: r.maxAttempts, returnedAwaitingResubmission }),
         finalScore: sub?.grade?.status === 'RELEASED' ? fromCenti(sub.grade.finalScoreCenti) : null,
       };
     });
@@ -209,7 +213,7 @@ export class AcademyStudentService {
         openUrl: i.stepId ? this.content.workspaceUrl(s) : null,
       };
     });
-    const [sub, draft] = await Promise.all([
+    const [sub, draft, stagedFiles] = await Promise.all([
       this.prisma.academySubmission.findUnique({
         where: { assignmentId_studentId: { assignmentId, studentId: user.id } },
         include: {
@@ -219,6 +223,10 @@ export class AcademyStudentService {
       }),
       this.prisma.academySubmissionDraft.findUnique({
         where: { assignmentId_studentId: { assignmentId, studentId: user.id } },
+      }),
+      this.prisma.academyFile.findMany({
+        where: { ownerId: user.id, assignmentId, purpose: 'SUBMISSION', status: 'STAGED' },
+        orderBy: { createdAt: 'asc' },
       }),
     ]);
     const g = sub?.grade;
@@ -260,10 +268,11 @@ export class AcademyStudentService {
       resources: dto.resources,
       draft: draft
         ? {
-            answers: draft.answers as Array<{ itemId: string; text?: string; code?: string; link?: string }>,
+            answers: draft.answers as Array<{ itemId: string; text?: string; code?: string; link?: string; fileIds?: string[] }>,
             updatedAt: draft.updatedAt.toISOString(),
           }
         : null,
+      stagedFiles: stagedFiles.map(fileDto),
       attempts: (sub?.attempts ?? []).map(attemptDto),
       grade,
       serverTime: now.toISOString(),
