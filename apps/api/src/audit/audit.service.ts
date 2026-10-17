@@ -15,7 +15,8 @@ export type AuditEntity =
   | 'CERTIFICATE'
   | 'PATH'
   | 'ROADMAP'
-  | 'SETTING';
+  | 'SETTING'
+  | 'ACADEMY';
 
 export interface AuditInput {
   action: string;
@@ -106,6 +107,7 @@ export class AuditService {
         return p ? { title: `${p.serial} · ${p.user.email}`, courseId: null } : null;
       }
       case 'SETTING':
+      case 'ACADEMY':
         return null;
       case 'ROADMAP': {
         const r = await this.prisma.roadmap.findUnique({ where: { id }, select: { title: true } });

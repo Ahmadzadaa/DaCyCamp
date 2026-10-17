@@ -29,6 +29,7 @@ import { TopicsModule } from './topics/topics.module';
 import { RoadmapsModule } from './roadmaps/roadmaps.module';
 import { SupportModule } from './support/support.module';
 import { SettingsModule } from './settings/settings.module';
+import { AcademyModule } from './academy/academy.module';
 
 @Module({
   imports: [
@@ -56,6 +57,7 @@ import { SettingsModule } from './settings/settings.module';
     RoadmapsModule,
     SupportModule,
     SettingsModule,
+    AcademyModule,
   ],
   controllers: [HealthController],
   providers: [

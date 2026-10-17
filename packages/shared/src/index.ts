@@ -16,3 +16,4 @@ export * from './progress/unlock';
 export * from './progress/path-map';
 export * from './api/dto';
 export * from './api/types';
+export * from './academy';

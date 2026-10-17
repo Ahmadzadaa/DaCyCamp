@@ -63,6 +63,13 @@ const schema = z.object({
     .default('true')
     .transform((v) => v !== 'false'),
   CONTENT_DIR: optionalStr,
+  // Akademiya modulu (qruplar, tapşırıqlar, qiymətlər). false — endpoint-lər 404, menyu gizlənir; platforma dəyişmir
+  ACADEMY_MANAGEMENT_ENABLED: z
+    .string()
+    .default('true')
+    .transform((v) => v !== 'false'),
+  // bildiriş işçisi (outbox + xatırlatmalar) neçə saniyədən bir işləsin; 0 — söndürülüb (testlərdə əl ilə çağırılır)
+  ACADEMY_WORKER_INTERVAL_SEC: z.coerce.number().int().min(0).default(30),
 });
 
 const parsed = schema.safeParse(process.env);

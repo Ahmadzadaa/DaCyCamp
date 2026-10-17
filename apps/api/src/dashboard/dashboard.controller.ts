@@ -16,7 +16,7 @@ export class DashboardController {
   /** qabıq üçün: XP, seriya, həftəlik hədəf, oxunmamış bildirişlər */
   @Get('summary')
   summary(@CurrentUser() u: AuthUser) {
-    return this.dash.summary(u.id);
+    return this.dash.summary(u);
   }
   @Get('notifications')
   list(@CurrentUser() u: AuthUser) {

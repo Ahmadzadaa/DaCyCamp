@@ -140,6 +140,29 @@ model User {
   roadmapChecks     RoadmapCheck[]
   supportTickets    SupportTicket[]
   supportMessages   SupportMessage[]
+
+  // akademiya (yalnız əlaqə sahələri — sütun əlavə etmir)
+  academyGroupsCreated      AcademyGroup[]               @relation("AcademyGroupCreator")
+  academyInstructorRoles    AcademyGroupInstructor[]     @relation("AcademyInstructorUser")
+  academyInstructorAssigned AcademyGroupInstructor[]     @relation("AcademyInstructorAssigner")
+  academyEnrollments        AcademyEnrollment[]          @relation("AcademyEnrollmentStudent")
+  academyEnrollmentsCreated AcademyEnrollment[]          @relation("AcademyEnrollmentCreator")
+  academyEnrollmentEvents   AcademyEnrollmentEvent[]     @relation("AcademyEnrollmentEventActor")
+  academyAssignmentsCreated AcademyAssignment[]          @relation("AcademyAssignmentCreator")
+  academyAssignmentsEdited  AcademyAssignment[]          @relation("AcademyAssignmentEditor")
+  academyExtensions         AcademyAssignmentExtension[] @relation("AcademyExtensionStudent")
+  academyExtensionsApproved AcademyAssignmentExtension[] @relation("AcademyExtensionApprover")
+  academyRevisions          AcademyAssignmentRevision[]  @relation("AcademyRevisionEditor")
+  academySubmissions        AcademySubmission[]          @relation("AcademySubmissionStudent")
+  academyDrafts             AcademySubmissionDraft[]     @relation("AcademyDraftStudent")
+  academyFiles              AcademyFile[]                @relation("AcademyFileOwner")
+  academyGradesGiven        AcademyGrade[]               @relation("AcademyGrader")
+  academyGradeChanges       AcademyGradeHistory[]        @relation("AcademyGradeChanger")
+  academySessionsTaught     AcademyClassSession[]        @relation("AcademySessionInstructor")
+  academySessionsCreated    AcademyClassSession[]        @relation("AcademySessionCreator")
+  academyAttendance         AcademyAttendance[]          @relation("AcademyAttendanceStudent")
+  academyAttendanceMarked   AcademyAttendance[]          @relation("AcademyAttendanceMarker")
+  academyNotifications      AcademyNotification[]        @relation("AcademyNotificationUser")
 }
 
 /// Rotating refresh tokens; only the sha256 hash is stored.
@@ -235,13 +258,14 @@ model Course {
   deletedBy        User?  @relation("CourseDeleter", fields: [deletedById], references: [id], onDelete: SetNull)
 
   modules      Module[]
-  assets       Asset[]        @relation("CourseAssets")
+  assets       Asset[]             @relation("CourseAssets")
   enrollments  Enrollment[]
   certificates Certificate[]
   imports      CourseImport[]
   xpEvents     XpEvent[]
   pathItems    PathItem[] // the same course may appear in many learning paths
-  topics       Topic[]        @relation("CourseTopics") // mövzular (Qeyd 5) — istiqamətdən əlavə etiketlər
+  topics       Topic[]             @relation("CourseTopics") // mövzular (Qeyd 5) — istiqamətdən əlavə etiketlər
+  academyLinks AcademyCourseLink[] @relation("AcademyCourseLinks")
 
   @@unique([trackId, order])
   @@index([isPublished, level])
@@ -290,7 +314,7 @@ model Step {
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
-  module            Module         @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  module            Module                  @relation(fields: [moduleId], references: [id], onDelete: Cascade)
   ctfTasks          CtfTask[]
   progress          StepProgress[]
   submissions       Submission[]
@@ -298,7 +322,8 @@ model Step {
   xpEvents          XpEvent[]
   labSessions       LabSession[]
   unlocks           StepUnlock[]
-  lastOfEnrollments Enrollment[]   @relation("EnrollmentLastStep")
+  lastOfEnrollments Enrollment[]            @relation("EnrollmentLastStep")
+  academyItems      AcademyAssignmentItem[] @relation("AcademyItemStep")
 
   @@unique([moduleId, key])
   @@unique([moduleId, order])
@@ -431,6 +456,8 @@ model Submission {
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   step Step @relation(fields: [stepId], references: [id], onDelete: Cascade)
+
+  academyEvidence AcademySubmissionItem[] @relation("AcademyEvidence")
 
   @@index([userId, stepId, createdAt])
   @@index([stepId, passed])
@@ -780,4 +807,656 @@ model SupportMessage {
   author    User?         @relation(fields: [authorId], references: [id], onDelete: SetNull)
 
   @@index([ticketId, createdAt])
+}
+
+// ═════════════════════════ AKADEMİYA (müəllim rəhbərliyi ilə təhsil) ═════════════════════════
+// Əlavə modul: mövcud cədvəllər dəyişmir. Ballar yüzdə bir bal ilə (Int, …Centi). Vaxtlar UTC.
+// Kompozit xarici açarlar invariantları bazada təmin edir: cavab yalnız eyni tapşırığın elementinə,
+// qiymət yalnız öz göndərişinin cəhdinə, göndəriş / davamiyyət / uzadılma yalnız qrupa yazılmış tələbəyə aid ola bilər.
+// Ətraflı: docs/academy-management/DATABASE.md
+
+enum AcademyProgramStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+}
+
+enum AcademyGroupStatus {
+  PLANNED
+  ACTIVE
+  COMPLETED
+  ARCHIVED
+  CANCELLED
+}
+
+enum AcademyLearningFormat {
+  ONLINE
+  OFFLINE
+  HYBRID
+}
+
+enum AcademyInstructorRole {
+  LEAD
+  ASSISTANT
+}
+
+enum AcademyEnrollmentStatus {
+  PENDING
+  ACTIVE
+  PAUSED
+  COMPLETED
+  WITHDRAWN
+}
+
+enum AcademyAssignmentType {
+  EXISTING_CHALLENGE
+  CUSTOM_TASK
+  CODING_TASK
+  FILE_BASED
+  LAB
+  PROJECT
+}
+
+enum AcademyAssignmentStatus {
+  DRAFT
+  SCHEDULED
+  PUBLISHED
+  ARCHIVED
+  CANCELLED
+}
+
+enum AcademyGradingType {
+  AUTOMATIC
+  MANUAL
+  HYBRID
+}
+
+enum AcademyLatePolicy {
+  REJECT
+  ACCEPT
+  ACCEPT_WITH_PENALTY
+}
+
+enum AcademyAttemptSelection {
+  LATEST_ATTEMPT
+  HIGHEST_SCORE
+  INSTRUCTOR_SELECTED
+}
+
+enum AcademyItemKind {
+  LEARNING_STEP
+  TEXT
+  CODE
+  FILE
+  LINK
+}
+
+enum AcademyEvaluationTrust {
+  SERVER_VERIFIED
+  SERVER_CHECKED
+  CLIENT_ATTESTED
+  COMPLETION
+}
+
+enum AcademyEvaluationStatus {
+  NOT_APPLICABLE
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+enum AcademyGradeStatus {
+  DRAFT
+  RELEASED
+  RETURNED
+}
+
+enum AcademyClassStatus {
+  SCHEDULED
+  RESCHEDULED
+  CANCELLED
+  COMPLETED
+}
+
+enum AcademyAttendanceStatus {
+  PRESENT
+  ABSENT
+  LATE
+  EXCUSED
+}
+
+enum AcademyFilePurpose {
+  ASSIGNMENT_RESOURCE
+  SUBMISSION
+}
+
+enum AcademyFileStatus {
+  STAGED // yüklənib, hələ heç nəyə bağlanmayıb (təmizləmə işi köhnələri silir)
+  ATTACHED
+}
+
+enum AcademyOutboxStatus {
+  PENDING
+  DONE
+  FAILED
+}
+
+/// Təhsil istiqaməti (Data Engineering, Cyber Security). Platformanın Track-indən ayrıdır.
+model AcademyProgram {
+  id          String               @id @default(cuid())
+  title       String
+  slug        String               @unique
+  description String               @default("")
+  status      AcademyProgramStatus @default(DRAFT)
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+
+  groups AcademyGroup[]
+}
+
+/// Konkret qrup (kohort), məs. DE-001
+model AcademyGroup {
+  id          String                @id @default(cuid())
+  programId   String
+  code        String                @unique
+  name        String
+  description String                @default("")
+  status      AcademyGroupStatus    @default(PLANNED)
+  format      AcademyLearningFormat @default(ONLINE)
+  timezone    String                @default("Asia/Baku")
+  capacity    Int?
+  startAt     DateTime?
+  endAt       DateTime?
+  createdById String?
+  createdAt   DateTime              @default(now())
+  updatedAt   DateTime              @updatedAt
+
+  program     AcademyProgram           @relation(fields: [programId], references: [id], onDelete: Restrict)
+  createdBy   User?                    @relation("AcademyGroupCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  instructors AcademyGroupInstructor[]
+  enrollments AcademyEnrollment[]
+  courseLinks AcademyCourseLink[]
+  assignments AcademyAssignment[]
+  sessions    AcademyClassSession[]
+
+  @@index([programId, status])
+}
+
+/// Müəllim ↔ qrup. removedAt — əlaqə bitib (tarix qalır). leadSlot = groupId yalnız aktiv aparıcı üçün:
+/// unikal sütun qrupda ən çox bir aktiv aparıcı müəllimi bazada təmin edir (NULL-lar təkrarlana bilər).
+model AcademyGroupInstructor {
+  id           String                @id @default(cuid())
+  groupId      String
+  userId       String
+  role         AcademyInstructorRole
+  leadSlot     String?               @unique
+  assignedAt   DateTime              @default(now())
+  removedAt    DateTime?
+  assignedById String?
+  createdAt    DateTime              @default(now())
+  updatedAt    DateTime              @updatedAt
+
+  group      AcademyGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user       User         @relation("AcademyInstructorUser", fields: [userId], references: [id], onDelete: Cascade)
+  assignedBy User?        @relation("AcademyInstructorAssigner", fields: [assignedById], references: [id], onDelete: SetNull)
+
+  @@unique([groupId, userId])
+  @@index([userId, removedAt])
+}
+
+/// Tələbə ↔ qrup. Bir (qrup, tələbə) üçün bir sətir; vəziyyət keçidləri AcademyEnrollmentEvent-də.
+model AcademyEnrollment {
+  id          String                  @id @default(cuid())
+  groupId     String
+  studentId   String
+  status      AcademyEnrollmentStatus @default(ACTIVE)
+  enrolledAt  DateTime                @default(now())
+  endedAt     DateTime?
+  createdById String?
+  createdAt   DateTime                @default(now())
+  updatedAt   DateTime                @updatedAt
+
+  group       AcademyGroup                 @relation(fields: [groupId], references: [id], onDelete: Restrict)
+  student     User                         @relation("AcademyEnrollmentStudent", fields: [studentId], references: [id], onDelete: Cascade)
+  createdBy   User?                        @relation("AcademyEnrollmentCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  events      AcademyEnrollmentEvent[]
+  submissions AcademySubmission[]
+  drafts      AcademySubmissionDraft[]
+  extensions  AcademyAssignmentExtension[]
+  attendance  AcademyAttendance[]
+
+  @@unique([groupId, studentId])
+  @@index([studentId, status])
+}
+
+model AcademyEnrollmentEvent {
+  id           String                   @id @default(cuid())
+  enrollmentId String
+  fromStatus   AcademyEnrollmentStatus?
+  toStatus     AcademyEnrollmentStatus
+  reason       String?
+  actorId      String?
+  createdAt    DateTime                 @default(now())
+
+  enrollment AcademyEnrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  actor      User?             @relation("AcademyEnrollmentEventActor", fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([enrollmentId, createdAt])
+}
+
+/// Qrupun izlədiyi mövcud platforma kursu (məzmun kopyalanmır)
+model AcademyCourseLink {
+  id        String   @id @default(cuid())
+  groupId   String
+  courseId  String
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+
+  group  AcademyGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  course Course       @relation("AcademyCourseLinks", fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, courseId])
+}
+
+model AcademyAssignment {
+  id                 String                  @id @default(cuid())
+  groupId            String
+  title              String
+  description        String                  @default("")
+  type               AcademyAssignmentType
+  status             AcademyAssignmentStatus @default(DRAFT)
+  availableAt        DateTime
+  dueAt              DateTime
+  lateCutoffAt       DateTime?
+  latePolicy         AcademyLatePolicy       @default(REJECT)
+  latePenaltyPercent Int                     @default(0)
+  maxAttempts        Int                     @default(3)
+  maxScoreCenti      Int
+  gradingType        AcademyGradingType      @default(MANUAL)
+  attemptSelection   AcademyAttemptSelection @default(LATEST_ATTEMPT)
+  deliverables       String[]                @default([])
+  version            Int                     @default(1)
+  publishedAt        DateTime?
+  createdById        String?
+  updatedById        String?
+  createdAt          DateTime                @default(now())
+  updatedAt          DateTime                @updatedAt
+
+  group       AcademyGroup                 @relation(fields: [groupId], references: [id], onDelete: Restrict)
+  createdBy   User?                        @relation("AcademyAssignmentCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedBy   User?                        @relation("AcademyAssignmentEditor", fields: [updatedById], references: [id], onDelete: SetNull)
+  items       AcademyAssignmentItem[]
+  extensions  AcademyAssignmentExtension[]
+  revisions   AcademyAssignmentRevision[]
+  submissions AcademySubmission[]
+  drafts      AcademySubmissionDraft[]
+  files       AcademyFile[]
+  rubric      AcademyRubric?
+
+  @@unique([id, groupId])
+  @@index([groupId, status, dueAt])
+}
+
+/// Tapşırığın elementi: mövcud platforma addımına istinad (kopya deyil) və ya akademiyaya xas tapşırıq.
+/// sourceSnapshot — əlavə edildiyi andakı mənbə (addım silinsə / dəyişsə tarix pozulmur), sourceVersion — Step.updatedAt.
+model AcademyAssignmentItem {
+  id             String          @id @default(cuid())
+  assignmentId   String
+  kind           AcademyItemKind
+  stepId         String?
+  sourceVersion  String?
+  sourceSnapshot Json?
+  title          String
+  description    String          @default("")
+  maxScoreCenti  Int
+  sortOrder      Int             @default(0)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  assignment AcademyAssignment       @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  step       Step?                   @relation("AcademyItemStep", fields: [stepId], references: [id], onDelete: SetNull)
+  answers    AcademySubmissionItem[]
+  itemScores AcademyGradeItem[]
+
+  @@unique([id, assignmentId])
+  @@index([assignmentId, sortOrder])
+  @@index([stepId])
+}
+
+/// Fərdi son tarix (bir tələbə). Tələbə qrupa yazılmalıdır — (groupId, studentId) → AcademyEnrollment.
+model AcademyAssignmentExtension {
+  id            String   @id @default(cuid())
+  assignmentId  String
+  groupId       String
+  studentId     String
+  extendedDueAt DateTime
+  reason        String
+  approvedById  String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  assignment AcademyAssignment @relation(fields: [assignmentId, groupId], references: [id, groupId], onDelete: Cascade)
+  enrollment AcademyEnrollment @relation(fields: [groupId, studentId], references: [groupId, studentId], onDelete: NoAction, onUpdate: NoAction)
+  student    User              @relation("AcademyExtensionStudent", fields: [studentId], references: [id], onDelete: Cascade)
+  approvedBy User?             @relation("AcademyExtensionApprover", fields: [approvedById], references: [id], onDelete: SetNull)
+
+  @@unique([assignmentId, studentId])
+}
+
+/// Dərc olunmuş tapşırığın versiyaları: hər mənalı dəyişiklik snapshot + redaktor + səbəb
+model AcademyAssignmentRevision {
+  id           String   @id @default(cuid())
+  assignmentId String
+  version      Int
+  snapshot     Json
+  changes      String[] @default([])
+  reason       String?
+  editedById   String?
+  createdAt    DateTime @default(now())
+
+  assignment AcademyAssignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  editedBy   User?             @relation("AcademyRevisionEditor", fields: [editedById], references: [id], onDelete: SetNull)
+
+  @@unique([assignmentId, version])
+}
+
+/// Tələbə × tapşırıq konteyneri (0 və ya daha çox cəhd)
+model AcademySubmission {
+  id           String   @id @default(cuid())
+  assignmentId String
+  groupId      String
+  studentId    String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  assignment AcademyAssignment          @relation(fields: [assignmentId, groupId], references: [id, groupId], onDelete: Cascade)
+  enrollment AcademyEnrollment          @relation(fields: [groupId, studentId], references: [groupId, studentId], onDelete: NoAction, onUpdate: NoAction)
+  student    User                       @relation("AcademySubmissionStudent", fields: [studentId], references: [id], onDelete: Cascade)
+  attempts   AcademySubmissionAttempt[]
+  grade      AcademyGrade?
+
+  @@unique([assignmentId, studentId])
+  @@unique([id, assignmentId])
+  @@index([studentId])
+}
+
+/// Göndərilmiş cəhd — dəyişməz (cavablar AcademySubmissionItem-də, UPDATE trigger ilə qadağandır).
+/// Yalnız qiymətləndirmə sahələri (evaluation*, autoScoreCenti) sonradan yazıla bilər.
+model AcademySubmissionAttempt {
+  id                String                  @id @default(cuid())
+  submissionId      String
+  assignmentId      String
+  attemptNumber     Int
+  assignmentVersion Int
+  submittedAt       DateTime                @default(now())
+  isLate            Boolean                 @default(false)
+  idempotencyKey    String
+  evaluationStatus  AcademyEvaluationStatus @default(NOT_APPLICABLE)
+  autoScoreCenti    Int?
+  evaluatedAt       DateTime?
+  createdAt         DateTime                @default(now())
+
+  submission      AcademySubmission       @relation(fields: [submissionId, assignmentId], references: [id, assignmentId], onDelete: Cascade)
+  answers         AcademySubmissionItem[]
+  selectedByGrade AcademyGrade[]          @relation("AcademyGradeSelectedAttempt")
+
+  @@unique([submissionId, attemptNumber])
+  @@unique([submissionId, idempotencyKey])
+  @@unique([id, assignmentId])
+  @@unique([id, submissionId])
+}
+
+/// Bir cəhddə bir elementin cavabı. (attemptId, assignmentId) və (itemId, assignmentId) kompozit açarları
+/// cavabın başqa tapşırığın elementinə istinad etməsini bazada qeyri-mümkün edir.
+model AcademySubmissionItem {
+  id                   String                  @id @default(cuid())
+  attemptId            String
+  assignmentId         String
+  itemId               String
+  kind                 AcademyItemKind
+  textAnswer           String?
+  codeAnswer           String?
+  linkUrl              String?
+  learningSubmissionId String?
+  evaluationStatus     AcademyEvaluationStatus @default(NOT_APPLICABLE)
+  evaluationTrust      AcademyEvaluationTrust?
+  evaluationPassed     Boolean?
+  evaluationScoreCenti Int?
+  evidenceAt           DateTime?
+  createdAt            DateTime                @default(now())
+
+  attempt            AcademySubmissionAttempt @relation(fields: [attemptId, assignmentId], references: [id, assignmentId], onDelete: Cascade)
+  item               AcademyAssignmentItem    @relation(fields: [itemId, assignmentId], references: [id, assignmentId], onDelete: Restrict)
+  learningSubmission Submission?              @relation("AcademyEvidence", fields: [learningSubmissionId], references: [id], onDelete: SetNull)
+  files              AcademyFile[]            @relation("AcademyAnswerFiles")
+
+  @@unique([attemptId, itemId])
+}
+
+/// Hələ göndərilməmiş cavablar (cəhd sayılmır)
+model AcademySubmissionDraft {
+  id           String   @id @default(cuid())
+  assignmentId String
+  groupId      String
+  studentId    String
+  answers      Json
+  updatedAt    DateTime @updatedAt
+  createdAt    DateTime @default(now())
+
+  assignment AcademyAssignment @relation(fields: [assignmentId, groupId], references: [id, groupId], onDelete: Cascade)
+  enrollment AcademyEnrollment @relation(fields: [groupId, studentId], references: [groupId, studentId], onDelete: NoAction, onUpdate: NoAction)
+  student    User              @relation("AcademyDraftStudent", fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([assignmentId, studentId])
+}
+
+/// Fayl: tapşırıq resursu (müəllim) və ya göndərişin faylı (tələbə). Daxili açar generasiya olunur,
+/// orijinal ad yalnız metadata. Fayl açıq URL ilə verilmir — icazəli endpoint-dən.
+model AcademyFile {
+  id               String             @id @default(cuid())
+  purpose          AcademyFilePurpose
+  status           AcademyFileStatus  @default(STAGED)
+  assignmentId     String?
+  submissionItemId String?
+  ownerId          String?
+  storageKey       String             @unique
+  originalFilename String
+  sizeBytes        Int
+  mimeType         String
+  sha256           String
+  createdAt        DateTime           @default(now())
+  attachedAt       DateTime?
+
+  assignment     AcademyAssignment?     @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  submissionItem AcademySubmissionItem? @relation("AcademyAnswerFiles", fields: [submissionItemId], references: [id], onDelete: Cascade)
+  owner          User?                  @relation("AcademyFileOwner", fields: [ownerId], references: [id], onDelete: SetNull)
+
+  @@index([status, createdAt])
+  @@index([assignmentId])
+}
+
+/// Göndərişin cari qiyməti (göndəriş başına bir). selectedAttemptId yalnız bu göndərişin cəhdi ola bilər.
+model AcademyGrade {
+  id                String             @id @default(cuid())
+  submissionId      String             @unique
+  assignmentId      String
+  selectedAttemptId String?
+  rawScoreCenti     Int                @default(0)
+  latePenaltyCenti  Int                @default(0)
+  finalScoreCenti   Int                @default(0)
+  feedback          String?
+  status            AcademyGradeStatus @default(DRAFT)
+  gradedById        String?
+  gradedAt          DateTime?
+  releasedAt        DateTime?
+  version           Int                @default(0)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  submission      AcademySubmission         @relation(fields: [submissionId, assignmentId], references: [id, assignmentId], onDelete: Cascade)
+  selectedAttempt AcademySubmissionAttempt? @relation("AcademyGradeSelectedAttempt", fields: [selectedAttemptId, submissionId], references: [id, submissionId], onDelete: NoAction, onUpdate: NoAction)
+  gradedBy        User?                     @relation("AcademyGrader", fields: [gradedById], references: [id], onDelete: SetNull)
+  itemScores      AcademyGradeItem[]
+  rubricScores    AcademyRubricScore[]
+  history         AcademyGradeHistory[]
+
+  @@unique([id, assignmentId])
+  @@unique([submissionId, assignmentId])
+  @@index([assignmentId, status])
+}
+
+model AcademyGradeItem {
+  id           String  @id @default(cuid())
+  gradeId      String
+  assignmentId String
+  itemId       String
+  scoreCenti   Int
+  comment      String?
+
+  grade AcademyGrade          @relation(fields: [gradeId, assignmentId], references: [id, assignmentId], onDelete: Cascade)
+  item  AcademyAssignmentItem @relation(fields: [itemId, assignmentId], references: [id, assignmentId], onDelete: Cascade)
+
+  @@unique([gradeId, itemId])
+}
+
+model AcademyGradeHistory {
+  id                 String              @id @default(cuid())
+  gradeId            String
+  previousScoreCenti Int?
+  newScoreCenti      Int?
+  previousStatus     AcademyGradeStatus?
+  newStatus          AcademyGradeStatus
+  reason             String?
+  snapshot           Json?
+  changedById        String?
+  changedAt          DateTime            @default(now())
+
+  grade     AcademyGrade @relation(fields: [gradeId], references: [id], onDelete: Cascade)
+  changedBy User?        @relation("AcademyGradeChanger", fields: [changedById], references: [id], onDelete: SetNull)
+
+  @@index([gradeId, changedAt])
+}
+
+model AcademyRubric {
+  id            String   @id @default(cuid())
+  assignmentId  String   @unique
+  title         String
+  maxScoreCenti Int
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  assignment AcademyAssignment        @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  criteria   AcademyRubricCriterion[]
+
+  @@unique([id, assignmentId])
+}
+
+model AcademyRubricCriterion {
+  id            String @id @default(cuid())
+  rubricId      String
+  assignmentId  String
+  title         String
+  description   String @default("")
+  maxScoreCenti Int
+  sortOrder     Int    @default(0)
+
+  rubric AcademyRubric        @relation(fields: [rubricId, assignmentId], references: [id, assignmentId], onDelete: Cascade)
+  scores AcademyRubricScore[]
+
+  @@unique([id, assignmentId])
+}
+
+model AcademyRubricScore {
+  id           String  @id @default(cuid())
+  gradeId      String
+  assignmentId String
+  criterionId  String
+  scoreCenti   Int
+  comment      String?
+
+  grade     AcademyGrade           @relation(fields: [gradeId, assignmentId], references: [id, assignmentId], onDelete: Cascade)
+  criterion AcademyRubricCriterion @relation(fields: [criterionId, assignmentId], references: [id, assignmentId], onDelete: Cascade)
+
+  @@unique([gradeId, criterionId])
+}
+
+model AcademyClassSession {
+  id           String             @id @default(cuid())
+  groupId      String
+  title        String
+  description  String             @default("")
+  instructorId String?
+  startsAt     DateTime
+  endsAt       DateTime
+  meetingUrl   String?
+  status       AcademyClassStatus @default(SCHEDULED)
+  seriesId     String?
+  createdById  String?
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+
+  group      AcademyGroup        @relation(fields: [groupId], references: [id], onDelete: Restrict)
+  instructor User?               @relation("AcademySessionInstructor", fields: [instructorId], references: [id], onDelete: SetNull)
+  createdBy  User?               @relation("AcademySessionCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  attendance AcademyAttendance[]
+
+  @@unique([id, groupId])
+  @@index([groupId, startsAt])
+}
+
+/// Davamiyyət: (sessionId, groupId) və (groupId, studentId) açarları — tələbə dərsin qrupuna yazılmalıdır
+model AcademyAttendance {
+  id         String                  @id @default(cuid())
+  sessionId  String
+  groupId    String
+  studentId  String
+  status     AcademyAttendanceStatus
+  note       String?
+  markedById String?
+  markedAt   DateTime                @default(now())
+  createdAt  DateTime                @default(now())
+  updatedAt  DateTime                @updatedAt
+
+  session    AcademyClassSession @relation(fields: [sessionId, groupId], references: [id, groupId], onDelete: Cascade)
+  enrollment AcademyEnrollment   @relation(fields: [groupId, studentId], references: [groupId, studentId], onDelete: NoAction, onUpdate: NoAction)
+  student    User                @relation("AcademyAttendanceStudent", fields: [studentId], references: [id], onDelete: Cascade)
+  markedBy   User?               @relation("AcademyAttendanceMarker", fields: [markedById], references: [id], onDelete: SetNull)
+
+  @@unique([sessionId, studentId])
+  @@index([studentId])
+}
+
+/// Akademiya bildirişi (zəng menyusunda mövcud bildirişlərlə birlikdə). dedupeKey təkrarı bazada önləyir.
+model AcademyNotification {
+  id            String    @id @default(cuid())
+  userId        String
+  type          String
+  title         String
+  body          String?
+  url           String?
+  referenceType String?
+  referenceId   String?
+  dedupeKey     String
+  readAt        DateTime?
+  createdAt     DateTime  @default(now())
+
+  user User @relation("AcademyNotificationUser", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, dedupeKey])
+  @@index([userId, createdAt])
+}
+
+/// Tranzaksion outbox: domen dəyişikliyi ilə eyni tranzaksiyada yazılır, işçi bildirişlərə çevirir (təkrar cəhd ilə)
+model AcademyOutboxEvent {
+  id          String              @id @default(cuid())
+  type        String
+  payload     Json
+  status      AcademyOutboxStatus @default(PENDING)
+  attempts    Int                 @default(0)
+  availableAt DateTime            @default(now())
+  lastError   String?
+  createdAt   DateTime            @default(now())
+  processedAt DateTime?
+
+  @@index([status, availableAt])
 }

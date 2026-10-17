@@ -8,6 +8,8 @@ import { toPublicUser } from '../auth/auth.service';
 import { addDays, dateToDay, dayKey, weekDays } from '../progress/dates';
 import { notFound } from '../common/errors';
 import { NotificationsService } from './notifications.service';
+import { AcademyAccessService } from '../academy/access/academy-access.service';
+import type { AuthUser } from '../common/decorators';
 
 @Injectable()
 export class DashboardService {
@@ -16,6 +18,7 @@ export class DashboardService {
     private readonly progress: ProgressService,
     private readonly pathsLearn: PathsLearnService,
     private readonly notifications: NotificationsService,
+    private readonly academy: AcademyAccessService,
   ) {}
 
   /** Ardıcıl aktiv günlər (bu gün hələ aktiv olmayıbsa dünəndən sayılır) */
@@ -51,13 +54,15 @@ export class DashboardService {
   }
 
   /** Qabıq üçün yüngül xülasə (sidebar «Həftəlik hədəf», zəngin sayğacı) */
-  async summary(userId: string): Promise<MeSummaryDto> {
+  async summary(authUser: AuthUser): Promise<MeSummaryDto> {
+    const userId = authUser.id;
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw notFound();
-    const [streakDays, wk, unreadNotifications] = await Promise.all([
+    const [streakDays, wk, unreadNotifications, academy] = await Promise.all([
       this.streak(userId),
       this.week(userId),
       this.notifications.unreadCount(userId),
+      this.academy.summary(authUser),
     ]);
     const staff = user.role === 'ADMIN' || user.role === 'INSTRUCTOR';
     return {
@@ -66,6 +71,7 @@ export class DashboardService {
       weekTasks: wk.weekTasks,
       weeklyGoal: user.weeklyGoal,
       unreadNotifications,
+      academy,
       ...(staff
         ? {
             pendingReviews: await this.prisma.pathItemProgress.count({

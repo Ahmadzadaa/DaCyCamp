@@ -21,7 +21,7 @@ export async function createApp(): Promise<{ app: INestApplication; prisma: Pris
 
 export async function resetDb(prisma: PrismaService) {
   await prisma.$executeRawUnsafe(
-    `TRUNCATE TABLE "SupportMessage","SupportTicket","AuditLog","StepUnlock","XpEvent","ActivityDay","HintUsage","CtfSolve","Submission","StepProgress","Enrollment","Certificate","LabSession","PathItemProgress","PathCertificate","PathEnrollment","PathItem","LearningPath","CourseImport","Topic","RoadmapCheck","Roadmap","Setting","CtfTask","Step","Module","Asset","Course","Track","RefreshToken","User" RESTART IDENTITY CASCADE`,
+    `TRUNCATE TABLE "AcademyOutboxEvent","AcademyNotification","AcademyAttendance","AcademyClassSession","AcademyRubricScore","AcademyRubricCriterion","AcademyRubric","AcademyGradeHistory","AcademyGradeItem","AcademyGrade","AcademyFile","AcademySubmissionDraft","AcademySubmissionItem","AcademySubmissionAttempt","AcademySubmission","AcademyAssignmentRevision","AcademyAssignmentExtension","AcademyAssignmentItem","AcademyAssignment","AcademyCourseLink","AcademyEnrollmentEvent","AcademyEnrollment","AcademyGroupInstructor","AcademyGroup","AcademyProgram","SupportMessage","SupportTicket","AuditLog","StepUnlock","XpEvent","ActivityDay","HintUsage","CtfSolve","Submission","StepProgress","Enrollment","Certificate","LabSession","PathItemProgress","PathCertificate","PathEnrollment","PathItem","LearningPath","CourseImport","Topic","RoadmapCheck","Roadmap","Setting","CtfTask","Step","Module","Asset","Course","Track","RefreshToken","User" RESTART IDENTITY CASCADE`,
   );
 }
 
@@ -71,4 +71,16 @@ export async function login(app: INestApplication, email: string, password: stri
   const r = await a.post('/auth/login').send({ email, password });
   if (r.status !== 200) throw new Error(`login failed: ${r.status} ${JSON.stringify(r.body)}`);
   return a;
+}
+
+/** Əlavə test istifadəçisi (qlobal rol verilən kimi) */
+export async function makeUser(
+  prisma: PrismaService,
+  email: string,
+  role: 'STUDENT' | 'INSTRUCTOR' | 'ADMIN' = 'STUDENT',
+  password = 'Parol123!',
+) {
+  return prisma.user.create({
+    data: { email, name: email.split('@')[0]!, role, passwordHash: await hash(password) },
+  });
 }

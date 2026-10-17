@@ -1,11 +1,12 @@
 import { Module } from '@nestjs/common';
 import { ProgressModule } from '../progress/progress.module';
 import { PathsLearnModule } from '../paths/paths-learn.module';
+import { AcademyModule } from '../academy/academy.module';
 import { DashboardController } from './dashboard.controller';
 import { DashboardService } from './dashboard.service';
 import { NotificationsService } from './notifications.service';
 @Module({
-  imports: [ProgressModule, PathsLearnModule],
+  imports: [ProgressModule, PathsLearnModule, AcademyModule],
   controllers: [DashboardController],
   providers: [DashboardService, NotificationsService],
   exports: [DashboardService],

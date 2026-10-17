@@ -58,6 +58,8 @@ export interface MeSummaryDto {
   openSupport?: number;
   /** tələbə: baxılmamış dəstək cavabları */
   supportUnread?: number;
+  /** akademiya menyusu (modul söndürülübsə null) */
+  academy?: import('../academy/types').AcademySummaryDto | null;
 }
 
 /** Mövzu (Qeyd 5): istiqamətdən əlavə başlıq — «Python», «Excel», «Linux» */
