@@ -19,6 +19,7 @@ import { academyForbidden } from '../access/academy-access.service';
 import { STUDENT_VISIBLE } from '../assignments/assignments.service';
 import type { StepSnapshot } from '../integrations/content.adapter';
 import { AcademyEvaluationAdapter, type StepEvidence } from '../integrations/evaluation.adapter';
+import { AcademyGradingService } from '../grading/grading.service';
 import { emitAcademyEvent } from '../notifications/academy-events';
 
 type Assignment = AcademyAssignment & { group: { status: string } };
@@ -45,6 +46,7 @@ export class AcademySubmissionsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly evaluation: AcademyEvaluationAdapter,
+    private readonly grading: AcademyGradingService,
   ) {}
 
   /** Tələbə bu tapşırığa indi göndərə bilərmi — bütün yoxlamalar; bağlıdırsa səbəb kodu ilə xəta */
@@ -343,6 +345,8 @@ export class AcademySubmissionsService {
         }
       }
       await tx.academySubmissionDraft.deleteMany({ where: { assignmentId, studentId: user.id } });
+      // AUTOMATIC: qaralama qiymət eyni tranzaksiyada (tələbəyə görünmür — açıqlama müəllimdədir)
+      await this.grading.syncAutoDraft(tx, submissionId);
       await emitAcademyEvent(tx, { type: 'SUBMISSION_RECEIVED', attemptId: attempt.id });
       return { attemptId: attempt.id, replayed: false };
     });

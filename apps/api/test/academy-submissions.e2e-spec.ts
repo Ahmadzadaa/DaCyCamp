@@ -401,7 +401,8 @@ describe('Academy submissions (e2e)', () => {
     await prisma.academyAssignment.update({ where: { id: ids.hw }, data: { dueAt: new Date(Date.now() - 3_600_000) } });
     const late = await aysel.post(`/academy/me/assignments/${ids.hw}/attempts`).send({ idempotencyKey: key('late') });
     expect(late.status).toBe(201);
-    expect(late.body).toMatchObject({ isLate: true, status: 'SUBMITTED_LATE' });
+    // AUTOMATIC tapşırıq: avtomatik qaralama qiymət yaranır → tələbə üçün «yoxlanılır» (qiymət açıqlanana qədər)
+    expect(late.body).toMatchObject({ isLate: true, status: 'UNDER_REVIEW' });
 
     await prisma.academyAssignment.update({ where: { id: ids.hw }, data: { lateCutoffAt: new Date(Date.now() - 60_000) } });
     const cut = await aysel.post(`/academy/me/assignments/${ids.hw}/attempts`).send({ idempotencyKey: key('cut') });
