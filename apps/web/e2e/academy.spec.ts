@@ -29,7 +29,11 @@ const groupCode = `E2E-${short}`;
 const assignment = `ETL hesabatı ${short}`;
 const shot = (page: Page, name: string) => {
   mkdirSync(SHOTS, { recursive: true });
-  return page.screenshot({ path: resolve(SHOTS, `academy-${name}.png`), fullPage: true });
+  return page.screenshot({
+    path: resolve(SHOTS, `academy-${name}.png`),
+    fullPage: true,
+    animations: 'disabled',
+  });
 };
 const localInput = (d: Date) => {
   const p = (n: number) => String(n).padStart(2, '0');

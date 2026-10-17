@@ -456,6 +456,6 @@ Müəllimin apardığı təhsil eyni tətbiqə əlavə olundu: bir hesab, bir gi
 - ✅ **Dərslər və davamiyyət**, **bildirişlər** (tranzaksion outbox, təkrarsız, son tarix xatırlatmaları, zəng menyusunda), **analitika** (düsturlar sənədləşdirilib).
 - ✅ **İnterfeys:** «Mənim akademiyam» (`/akademiya`), «Müəllim paneli» (`/muellim`), admin «Akademiya» bölməsi (`/admin/akademiya`); menyu rola görə görünür; azərbaycan dili əsas, ingilis dili tam (xəta kodları da).
 - ✅ **Bayraq:** `ACADEMY_MANAGEMENT_ENABLED` (false — modul gizlənir, endpoint-lər 404). Yeni env: `ACADEMY_WORKER_INTERVAL_SEC`, `ACADEMY_MAX_FILE_MB`.
-- ✅ **Testlər:** shared 105, API unit 11, API e2e 22 suite / 202 test, web 9 — hamısı keçir; Playwright qəbul ssenarisi (`e2e/academy.spec.ts`, 5 addım) keçir; web typecheck, lint və production build təmiz.
+- ✅ **Testlər:** shared 105, API unit 11, API e2e 22 suite / 202 test, web 9 — hamısı keçir; Playwright qəbul ssenarisi (`e2e/academy.spec.ts`, 6 test, mobil 390px daxil) keçir; mövcud Playwright testləri ayrı-ayrılıqda keçir; web typecheck, lint və production build təmiz.
 - ℹ️ Miqrasiya yalnız yeni cədvəllər yaradır; yalnız lokal inkişaf və test bazalarına tətbiq olunub, production-a deploy edilməyib.
 - ℹ️ Tam olmayanlar (IMPLEMENTATION_STATUS.md): e-poçt bildirişləri yoxdur; proqram redaktəsi / yazılış tarixçəsi / qrup tarixlərinin redaktəsi üçün UI yoxdur (API var); bəzi UI hissələri avtomatik testlə əhatə olunmayıb.

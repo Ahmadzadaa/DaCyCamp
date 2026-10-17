@@ -28,7 +28,7 @@ directly with controlled clocks.
 | `apps/api/test/academy-grading.e2e-spec.ts` | 13 | staff submission list, validation (range, missing, foreign item, rubric misuse, selection policy), assistant drafts and cannot release, release visibility, XP unchanged, changing a released grade (reason, audit before/after, version conflict), late penalty rounding, return + resubmission, automatic drafts, rubric grading, stale detection, bulk release, gradebook averages, CSV formula-injection protection, INSTRUCTOR_SELECTED (older attempt is not stale, foreign attempt rejected), DB score triggers, cancelled assignment read-only |
 | `apps/api/test/academy-classes.e2e-spec.ts` | 8 | single sessions and permissions, weekly schedule in Asia/Baku, too long / empty schedules, reschedule one session, cancel, outbox, audit, meeting-link visibility, schedule ranges, attendance upsert and rules, DB composite FK, own attendance rates, delete rules, session detail endpoint, next class in overview |
 | `apps/api/test/academy-notifications.e2e-spec.ts` | 10 | outbox → notifications, idempotent processing, duplicate events, retry with backoff → FAILED, bell integration (az / en, read state, feature flag), deadline reminders with extensions and no duplicates, scheduled publish by the worker, grade / return / class notifications, instructor review counter, analytics formulas, instructor and admin overviews, LAB assignments |
-| `apps/web/e2e/academy.spec.ts` (Playwright) | 5 | full acceptance flow in the browser: admin creates program and group, assigns the lead, enrolls the student → teacher creates and publishes → student submits → teacher grades and releases → student sees the grade; English UI |
+| `apps/web/e2e/academy.spec.ts` (Playwright) | 6 | full acceptance flow in the browser: admin creates program and group, assigns the lead, enrolls the student → teacher creates and publishes → student submits → teacher grades and releases → student sees the grade; mobile (390 px, no horizontal overflow); English UI |
 
 Totals after the Academy work: shared 105 (67 before), API e2e 22 suites / 202 tests (16 / 132 before),
 API unit 11 (unchanged), web unit 9 (unchanged).
@@ -41,3 +41,10 @@ API unit 11 (unchanged), web unit 9 (unchanged).
 - The HIGHEST_SCORE policy through the API (the selection function itself is unit-tested).
 - TERMINAL / CTF steps as assignment items end-to-end (the evidence adapter logic exists; e2e tests use SQL and QUIZ).
 - Multi-instance worker behaviour.
+
+## Regression of existing browser tests
+
+The whole Playwright suite cannot run in one go against a single API instance: the existing login rate limit
+(20 logins / minute / IP) returns 429 after ~20 logins. Run spec files separately (about one minute apart).
+Result on 2026-10-17: all existing spec files pass this way; `screenshots.spec.ts` › "dərs ekranı" timed out once
+waiting for the lab terminal and passed on an immediate rerun (lab timing, unrelated to the Academy).

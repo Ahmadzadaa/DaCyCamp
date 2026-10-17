@@ -57,7 +57,7 @@ Date: 2026-10-17 · Branch `claude/clever-dirac-f7c6aa` · Not deployed anywhere
 | Admin: instructors management, group settings, course links | 🟡 | |
 | Admin: program edit / archive UI, enrollment history UI, group dates / format / timezone edit UI | ⛔ | API exists (`PATCH /academy/programs/:id`, `/enrollments/:id/history`, `PATCH /academy/groups/:id`) |
 | Azerbaijani primary, English complete (incl. error codes) | ✅ | English verified in the acceptance test; dictionary parity enforced by the compiler |
-| Mobile layout | 🟡 | responsive classes; see the report for the screenshot check |
+| Mobile layout | ✅ | Playwright at 390 px: no horizontal page overflow on student overview, assignments, grades, schedule, assignment detail and teacher pages; screenshots in `docs/screenshots/academy-mobile-*.png` |
 
 ## Documentation
 
