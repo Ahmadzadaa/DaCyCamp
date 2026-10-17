@@ -242,7 +242,8 @@ export function PathEditor({
             <TrackBadge color={p.track.color}>{p.track.title}</TrackBadge>
             <StatusBadge published={p.isPublished} />
           </div>
-          <h2 className="mt-2 text-lg">{p.title}</h2>
+          {/* səhifənin yeganə başlığı (h1) — vizual ölçü dəyişmir */}
+          <h1 className="mt-2 text-lg">{p.title}</h1>
           <p className="mt-1 text-xs text-muted">
             {p.itemCount} {t('admin.pathSteps').toLowerCase()} ·{' '}
             {t('admin.enrollmentCount', { n: p.enrollmentCount })}

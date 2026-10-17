@@ -334,7 +334,8 @@
   }
   .badge-track {
     background: color-mix(in srgb, var(--c) 18%, transparent);
-    color: color-mix(in srgb, var(--c) 68%, #13233f);
+    /* 68% narıncı/yaşıl istiqamətlərdə 3–3.3:1 verirdi — 45% bütün rənglərdə ≥4.5:1 */
+    color: color-mix(in srgb, var(--c) 45%, #13233f);
   }
   [data-theme='dark'] .badge-track,
   .ws .badge-track,
@@ -3619,7 +3620,8 @@
     border-radius: 999px;
     padding: 1px 8px;
     font-size: 0.75rem;
-    color: var(--muted);
+    /* kiçik say: boz fonda --muted 4.14:1 idi */
+    color: color-mix(in srgb, var(--muted) 70%, var(--ink));
     font-weight: 600;
   }
   .tbl-wrap {
@@ -4507,7 +4509,7 @@
   .ap-ok b {
     margin-left: auto;
     background: var(--brand);
-    color: #fff;
+    color: var(--brand-ink);
     border-radius: 999px;
     padding: 2px 10px;
     font-size: 12px;
@@ -4531,6 +4533,13 @@
   }
   .auth-logo-m {
     display: none;
+  }
+  /* çox dar ekran (<375px): başlıqda düymələr sığsın — loqonun mətni gizlənir, «Dc» nişanı qalır
+     (keçidin aria-label-i «DaCy Academy»dir) */
+  @media (max-width: 374px) {
+    .top .logo-t {
+      display: none;
+    }
   }
   /* dil düyməsi: mobil başlıqda yer azdır — ikon gizlənir, yalnız «AZ/EN» */
   @media (max-width: 640px) {
@@ -5944,7 +5953,8 @@
     align-items: center;
     gap: 6px;
     font-weight: 700;
-    color: var(--c);
+    /* istiqamət rəngi (admin seçir) ağ fonda zəif oxunurdu (2–3.6:1) — mətnə qədər tündləşdirilir */
+    color: color-mix(in srgb, var(--c) 55%, var(--ink));
   }
   .ld-track-f svg {
     width: 16px;

@@ -12,3 +12,12 @@ onlyBuiltDependencies:
   - unrs-resolver
   - '@nestjs/core'
   - '@node-rs/argon2'
+
+# Təhlükəsizlik: tranzitiv asılılıqlarda məlum zəifliklər (pnpm audit) — eyni major daxilində yeniləmə
+overrides:
+  multer@2: ^2.4.0
+  ws@8: ^8.22.0
+  qs@6: ^6.16.0
+  body-parser@1: ^1.20.6
+  postcss@8: ^8.5.23
+  dompurify@3: ^3.4.16

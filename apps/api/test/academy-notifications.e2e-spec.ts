@@ -380,7 +380,8 @@ describe('Academy notifications, analytics & labs (e2e)', () => {
     expect((await assistant.get('/academy/instructor/overview')).body.groups[0].role).toBe(
       'ASSISTANT',
     );
-    expect((await ali.get('/academy/instructor/overview')).body.groups).toEqual([]);
+    // tələbə müəllim panelini görmür (403)
+    expect((await ali.get('/academy/instructor/overview')).status).toBe(403);
     const adm = await admin.get('/academy/admin/overview');
     expect(adm.status).toBe(200);
     expect(adm.body).toMatchObject({

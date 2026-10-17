@@ -220,6 +220,12 @@ describe('Mərhələ 2: sql / python / ctf / ipucu / idxal-ixrac', () => {
   });
 
   it('python: client testləri keçəndə tamamlanır', async () => {
+    // boş kodla «keçdi» bildirmək — saxta sorğu, qəbul olunmur (XP və tamamlama verilmir)
+    const forged = await st
+      .post(`/learn/steps/${ids.py}/submit`)
+      .send({ kind: 'python', code: '   ', passed: true });
+    expect(forged.status).toBe(422);
+    expect(forged.body.code).toBe('PYTHON_EMPTY_CODE');
     const fail = await st
       .post(`/learn/steps/${ids.py}/submit`)
       .send({ kind: 'python', code: 'x = 2', passed: false, error: 'AssertionError' });

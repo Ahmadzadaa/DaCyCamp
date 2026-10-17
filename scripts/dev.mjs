@@ -157,6 +157,32 @@ const SQL_HELP = [
   '       CREATE DATABASE dacy OWNER dacy;  CREATE DATABASE dacy_test OWNER dacy;',
   '     və ya .env-dəki DATABASE_URL-i öz istifadəçi/şifrənizlə yazın.',
 ];
+/**
+ * Başqa qovluqdan (köhnə klon / ZIP) qalmış `dacy-db` konteyneri: `docker compose up` eyni adla ikinci
+ * konteyner yarada bilmir (ad toqquşması). Varsa onu işə salırıq — köhnə məlumat da qalır.
+ * Qaytarır: konteynerin host portu və ya null (konteyner yoxdur).
+ */
+function existingDbPort() {
+  const r = spawnSync('docker', ['inspect', '-f', '{{json .HostConfig.PortBindings}}', 'dacy-db'], {
+    encoding: 'utf8',
+    shell: process.platform === 'win32',
+  });
+  if (r.status !== 0) return null;
+  try {
+    return Number(JSON.parse(r.stdout)['5432/tcp']?.[0]?.HostPort) || 5432;
+  } catch {
+    return 5432;
+  }
+}
+function startExistingDb(hostPort) {
+  log(`Mövcud "dacy-db" konteyneri işə salınır (port ${hostPort})`);
+  if (run('docker', ['start', 'dacy-db']).status !== 0) fail('docker start dacy-db alınmadı.');
+  if (hostPort !== port) {
+    rewriteEnvPort(hostPort);
+    port = hostPort;
+  }
+}
+
 const hasDocker = () =>
   spawnSync('docker', ['info'], { stdio: 'ignore', shell: process.platform === 'win32' }).status ===
   0;
@@ -165,9 +191,13 @@ log(`PostgreSQL yoxlanılır: ${host}:${port}`);
 const isLocal = host === 'localhost' || host === '127.0.0.1';
 if (!(await probe(host, port))) {
   if (hasDocker()) {
-    log('DB əlçatmazdır → docker compose up -d db');
-    const r = run('docker', ['compose', 'up', '-d', 'db']);
-    if (r.status !== 0) fail('docker compose up alınmadı.');
+    const existing = isLocal ? existingDbPort() : null;
+    if (existing) startExistingDb(existing);
+    else {
+      log('DB əlçatmazdır → docker compose up -d db');
+      const r = run('docker', ['compose', 'up', '-d', 'db']);
+      if (r.status !== 0) fail('docker compose up alınmadı.');
+    }
     log('DB-nin hazır olması gözlənilir…');
     if (!(await waitForDb(60))) fail('DB 60 saniyə ərzində açılmadı.');
     await sleep(1500);
@@ -186,16 +216,22 @@ if (!(await probe(host, port))) {
 // Port açıqdır — amma rol/şifrə düzgündürmü? (kompüterdə başqa PostgreSQL ola bilər)
 let auth = dbAuth(process.env.DATABASE_URL);
 if (!auth.ok && auth.code === 'P1000' && isLocal && hasDocker()) {
-  const np = await freePort();
-  if (!np) fail('Boş port tapılmadı (5434–5459).');
-  log(
-    `${host}:${port} portunda başqa PostgreSQL var ("dacy" rolu yoxdur) → Docker bazası ${np} portunda qaldırılır, .env yenilənir`,
-  );
-  rewriteEnvPort(np);
-  port = np;
-  const r = run('docker', ['compose', 'up', '-d', 'db']);
-  if (r.status !== 0) fail('docker compose up alınmadı.');
-  if (!(await waitForDb(60))) fail(`DB ${np} portunda 60 saniyə ərzində açılmadı.`);
+  const existing = existingDbPort();
+  if (existing && existing !== port) {
+    log(`${host}:${port} portunda başqa PostgreSQL var ("dacy" rolu yoxdur)`);
+    startExistingDb(existing);
+  } else {
+    const np = await freePort();
+    if (!np) fail('Boş port tapılmadı (5434–5459).');
+    log(
+      `${host}:${port} portunda başqa PostgreSQL var ("dacy" rolu yoxdur) → Docker bazası ${np} portunda qaldırılır, .env yenilənir`,
+    );
+    rewriteEnvPort(np);
+    port = np;
+    const r = run('docker', ['compose', 'up', '-d', 'db']);
+    if (r.status !== 0) fail('docker compose up alınmadı.');
+  }
+  if (!(await waitForDb(60))) fail(`DB ${port} portunda 60 saniyə ərzində açılmadı.`);
   await sleep(1500);
   auth = dbAuth(process.env.DATABASE_URL);
 }

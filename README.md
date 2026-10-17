@@ -60,6 +60,22 @@ docker compose --profile full up --build
 
 `db` + `api` (4000) + `web` (3000) konteynerləri qalxır; `.env` faylı oxunur.
 
+### Production-a çıxmazdan əvvəl (kiçik VPS üçün yoxlama siyahısı)
+
+- **Açarlar:** `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET`, `CTF_PEPPER` — hər biri `openssl rand -hex 32` ilə,
+  bir-birindən fərqli. `NODE_ENV=production`-da nümunə və ya qısa açarla API açılmır (bilərəkdən).
+- **HTTPS:** saytın qarşısında TLS verən reverse proxy (Caddy / Nginx) və `.env`-də `COOKIE_SECURE=true`.
+- **Baza:** `docker-compose.yml` PostgreSQL-i yalnız `127.0.0.1`-də açır; `dacy/dacy` parolunu dəyişin.
+  Gündəlik ehtiyat nüsxə: `pg_dump --format=custom "$DATABASE_URL" > dacy-$(date +%F).dump` (cron) və
+  `STORAGE_DIR` (yüklənmiş fayllar) qovluğunun nüsxəsi. Bərpanı ən azı bir dəfə sınayın.
+- **Miqrasiyalar:** `pnpm db:deploy` (yalnız `migrate deploy`; `migrate dev` / `db:reset` production-da yox).
+- **Terminal lab-ları:** istifadə olunmursa `LAB_DRIVER=off` və `docker-compose.yml`-də API-yə
+  `/var/run/docker.sock` bağlantısını çıxarın — socket API-yə host üzərində tam səlahiyyət verir.
+- **Monitorinq:** `GET /api/health` baza əlçatmaz olanda 503 qaytarır.
+- **Bir nüsxə:** akademiya bildiriş işçisi hər API nüsxəsində işləyir; bir neçə nüsxədə birindən başqa hamısında
+  `ACADEMY_WORKER_INTERVAL_SEC=0`.
+- **Seed admin:** ilk girişdən sonra parolu dəyişin; `SEED_*` dəyərlərini `.env`-dən silə bilərsiniz.
+
 ## Test hesabları (seed)
 
 Hesablar koda yazılmır — `.env`-dəki dəyişənlərdən yaradılır (`.env.example`-da adları boşdur):

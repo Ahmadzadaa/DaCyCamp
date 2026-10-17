@@ -159,6 +159,37 @@ describe('admin content', () => {
     ).toBe(409);
   });
 
+  it('fayl yükləmə: HTML / JS / SVG brauzerdə yerində açılmır (saxlanılmış XSS qorunması)', async () => {
+    const up = (name: string, body: string, contentType: string) =>
+      ins
+        .post(`/admin/courses/${courseId}/assets`)
+        .attach('file', Buffer.from(body), { filename: name, contentType });
+    const html = await up('evil.html', '<script>alert(1)</script>', 'text/html');
+    const js = await up('evil.js', 'alert(1)', 'application/javascript');
+    const svg = await up('pic.svg', '<svg xmlns="http://www.w3.org/2000/svg"/>', 'image/svg+xml');
+    const png = await up('ok.png', 'png', 'image/png');
+    for (const [r, name] of [
+      [html, 'evil.html'],
+      [js, 'evil.js'],
+    ] as const) {
+      const g = await ins.get(`/assets/${r.body.id}/${name}`);
+      expect(g.status).toBe(200);
+      expect(g.headers['content-type']).toMatch(/^application\/octet-stream/);
+      expect(g.headers['content-disposition']).toMatch(/^attachment/);
+      expect(g.headers['content-security-policy']).toContain('sandbox');
+    }
+    // SVG <img> içində işləyir (tipi qalır), birbaşa açılanda isə endirilir və sandbox-dadır
+    const s = await ins.get(`/assets/${svg.body.id}/pic.svg`);
+    expect(s.headers['content-type']).toMatch(/^image\/svg\+xml/);
+    expect(s.headers['content-disposition']).toMatch(/^attachment/);
+    expect(s.headers['content-security-policy']).toContain('sandbox');
+    // təhlükəsiz şəkil yerində açılır
+    const p = await ins.get(`/assets/${png.body.id}/ok.png`);
+    expect(p.headers['content-type']).toMatch(/^image\/png/);
+    expect(p.headers['content-disposition']).toBeUndefined();
+    expect(p.headers['x-content-type-options']).toBe('nosniff');
+  });
+
   it('dərc olunan kurs kataloqda görünür, dərc olunmamış addımlar sayılmır', async () => {
     await ins.patch(`/admin/courses/${courseId}/publish`).send({ isPublished: true });
     await ins.patch(`/admin/modules/${moduleId}`).send({ isPublished: true });

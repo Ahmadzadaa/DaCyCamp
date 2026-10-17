@@ -1746,6 +1746,7 @@ export const az = {
     MODULE_HAS_PROGRESS: 'Bu fəsildə tələbə irəliləyişi var',
     STEP_HAS_PROGRESS: 'Bu addımda tələbə irəliləyişi var',
     PUBLISH_ISSUES: 'Dərc etmək üçün səhvləri düzəldin',
+    PYTHON_EMPTY_CODE: 'Kod boşdur — həlli yazıb yenidən yoxlayın',
     ASSET_PATH_EXISTS: 'Bu adda fayl artıq var',
     ASSET_IN_USE: 'Bu fayl addımlarda istifadə olunur',
     FILE_TOO_LARGE: 'Fayl çox böyükdür',

@@ -74,6 +74,30 @@ const schema = z.object({
   ACADEMY_MAX_FILE_MB: z.coerce.number().int().min(1).max(200).default(20),
 });
 
+/** `.env.example`-dakı açıq (repo-da hamıya görünən) dəyərlər */
+const EXAMPLE_SECRETS = new Set([
+  'deyisin-access-gizli-acar',
+  'deyisin-refresh-gizli-acar',
+  'deyisin-ctf-pepper',
+]);
+
+/**
+ * Production-da zəif açarlar: nümunə dəyər, 32 simvoldan qısa və ya access = refresh.
+ * Bu açarlarla istənilən istifadəçinin (admin daxil) token-i saxtalaşdırıla bilər.
+ */
+export function productionSecretProblems(
+  e: Pick<z.infer<typeof schema>, 'JWT_ACCESS_SECRET' | 'JWT_REFRESH_SECRET' | 'CTF_PEPPER'>,
+): string[] {
+  const out: string[] = [];
+  for (const k of ['JWT_ACCESS_SECRET', 'JWT_REFRESH_SECRET', 'CTF_PEPPER'] as const) {
+    if (EXAMPLE_SECRETS.has(e[k])) out.push(`${k}: .env.example-dakı nümunə dəyərdir`);
+    else if (e[k].length < 32) out.push(`${k}: ən azı 32 simvol olmalıdır`);
+  }
+  if (e.JWT_ACCESS_SECRET === e.JWT_REFRESH_SECRET)
+    out.push('JWT_REFRESH_SECRET: JWT_ACCESS_SECRET ilə eyni olmamalıdır');
+  return out;
+}
+
 const parsed = schema.safeParse(process.env);
 if (!parsed.success) {
   console.error(
@@ -81,6 +105,17 @@ if (!parsed.success) {
     parsed.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join('; '),
   );
   process.exit(1);
+}
+if (parsed.data.NODE_ENV === 'production') {
+  const problems = productionSecretProblems(parsed.data);
+  if (problems.length) {
+    console.error(
+      `❌ Production üçün təhlükəsiz olmayan açarlar (yaratmaq üçün: openssl rand -hex 32): ${problems.join('; ')}`,
+    );
+    process.exit(1);
+  }
+  if (!parsed.data.COOKIE_SECURE)
+    console.warn('⚠️ COOKIE_SECURE=false — sayt HTTPS ilə işləyirsə true edin');
 }
 export const env = parsed.data;
 /** STORAGE_DIR nisbi verilibsə — monorepo kökünə görə */

@@ -13,14 +13,17 @@
   --paper: #f2f2f7;
   --card: #ffffff;
   --ink: #1c1c1e;
-  --muted: #6e6e73;
+  /* #6e6e73 açıq boz fonda (#ebebee) 4.26:1 idi — WCAG AA 4.5:1 tələb edir */
+  --muted: #636366;
   --line: rgba(60, 60, 67, 0.13);
   --soft: rgba(118, 118, 128, 0.12);
   --soft-hover: rgba(118, 118, 128, 0.2);
   --brand: #22c79a;
   --brand-hover: #1cb489;
-  --brand-ink: #ffffff;
-  --ok-ink: #16a37c;
+  /* yaşıl (#22c79a) üzərində ağ mətn 2.16:1 idi — tünd mətn 7.3:1 (qaranlıq rejimdəki kimi) */
+  --brand-ink: #04281d;
+  /* uğur mətni: #16a37c açıq fonda 2.87:1 idi — #0b7558 ≥4.95:1 */
+  --ok-ink: #0b7558;
   --navy: #1c1c1e;
   --navy-2: #111113;
   --navy-3: #2c2c2e;
@@ -116,6 +119,8 @@
   }
   [data-ui='ios'] .sb-sec {
     color: var(--muted);
+    /* globals.css-dəki 0.85 şəffaflıq mətni 3.66:1-ə endirirdi (AA 4.5:1) */
+    opacity: 1;
     font-size: 0.7rem;
     letter-spacing: 0.06em;
   }
@@ -153,7 +158,8 @@
   }
   [data-ui='ios'] .new {
     background: color-mix(in srgb, var(--brand) 16%, transparent);
-    color: var(--ok-ink);
+    /* kiçik (9.6px) nişan: açıq rejimdə bir az tünd, qaranlıqda bir az açıq — hər ikisində ≥4.5:1 */
+    color: color-mix(in srgb, var(--ok-ink) 85%, var(--ink));
     letter-spacing: 0.04em;
   }
   [data-ui='ios'] .goal {
@@ -298,7 +304,8 @@
       opacity 0.2s;
   }
   [data-ui='ios'] .b-brand {
-    color: #fff;
+    /* ağ mətn yaşıl üzərində 2.16:1 idi (WCAG AA 4.5:1) — tünd mətn 7.3:1 */
+    color: var(--brand-ink);
     box-shadow: 0 6px 16px -8px color-mix(in srgb, var(--brand) 80%, transparent);
   }
   [data-ui='ios'] .b-ghost {

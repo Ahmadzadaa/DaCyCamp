@@ -13,7 +13,7 @@ export function Logo({
   return (
     <Link href={href} className={cn('logo', className)} aria-label="DaCy Academy">
       <i>Dc</i>
-      {text}
+      {text ? <span className="logo-t">{text}</span> : null}
     </Link>
   );
 }

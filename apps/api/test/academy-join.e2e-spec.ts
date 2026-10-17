@@ -140,6 +140,8 @@ describe('Academy join codes and teacher accounts (e2e)', () => {
     const sum = await a.get('/me/summary');
     expect(sum.body.academy).toMatchObject({ student: false, instructor: false, admin: false });
     expect((await a.get(`/academy/groups/${ids.de2}`)).status).toBe(403);
+    // müəllim paneli müəllim olmayana açılmır (əvvəl boş panel göstərilirdi)
+    expect((await a.get('/academy/instructor/overview')).status).toBe(403);
   });
 
   it('daxil olmuş Camp istifadəçisi sonra kodla qoşulur; ikinci dəfə — artıq qrupdasınız', async () => {

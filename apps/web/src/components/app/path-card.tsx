@@ -48,7 +48,14 @@ export function PathCard({ path: p, levels }: { path: PathCardDto; levels?: Leve
       {p.description ? <p>{p.description}</p> : null}
       <div className="path-parts">{parts.join(' · ')}</div>
       {pct !== null && !p.completedAt ? (
-        <div className="prog" aria-label={t('common.percent', { n: pct })}>
+        <div
+          className="prog"
+          role="progressbar"
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={pct}
+          aria-label={t('common.percent', { n: pct })}
+        >
           <i style={{ width: `${pct}%` }} />
         </div>
       ) : null}

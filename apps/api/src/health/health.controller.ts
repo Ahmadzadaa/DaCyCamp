@@ -1,4 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, ServiceUnavailableException } from '@nestjs/common';
 import { Public } from '../common/decorators';
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -15,6 +15,9 @@ export class HealthController {
     } catch {
       db = false;
     }
-    return { ok: db, db, time: new Date().toISOString() };
+    const body = { ok: db, db, time: new Date().toISOString() };
+    // baza əlçatmazdırsa 503: monitorinq / yük balanslaşdırıcı serveri «sağlam» saymasın
+    if (!db) throw new ServiceUnavailableException(body);
+    return body;
   }
 }

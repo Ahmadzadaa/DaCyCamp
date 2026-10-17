@@ -13,7 +13,7 @@ import {
 } from '@dacy/shared';
 import { PrismaService } from '../../prisma/prisma.service';
 import type { AuthUser } from '../../common/decorators';
-import { AcademyAccessService } from '../access/academy-access.service';
+import { AcademyAccessService, academyForbidden } from '../access/academy-access.service';
 import { STUDENT_VISIBLE } from '../assignments/assignments.service';
 
 type GradeLite = {
@@ -168,6 +168,8 @@ export class AcademyAnalyticsService {
   /** Müəllim paneli: müəllimin aktiv qrupları (admin — arxivlənməmiş bütün qruplar) */
   async instructorOverview(user: AuthUser): Promise<AcademyInstructorOverviewDto> {
     const ids = await this.access.instructorGroupIds(user);
+    // müəllim paneli yalnız admin, qrupa təyin olunmuş müəllim və ya akademiya müəllimi hesabı üçündür
+    if (ids !== null && ids.length === 0 && user.role !== 'TEACHER') throw academyForbidden();
     const groups = await this.prisma.academyGroup.findMany({
       where: ids === null ? { status: { notIn: ['ARCHIVED', 'CANCELLED'] } } : { id: { in: ids } },
       include: {

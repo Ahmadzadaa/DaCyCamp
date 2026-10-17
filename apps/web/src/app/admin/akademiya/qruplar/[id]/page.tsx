@@ -48,7 +48,7 @@ export default async function AdminGroupPage({ params }: { params: Promise<{ id:
         </Link>
       </PageHeader>
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_420px]">
-        <section className="box" aria-labelledby="ae">
+        <section className="box min-w-0" aria-labelledby="ae">
           <h2 id="ae" className="box-h">
             {t('academy.admin.enrollments')}
           </h2>

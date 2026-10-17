@@ -1766,6 +1766,7 @@ export const en: Dictionary = {
     MODULE_HAS_PROGRESS: 'Students have progress in this chapter',
     STEP_HAS_PROGRESS: 'Students have progress in this step',
     PUBLISH_ISSUES: 'Fix the errors before publishing',
+    PYTHON_EMPTY_CODE: 'The code is empty — write your solution and check again',
     ASSET_PATH_EXISTS: 'A file with this name already exists',
     ASSET_IN_USE: 'This file is used in steps',
     FILE_TOO_LARGE: 'The file is too large',

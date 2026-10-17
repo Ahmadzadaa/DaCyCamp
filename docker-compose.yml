@@ -11,7 +11,8 @@ services:
       POSTGRES_PASSWORD: dacy
       POSTGRES_DB: dacy
     ports:
-      - '${DB_PORT:-5432}:5432'
+      # yalnız bu kompüterdən (127.0.0.1): VPS-də baza internetə açılmasın (parol sadədir)
+      - '127.0.0.1:${DB_PORT:-5432}:5432'
     volumes:
       - dacy_pgdata:/var/lib/postgresql/data
       - ./infra/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro

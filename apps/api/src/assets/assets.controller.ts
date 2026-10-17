@@ -34,6 +34,13 @@ const uploadBody = z.object({
 const listQuery = z.object({ kind: z.enum(ASSET_KINDS).optional() });
 const replaceQuery = z.object({ replace: z.enum(['1', 'true']).optional() });
 
+/** Brauzerin yerində açmasına icazə verilən növlər (skript işlədə bilməz) */
+const INLINE_SAFE =
+  /^(image\/(png|jpe?g|gif|webp|avif)|video\/[\w.+-]+|audio\/[\w.+-]+|application\/pdf)$/;
+/** Skript işlədə bilən növlər — öz tipi ilə heç vaxt verilmir (saxlanılmış XSS) */
+const ACTIVE_TYPES =
+  /^(text\/html|application\/xhtml\+xml|text\/javascript|application\/(x-)?javascript|application\/ecmascript|text\/xml|application\/xml)$/;
+
 @Controller()
 export class AssetsController {
   constructor(
@@ -144,7 +151,20 @@ export class AssetsController {
       if (!enrolled) throw forbidden('NOT_ENROLLED', 'Əvvəlcə kursa yazılın');
     }
     res.setHeader('Cache-Control', isCover ? 'public, max-age=3600' : 'private, max-age=300');
-    res.type(a.mime);
+    // Fayllar saytla eyni ünvandan (/api/assets) verilir: yüklənmiş HTML/SVG/JS yerində açılsa, açan
+    // istifadəçinin sessiyası ilə skript işləyərdi. Təhlükəsiz növlər yerində, qalanı endirmə kimi.
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    const mime = (a.mime || 'application/octet-stream').toLowerCase().split(';')[0]!.trim();
+    if (INLINE_SAFE.test(mime)) {
+      res.type(mime);
+    } else {
+      res.attachment(a.filename);
+      res.type(ACTIVE_TYPES.test(mime) ? 'application/octet-stream' : mime);
+      res.setHeader(
+        'Content-Security-Policy',
+        "default-src 'none'; style-src 'unsafe-inline'; sandbox",
+      );
+    }
     res.sendFile(storagePath(a.storageKey), (err) => {
       if (err && !res.headersSent)
         res.status(404).json({ code: 'NOT_FOUND', message: 'Fayl tapılmadı', statusCode: 404 });

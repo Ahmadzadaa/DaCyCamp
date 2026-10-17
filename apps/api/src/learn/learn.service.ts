@@ -459,6 +459,10 @@ export class LearnService {
     const step = await this.loadStep(stepId);
     if (step.type !== 'PYTHON') throw badRequest('WRONG_STEP_TYPE');
     await this.assertUnlocked(userId, step.id, preview);
+    // Nəticəni brauzer (Pyodide) bildirir — server yoxlaya bilmir. Ən azı boş kodla «keçdi» (saxta sorğu)
+    // qəbul olunmur; tam həll serverdə izolə edilmiş icradır (docs: SECURITY).
+    if (input.passed && !input.code.trim())
+      throw unprocessable('PYTHON_EMPTY_CODE', 'Kod boşdur — həlli yazıb yenidən yoxlayın');
     const passed = input.passed;
     const reason = passed ? undefined : 'error';
     if (preview)
