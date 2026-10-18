@@ -46,7 +46,8 @@ const schema = z.object({
   SEED_STUDENT_PASSWORD: optionalStr,
   APP_TIMEZONE: z.string().default('Asia/Baku'),
   // Mərhələ 3 — terminal lab-ları
-  LAB_DRIVER: z.enum(['docker', 'mock', 'off']).default('docker'),
+  // lab-lar defolt söndürülüb: docker driver host Docker socket-i tələb edir (SEC-06)
+  LAB_DRIVER: z.enum(['docker', 'mock', 'off']).default('off'),
   DOCKER_SOCKET: z.string().optional(),
   LAB_MAX_SESSIONS: z.coerce.number().int().min(1).default(20),
   LAB_MEMORY_MB: z.coerce.number().int().min(64).default(512),

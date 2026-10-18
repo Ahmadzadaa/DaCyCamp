@@ -570,21 +570,32 @@ model ActivityDay {
 
 /// Phase 3. id is the public verification id (/sertifikat/[id]); snapshot freezes names so deletion of the course never breaks the page.
 model Certificate {
-  id        String    @id @default(uuid())
+  id           String                  @id @default(uuid())
   /// ardıcıl nömrə → serial (DACY-C-2026-000001)
-  seq       Int       @unique @default(autoincrement())
-  serial    String    @unique // DACY-C-2026-000001
-  userId    String
-  courseId  String?
+  seq          Int                     @unique @default(autoincrement())
+  serial       String                  @unique // DACY-C-2026-000001
+  userId       String
+  courseId     String?
   /// { studentName, courseTitle, trackTitle, trackColor, hours, xp }
-  snapshot  Json
-  issuedAt  DateTime  @default(now())
-  revokedAt DateTime?
+  snapshot     Json
+  issuedAt     DateTime                @default(now())
+  revokedAt    DateTime?
+  /// PENDING — kurs brauzerdə yoxlanılan (CLIENT_ATTESTED) Python addımlarına əsaslanır, admin təsdiqi gözləyir
+  reviewStatus CertificateReviewStatus @default(APPROVED)
+  reviewedAt   DateTime?
+  reviewedById String?
 
   user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   course Course? @relation(fields: [courseId], references: [id], onDelete: SetNull)
 
   @@unique([userId, courseId])
+  @@index([reviewStatus])
+}
+
+/// Sertifikatın etibarlılıq yoxlaması (SEC-04): brauzerin bildirdiyi nəticəyə əsaslananlar təsdiqə qədər PENDING
+enum CertificateReviewStatus {
+  PENDING
+  APPROVED
 }
 
 /// Phase 3 terminal labs: one isolated container per student per step.
@@ -712,21 +723,26 @@ model PathItemProgress {
 }
 
 model PathCertificate {
-  id        String    @id @default(uuid())
+  id           String                  @id @default(uuid())
   /// ardıcıl nömrə → serial (DACY-P-2026-000001)
-  seq       Int       @unique @default(autoincrement())
-  serial    String    @unique // DACY-P-2026-000001
-  userId    String
-  pathId    String?
+  seq          Int                     @unique @default(autoincrement())
+  serial       String                  @unique // DACY-P-2026-000001
+  userId       String
+  pathId       String?
   /// { studentName, pathTitle, trackTitle, trackColor, hours }
-  snapshot  Json
-  issuedAt  DateTime  @default(now())
-  revokedAt DateTime?
+  snapshot     Json
+  issuedAt     DateTime                @default(now())
+  revokedAt    DateTime?
+  /// PENDING — yoldakı kurslarda brauzerdə yoxlanılan Python addımları var, admin təsdiqi gözləyir
+  reviewStatus CertificateReviewStatus @default(APPROVED)
+  reviewedAt   DateTime?
+  reviewedById String?
 
   user User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   path LearningPath? @relation(fields: [pathId], references: [id], onDelete: SetNull)
 
   @@unique([userId, pathId])
+  @@index([reviewStatus])
 }
 
 /// Karyera xəritəsi: peşə → səviyyələr → bacarıq qrupları → bacarıqlar (content JSON, shared roadmapContentSchema).

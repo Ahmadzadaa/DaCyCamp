@@ -46,7 +46,7 @@ export default async function ProfilePage() {
           </div>
           <Link href="/sertifikatlar">
             <Award aria-hidden />
-            <b>{certs.filter((c) => !c.revokedAt).length}</b>
+            <b>{certs.filter((c) => !c.revokedAt && c.reviewStatus !== 'PENDING').length}</b>
             <span>{t('profile.certificates')}</span>
           </Link>
         </div>

@@ -36,11 +36,14 @@ export function SubmissionsTable({
   async function releaseAll() {
     setBusy(true);
     try {
-      const r = await api<{ released: number }>(
+      const r = await api<{ released: number; skipped: Array<{ reason: string }> }>(
         `/academy/assignments/${assignmentId}/grades/release`,
         { method: 'POST' },
       );
       toast.success(t('academy.teacher.releasedN', { n: r.released }));
+      // brauzerdə yoxlanılan Python ballı qaralamalar toplu açıqlanmır (SEC-04)
+      const review = r.skipped.filter((x) => x.reason === 'ACADEMY_GRADE_NEEDS_REVIEW').length;
+      if (review) toast.warning(t('academy.teacher.needsCodeReview', { n: review }));
       router.refresh();
     } catch (e) {
       toast.error(errorMessage(e));

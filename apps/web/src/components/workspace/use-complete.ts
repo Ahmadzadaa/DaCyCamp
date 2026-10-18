@@ -11,7 +11,7 @@ export function useAfterComplete(courseSlug: string) {
       toast(`🎉 ${t('ws.correct')}`, { description: t('ws.earned', { n: r.xpAwarded }) });
     if (r.courseCompleted && !preview) toast(`🏆 ${t('ws.courseDone')}`);
     if (r.certificateId && !preview)
-      toast(`🏅 ${t('cert.earned')}`, {
+      toast(`🏅 ${r.certificatePending ? t('cert.pendingEarned') : t('cert.earned')}`, {
         action: {
           label: t('cert.open'),
           onClick: () => router.push(`/sertifikat/${r.certificateId}`),

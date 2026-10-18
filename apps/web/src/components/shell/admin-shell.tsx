@@ -53,7 +53,11 @@ export function AdminShell({
           <Sidebar
             nav="admin"
             isAdmin={isAdmin}
-            counts={{ reviews: summary?.pendingReviews ?? 0, support: summary?.openSupport ?? 0 }}
+            counts={{
+              reviews: summary?.pendingReviews ?? 0,
+              support: summary?.openSupport ?? 0,
+              certificates: summary?.pendingCertificates ?? 0,
+            }}
             academy={summary?.academy ?? null}
             label="Admin menyu"
             footer={

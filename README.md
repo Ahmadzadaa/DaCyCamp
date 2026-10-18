@@ -69,8 +69,10 @@ docker compose --profile full up --build
   Gündəlik ehtiyat nüsxə: `pg_dump --format=custom "$DATABASE_URL" > dacy-$(date +%F).dump` (cron) və
   `STORAGE_DIR` (yüklənmiş fayllar) qovluğunun nüsxəsi. Bərpanı ən azı bir dəfə sınayın.
 - **Miqrasiyalar:** `pnpm db:deploy` (yalnız `migrate deploy`; `migrate dev` / `db:reset` production-da yox).
-- **Terminal lab-ları:** istifadə olunmursa `LAB_DRIVER=off` və `docker-compose.yml`-də API-yə
-  `/var/run/docker.sock` bağlantısını çıxarın — socket API-yə host üzərində tam səlahiyyət verir.
+- **Terminal lab-ları:** defolt olaraq söndürülüb (`LAB_DRIVER=off`, API konteynerinə Docker socket verilmir).
+  Lab-lar lazım olsa: `docker compose -f docker-compose.yml -f docker-compose.labs.yml --profile full up` —
+  bu, API-yə host üzərində tam səlahiyyət verir; yalnız ayrıca, izolə edilmiş serverdə. Lab-lar söndürülü olanda
+  terminal addımı olan kurslar (hazırda yalnız `numune`) tamamlana bilməz — həmin addımları dərcdən çıxarın.
 - **Monitorinq:** `GET /api/health` baza əlçatmaz olanda 503 qaytarır.
 - **Bir nüsxə:** akademiya bildiriş işçisi hər API nüsxəsində işləyir; bir neçə nüsxədə birindən başqa hamısında
   `ACADEMY_WORKER_INTERVAL_SEC=0`.
@@ -135,7 +137,7 @@ Tələbə kodu **heç vaxt serverdə işləmir** — hər şey brauzerdədir:
 
 **Terminal lab** (`type: terminal`): hər tələbə üçün `docker_image`-dən ayrıca, məhdudlaşdırılmış konteyner açılır (yaddaş/CPU/pid limiti, defolt şəbəkəsiz, `no-new-privileges`), brauzerdə **xterm.js** terminalı WebSocket ilə konteynerin qabığına bağlanır, vaxt limiti bitəndə konteyner silinir. «Yoxla» düyməsi addımın `check_script`-ini konteynerdə `sh /dacy/check.sh` kimi işlədir — **exit 0 = keçdi**, addım tamamlanır və XP verilir. «Lab-ı sıfırla» konteyneri yenidən yaradır. CTF addımında `docker_image` verilsə, otaqda «Terminal» tabı açılır (yoxlamasız mühit).
 
-- API Docker daemon-a `/var/run/docker.sock` (və ya `DOCKER_HOST`) ilə qoşulur; `docker compose --profile full` soketi montaj edir. Docker olmayan serverdə `LAB_DRIVER=mock` virtual qabıq verir (yalnız test/nümayiş), `LAB_DRIVER=off` lab-ları söndürür.
+- `LAB_DRIVER=docker` olanda API Docker daemon-a `/var/run/docker.sock` (və ya `DOCKER_HOST`) ilə qoşulur; socket yalnız `docker-compose.labs.yml` əlavə edildikdə montaj olunur (defolt söndürülüb). Docker olmayan serverdə `LAB_DRIVER=mock` virtual qabıq verir (yalnız test/nümayiş), `LAB_DRIVER=off` lab-ları söndürür.
 - `.env`: `LAB_MAX_SESSIONS`, `LAB_MEMORY_MB`, `LAB_CPUS`, `LAB_PIDS_LIMIT`, `LAB_PULL`, `LAB_CHECK_TIMEOUT_SEC`; brauzer üçün `NEXT_PUBLIC_LAB_WS_URL` (defolt: eyni host, API portu, `/labs/ws` — Next proksisi WebSocket ötürmür, ona görə API portu brauzerdən əlçatan olmalıdır; Codespaces/əks-proksi arxasında bu dəyişəni verin).
 - Lab imicləri və yoxlama skriptləri: `infra/lab-images/README.md`. Nümunə imic: `pnpm lab:images`.
 - Vaxtı bitən sessiyalar və yetim konteynerlər hər 30 saniyədə təmizlənir; `/admin/lablar` aktiv sessiyaları göstərir və dayandırır.

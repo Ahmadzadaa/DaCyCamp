@@ -2,10 +2,16 @@ import { randomUUID } from 'node:crypto';
 import { Injectable } from '@nestjs/common';
 import type { Certificate, PathCertificate, Prisma } from '@prisma/client';
 import QRCode from 'qrcode';
-import type { CertificateDto, CertificateSummaryDto } from '@dacy/shared';
+import type {
+  AdminPendingCertificateDto,
+  CertificateDto,
+  CertificateEvidenceDto,
+  CertificateReviewStatus,
+  CertificateSummaryDto,
+} from '@dacy/shared';
 import { env } from '../config/env';
 import { PrismaService } from '../prisma/prisma.service';
-import { notFound } from '../common/errors';
+import { conflict, notFound } from '../common/errors';
 import { renderCertificatePdf } from './certificate-pdf';
 import { reqLocale, withRawContent } from '../common/i18n/request-locale';
 
@@ -47,6 +53,8 @@ interface AnyCert {
   snapshot: CertificateSnapshot;
   issuedAt: Date;
   revokedAt: Date | null;
+  reviewStatus: CertificateReviewStatus;
+  userId: string;
 }
 
 export const verifyUrlOf = (id: string) =>
@@ -59,6 +67,8 @@ const fromCourse = (c: Certificate): AnyCert => ({
   snapshot: localSnapshot(c.snapshot as unknown as CertificateSnapshot),
   issuedAt: c.issuedAt,
   revokedAt: c.revokedAt,
+  reviewStatus: c.reviewStatus,
+  userId: c.userId,
 });
 const fromPath = (c: PathCertificate): AnyCert => ({
   kind: 'path',
@@ -67,6 +77,8 @@ const fromPath = (c: PathCertificate): AnyCert => ({
   snapshot: localSnapshot(c.snapshot as unknown as CertificateSnapshot),
   issuedAt: c.issuedAt,
   revokedAt: c.revokedAt,
+  reviewStatus: c.reviewStatus,
+  userId: c.userId,
 });
 
 function summary(c: AnyCert): CertificateSummaryDto {
@@ -80,7 +92,20 @@ function summary(c: AnyCert): CertificateSummaryDto {
     trackColor: c.snapshot.trackColor,
     issuedAt: c.issuedAt.toISOString(),
     revokedAt: c.revokedAt?.toISOString() ?? null,
+    reviewStatus: c.reviewStatus,
   };
+}
+
+/**
+ * SEC-04: Python addımlarının nəticəsini brauzer bildirir (CLIENT_ATTESTED) — server yoxlaya bilmir. Belə addımı olan
+ * kursun (və ya belə kursu olan yolun) sertifikatı avtomatik etibarlı sayılmır: admin kodu yoxlayıb təsdiqləyənə qədər
+ * PENDING qalır. Test, SQL (nəticə serverdə müqayisə olunur), CTF və nəzəri dərslər bu qaydaya düşmür.
+ */
+async function pythonStepCount(tx: Tx, courseIds: string[]): Promise<number> {
+  if (!courseIds.length) return 0;
+  return tx.step.count({
+    where: { type: 'PYTHON', isPublished: true, module: { courseId: { in: courseIds } } },
+  });
 }
 export const toCertificateSummary = (c: Certificate) => summary(fromCourse(c));
 export const toPathCertificateSummary = (c: PathCertificate) => summary(fromPath(c));
@@ -123,12 +148,15 @@ export class CertificatesService {
       xp,
       i18n: { en: { courseTitle: enTitle(course.i18n), trackTitle: enTitle(course.track.i18n) } },
     };
+    const reviewStatus: CertificateReviewStatus =
+      (await pythonStepCount(tx, [courseId])) > 0 ? 'PENDING' : 'APPROVED';
     const created = await tx.certificate.create({
       data: {
         userId,
         courseId,
         serial: `tmp-${randomUUID()}`,
         snapshot: snapshot as unknown as Prisma.InputJsonObject,
+        reviewStatus,
       },
     });
     const serial = `DACY-C-${created.issuedAt.getFullYear()}-${String(created.seq).padStart(6, '0')}`;
@@ -156,6 +184,7 @@ export class CertificatesService {
             xp: true,
             type: true,
             config: true,
+            courseId: true,
             course: { select: { estimatedHours: true } },
             estimatedHours: true,
           },
@@ -185,12 +214,16 @@ export class CertificatesService {
         },
       },
     };
+    const courseIds = path.items.flatMap((i) => (i.courseId ? [i.courseId] : []));
+    const reviewStatus: CertificateReviewStatus =
+      (await pythonStepCount(tx, courseIds)) > 0 ? 'PENDING' : 'APPROVED';
     const created = await tx.pathCertificate.create({
       data: {
         userId,
         pathId,
         serial: `tmp-${randomUUID()}`,
         snapshot: snapshot as unknown as Prisma.InputJsonObject,
+        reviewStatus,
       },
     });
     const serial = `DACY-P-${created.issuedAt.getFullYear()}-${String(created.seq).padStart(6, '0')}`;
@@ -230,6 +263,9 @@ export class CertificatesService {
 
   async pdf(id: string): Promise<{ buffer: Buffer; filename: string }> {
     const c = await this.find(id);
+    // təsdiqlənməmiş sertifikat sənəd kimi paylanmır (yoxlama səhifəsi statusu göstərir)
+    if (c.reviewStatus === 'PENDING')
+      throw conflict('CERT_PENDING_REVIEW', 'Sertifikat hələ təsdiq gözləyir');
     const buffer = await renderCertificatePdf({
       ...c.snapshot,
       kind: c.kind,
@@ -256,6 +292,109 @@ export class CertificatesService {
               data: { revokedAt: now },
             }),
           );
+    return summary(updated);
+  }
+
+  // ───────────────────────── admin: təsdiq (SEC-04)
+
+  async pending(): Promise<AdminPendingCertificateDto[]> {
+    const student = { select: { id: true, name: true, email: true } };
+    const [a, b] = await Promise.all([
+      this.prisma.certificate.findMany({
+        where: { reviewStatus: 'PENDING', revokedAt: null },
+        include: { user: student },
+        orderBy: { issuedAt: 'asc' },
+      }),
+      this.prisma.pathCertificate.findMany({
+        where: { reviewStatus: 'PENDING', revokedAt: null },
+        include: { user: student, path: { select: { items: { select: { courseId: true } } } } },
+        orderBy: { issuedAt: 'asc' },
+      }),
+    ]);
+    const rows: AdminPendingCertificateDto[] = [];
+    for (const c of a)
+      rows.push({
+        id: c.id,
+        kind: 'course',
+        serial: c.serial,
+        title: (c.snapshot as unknown as CertificateSnapshot).courseTitle,
+        issuedAt: c.issuedAt.toISOString(),
+        student: c.user,
+        pythonSteps: await pythonStepCount(this.prisma, c.courseId ? [c.courseId] : []),
+      });
+    for (const c of b)
+      rows.push({
+        id: c.id,
+        kind: 'path',
+        serial: c.serial,
+        title: (c.snapshot as unknown as CertificateSnapshot).courseTitle,
+        issuedAt: c.issuedAt.toISOString(),
+        student: c.user,
+        pythonSteps: await pythonStepCount(
+          this.prisma,
+          (c.path?.items ?? []).flatMap((i) => (i.courseId ? [i.courseId] : [])),
+        ),
+      });
+    return rows.sort((x, y) => x.issuedAt.localeCompare(y.issuedAt));
+  }
+
+  /** Təsdiq üçün sübut: hər dərc olunmuş Python addımında tələbənin son KEÇƏN göndərişinin kodu */
+  async evidence(id: string): Promise<CertificateEvidenceDto> {
+    const c = await this.find(id);
+    let courseIds: string[] = [];
+    if (c.kind === 'course') {
+      const row = await this.prisma.certificate.findUniqueOrThrow({ where: { id: c.id } });
+      courseIds = row.courseId ? [row.courseId] : [];
+    } else {
+      const row = await this.prisma.pathCertificate.findUniqueOrThrow({
+        where: { id: c.id },
+        include: { path: { select: { items: { select: { courseId: true } } } } },
+      });
+      courseIds = (row.path?.items ?? []).flatMap((i) => (i.courseId ? [i.courseId] : []));
+    }
+    const [user, steps] = await Promise.all([
+      this.prisma.user.findUniqueOrThrow({
+        where: { id: c.userId },
+        select: { id: true, name: true, email: true },
+      }),
+      this.prisma.step.findMany({
+        where: { type: 'PYTHON', isPublished: true, module: { courseId: { in: courseIds } } },
+        include: { module: { select: { order: true, course: { select: { title: true } } } } },
+        orderBy: [{ module: { order: 'asc' } }, { order: 'asc' }],
+      }),
+    ]);
+    const subs = steps.length
+      ? await this.prisma.submission.findMany({
+          where: { userId: c.userId, stepId: { in: steps.map((s) => s.id) }, passed: true },
+          orderBy: { createdAt: 'desc' },
+          select: { stepId: true, createdAt: true, payload: true },
+        })
+      : [];
+    return {
+      id: c.id,
+      title: c.snapshot.courseTitle,
+      student: user,
+      items: steps.map((s) => {
+        const sub = subs.find((x) => x.stepId === s.id);
+        return {
+          courseTitle: s.module.course.title,
+          stepTitle: s.title,
+          passedAt: sub?.createdAt.toISOString() ?? null,
+          code: sub ? ((sub.payload as { code?: string } | null)?.code ?? null) : null,
+        };
+      }),
+    };
+  }
+
+  async approve(id: string, adminId: string): Promise<CertificateSummaryDto> {
+    const c = await this.find(id);
+    if (c.reviewStatus !== 'PENDING')
+      throw conflict('CERT_NOT_PENDING', 'Sertifikat təsdiq gözləmir');
+    const data = { reviewStatus: 'APPROVED' as const, reviewedAt: new Date(), reviewedById: adminId };
+    const updated =
+      c.kind === 'course'
+        ? fromCourse(await this.prisma.certificate.update({ where: { id: c.id }, data }))
+        : fromPath(await this.prisma.pathCertificate.update({ where: { id: c.id }, data }));
     return summary(updated);
   }
 

@@ -58,9 +58,22 @@ export default async function CertificatesPage() {
                 <span className="cert-mini-ic">
                   {c.kind === 'path' ? <Route aria-hidden /> : <Award aria-hidden />}
                 </span>
-                <span className={cn('badge', c.revokedAt ? 'badge-err' : 'badge-ok')}>
+                <span
+                  className={cn(
+                    'badge',
+                    c.revokedAt
+                      ? 'badge-err'
+                      : c.reviewStatus === 'PENDING'
+                        ? 'badge-warn'
+                        : 'badge-ok',
+                  )}
+                >
                   <span className="bdot" aria-hidden />
-                  {c.revokedAt ? t('cert.revoked') : t('cert.valid')}
+                  {c.revokedAt
+                    ? t('cert.revoked')
+                    : c.reviewStatus === 'PENDING'
+                      ? t('cert.pending')
+                      : t('cert.valid')}
                 </span>
               </div>
               <span className="eyebrow">

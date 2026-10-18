@@ -547,11 +547,26 @@ export class AcademyGradingService {
     if (!this.access.can(access, 'grade.release')) throw academyForbidden();
     const subs = await this.prisma.academySubmission.findMany({
       where: { assignmentId: assignment.id, grade: { status: 'DRAFT' } },
-      select: { id: true },
+      select: { id: true, grade: { select: { gradedById: true } } },
     });
+    // SEC-04: Python addımının nəticəsini brauzer bildirir (CLIENT_ATTESTED). Belə ballı avtomatik qaralama
+    // toplu açıqlanmır — müəllim hər tələbənin kodunu açıb ayrıca açıqlamalı (və ya özü qiymət yazmalıdır).
+    const clientAttested =
+      (await this.prisma.academyAssignmentItem.count({
+        where: {
+          assignmentId: assignment.id,
+          kind: 'LEARNING_STEP',
+          maxScoreCenti: { gt: 0 },
+          step: { type: 'PYTHON' },
+        },
+      })) > 0;
     let released = 0;
     const skipped: Array<{ submissionId: string; reason: string }> = [];
     for (const s of subs) {
+      if (clientAttested && !s.grade?.gradedById) {
+        skipped.push({ submissionId: s.id, reason: 'ACADEMY_GRADE_NEEDS_REVIEW' });
+        continue;
+      }
       try {
         await this.release(user, s.id);
         released++;

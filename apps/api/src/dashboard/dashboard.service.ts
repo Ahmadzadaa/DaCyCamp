@@ -78,6 +78,18 @@ export class DashboardService {
               where: { status: 'SUBMITTED' },
             }),
             openSupport: await this.prisma.supportTicket.count({ where: { status: 'OPEN' } }),
+            // SEC-04: təsdiq gözləyən sertifikatlar (təsdiq yalnız adminə açıqdır)
+            ...(user.role === 'ADMIN'
+              ? {
+                  pendingCertificates:
+                    (await this.prisma.certificate.count({
+                      where: { reviewStatus: 'PENDING', revokedAt: null },
+                    })) +
+                    (await this.prisma.pathCertificate.count({
+                      where: { reviewStatus: 'PENDING', revokedAt: null },
+                    })),
+                }
+              : {}),
           }
         : { supportUnread: await this.supportUnread(userId) }),
     };
@@ -152,8 +164,13 @@ export class DashboardService {
       this.streak(userId),
       this.week(userId),
       this.prisma.stepProgress.count({ where: { userId, status: 'COMPLETED' } }),
-      this.prisma.certificate.count({ where: { userId, revokedAt: null } }),
-      this.prisma.pathCertificate.count({ where: { userId, revokedAt: null } }),
+      // təsdiq gözləyənlər (SEC-04) hələ qazanılmış sayılmır
+      this.prisma.certificate.count({
+        where: { userId, revokedAt: null, reviewStatus: 'APPROVED' },
+      }),
+      this.prisma.pathCertificate.count({
+        where: { userId, revokedAt: null, reviewStatus: 'APPROVED' },
+      }),
       this.prisma.certificate.findMany({
         where: { userId },
         orderBy: { issuedAt: 'desc' },

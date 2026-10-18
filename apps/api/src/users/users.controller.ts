@@ -169,14 +169,17 @@ export class UsersController {
         title: (c.snapshot as Snap).courseTitle ?? c.serial,
         issuedAt: c.issuedAt.toISOString(),
         revokedAt: c.revokedAt?.toISOString() ?? null,
+        reviewStatus: c.reviewStatus,
       })),
       ...u.pathCertificates.map((c) => ({
         id: c.id,
         kind: 'path' as const,
         serial: c.serial,
-        title: (c.snapshot as Snap).pathTitle ?? c.serial,
+        // yol sertifikatının adı snapshot.courseTitle-dadır (pathTitle heç vaxt yazılmır)
+        title: (c.snapshot as Snap).courseTitle ?? (c.snapshot as Snap).pathTitle ?? c.serial,
         issuedAt: c.issuedAt.toISOString(),
         revokedAt: c.revokedAt?.toISOString() ?? null,
+        reviewStatus: c.reviewStatus,
       })),
     ].sort((a, b) => b.issuedAt.localeCompare(a.issuedAt));
     return {

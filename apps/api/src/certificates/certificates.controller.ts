@@ -34,6 +34,27 @@ export class CertificatesController {
     return this.certs.getPublic(id);
   }
 
+  /** SEC-04: brauzerdə yoxlanılan Python nəticələrinə əsaslanan, təsdiq gözləyən sertifikatlar */
+  @AdminOnly()
+  @Get('admin/certificates/pending')
+  pending() {
+    return this.certs.pending();
+  }
+
+  @AdminOnly()
+  @Get('admin/certificates/:id/evidence')
+  evidence(@Param('id') id: string) {
+    return this.certs.evidence(id);
+  }
+
+  @AdminOnly()
+  @Audit({ action: 'certificate.approve', entity: 'CERTIFICATE' })
+  @Post('admin/certificates/:id/approve')
+  @HttpCode(200)
+  approve(@Param('id') id: string, @CurrentUser() u: AuthUser) {
+    return this.certs.approve(id, u.id);
+  }
+
   @AdminOnly()
   @Audit({ action: 'certificate.revoke', entity: 'CERTIFICATE' })
   @Post('admin/certificates/:id/revoke')

@@ -1,0 +1,12 @@
+# İSTƏYƏ BAĞLI: server-də terminal lab-larını açır (defolt olaraq söndürülüb).
+#   docker compose -f docker-compose.yml -f docker-compose.labs.yml --profile full up --build
+#
+# DİQQƏT: bu fayl API konteynerinə host-un Docker socket-ini verir. API ələ keçsə, host üzərində
+# tam səlahiyyət deməkdir (SEC-06). Yalnız lab-lar həqiqətən lazım olanda və ayrıca, izolə edilmiş
+# serverdə istifadə edin.
+services:
+  api:
+    environment:
+      LAB_DRIVER: docker
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock

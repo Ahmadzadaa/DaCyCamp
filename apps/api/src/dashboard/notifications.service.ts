@@ -33,12 +33,13 @@ export class NotificationsService {
     const [certs, pathCerts, reviews, courses, enrolled, pending, replies, openTickets] =
       await Promise.all([
         this.prisma.certificate.findMany({
-          where: { userId, issuedAt: { gte: since } },
+          // təsdiq (SEC-04) sonradan gəlir — təsdiqlənmə anı da yeni bildirişdir
+          where: { userId, OR: [{ issuedAt: { gte: since } }, { reviewedAt: { gte: since } }] },
           orderBy: { issuedAt: 'desc' },
           take: MAX_ITEMS,
         }),
         this.prisma.pathCertificate.findMany({
-          where: { userId, issuedAt: { gte: since } },
+          where: { userId, OR: [{ issuedAt: { gte: since } }, { reviewedAt: { gte: since } }] },
           orderBy: { issuedAt: 'desc' },
           take: MAX_ITEMS,
         }),
@@ -92,21 +93,30 @@ export class NotificationsService {
     const items: Omit<NotificationDto, 'unread'>[] = [];
     for (const c of certs)
       items.push({
-        id: `cert:${c.id}`,
+        id: `cert:${c.id}:${c.reviewStatus}`,
         kind: 'certificate',
-        title: tr('notif.certificate'),
+        title: tr(
+          c.reviewStatus === 'PENDING'
+            ? 'notif.certificatePending'
+            : c.reviewedAt
+              ? 'notif.certificateApproved'
+              : 'notif.certificate',
+        ),
         body: (c.snapshot as Snap).courseTitle ?? null,
         url: `/sertifikat/${c.id}`,
-        at: c.issuedAt.toISOString(),
+        at: (c.reviewedAt ?? c.issuedAt).toISOString(),
       });
     for (const c of pathCerts)
       items.push({
-        id: `pcert:${c.id}`,
+        id: `pcert:${c.id}:${c.reviewStatus}`,
         kind: 'certificate',
-        title: tr('notif.pathCertificate'),
-        body: (c.snapshot as Snap).pathTitle ?? null,
+        title: tr(
+          c.reviewStatus === 'PENDING' ? 'notif.certificatePending' : 'notif.pathCertificate',
+        ),
+        // yol sertifikatının adı da snapshot.courseTitle-dadır (pathTitle köhnə ad)
+        body: (c.snapshot as Snap).courseTitle ?? (c.snapshot as Snap).pathTitle ?? null,
         url: `/sertifikat/${c.id}`,
-        at: c.issuedAt.toISOString(),
+        at: (c.reviewedAt ?? c.issuedAt).toISOString(),
       });
     for (const r of reviews) {
       const passed = r.status === 'PASSED';

@@ -43,7 +43,7 @@ export interface NavItem {
   /** yalnız heyət (ADMIN / INSTRUCTOR) — tələbə qabığında admin panelə keçid */
   staffOnly?: boolean;
   /** sayğac (məs. yoxlama gözləyən layihələr) — qabıq doldurur */
-  countKey?: 'reviews' | 'support';
+  countKey?: 'reviews' | 'support' | 'certificates';
   /** ikon kafelinin rəngi (iOS üslubu, `--ic`) */
   tint?: string;
   /** akademiya: yalnız /me/summary.academy-də uyğun rol varsa (instructor — müəllim və ya admin) */
@@ -295,6 +295,14 @@ export const ADMIN_NAV: NavSection[] = [
         icon: ClipboardCheck,
         countKey: 'reviews',
         tint: '#FF9F0A',
+      },
+      {
+        href: '/admin/sertifikatlar',
+        label: 'shell.certReview',
+        icon: Award,
+        countKey: 'certificates',
+        tint: '#34C759',
+        adminOnly: true,
       },
       { href: '/admin/lablar', label: 'shell.labSessions', icon: SquareTerminal, tint: '#1C1C1E' },
       {

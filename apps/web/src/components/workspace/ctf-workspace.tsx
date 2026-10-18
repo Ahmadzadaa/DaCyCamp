@@ -48,7 +48,7 @@ export function CtfWorkspace({ view, ctf }: { view: StepViewDto; ctf: CtfStudent
           setDone(r);
           toast(`🏁 ${t('ws.ctfAllSolved')}`);
           if (r.certificateId && !view.preview)
-            toast(`🏅 ${t('cert.earned')}`, {
+            toast(`🏅 ${r.certificatePending ? t('cert.pendingEarned') : t('cert.earned')}`, {
               action: {
                 label: t('cert.open'),
                 onClick: () => router.push(`/sertifikat/${r.certificateId}`),

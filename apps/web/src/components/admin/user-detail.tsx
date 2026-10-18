@@ -210,9 +210,28 @@ export function UserDetail({
                         {c.serial} · {fmtDate(c.issuedAt)}
                       </span>
                     </div>
-                    <span className={cn('badge', c.revokedAt ? 'badge-err' : 'badge-ok')}>
-                      {c.revokedAt ? t('users.revoked') : t('users.valid')}
+                    <span
+                      className={cn(
+                        'badge',
+                        c.revokedAt
+                          ? 'badge-err'
+                          : c.reviewStatus === 'PENDING'
+                            ? 'badge-warn'
+                            : 'badge-ok',
+                      )}
+                    >
+                      {c.revokedAt
+                        ? t('users.revoked')
+                        : c.reviewStatus === 'PENDING'
+                          ? t('cert.pending')
+                          : t('users.valid')}
                     </span>
+                    {isAdmin && !c.revokedAt && c.reviewStatus === 'PENDING' ? (
+                      // təsdiq kodu görmədən edilmir — yoxlama səhifəsinə keçid (SEC-04)
+                      <Link href={`/admin/sertifikatlar?id=${c.id}`} className="b b-ghost b-sm">
+                        {t('certReview.review')}
+                      </Link>
+                    ) : null}
                     {isAdmin ? (
                       c.revokedAt ? (
                         <Button

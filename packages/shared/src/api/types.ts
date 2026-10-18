@@ -65,6 +65,8 @@ export interface MeSummaryDto {
   pendingReviews?: number;
   /** yalnız heyət: cavab gözləyən dəstək müraciətləri */
   openSupport?: number;
+  /** yalnız admin: təsdiq gözləyən sertifikatlar (SEC-04) */
+  pendingCertificates?: number;
   /** tələbə: baxılmamış dəstək cavabları */
   supportUnread?: number;
   /** akademiya menyusu (modul söndürülübsə null) */
@@ -193,6 +195,8 @@ export interface CompleteResultDto {
   next: { moduleKey: string; stepKey: string } | null;
   /** kurs indicə bitibsə — verilən sertifikat (Mərhələ 3) */
   certificateId?: string | null;
+  /** sertifikat admin təsdiqini gözləyir (kursda brauzerdə yoxlanılan Python addımları var) */
+  certificatePending?: boolean;
 }
 
 export interface QuizResultDto extends CompleteResultDto {
@@ -466,6 +470,7 @@ export interface AdminUserDetailDto extends AdminUserDto {
     title: string;
     issuedAt: string;
     revokedAt: string | null;
+    reviewStatus: CertificateReviewStatus;
   }>;
 }
 export interface CourseImportDto {
@@ -545,6 +550,40 @@ export interface CertificateSummaryDto {
   trackColor: string;
   issuedAt: string;
   revokedAt: string | null;
+  /** PENDING — brauzerdə yoxlanılan nəticələrə əsaslanır, admin təsdiqinə qədər etibarlı deyil */
+  reviewStatus: CertificateReviewStatus;
+}
+
+/**
+ * Sertifikatın etibarlılıq statusu (SEC-04). Python tapşırıqlarının nəticəsini brauzer (Pyodide) bildirir və server
+ * onu yoxlaya bilmir — belə nəticələrə əsaslanan sertifikat admin tələbənin kodunu yoxlayıb təsdiqləyənə qədər PENDING.
+ */
+export type CertificateReviewStatus = 'PENDING' | 'APPROVED';
+
+/** Admin: təsdiq gözləyən sertifikat */
+export interface AdminPendingCertificateDto {
+  id: string;
+  kind: 'course' | 'path';
+  serial: string;
+  title: string;
+  issuedAt: string;
+  student: { id: string; name: string; email: string };
+  /** təsdiq üçün baxılmalı Python addımlarının sayı */
+  pythonSteps: number;
+}
+
+/** Admin: təsdiq üçün sübut — hər Python addımında tələbənin son keçən kodu */
+export interface CertificateEvidenceDto {
+  id: string;
+  title: string;
+  student: { id: string; name: string; email: string };
+  items: Array<{
+    courseTitle: string;
+    stepTitle: string;
+    /** son keçən göndərişin vaxtı; null — keçən göndəriş yoxdur (məs. köhnə idxal) */
+    passedAt: string | null;
+    code: string | null;
+  }>;
 }
 
 export interface CertificateDto extends CertificateSummaryDto {

@@ -280,6 +280,10 @@ export class ProgressService {
       const certificateId = map.isComplete
         ? await this.certs.issueForCourse(tx, userId, courseId)
         : null;
+      const certificatePending = certificateId
+        ? (await tx.certificate.findUnique({ where: { id: certificateId } }))?.reviewStatus ===
+          'PENDING'
+        : false;
       await tx.user.update({ where: { id: userId }, data: { lastActiveAt: now } });
       return {
         xpAwarded,
@@ -289,6 +293,7 @@ export class ProgressService {
           ? { moduleKey: map.continueStep.moduleKey, stepKey: map.continueStep.stepKey }
           : null,
         certificateId,
+        certificatePending,
       };
     });
   }

@@ -102,7 +102,9 @@ test('dərs ekranı (müəllim önizləməsi) və admin', async ({ page }) => {
     if (key === 'terminal') {
       // lab-ı başlat (mock/docker) və terminalın açılmasını gözlə
       const start = page.getByTestId('lab-start');
-      if (await start.isVisible().catch(() => false)) await start.click();
+      // düymə yoxlama ilə klik arasında yox ola bilər (lab yuxarıda API ilə başladılıb) — gözləmə qısa olsun
+      if (await start.isVisible().catch(() => false))
+        await start.click({ timeout: 5_000 }).catch(() => {});
       await page
         .locator('[data-testid="lab-terminal"][data-state="open"]')
         .waitFor({ timeout: 60_000 })

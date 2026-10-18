@@ -24,7 +24,7 @@ export function Sidebar({
   isAdmin?: boolean;
   /** tələbə qabığında «Admin panel» keçidi */
   staff?: boolean;
-  counts?: Partial<Record<'reviews' | 'support', number>>;
+  counts?: Partial<Record<'reviews' | 'support' | 'certificates', number>>;
   label?: string;
   /** akademiya bölmələri (rol əsaslı); null — modul söndürülüb və ya rol yoxdur */
   academy?: AcademySummaryDto | null;

@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { toast } from 'sonner';
-import { Award, Download, Link2 } from 'lucide-react';
+import { Award, Clock, Download, Link2 } from 'lucide-react';
 import type { CertificateDto } from '@dacy/shared';
 import { t } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
@@ -10,7 +10,9 @@ import { TrackBadge } from './track-badge';
 
 /** İctimai sertifikat səhifəsi — PDF ilə eyni quruluş: sol zolaq istiqamət rəngində, sağda QR və etibarlılıq */
 export function CertificateCard({ cert }: { cert: CertificateDto }) {
-  const valid = !cert.revokedAt;
+  // təsdiq gözləyən (SEC-04) sertifikat hələ etibarlı deyil: PDF verilmir, status «təsdiq gözləyir»
+  const pending = !cert.revokedAt && cert.reviewStatus === 'PENDING';
+  const valid = !cert.revokedAt && !pending;
   async function copy() {
     try {
       await navigator.clipboard.writeText(cert.verifyUrl);
@@ -31,6 +33,15 @@ export function CertificateCard({ cert }: { cert: CertificateDto }) {
         {!valid ? (
           <div className="ml-2.5 bg-error/10 px-6 py-2 text-sm font-semibold text-error-ink">
             ⚠ {t('cert.revoked')} · {fmtDate(cert.revokedAt)}
+          </div>
+        ) : null}
+        {pending ? (
+          <div
+            className="ml-2.5 bg-de/15 px-6 py-3 text-sm text-ink"
+            data-testid="cert-pending"
+            role="status"
+          >
+            <b className="font-semibold">{t('cert.pending')}.</b> {t('cert.pendingNote')}
           </div>
         ) : null}
         <div className="grid gap-8 p-7 pl-10 md:grid-cols-[1fr_230px] md:p-10 md:pl-14">
@@ -81,26 +92,34 @@ export function CertificateCard({ cert }: { cert: CertificateDto }) {
             <span
               className={cn(
                 'inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-semibold',
-                valid ? 'bg-brand/15 text-brand' : 'bg-error/10 text-error-ink',
+                valid
+                  ? 'bg-brand/15 text-brand'
+                  : pending
+                    ? 'badge-warn'
+                    : 'bg-error/10 text-error-ink',
               )}
               data-testid="cert-status"
             >
-              <Award className="size-4" />
-              {valid ? `✓ ${t('cert.valid')}` : t('cert.revoked')}
+              {pending ? <Clock className="size-4" /> : <Award className="size-4" />}
+              {valid ? `✓ ${t('cert.valid')}` : pending ? t('cert.pending') : t('cert.revoked')}
             </span>
             <p className="text-center text-xs text-muted">{t('cert.verifyHint')}</p>
           </div>
         </div>
       </article>
-      <div className="mt-4 flex flex-wrap gap-2">
-        <a
-          href={cert.pdfUrl}
-          className="b b-brand"
-          download={`${cert.serial}.pdf`}
-          data-testid="cert-pdf"
-        >
-          <Download className="size-4" /> {t('cert.downloadPdf')}
-        </a>
+      <div className="mt-4 flex flex-wrap items-center gap-2">
+        {pending ? (
+          <span className="text-sm text-muted">{t('cert.pendingPdf')}</span>
+        ) : (
+          <a
+            href={cert.pdfUrl}
+            className="b b-brand"
+            download={`${cert.serial}.pdf`}
+            data-testid="cert-pdf"
+          >
+            <Download className="size-4" /> {t('cert.downloadPdf')}
+          </a>
+        )}
         <button type="button" className="b b-dark" onClick={() => void copy()}>
           <Link2 className="size-4" /> {t('cert.copyLink')}
         </button>

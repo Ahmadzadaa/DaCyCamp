@@ -37,10 +37,11 @@ services:
       API_PORT: 4000
       WEB_ORIGIN: http://localhost:${WEB_PORT:-3000}
       STORAGE_DIR: /data/storage
+      # terminal lab-ları defolt olaraq söndürülüb: API-yə host Docker socket-i verilmir (SEC-06).
+      # Lab-lar lazım olsa: docker-compose.labs.yml (bax: README → Terminal lab-ları)
+      LAB_DRIVER: ${LAB_DRIVER:-off}
     volumes:
       - dacy_storage:/data/storage
-      # terminal lab-ları: API host Docker daemon-u ilə konteyner açır
-      - /var/run/docker.sock:/var/run/docker.sock
     ports:
       - '${API_PORT:-4000}:4000'
 

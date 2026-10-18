@@ -10,7 +10,7 @@ Terminal lab addımı (`type: terminal`) hər tələbə üçün `docker_image`-d
 
 | Dəyişən                 | Defolt   | Mənası                                      |
 | ----------------------- | -------- | ------------------------------------------- |
-| `LAB_DRIVER`            | `docker` | `docker` / `mock` (Docker-siz test) / `off` |
+| `LAB_DRIVER`            | `off`    | `docker` / `mock` (Docker-siz test) / `off` |
 | `LAB_MEMORY_MB`         | `512`    | konteyner yaddaşı                           |
 | `LAB_CPUS`              | `0.5`    | CPU payı                                    |
 | `LAB_PIDS_LIMIT`        | `256`    | proses sayı                                 |
@@ -49,4 +49,4 @@ test -f /home/student/out/orders_clean.csv || { echo "✗ out/orders_clean.csv y
 echo "✓ fayl var"
 ```
 
-API Docker daemon-a `/var/run/docker.sock` ilə qoşulur (docker-compose `--profile full` bunu montaj edir). Uzaq daemon üçün `DOCKER_HOST` verin.
+API Docker daemon-a `/var/run/docker.sock` ilə qoşulur — yalnız `docker-compose.labs.yml` əlavə edildikdə montaj olunur (defolt söndürülüb, SEC-06). Uzaq daemon üçün `DOCKER_HOST` verin.
