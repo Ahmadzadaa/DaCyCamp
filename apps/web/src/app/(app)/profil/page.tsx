@@ -31,7 +31,8 @@ export default async function ProfilePage() {
         <div className="min-w-0 flex-1">
           <h1>{user.name}</h1>
           <p className="text-muted">
-            {user.email} · <span className="badge badge-muted">{t(`role.${user.role}`)}</span>
+            <span className="break-all">{user.email}</span> ·{' '}
+            <span className="badge badge-muted">{t(`role.${user.role}`)}</span>
           </p>
           <p className="mt-1 text-sm text-muted">
             {t('profile.memberSince', { date: fmtDate(user.createdAt) })}
