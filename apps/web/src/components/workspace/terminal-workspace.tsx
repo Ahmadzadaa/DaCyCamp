@@ -144,7 +144,7 @@ export function TerminalWorkspace({
               {result.passed ? '✓' : '✗'} exit {result.exitCode}
             </span>
           </div>
-          <pre className={result.passed ? 'text-ok' : 'text-error'} data-testid="lab-check-output">
+          <pre className={result.passed ? 'text-ok-ink' : 'text-error-ink'} data-testid="lab-check-output">
             {result.output.trim() || (result.passed ? t('ws.labPassed') : t('ws.labNotPassed'))}
           </pre>
         </div>

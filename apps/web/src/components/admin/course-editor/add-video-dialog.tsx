@@ -171,7 +171,7 @@ export function AddVideoDialog({
             </div>
           ) : null}
           {error ? (
-            <p className="text-sm text-error" role="alert">
+            <p className="text-sm text-error-ink" role="alert">
               {error}
             </p>
           ) : null}

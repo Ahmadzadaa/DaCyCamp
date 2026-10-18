@@ -46,7 +46,7 @@ export function NewCourseForm({ tracks }: { tracks: TrackDto[] }) {
       noValidate
     >
       {tracks.length === 0 ? (
-        <p className="text-sm text-error md:col-span-2">
+        <p className="text-sm text-error-ink md:col-span-2">
           {t('admin.noTracks')}{' '}
           <Link href="/admin/istiqametler" className="underline">
             {t('admin.newTrack')}
@@ -57,7 +57,7 @@ export function NewCourseForm({ tracks }: { tracks: TrackDto[] }) {
       {error ? (
         <div
           role="alert"
-          className="rounded-lg border border-error/40 bg-error/10 px-3 py-2 text-sm text-error md:col-span-2"
+          className="rounded-lg border border-error/40 bg-error/10 px-3 py-2 text-sm text-error-ink md:col-span-2"
         >
           {error}
         </div>

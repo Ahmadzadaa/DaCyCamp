@@ -57,7 +57,7 @@ export function LabPanel({
   return (
     <Center>
       {s?.status === 'FAILED' ? (
-        <p className="max-w-md text-error">{t('ws.labFailed', { msg: s.message ?? '' })}</p>
+        <p className="max-w-md text-error-ink">{t('ws.labFailed', { msg: s.message ?? '' })}</p>
       ) : ended ? (
         <p className="text-on-dark-muted">{t('ws.labExpired')}</p>
       ) : s?.status === 'STOPPED' ? (

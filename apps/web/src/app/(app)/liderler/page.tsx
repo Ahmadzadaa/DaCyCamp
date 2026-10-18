@@ -137,10 +137,10 @@ export default async function LeaderboardPage({
           {lb.me.rank ? (
             <>
               <span className="font-bold">#{lb.me.rank}</span>
-              <span className="text-muted">· {fmtNum(lb.me.xp)} XP</span>
+              <span className="text-on-dark-muted">· {fmtNum(lb.me.xp)} XP</span>
             </>
           ) : (
-            <span className="text-muted">{t('hub.lbNotRanked')}</span>
+            <span className="text-on-dark-muted">{t('hub.lbNotRanked')}</span>
           )}
         </div>
       ) : null}

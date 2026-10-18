@@ -228,7 +228,7 @@ export function AnswerPanel({
       })}
 
       {error ? (
-        <p className="text-sm text-error" role="alert" data-testid="academy-answer-error">
+        <p className="text-sm text-error-ink" role="alert" data-testid="academy-answer-error">
           {error}
         </p>
       ) : null}
@@ -261,7 +261,7 @@ export function AnswerPanel({
           description={t('academy.detail.confirmDesc', { left: Math.max(0, attemptsLeft - 1) })}
         >
           {unsolvedSteps > 0 ? (
-            <p className="mb-4 text-sm text-error">
+            <p className="mb-4 text-sm text-error-ink">
               {t('academy.detail.confirmUnsolved', { n: unsolvedSteps })}
             </p>
           ) : null}

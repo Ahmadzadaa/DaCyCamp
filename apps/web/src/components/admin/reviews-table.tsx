@@ -77,7 +77,7 @@ export function ReviewsTable({ initial }: { initial: AdminProjectReviewDto[] }) 
                 r.status === 'PASSED'
                   ? 'bg-brand/15 text-brand'
                   : r.status === 'FAILED'
-                    ? 'bg-error/10 text-error'
+                    ? 'bg-error/10 text-error-ink'
                     : 'bg-de/15 text-de',
               )}
             >

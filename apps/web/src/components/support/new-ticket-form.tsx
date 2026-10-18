@@ -59,7 +59,7 @@ export function NewTicketForm({ pageUrl }: { pageUrl?: string }) {
         />
       </Field>
       {error ? (
-        <p className="text-sm text-error" role="alert">
+        <p className="text-sm text-error-ink" role="alert">
           {error}
         </p>
       ) : null}

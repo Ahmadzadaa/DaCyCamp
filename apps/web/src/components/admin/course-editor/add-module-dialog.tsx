@@ -69,7 +69,7 @@ export function AddModuleDialog({
             />
           </label>
           {error ? (
-            <p role="alert" className="text-sm text-error">
+            <p role="alert" className="text-sm text-error-ink">
               {error}
             </p>
           ) : null}

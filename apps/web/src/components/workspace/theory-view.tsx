@@ -54,7 +54,7 @@ export function TheoryView({ view, content }: { view: StepViewDto; content: Theo
         <div className="mt-8 flex flex-wrap items-center gap-3 border-t border-navy-line pt-5">
           {view.state === 'completed' && !view.preview ? (
             <>
-              <span className="text-sm font-semibold text-ok">✓ {t('common.completed')}</span>
+              <span className="text-sm font-semibold text-ok-ink">✓ {t('common.completed')}</span>
               <span className="flex-1" />
               <Link href={nextHref} className="b b-brand">
                 {view.next ? t('ws.nextStep') : t('ws.backToCourse')} →

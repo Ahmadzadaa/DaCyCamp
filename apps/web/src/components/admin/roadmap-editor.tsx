@@ -187,7 +187,7 @@ export function RoadmapEditor({
         </Button>
       </PageHeader>
 
-      <section className="box grid gap-4 md:grid-cols-2">
+      <section className="box grid grid-cols-1 gap-4 md:grid-cols-2">
         <Field label={t('roadmap.fTitle')}>
           <Input value={v.title} onChange={(e) => edit((d) => void (d.title = e.target.value))} />
         </Field>
@@ -328,7 +328,7 @@ export function RoadmapEditor({
             onChange={(e) => editLevel((l) => void (l.summary = e.target.value))}
           />
         </Field>
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <Field label={t('roadmap.fExpectations')}>
             <Textarea
               rows={5}
@@ -492,7 +492,7 @@ function SkillEditor({
 }) {
   return (
     <li className="rme-skill">
-      <div className="grid min-w-0 flex-1 gap-2">
+      <div className="grid min-w-0 flex-1 grid-cols-1 gap-2">
         <Input
           value={s.title}
           aria-label={t('roadmap.fSkill')}

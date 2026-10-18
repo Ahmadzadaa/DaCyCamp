@@ -116,24 +116,3 @@ export function CourseCard({
     </article>
   );
 }
-
-export function CourseCardSkeleton() {
-  return (
-    <div className="kc skel" aria-hidden>
-      <span className="sk h-3 w-12" />
-      <span className="sk h-7 w-4/5" />
-      <span className="sk h-3.5 w-24" />
-      <span className="sk h-3.5" />
-      <span className="sk h-3.5" />
-      <span className="sk h-3.5 w-3/4" />
-      <div className="flex items-center gap-3">
-        <span className="sk size-[38px] !rounded-full" />
-        <span className="sk h-3.5 w-32" />
-      </div>
-      <div className="ft">
-        <span className="sk h-4 w-20" />
-        <span className="sk h-[34px] w-[70px] !rounded-[10px]" />
-      </div>
-    </div>
-  );
-}

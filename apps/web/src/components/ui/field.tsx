@@ -39,7 +39,7 @@ export function Field({
       ) : null}
       {content}
       {error ? (
-        <span className="text-error text-xs" role="alert">
+        <span className="text-error-ink text-xs" role="alert">
           {error}
         </span>
       ) : hint ? (

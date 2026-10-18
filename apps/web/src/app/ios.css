@@ -470,7 +470,8 @@
   }
   [data-ui='ios'] .hero .badge-track {
     background: color-mix(in srgb, var(--c, var(--da)) 14%, var(--card));
-    color: color-mix(in srgb, var(--c, var(--da)) 75%, #000);
+    /* 75% narıncı/çəhrayı istiqamətlərdə 3.2–4.2:1 verirdi — 55% hamısında ≥5:1 */
+    color: color-mix(in srgb, var(--c, var(--da)) 55%, #000);
   }
 
   /* tanışlıq səhifəsi */
@@ -855,7 +856,8 @@
     border: 0.5px solid var(--line);
   }
   :root[data-ui='ios']:not([data-theme='dark']) .ws .badge-track {
-    color: color-mix(in srgb, var(--c) 70%, #1c1c1e);
+    /* 70% narıncı istiqamətdə 3.1:1 verirdi — 50% hamısında ≥4.8:1 */
+    color: color-mix(in srgb, var(--c) 50%, #1c1c1e);
     background: color-mix(in srgb, var(--c) 14%, transparent);
   }
 

@@ -122,7 +122,7 @@ export default async function AdminHome() {
         })}
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_420px]">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_420px]">
         <section className="box" aria-labelledby="act-h">
           <div className="feed-h">
             <h2 id="act-h" className="box-h !mb-0">

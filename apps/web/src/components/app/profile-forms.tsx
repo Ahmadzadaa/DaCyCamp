@@ -65,7 +65,7 @@ export function ProfileForms({ user }: { user: PublicUser }) {
   }
 
   return (
-    <div className="grid gap-6 lg:grid-cols-2">
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -181,7 +181,7 @@ export function ProfileForms({ user }: { user: PublicUser }) {
               onClick={() => setTheme(th.value)}
             >
               <span className={cn('theme-swatch', th.value)} aria-hidden />
-              <span className="flex items-center gap-2">
+              <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
                 <th.icon aria-hidden className="size-4" />
                 {t(th.label)}
               </span>

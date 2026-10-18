@@ -51,7 +51,7 @@ export default async function AdminPathsPage() {
                   <td>
                     {p.itemCount} · {t('paths.courses', { n: p.courseCount })}
                     {p.issues.length ? (
-                      <span className="ml-2 text-xs text-error">{p.issues.length} ⚠</span>
+                      <span className="ml-2 text-xs text-error-ink">{p.issues.length} ⚠</span>
                     ) : null}
                   </td>
                   <td>

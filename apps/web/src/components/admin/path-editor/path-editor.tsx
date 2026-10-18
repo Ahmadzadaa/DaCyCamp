@@ -235,7 +235,7 @@ export function PathEditor({
   }
 
   return (
-    <div className="grid gap-5 lg:grid-cols-[340px_1fr]">
+    <div className="grid grid-cols-1 gap-5 lg:grid-cols-[340px_1fr]">
       <aside className="flex flex-col gap-3">
         <div className="box">
           <div className="flex items-center gap-2">

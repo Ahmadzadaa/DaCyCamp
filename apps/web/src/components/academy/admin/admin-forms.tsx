@@ -80,7 +80,7 @@ export function ProgramForm() {
         </Field>
       </div>
       {error ? (
-        <p className="text-sm text-error" role="alert">
+        <p className="text-sm text-error-ink" role="alert">
           {error}
         </p>
       ) : null}
@@ -253,7 +253,7 @@ export function GroupForm({ programs }: { programs: AcademyProgramDto[] }) {
         </div>
       </Field>
       {error ? (
-        <p className="text-sm text-error" role="alert">
+        <p className="text-sm text-error-ink" role="alert">
           {error}
         </p>
       ) : null}

@@ -29,7 +29,7 @@ export function CertificateCard({ cert }: { cert: CertificateDto }) {
         <div className="absolute inset-y-0 left-0 w-2.5" style={{ background: cert.trackColor }} />
         <div className="ml-2.5 h-1.5 bg-brand" />
         {!valid ? (
-          <div className="ml-2.5 bg-error/10 px-6 py-2 text-sm font-semibold text-error">
+          <div className="ml-2.5 bg-error/10 px-6 py-2 text-sm font-semibold text-error-ink">
             ⚠ {t('cert.revoked')} · {fmtDate(cert.revokedAt)}
           </div>
         ) : null}
@@ -81,7 +81,7 @@ export function CertificateCard({ cert }: { cert: CertificateDto }) {
             <span
               className={cn(
                 'inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-semibold',
-                valid ? 'bg-brand/15 text-brand' : 'bg-error/10 text-error',
+                valid ? 'bg-brand/15 text-brand' : 'bg-error/10 text-error-ink',
               )}
               data-testid="cert-status"
             >

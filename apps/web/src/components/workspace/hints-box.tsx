@@ -71,7 +71,7 @@ export function HintsBox({
             ? t('ws.hintCost', { n: penalty })
             : t('ws.hintFree')}
         {!done ? (
-          <span className="text-xs opacity-70">
+          <span className="text-xs text-muted">
             {' '}
             ({next + 1}/{hintCount})
           </span>

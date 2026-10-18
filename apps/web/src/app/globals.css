@@ -24,7 +24,10 @@
   --ok: #2bd4a4;
   --ok-ink: #159b74;
   --err: #ff6b6b;
-  --danger: #d23f3f;
+  /* xəta MƏTNİ: --err (#ff6b6b) açıq fonda 2.8:1 idi — #b3261e ≥5.3:1 */
+  --err-ink: #b3261e;
+  /* #d23f3f boz fonda (#f2f2f7) 4.16:1 idi */
+  --danger: #b3261e;
   --on-dark: #e6ecf7;
   --on-dark-muted: #93a1bc;
   /* radiuslar: hero 24 · kart 16 · çip 10 · düymə 10 · input 12 */
@@ -48,6 +51,7 @@
   --soft: #1b2f52;
   --soft-hover: #23395f;
   --ok-ink: #2bd4a4;
+  --err-ink: #ff7b7b;
   --danger: #ff7b7b;
   --shadow-hover: 0 16px 36px -18px rgba(0, 0, 0, 0.7);
   --shadow-pop: 0 18px 44px -20px rgba(0, 0, 0, 0.75);
@@ -72,6 +76,7 @@
   --color-ok: var(--ok);
   --color-ok-ink: var(--ok-ink);
   --color-error: var(--err);
+  --color-error-ink: var(--err-ink);
   --color-danger: var(--danger);
   --color-on-dark: var(--on-dark);
   --color-on-dark-muted: var(--on-dark-muted);
@@ -353,7 +358,8 @@
   }
   .badge-warn {
     background: color-mix(in srgb, var(--de) 22%, transparent);
-    color: #b87610;
+    /* #b87610 öz fonunda 3.2:1 idi */
+    color: #875400;
   }
   [data-theme='dark'] .badge-warn {
     color: #f6c47a;
@@ -1901,14 +1907,6 @@
     font-weight: 600;
     color: var(--ink);
   }
-  .kc.skel {
-    gap: 14px;
-  }
-  .kc.skel:hover {
-    transform: none;
-    box-shadow: none;
-  }
-
   /* ───── kurs səhifəsi ───── */
   .badge-onhero {
     background: color-mix(in srgb, #fff 10%, transparent);
@@ -2146,7 +2144,8 @@
     font-weight: 600;
   }
   .steps li.cur .st {
-    color: var(--c, var(--da));
+    /* xalis istiqamət rəngi ağ fonda 2–3.6:1 verirdi */
+    color: color-mix(in srgb, var(--c, var(--da)) 50%, var(--ink));
     font-weight: 600;
   }
   .steps li.lock {
@@ -4878,7 +4877,8 @@
   }
   .theme-picks {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    /* 1fr kartların məzmun enindən kiçilmirdi — 320px-də profil səhifəsi 21px daşırdı */
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 10px;
   }
   .theme-pick {
@@ -5285,9 +5285,6 @@
     box-shadow: var(--shadow-pop);
     text-decoration: none;
     font-size: 0.92rem;
-  }
-  .lb-me .text-muted {
-    color: var(--on-dark-muted);
   }
   .lb-me svg {
     width: 16px;

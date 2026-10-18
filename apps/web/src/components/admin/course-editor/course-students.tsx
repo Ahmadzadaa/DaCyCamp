@@ -147,7 +147,7 @@ export function CourseStudents({
                           {stepTitle.get(id) ?? id}
                           <button
                             type="button"
-                            className="ml-0.5 rounded hover:text-error"
+                            className="ml-0.5 rounded hover:text-error-ink"
                             onClick={() => relock(s, id)}
                             aria-label={`${t('courseAdmin.relock')}: ${stepTitle.get(id) ?? id}`}
                             title={t('courseAdmin.relock')}
@@ -209,7 +209,7 @@ export function CourseStudents({
                         </DropdownItem>
                         <DropdownSeparator />
                         <DropdownItem
-                          className="text-error"
+                          className="text-error-ink"
                           onSelect={() => {
                             setError(null);
                             setPending({ kind: 'remove', s });
@@ -341,7 +341,7 @@ function UnlockDialog({
           {error ? (
             <div
               role="alert"
-              className="rounded-lg border border-error/40 bg-error/10 px-3 py-2 text-sm text-error"
+              className="rounded-lg border border-error/40 bg-error/10 px-3 py-2 text-sm text-error-ink"
             >
               {error}
             </div>

@@ -161,7 +161,7 @@ export function StepEditor({
 
   if (error && !dto)
     return (
-      <p role="alert" className="text-sm text-error">
+      <p role="alert" className="text-sm text-error-ink">
         {error}
       </p>
     );
@@ -223,7 +223,7 @@ export function StepEditor({
 
       <IssuesBox title={t('admin.publishIssues')} issues={issues} />
       {error ? (
-        <p role="alert" className="text-sm text-error">
+        <p role="alert" className="text-sm text-error-ink">
           {error}
         </p>
       ) : null}

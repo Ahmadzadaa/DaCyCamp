@@ -52,6 +52,8 @@ const PRACTICE: Array<{ value: string; label: TKey; has: (c: CourseCardDto) => b
 ];
 const KINDS: CourseKind[] = ['course', 'project', 'room'];
 
+// Bu seqmentdə loading.tsx olmamalıdır: Next 15 production-da `/kurslar` linklərinin prefetch-i
+// filtr naviqasiyasını (?seviyye=…) parametrsiz yaddaşa «alias» edir və router.push bəzən atılır (TEST-01).
 export default async function CatalogPage({ searchParams }: { searchParams: Promise<SP> }) {
   const levels = await getLevelLabels();
   const sp = await searchParams;

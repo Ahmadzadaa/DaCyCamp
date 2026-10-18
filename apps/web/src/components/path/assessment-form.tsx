@@ -78,7 +78,7 @@ export function AssessmentForm({
         {assessment.bestScore != null ? (
           <span>· {t('paths.bestScore', { n: Math.round(assessment.bestScore) })}</span>
         ) : null}
-        {passed ? <span className="font-semibold text-ok">· ✓ {t('paths.passed')}</span> : null}
+        {passed ? <span className="font-semibold text-ok-ink">· ✓ {t('paths.passed')}</span> : null}
       </div>
       {assessment.questions.map((qq, qi) => {
         const r = result?.perQuestion[qi];
@@ -127,7 +127,7 @@ export function AssessmentForm({
         ) : (
           <>
             <span
-              className={cn('font-semibold', result.passed ? 'text-ok' : 'text-error')}
+              className={cn('font-semibold', result.passed ? 'text-ok-ink' : 'text-error-ink')}
               data-testid="assessment-result"
             >
               {t('paths.yourScore', { n: result.score })} ·{' '}

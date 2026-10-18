@@ -177,7 +177,7 @@ export function SessionForms({ groupId, timezone }: { groupId: string; timezone:
         />
       </Field>
       {error ? (
-        <p className="text-sm text-error" role="alert">
+        <p className="text-sm text-error-ink" role="alert">
           {error}
         </p>
       ) : null}

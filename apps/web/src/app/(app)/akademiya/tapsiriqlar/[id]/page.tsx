@@ -181,7 +181,7 @@ export default async function MyAssignmentPage({ params }: { params: Promise<{ i
                   <span className="flex items-center gap-2">
                     {passed ? (
                       <CheckCircle2
-                        className="size-5 text-ok"
+                        className="size-5 text-ok-ink"
                         aria-label={t('academy.detail.solved')}
                       />
                     ) : (

@@ -78,7 +78,7 @@ export function CourseHeader({
           role="status"
           className="flex flex-wrap items-center gap-3 rounded-xl border border-error/40 bg-error/10 px-4 py-3 text-sm"
         >
-          <Trash2 className="size-4 text-error" />
+          <Trash2 className="size-4 text-error-ink" />
           <span className="flex-1">
             {t('courseAdmin.trashHint', { days: COURSE_TRASH_DAYS })}{' '}
             <b>

@@ -168,7 +168,7 @@ export function ImportPanel() {
             <div className="box md:col-span-2">
               {report.errors.length ? (
                 <>
-                  <b className="text-sm text-error">
+                  <b className="text-sm text-error-ink">
                     {t('admin.importErrors')} ({report.errors.length})
                   </b>
                   <table className="tbl-admin mt-2">

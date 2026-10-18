@@ -177,7 +177,7 @@ export function CtfWorkspace({ view, ctf }: { view: StepViewDto; ctf: CtfStudent
                   {task.xp ? ` · +${task.xp} XP` : ''}
                 </div>
               ) : task.wrong ? (
-                <div className="mt-1.5 text-[0.82rem] text-error">✗ {t('ws.ctfWrong')}</div>
+                <div className="mt-1.5 text-[0.82rem] text-error-ink">✗ {t('ws.ctfWrong')}</div>
               ) : null}
               {task.hint ? (
                 <p className="mt-2 rounded-md bg-navy-3 px-3 py-2 text-sm">💡 {task.hint}</p>
@@ -197,7 +197,7 @@ export function CtfWorkspace({ view, ctf }: { view: StepViewDto; ctf: CtfStudent
           ))}
           {allSolved ? (
             <div className="flex items-center gap-3 rounded-lg border border-ok bg-ok/10 px-4 py-3">
-              <span className="font-semibold text-ok">🏁 {t('ws.ctfAllSolved')}</span>
+              <span className="font-semibold text-ok-ink">🏁 {t('ws.ctfAllSolved')}</span>
               <span className="flex-1" />
               {done ? (
                 <Button type="button" onClick={() => after(done, view.preview)}>

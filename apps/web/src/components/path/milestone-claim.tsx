@@ -51,7 +51,7 @@ export function MilestoneClaim({
       </b>
       {certId ? (
         <>
-          <p className="text-sm text-ok">✓ {t('paths.claimed')}</p>
+          <p className="text-sm text-ok-ink">✓ {t('paths.claimed')}</p>
           <Link
             href={`/sertifikat/${certId}`}
             className="b b-brand self-start"

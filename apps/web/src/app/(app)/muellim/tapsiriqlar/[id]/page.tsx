@@ -119,7 +119,7 @@ export default async function TeacherAssignmentPage({
                         {i.step ? ` · ${i.step.courseTitle}` : ''}
                       </span>
                       {i.step && !i.step.available ? (
-                        <span className="block text-xs text-error">
+                        <span className="block text-xs text-error-ink">
                           {t('academy.form.unavailable')}
                         </span>
                       ) : null}

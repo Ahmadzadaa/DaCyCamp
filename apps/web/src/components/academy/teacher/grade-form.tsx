@@ -108,7 +108,7 @@ export function GradeForm({ d }: { d: AcademySubmissionDetailDto }) {
   return (
     <div className="flex flex-col gap-4" data-testid="grade-form">
       {g?.stale ? (
-        <p className="rounded-xl bg-paper p-3 text-sm font-semibold text-error" role="status">
+        <p className="rounded-xl bg-paper p-3 text-sm font-semibold text-error-ink" role="status">
           {t('academy.gradeForm.stale')}
         </p>
       ) : null}
@@ -195,7 +195,7 @@ export function GradeForm({ d }: { d: AcademySubmissionDetailDto }) {
         </Field>
       ) : null}
       {error ? (
-        <p className="text-sm text-error" role="alert" data-testid="grade-error">
+        <p className="text-sm text-error-ink" role="alert" data-testid="grade-error">
           {error}
         </p>
       ) : null}

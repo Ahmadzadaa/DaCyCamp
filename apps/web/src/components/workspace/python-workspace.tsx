@@ -164,7 +164,7 @@ export function PythonWorkspace({ view, py }: { view: StepViewDto; py: PythonStu
         <span
           className={cn(
             'ml-auto self-center px-3 text-xs',
-            status === 'error' ? 'text-error' : 'text-on-dark-muted',
+            status === 'error' ? 'text-error-ink' : 'text-on-dark-muted',
           )}
         >
           {statusMsg}
@@ -221,7 +221,7 @@ export function PythonWorkspace({ view, py }: { view: StepViewDto; py: PythonStu
         ) : tab === 'stdout' ? (
           <pre>{result ? result.stdout || t('ws.noOutput') : t('ws.pythonCdnNote')}</pre>
         ) : tab === 'stderr' ? (
-          <pre className={result?.error ? 'text-error' : undefined}>
+          <pre className={result?.error ? 'text-error-ink' : undefined}>
             {result ? (result.error ?? (result.stderr || t('ws.noOutput'))) : t('ws.noOutput')}
           </pre>
         ) : (

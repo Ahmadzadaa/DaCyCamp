@@ -182,7 +182,7 @@ export function SqlWorkspace({ view, sql }: { view: StepViewDto; sql: SqlStudent
         <span
           className={cn(
             'ml-auto self-center px-3 text-xs',
-            status === 'error' ? 'text-error' : 'text-on-dark-muted',
+            status === 'error' ? 'text-error-ink' : 'text-on-dark-muted',
           )}
         >
           {statusMsg}
@@ -228,7 +228,7 @@ export function SqlWorkspace({ view, sql }: { view: StepViewDto; sql: SqlStudent
             <pre className="text-on-dark-muted">{t('ws.noResult')}</pre>
           )
         ) : (
-          <pre className={consoleText.startsWith(t('ws.sqlError')) ? 'text-error' : undefined}>
+          <pre className={consoleText.startsWith(t('ws.sqlError')) ? 'text-error-ink' : undefined}>
             {consoleText || t('ws.noOutput')}
           </pre>
         )}

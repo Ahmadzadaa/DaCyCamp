@@ -324,7 +324,7 @@ export function RubricEditor({
           <Plus className="size-4" />
           {t('academy.teacher.addCriterion')}
         </Button>
-        <span className={total === maxScore ? 'text-sm text-ok' : 'text-sm text-error'}>
+        <span className={total === maxScore ? 'text-sm text-ok-ink' : 'text-sm text-error-ink'}>
           {fmtScore(total)} / {fmtScore(maxScore)}
         </span>
       </div>

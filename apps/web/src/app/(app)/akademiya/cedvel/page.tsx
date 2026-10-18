@@ -37,7 +37,7 @@ export default async function MySchedulePage({
   }
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="h2">{past ? t('academy.sessions.past') : t('academy.sessions.upcoming')}</h2>
         <Link
           href={past ? '/akademiya/cedvel' : '/akademiya/cedvel?kecmis=1'}

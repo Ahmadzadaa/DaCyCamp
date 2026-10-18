@@ -142,7 +142,7 @@ export function QuizView({ view, quiz }: { view: StepViewDto; quiz: QuizStudentV
                       />
                       <span>{opt}</span>
                       {r && isCorrect ? (
-                        <span className="ml-auto text-xs font-semibold text-ok">✓</span>
+                        <span className="ml-auto text-xs font-semibold text-ok-ink">✓</span>
                       ) : null}
                     </label>
                   );
@@ -151,7 +151,7 @@ export function QuizView({ view, quiz }: { view: StepViewDto; quiz: QuizStudentV
               {r ? (
                 <div className="mt-3 text-sm">
                   <span
-                    className={r.correct ? 'font-semibold text-ok' : 'font-semibold text-error'}
+                    className={r.correct ? 'font-semibold text-ok-ink' : 'font-semibold text-error-ink'}
                   >
                     {r.correct ? `✓ ${t('ws.correct')}` : `✗ ${t('ws.wrong')}`}
                   </span>
@@ -170,7 +170,7 @@ export function QuizView({ view, quiz }: { view: StepViewDto; quiz: QuizStudentV
           {result ? (
             <>
               <span
-                className={cn('text-sm font-semibold', result.passed ? 'text-ok' : 'text-error')}
+                className={cn('text-sm font-semibold', result.passed ? 'text-ok-ink' : 'text-error-ink')}
               >
                 {t('ws.quizResult', { score: result.score, pass: quiz.pass_score })}
               </span>
@@ -196,7 +196,7 @@ export function QuizView({ view, quiz }: { view: StepViewDto; quiz: QuizStudentV
             <>
               {wasCompleted && !view.preview ? (
                 <>
-                  <span className="text-sm font-semibold text-ok">✓ {t('common.completed')}</span>
+                  <span className="text-sm font-semibold text-ok-ink">✓ {t('common.completed')}</span>
                   <Link href={nextHref} className="b b-ghost border-navy-line text-on-dark">
                     {view.next ? t('ws.nextStep') : t('ws.backToCourse')} →
                   </Link>

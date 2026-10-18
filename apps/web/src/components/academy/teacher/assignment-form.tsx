@@ -384,7 +384,7 @@ export function AssignmentForm({
                       {i.step.courseTitle} · {i.step.type}
                     </span>
                     {!i.step.available ? (
-                      <span className="block text-xs text-error">
+                      <span className="block text-xs text-error-ink">
                         {t('academy.form.unavailable')}
                       </span>
                     ) : null}
@@ -461,7 +461,7 @@ export function AssignmentForm({
         </Field>
       ) : null}
       {error ? (
-        <p className="text-sm text-error" role="alert" data-testid="assignment-form-error">
+        <p className="text-sm text-error-ink" role="alert" data-testid="assignment-form-error">
           {error}
         </p>
       ) : null}

@@ -239,7 +239,7 @@ async function GradebookTab({ groupId }: { groupId: string }) {
                         {c.gradeStatus === 'DRAFT' ? '*' : ''}
                       </span>
                     ) : c.status === 'MISSED' ? (
-                      <span className="text-error">✕</span>
+                      <span className="text-error-ink">✕</span>
                     ) : (
                       <span className="text-muted">·</span>
                     )}

@@ -68,7 +68,7 @@ export function ConfirmDialog({
           {error ? (
             <div
               role="alert"
-              className="rounded-lg border border-error/40 bg-error/10 px-3 py-2 text-sm text-error"
+              className="rounded-lg border border-error/40 bg-error/10 px-3 py-2 text-sm text-error-ink"
             >
               {error}
             </div>
