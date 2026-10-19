@@ -75,10 +75,10 @@ export function ReviewsTable({ initial }: { initial: AdminProjectReviewDto[] }) 
               className={cn(
                 'ml-auto rounded-full px-2 py-0.5 text-xs font-semibold',
                 r.status === 'PASSED'
-                  ? 'bg-brand/15 text-brand'
+                  ? 'tint-ok'
                   : r.status === 'FAILED'
                     ? 'bg-error/10 text-error-ink'
-                    : 'bg-de/15 text-de',
+                    : 'tint-de',
               )}
             >
               {r.status}

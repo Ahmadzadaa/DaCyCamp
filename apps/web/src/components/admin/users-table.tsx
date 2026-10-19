@@ -157,7 +157,7 @@ export function UsersTable({ initialQ = '' }: { initialQ?: string }) {
                       <b>{u.name}</b>
                     </Link>
                   </td>
-                  <td className="text-muted">{u.email}</td>
+                  <td className="text-muted [overflow-wrap:anywhere]">{u.email}</td>
                   <td>
                     {isAdmin ? (
                       <Select

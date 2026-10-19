@@ -14,10 +14,13 @@ import { Button } from '@/components/ui/button';
 export function LabsTable({ initial }: { initial: AdminLabSessionDto[] }) {
   const [rows, setRows] = useState(initial);
   const [busy, setBusy] = useState<string | null>(null);
-  const [tick, setTick] = useState(0);
+  // qalan vaxt yalnız brauzerdə hesablanır: serverdəki Date.now() ilə hidratasiya anı fərqli saniyəyə düşəndə
+  // React mətn uyğunsuzluğu (#418) verirdi
+  const [now, setNow] = useState<number | null>(null);
 
   useEffect(() => {
-    const t1 = setInterval(() => setTick((x) => x + 1), 1000);
+    setNow(Date.now());
+    const t1 = setInterval(() => setNow(Date.now()), 1000);
     const t2 = setInterval(() => void refresh(), 10_000);
     return () => {
       clearInterval(t1);
@@ -47,7 +50,6 @@ export function LabsTable({ initial }: { initial: AdminLabSessionDto[] }) {
   }
 
   if (!rows.length) return <div className="box text-muted">{t('admin.labsEmpty')}</div>;
-  void tick;
   return (
     <div className="tbl-wrap">
       <table className="tbl-admin">
@@ -64,10 +66,10 @@ export function LabsTable({ initial }: { initial: AdminLabSessionDto[] }) {
         </thead>
         <tbody>
           {rows.map((r) => {
-            const remaining = Math.max(
-              0,
-              Math.floor((new Date(r.expiresAt).getTime() - Date.now()) / 1000),
-            );
+            const remaining =
+              now === null
+                ? null
+                : Math.max(0, Math.floor((new Date(r.expiresAt).getTime() - now) / 1000));
             return (
               <tr key={r.id}>
                 <td>
@@ -88,9 +90,9 @@ export function LabsTable({ initial }: { initial: AdminLabSessionDto[] }) {
                     className={cn(
                       'inline-block rounded-full px-2 py-0.5 text-xs font-semibold',
                       r.status === 'PASSED'
-                        ? 'bg-brand/15 text-brand'
+                        ? 'tint-ok'
                         : r.status === 'RUNNING'
-                          ? 'bg-da/15 text-da'
+                          ? 'tint-da'
                           : 'bg-muted/20 text-muted',
                     )}
                   >
@@ -98,7 +100,7 @@ export function LabsTable({ initial }: { initial: AdminLabSessionDto[] }) {
                   </span>
                 </td>
                 <td className="font-mono text-xs">{r.image}</td>
-                <td className="font-mono">{fmtCountdown(remaining)}</td>
+                <td className="font-mono">{remaining === null ? '—' : fmtCountdown(remaining)}</td>
                 <td>{r.driver}</td>
                 <td className="text-right">
                   <Button

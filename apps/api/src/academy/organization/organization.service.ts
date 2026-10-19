@@ -333,6 +333,40 @@ export class AcademyOrganizationService {
     const end = input.endAt !== undefined ? input.endAt : before.endAt;
     if (start && end && end < start)
       throw badRequest('VALIDATION_FAILED', 'Bitmə tarixi başlanğıcdan əvvəl ola bilməz');
+    // tarixlər dəyişəndə: planlaşdırılmış dərslər və aktiv tapşırıqların son tarixləri yeni aralıqdan kənarda qalmasın
+    if (input.startAt !== undefined || input.endAt !== undefined) {
+      // tarixlər gün kimi saxlanılır (UTC gecəyarısı) — bitmə günü bütövlükdə aralığa daxildir
+      const endBound = end ? new Date(end.getTime() + 24 * 3_600_000) : null;
+      const dateFilter = (field: 'startsAt' | 'endsAt' | 'dueAt' | 'availableAt') => [
+        ...(start ? [{ [field]: { lt: start } }] : []),
+        ...(endBound ? [{ [field]: { gt: endBound } }] : []),
+      ];
+      const [sessions, assignments] = await Promise.all([
+        start || end
+          ? this.prisma.academyClassSession.count({
+              where: {
+                groupId: id,
+                status: { not: 'CANCELLED' },
+                OR: [...dateFilter('startsAt'), ...dateFilter('endsAt')],
+              },
+            })
+          : 0,
+        start || end
+          ? this.prisma.academyAssignment.count({
+              where: {
+                groupId: id,
+                status: { in: ['SCHEDULED', 'PUBLISHED'] },
+                OR: [...dateFilter('availableAt'), ...dateFilter('dueAt')],
+              },
+            })
+          : 0,
+      ]);
+      if (sessions || assignments)
+        throw conflict(
+          'ACADEMY_GROUP_DATES_CONFLICT',
+          `Yeni tarixlərdən kənarda qalan: ${sessions} dərs, ${assignments} tapşırıq — əvvəlcə onları köçürün və ya ləğv edin`,
+        );
+    }
     if (input.capacity != null) {
       const seats = await this.prisma.academyEnrollment.count({
         where: { groupId: id, status: { in: SEAT_STATUSES } },

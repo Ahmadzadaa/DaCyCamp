@@ -364,6 +364,20 @@
   [data-theme='dark'] .badge-warn {
     color: #f6c47a;
   }
+  /* rəngli fonda eyni rəngli mətn (bg-brand/15 text-brand) 1.8–3.1:1 idi; mətn --ink ilə qarışdırılır —
+     açıq temada ≥5.6:1, tünddə ≥7.4:1 (ink tünd temada açıq olur) */
+  .tint-ok {
+    background: color-mix(in srgb, var(--brand) 15%, transparent);
+    color: color-mix(in srgb, var(--brand) 45%, var(--ink));
+  }
+  .tint-da {
+    background: color-mix(in srgb, var(--da) 15%, transparent);
+    color: color-mix(in srgb, var(--da) 50%, var(--ink));
+  }
+  .tint-de {
+    background: color-mix(in srgb, var(--de) 15%, transparent);
+    color: color-mix(in srgb, var(--de) 45%, var(--ink));
+  }
   .badge-err {
     background: color-mix(in srgb, var(--err) 16%, transparent);
     color: var(--danger);
@@ -2017,7 +2031,8 @@
   }
   .mod.locked .mod-h h2,
   .mod.locked .mod-n {
-    opacity: 0.6;
+    /* A11Y-05: şəffaflıq əvəzinə solğun rəng (≥4.5:1) */
+    color: var(--muted);
   }
   .mod-h h2 {
     font-size: 1.1rem;
@@ -2149,7 +2164,8 @@
     font-weight: 600;
   }
   .steps li.lock {
-    opacity: 0.5;
+    /* A11Y-05: şəffaflıq mətnin kontrastını 2.5–3.3:1-ə salırdı; kilid nişanı qalır, mətn ≥4.5:1 */
+    color: var(--muted);
   }
   .pring {
     display: flex;
@@ -2399,18 +2415,51 @@
     display: flex;
     flex-direction: column;
   }
-  .ws-stack {
+  /* mobil dərs (UX-01): «Tapşırıq / Kod» tabları; görünən panel bütün hündürlüyü tutur */
+  .ws-mobile {
     flex: 1;
     min-height: 0;
-    overflow: auto;
     display: flex;
     flex-direction: column;
   }
-  .ws-stack > .ws-left {
-    height: auto;
+  .ws-tabs {
+    display: flex;
+    gap: 4px;
+    padding: 6px 12px;
+    background: var(--navy);
+    border-bottom: 1px solid var(--navy-line);
   }
-  .ws-stack > .ws-right {
-    min-height: 70dvh;
+  .ws-tabs button {
+    flex: 1;
+    min-height: 40px;
+    border: 0;
+    border-radius: 10px;
+    background: transparent;
+    color: var(--on-dark-muted);
+    font: 600 0.92rem var(--font-sans);
+    cursor: pointer;
+  }
+  .ws-tabs button[aria-selected='true'] {
+    background: var(--navy-3);
+    color: var(--on-dark);
+  }
+  .ws-tabs button:focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: 2px;
+  }
+  .ws-pane {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .ws-pane[hidden] {
+    display: none;
+  }
+  .ws-pane > .ws-left,
+  .ws-pane > .ws-right {
+    flex: 1;
+    min-height: 0;
     height: auto;
   }
   .ws-top {
@@ -2464,7 +2513,8 @@
     font-size: 1.35rem;
     margin-bottom: 12px;
   }
-  .ws-left h4 {
+  /* «Tapşırıq» / «Fayllar»: h1-dən sonra gələn h2 (başlıq ardıcıllığı), görünüşü kiçik başlıqdır */
+  .ws-left .ws-h {
     font-size: 0.95rem;
     margin: 18px 0 8px;
     color: var(--on-dark);
@@ -2475,20 +2525,28 @@
   .ws-prose p {
     margin-bottom: 12px;
   }
-  .ws-prose h1,
-  .ws-prose h2,
-  .ws-prose h3 {
+  /* markdown başlıqları bir pillə aşağı salınıb (Markdown komponenti) — .md-hN mənbədəki səviyyədir */
+  .ws-prose [class*='md-h'] {
     color: var(--on-dark);
     margin: 18px 0 8px;
+    font-weight: 700;
+    line-height: 1.15;
   }
-  .ws-prose h1 {
+  .ws-prose .md-h1 {
     font-size: 1.35rem;
   }
-  .ws-prose h2 {
+  .ws-prose .md-h2 {
     font-size: 1.15rem;
   }
-  .ws-prose h3 {
+  .ws-prose .md-h3 {
     font-size: 1rem;
+  }
+  .ws-prose .md-h4 {
+    font-size: 0.95rem;
+  }
+  .ws-prose .md-h5,
+  .ws-prose .md-h6 {
+    font-size: 0.9rem;
   }
   .ws-prose ul,
   .ws-prose ol {
@@ -3276,7 +3334,12 @@
     border: 2px solid var(--c, var(--da));
   }
   .node.lock .ncard {
-    opacity: 0.62;
+    /* A11Y-05: şəffaflıq əvəzinə kəsik çərçivə — kilid nişanı və «… sonra açılır» mətni oxunaqlı qalır */
+    background: transparent;
+    border-style: dashed;
+  }
+  .node.lock .ncard h4 {
+    color: var(--muted);
   }
   .ntop {
     display: flex;
@@ -3441,19 +3504,26 @@
   .prose-light {
     color: var(--ink);
   }
-  .prose-light h1,
-  .prose-light h2,
-  .prose-light h3 {
+  .prose-light [class*='md-h'] {
     margin: 18px 0 8px;
+    font-weight: 700;
+    line-height: 1.15;
   }
-  .prose-light h1 {
+  .prose-light .md-h1 {
     font-size: 1.5rem;
   }
-  .prose-light h2 {
+  .prose-light .md-h2 {
     font-size: 1.2rem;
   }
-  .prose-light h3 {
+  .prose-light .md-h3 {
     font-size: 1.05rem;
+  }
+  .prose-light .md-h4 {
+    font-size: 1rem;
+  }
+  .prose-light .md-h5,
+  .prose-light .md-h6 {
+    font-size: 0.9rem;
   }
   .prose-light p {
     margin-bottom: 12px;
@@ -3624,6 +3694,9 @@
     font-weight: 600;
   }
   .tbl-wrap {
+    /* relative: içəridəki absolute elementlər (məs. başlıqdakı .sr-only) sürüşmə qabından çıxıb səhifəni
+       üfüqi genişləndirməsin */
+    position: relative;
     background: var(--card);
     border: 1px solid var(--line);
     border-radius: var(--radius-card);
@@ -5343,7 +5416,8 @@
     border-top: 1px dashed var(--line);
   }
   .prac-list li.lock {
-    opacity: 0.6;
+    /* A11Y-05: «Kilidli» nişanı vəziyyəti göstərir; mətn solğunlaşdırılmır */
+    color: var(--muted);
   }
   .prac-list .b {
     flex: none;
@@ -5415,7 +5489,10 @@
     box-shadow: var(--shadow-hover);
   }
   .kan-card.lock {
-    opacity: 0.65;
+    /* A11Y-05 */
+    background: transparent;
+    border-style: dashed;
+    color: var(--muted);
   }
   .kan-title {
     font-size: 1.02rem;

@@ -66,8 +66,7 @@ docker compose --profile full up --build
   bir-birindən fərqli. `NODE_ENV=production`-da nümunə və ya qısa açarla API açılmır (bilərəkdən).
 - **HTTPS:** saytın qarşısında TLS verən reverse proxy (Caddy / Nginx) və `.env`-də `COOKIE_SECURE=true`.
 - **Baza:** `docker-compose.yml` PostgreSQL-i yalnız `127.0.0.1`-də açır; `dacy/dacy` parolunu dəyişin.
-  Gündəlik ehtiyat nüsxə: `pg_dump --format=custom "$DATABASE_URL" > dacy-$(date +%F).dump` (cron) və
-  `STORAGE_DIR` (yüklənmiş fayllar) qovluğunun nüsxəsi. Bərpanı ən azı bir dəfə sınayın.
+  Ehtiyat nüsxə — aşağıdakı «Ehtiyat nüsxə və bərpa» bölməsi.
 - **Miqrasiyalar:** `pnpm db:deploy` (yalnız `migrate deploy`; `migrate dev` / `db:reset` production-da yox).
 - **Terminal lab-ları:** defolt olaraq söndürülüb (`LAB_DRIVER=off`, API konteynerinə Docker socket verilmir).
   Lab-lar lazım olsa: `docker compose -f docker-compose.yml -f docker-compose.labs.yml --profile full up` —
@@ -77,6 +76,25 @@ docker compose --profile full up --build
 - **Bir nüsxə:** akademiya bildiriş işçisi hər API nüsxəsində işləyir; bir neçə nüsxədə birindən başqa hamısında
   `ACADEMY_WORKER_INTERVAL_SEC=0`.
 - **Seed admin:** ilk girişdən sonra parolu dəyişin; `SEED_*` dəyərlərini `.env`-dən silə bilərsiniz.
+
+## Ehtiyat nüsxə və bərpa
+
+```bash
+pnpm db:backup                                   # → backups/dacy-YYYYMMDD-HHMMSS/
+pnpm db:backup -- --out /mnt/backup              # başqa qovluğa (cron üçün)
+pnpm db:restore -- backups/dacy-… --target-url postgresql://…/dacy_restore --create-db \
+  --storage-dir /tmp/dacy-storage-restore        # yoxlama bərpası — işlək bazaya toxunmur
+```
+
+- Nüsxə: `db.dump` (pg_dump, custom format), `storage.tar.gz` (`STORAGE_DIR`), `manifest.json` (sha256, hər
+  cədvəlin sətir sayı, sonuncu miqrasiya). Qovluq 0700, fayllar 0600 — içində şəxsi məlumat var; serverdən kənarda,
+  şifrələnmiş saxlayın. `backups/` git-ə düşmür.
+- Sayt işləyərkən də ardıcıldır: dump və manifestdəki saylar eyni snapshot-dan oxunur (`pg_dump --snapshot`).
+- Parol əmr sətrinə verilmir (`PG*` mühit dəyişənləri), loglarda URL `***` ilə gizlədilir.
+- Bərpa: hədəf baza həmişə `--target-url` ilə açıq göstərilir; hədəf `.env`-dəki işlək baza ilə eynidirsə, bazada
+  artıq cədvəl varsa və ya fayl qovluğu boş deyilsə — yalnız `--force` ilə; `NODE_ENV=production`-da yalnız
+  `--allow-production` ilə. Əvvəl sha256 yoxlanılır, sonda cədvəl sayları və miqrasiya manifestlə müqayisə olunur.
+- Tövsiyə: gündəlik `pnpm db:backup` (cron) və ayda bir dəfə ayrıca bazaya yoxlama bərpası.
 
 ## Test hesabları (seed)
 

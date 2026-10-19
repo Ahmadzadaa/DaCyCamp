@@ -57,15 +57,13 @@ describe('Academy notifications, analytics & labs (e2e)', () => {
       assistantInstructorIds: [ids.assistant],
     });
     ids.de1 = g1.body.id;
-    const g2 = await admin
-      .post('/academy/groups')
-      .send({
-        programId: de.body.id,
-        code: 'DE-002',
-        name: 'DE-002',
-        status: 'ACTIVE',
-        leadInstructorId: ids.otherLead,
-      });
+    const g2 = await admin.post('/academy/groups').send({
+      programId: de.body.id,
+      code: 'DE-002',
+      name: 'DE-002',
+      status: 'ACTIVE',
+      leadInstructorId: ids.otherLead,
+    });
     ids.de2 = g2.body.id;
     for (const s of ['ali', 'aysel'])
       await admin.post(`/academy/groups/${ids.de1}/enrollments`).send({ userId: ids[s] });
@@ -439,5 +437,26 @@ describe('Academy notifications, analytics & labs (e2e)', () => {
     });
     expect(s.status).toBe(201);
     expect(s.body.status).toBe('SUBMITTED');
+  });
+
+  it('bir neçə işçi nüsxəsi eyni anda: hər hadisə bir dəfə emal olunur, bildiriş təkrarlanmır', async () => {
+    const a = await createAndPublish({ title: 'Paralel tapşırıq' });
+    // üç «API nüsxəsi» eyni anda (runOnce-un proses daxili qoruyucusundan yan keçib birbaşa outbox) —
+    // bazadakı SKIP LOCKED icarəsi hadisəni bir nüsxəyə verir, (userId, dedupeKey) unikal açarı dublikatı kəsir
+    const pending = await prisma.academyOutboxEvent.count({ where: { status: 'PENDING' } });
+    expect(pending).toBeGreaterThan(0);
+    const runs = await Promise.all([
+      worker.processOutbox(),
+      worker.processOutbox(),
+      worker.processOutbox(),
+    ]);
+    // hər gözləyən hadisə dəqiq bir dəfə emal olunur (cəm = gözləyənlərin sayı, iki dəfə yox)
+    expect(runs.reduce((n, r) => n + r.processed, 0)).toBe(pending);
+    for (const u of [ids.ali, ids.aysel]) {
+      const n = (await notes(u, 'ASSIGNMENT_PUBLISHED')).filter((x) => x.url?.endsWith(a.id));
+      expect(n).toHaveLength(1);
+    }
+    // gözləyən qalmır (əvvəlki testdə bilərəkdən FAILED edilmiş hadisə sayılmır)
+    expect(await prisma.academyOutboxEvent.count({ where: { status: 'PENDING' } })).toBe(0);
   });
 });

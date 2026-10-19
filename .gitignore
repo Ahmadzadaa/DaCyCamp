@@ -10,6 +10,8 @@ test-results/
 .env.local
 .env.*.local
 apps/api/storage/
+# ehtiyat nüsxələr (şəxsi məlumat) — repoya düşməsin
+backups/
 .DS_Store
 *.tsbuildinfo
 apps/web/public/duckdb/

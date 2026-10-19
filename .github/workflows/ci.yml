@@ -32,6 +32,7 @@ jobs:
       - run: psql postgresql://dacy:dacy@localhost:5432/dacy -c 'CREATE DATABASE dacy_test OWNER dacy'
       - run: pnpm --filter @dacy/shared build
       - run: pnpm lint
+      - run: node scripts/check-compose.mjs
       - run: pnpm typecheck
       - run: pnpm --filter @dacy/shared test
       - run: pnpm --filter @dacy/api prisma:generate

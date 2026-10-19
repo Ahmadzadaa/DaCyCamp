@@ -50,7 +50,8 @@
   --paper: #000000;
   --card: #1c1c1e;
   --ink: #f5f5f7;
-  --muted: #98989f;
+  /* #98989f boz nişan fonunda (#323236) 4.45:1 idi */
+  --muted: #a1a1a8;
   --line: rgba(84, 84, 88, 0.55);
   --soft: rgba(118, 118, 128, 0.24);
   --soft-hover: rgba(118, 118, 128, 0.32);
@@ -60,6 +61,8 @@
   --shadow-hover: 0 0 0 0.5px rgba(255, 255, 255, 0.1), 0 20px 40px -18px rgba(0, 0, 0, 0.8);
   --glass: rgba(28, 28, 30, 0.72);
   --brand-ink: #04281d;
+  /* açıq blokdakı #0b7558 (:root[data-ui='ios']) globals-dakı tünd dəyəri üstələyirdi — tünd fonda ~2:1 idi */
+  --ok-ink: #2bd4a4;
   --sb-bg: #121214;
   --sb-hover: rgba(255, 255, 255, 0.06);
 }
@@ -111,6 +114,12 @@
   }
 
   /* ── sidebar: iPadOS üslubu, rəngli ikon kafelləri ─────────────────────── */
+  /* sidebar sütununun fonu (uzun səhifələrdə sidebar-dan aşağı) — köhnə tünd navy zolaq qalmasın */
+  @media (min-width: 901px) {
+    [data-ui='ios'] .shell {
+      background: linear-gradient(to right, var(--sb-bg) var(--sb-w), transparent var(--sb-w));
+    }
+  }
   [data-ui='ios'] .sb {
     background: var(--sb-bg);
     border-right: 0.5px solid color-mix(in srgb, var(--line) 140%, transparent);
@@ -220,6 +229,13 @@
   }
   [data-ui='ios'] .hero .inst b {
     color: var(--ink) !important;
+  }
+  /* yol səhifəsinin rəqəmləri: köhnə tünd hero üçün #fff idi — açıq kartda görünmürdü */
+  [data-ui='ios'] .hero .lp-facts b {
+    color: var(--ink);
+  }
+  [data-ui='ios'] .hero .lp-facts span {
+    color: var(--muted);
   }
   [data-ui='ios'] .hero.accent {
     border-left: 0;
@@ -472,6 +488,10 @@
     background: color-mix(in srgb, var(--c, var(--da)) 14%, var(--card));
     /* 75% narıncı/çəhrayı istiqamətlərdə 3.2–4.2:1 verirdi — 55% hamısında ≥5:1 */
     color: color-mix(in srgb, var(--c, var(--da)) 55%, #000);
+  }
+  :root[data-ui='ios'][data-theme='dark'] .hero .badge-track {
+    /* #000 ilə qarışıq tünd temada 1.6:1 verirdi */
+    color: color-mix(in srgb, var(--c, var(--da)) 60%, white);
   }
 
   /* tanışlıq səhifəsi */

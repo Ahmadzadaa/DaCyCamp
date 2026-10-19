@@ -129,9 +129,14 @@ test('dərs ekranı (müəllim önizləməsi) və admin', async ({ page }) => {
   }
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/kurs/numune/numune-fesil/sql?onizle=1');
-  await page.locator('.monaco-editor').first().waitFor({ timeout: 90_000 });
+  // ≤900px: «Tapşırıq / Kod» tabları (UX-01) — əvvəl tapşırıq, sonra kod tabı
+  await page.getByTestId('ws-tab-task').waitFor();
   await page.waitForTimeout(400);
   await page.screenshot({ path: out('workspace-sql.mobile.png'), fullPage: false });
+  await page.getByTestId('ws-tab-code').click();
+  await page.locator('#ws-pane-code .monaco-editor').first().waitFor({ timeout: 90_000 });
+  await page.waitForTimeout(400);
+  await page.screenshot({ path: out('workspace-sql-code.mobile.png'), fullPage: false });
   await page.setViewportSize({ width: 1240, height: 900 });
   const tree = await (await page.request.get('/api/admin/courses/numune')).json();
   const sql = tree.modules[0].steps.find((s: { key: string }) => s.key === 'sql');

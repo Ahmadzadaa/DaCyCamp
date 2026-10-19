@@ -27,7 +27,7 @@ export function InstructionsPane({ view }: { view: StepViewDto }) {
       <Markdown content={v.instructions} assetMap={view.assets} dark />
       {tasks.length ? (
         <>
-          <h4>{t('ws.task')}</h4>
+          <h2 className="ws-h">{t('ws.task')}</h2>
           <div className="task">
             <ol>
               {tasks.map((task, i) => (
@@ -41,7 +41,7 @@ export function InstructionsPane({ view }: { view: StepViewDto }) {
       ) : null}
       {v.kind === 'ctf' && v.attachments.length ? (
         <>
-          <h4>{t('ws.files')}</h4>
+          <h2 className="ws-h">{t('ws.files')}</h2>
           <div className="task flex flex-col gap-2" style={{ borderLeftColor: 'var(--cy)' }}>
             {v.attachments.map((a) => (
               <div key={a.path} className="flex items-center gap-2">

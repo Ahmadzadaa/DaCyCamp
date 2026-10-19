@@ -11,9 +11,22 @@ import {
 
 const KEY = 'dacy:ws-layout';
 
-/** Solda təlimat, sağda redaktor; ortadakı xətt sürüklənir. <900px: üst-üstə (əvvəl təlimat), sürüşdürmə ilə. */
-export function SplitLayout({ left, right }: { left: React.ReactNode; right: React.ReactNode }) {
+/**
+ * Solda təlimat, sağda redaktor; ortadakı xətt sürüklənir. <900px: «Tapşırıq / Kod» tabları (UX-01) — hər iki panel
+ * montajda qalır (yalnız gizlədilir), ona görə yazılmış kod, redaktor vəziyyəti və nəticələr tab dəyişəndə itmir.
+ */
+export function SplitLayout({
+  left,
+  right,
+  rightLabel = t('ws.codeTab'),
+}: {
+  left: React.ReactNode;
+  right: React.ReactNode;
+  /** mobil tabın adı: Kod / Terminal / Flag */
+  rightLabel?: string;
+}) {
   const [vertical, setVertical] = useState(false);
+  const [pane, setPane] = useState<'task' | 'code'>('task');
   const groupRef = useRef<GroupImperativeHandle | null>(null);
 
   useEffect(() => {
@@ -35,12 +48,56 @@ export function SplitLayout({ left, right }: { left: React.ReactNode; right: Rea
   }, [vertical]);
 
   if (vertical) {
+    const tabs = [
+      { id: 'task' as const, label: t('ws.task') },
+      { id: 'code' as const, label: rightLabel },
+    ];
+    // WAI-ARIA tabs: ← / → digər taba keçir və fokuslayır
+    const onKey = (e: React.KeyboardEvent<HTMLDivElement>) => {
+      if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+      e.preventDefault();
+      const next = pane === 'task' ? 'code' : 'task';
+      setPane(next);
+      document.getElementById(`ws-tab-${next}`)?.focus();
+    };
     return (
-      <div className="ws-stack">
+      <div className="ws-mobile">
+        <div className="ws-tabs" role="tablist" aria-label={t('ws.paneTabs')} onKeyDown={onKey}>
+          {tabs.map((x) => (
+            <button
+              key={x.id}
+              type="button"
+              role="tab"
+              id={`ws-tab-${x.id}`}
+              aria-controls={`ws-pane-${x.id}`}
+              aria-selected={pane === x.id}
+              tabIndex={pane === x.id ? 0 : -1}
+              onClick={() => setPane(x.id)}
+              data-testid={`ws-tab-${x.id}`}
+            >
+              {x.label}
+            </button>
+          ))}
+        </div>
         {/* server komponentindən gələn elementlər — açarsız React xəbərdarlıq verir */}
-        <Fragment key="left">{left}</Fragment>
-        <div className="h-1.5 shrink-0 bg-navy-line" aria-hidden />
-        <Fragment key="right">{right}</Fragment>
+        <div
+          id="ws-pane-task"
+          role="tabpanel"
+          aria-labelledby="ws-tab-task"
+          className="ws-pane"
+          hidden={pane !== 'task'}
+        >
+          <Fragment key="left">{left}</Fragment>
+        </div>
+        <div
+          id="ws-pane-code"
+          role="tabpanel"
+          aria-labelledby="ws-tab-code"
+          className="ws-pane"
+          hidden={pane !== 'code'}
+        >
+          <Fragment key="right">{right}</Fragment>
+        </div>
       </div>
     );
   }

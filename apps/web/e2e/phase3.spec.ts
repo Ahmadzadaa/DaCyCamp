@@ -109,14 +109,20 @@ test('terminal lab: başlat → xterm → touch ~/done.txt → Yoxla → keçdi 
   await expect(page).toHaveURL(/\/kurs\/numune\/numune-fesil\/ctf$/, { timeout: 30_000 });
 });
 
-test('CTF həll → kurs bitir → sertifikat verilir, kurs səhifəsində link', async ({ page }) => {
+test('CTF həll → kurs bitir → sertifikat verilir, kurs səhifəsində link', async ({
+  page,
+  browser,
+}) => {
   test.setTimeout(120_000);
   await login(page, fresh);
   await page.goto('/kurs/numune/numune-fesil/ctf');
   await page.getByRole('textbox').first().fill('dacy{NUMUNE}');
   await page.getByRole('button', { name: 'Göndər' }).first().click();
   await expect(page.getByText('Düzgündür!').first()).toBeVisible({ timeout: 15_000 });
-  await expect(page.getByText('Sertifikat qazandınız!').first()).toBeVisible({ timeout: 15_000 });
+  // SEC-04: NÜMUNƏ kursunda Python addımı var — sertifikat admin təsdiqinə göndərilir
+  await expect(
+    page.getByText('Kurs bitdi — sertifikat təsdiq üçün göndərildi').first(),
+  ).toBeVisible({ timeout: 15_000 });
 
   await page.goto('/kurs/numune');
   const link = page.getByTestId('course-cert');
@@ -128,6 +134,18 @@ test('CTF həll → kurs bitir → sertifikat verilir, kurs səhifəsində link'
   await link.click();
   // dev serverdə /sertifikat/[id] soyuq kompilyasiya olunur (~10 s)
   await expect(page).toHaveURL(new RegExp(`/sertifikat/${certId}$`), { timeout: 30_000 });
+  await expect(page.getByTestId('cert-status')).toContainText('Təsdiq gözləyir');
+  expect((await page.request.get(`/api/certificates/${certId}.pdf`)).status()).toBe(409);
+
+  // admin tələbənin Python kodunu (sübut) görüb təsdiqləyir
+  const ctx = await browser.newContext();
+  const ap = await ctx.newPage();
+  await login(ap, ADMIN);
+  expect((await ap.request.get(`/api/admin/certificates/${certId}/evidence`)).ok()).toBeTruthy();
+  expect((await ap.request.post(`/api/admin/certificates/${certId}/approve`)).ok()).toBeTruthy();
+  await ctx.close();
+
+  await page.reload();
   await expect(page.getByTestId('cert-name')).toHaveText(fresh.name);
   await expect(page.getByTestId('cert-serial')).toContainText(/DACY-C-\d{4}-\d{6}/);
   await expect(page.getByTestId('cert-status')).toContainText('Etibarlıdır');

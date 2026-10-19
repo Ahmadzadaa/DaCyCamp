@@ -55,7 +55,8 @@ test('admin: kurs → fəsil → nəzəri addım → dərc → tələbə görür
 
   // məzmun + canlı önizləmə
   await page.locator('textarea.code').fill('# Salam\n\nBu **e2e** mətnidir.');
-  await expect(page.locator('.box h1', { hasText: 'Salam' })).toBeVisible();
+  // A11Y-04: markdown-dakı `#` səhifənin öz h1-i olduğu üçün h2 kimi render olunur (görünüşü .md-h1)
+  await expect(page.locator('.box h2.md-h1', { hasText: 'Salam' })).toBeVisible();
   await page.getByRole('button', { name: 'Yadda saxla' }).click();
   await expect(page.getByText('Addım yadda saxlanıldı')).toBeVisible();
   await page.screenshot({ path: resolve(SHOTS, 'admin-theory.app.png'), fullPage: true });

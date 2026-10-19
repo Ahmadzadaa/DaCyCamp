@@ -21,7 +21,7 @@ import { t } from '@/lib/i18n';
 import { PageHeader } from '@/components/admin/page-header';
 import { GroupStatusBadge } from '@/components/academy/badges';
 import { fmtZoned } from '@/components/academy/format';
-import { GroupForm, ProgramForm } from '@/components/academy/admin/admin-forms';
+import { GroupForm, ProgramForm, ProgramList } from '@/components/academy/admin/admin-forms';
 import { TeacherAccounts } from '@/components/academy/admin/join-code';
 
 export function generateMetadata(): Metadata {
@@ -76,7 +76,8 @@ export default async function AdminAcademyPage({
           </div>
         ))}
       </div>
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_420px]">
+      {/* 7 sütunlu qrup cədvəli: yan sütun yalnız çox geniş ekranda; 1280–1680px-də cədvəl tam endə, formalar aşağıda */}
+      <div className="grid gap-6 min-[1680px]:grid-cols-[minmax(0,1fr)_400px]">
         <section className="flex min-w-0 flex-col gap-3" aria-labelledby="ag">
           <h2 id="ag" className="h2">
             {t('academy.admin.groups')}
@@ -153,7 +154,7 @@ export default async function AdminAcademyPage({
             </nav>
           ) : null}
         </section>
-        <div className="flex min-w-0 flex-col gap-6">
+        <div className="grid min-w-0 items-start gap-6 lg:grid-cols-2 2xl:grid-cols-3 min-[1680px]:grid-cols-1">
           <section className="box" aria-labelledby="at">
             <h2 id="at" className="box-h">
               {t('academy.admin.teachers')}
@@ -173,18 +174,7 @@ export default async function AdminAcademyPage({
               {t('academy.admin.programs')}
             </h2>
             {programs.length ? (
-              <ul className="mb-4 flex flex-col gap-2 text-sm">
-                {programs.map((p) => (
-                  <li key={p.id} className="flex items-center justify-between gap-3">
-                    <span>
-                      <b>{p.title}</b> <span className="text-muted">· {p.slug}</span>
-                    </span>
-                    <span className="text-muted">
-                      {t(`academy.programStatus.${p.status}`)} · {p.groupCount}
-                    </span>
-                  </li>
-                ))}
-              </ul>
+              <ProgramList programs={programs} />
             ) : (
               <p className="mb-4 text-sm text-muted">{t('academy.empty.programs')}</p>
             )}

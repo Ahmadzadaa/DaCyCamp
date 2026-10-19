@@ -56,6 +56,11 @@ export class AcademyFilesController {
     const f = await this.files.authorizeDownload(u, id);
     res.setHeader('Cache-Control', 'private, no-store');
     res.setHeader('X-Content-Type-Options', 'nosniff');
+    // səhv açılsa belə (məs. brauzer əlavəsi) skript işləməsin — kurs fayllarındakı kimi (SEC-01)
+    res.setHeader(
+      'Content-Security-Policy',
+      "default-src 'none'; style-src 'unsafe-inline'; sandbox",
+    );
     res.attachment(f.filename);
     res.type(f.mime);
     res.sendFile(f.path, (err) => {

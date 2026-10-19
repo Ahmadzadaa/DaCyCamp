@@ -241,6 +241,7 @@ describe('Academy submissions (e2e)', () => {
     expect(dl.status).toBe(200);
     expect(dl.headers['content-disposition']).toMatch(/^attachment;/);
     expect(dl.headers['x-content-type-options']).toBe('nosniff');
+    expect(dl.headers['content-security-policy']).toContain('sandbox');
     expect(dl.headers['content-type']).toMatch(/^application\/pdf/);
     expect((await aysel.get(`/academy/files/${ids.aliPdf}`)).status).toBe(403);
     expect((await lead.get(`/academy/files/${ids.aliPdf}`)).status).toBe(403);

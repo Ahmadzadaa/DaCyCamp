@@ -102,8 +102,10 @@ export function CodeEditor({
       colors: {
         'editor.background': '#141416',
         'editor.foreground': '#F5F5F7',
-        'editorLineNumber.foreground': '#5A5A5F',
-        'editorLineNumber.activeForeground': '#98989F',
+        // sətir nömrələri xəta mesajlarında istinad olunur — tünd fonda ≥4.5:1 (#5A5A5F 2.7:1 idi)
+        'editorLineNumber.foreground': '#8E8E93',
+        'editorLineNumber.activeForeground': '#D1D1D6',
+        'editorLineNumber.dimmedForeground': '#8E8E93',
         'editor.lineHighlightBackground': '#1C1C1E',
         'editor.selectionBackground': '#3A3A3C',
         'editorCursor.foreground': '#22C79A',

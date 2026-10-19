@@ -76,6 +76,9 @@ export default async function LessonPage({ params, searchParams }: Props) {
         <QuizView view={view} quiz={v} />
       ) : (
         <SplitLayout
+          rightLabel={t(
+            v.kind === 'terminal' ? 'ws.terminal' : v.kind === 'ctf' ? 'ws.flagTab' : 'ws.codeTab',
+          )}
           left={<InstructionsPane view={view} />}
           right={
             v.kind === 'sql' ? (

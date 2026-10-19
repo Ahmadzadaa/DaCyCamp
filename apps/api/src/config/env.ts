@@ -19,7 +19,7 @@ const optionalStr = z
   .optional()
   .transform((v) => (v && v.trim() ? v.trim() : undefined));
 
-const schema = z.object({
+export const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   DATABASE_URL: z.string().min(1),
   DATABASE_URL_TEST: z.string().optional(),
@@ -87,7 +87,7 @@ const EXAMPLE_SECRETS = new Set([
  * Bu açarlarla istənilən istifadəçinin (admin daxil) token-i saxtalaşdırıla bilər.
  */
 export function productionSecretProblems(
-  e: Pick<z.infer<typeof schema>, 'JWT_ACCESS_SECRET' | 'JWT_REFRESH_SECRET' | 'CTF_PEPPER'>,
+  e: Pick<z.infer<typeof envSchema>, 'JWT_ACCESS_SECRET' | 'JWT_REFRESH_SECRET' | 'CTF_PEPPER'>,
 ): string[] {
   const out: string[] = [];
   for (const k of ['JWT_ACCESS_SECRET', 'JWT_REFRESH_SECRET', 'CTF_PEPPER'] as const) {
@@ -99,7 +99,7 @@ export function productionSecretProblems(
   return out;
 }
 
-const parsed = schema.safeParse(process.env);
+const parsed = envSchema.safeParse(process.env);
 if (!parsed.success) {
   console.error(
     '❌ .env konfiqurasiyası səhvdir:',

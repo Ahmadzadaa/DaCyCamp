@@ -1,4 +1,4 @@
-import { productionSecretProblems } from './env';
+import { envSchema, productionSecretProblems } from './env';
 
 describe('productionSecretProblems', () => {
   const strong = (c: string) => c.repeat(40);
@@ -38,5 +38,12 @@ describe('productionSecretProblems', () => {
         CTF_PEPPER: strong('p'),
       }),
     ).toEqual([]);
+  });
+});
+
+describe('LAB_DRIVER (SEC-06)', () => {
+  it('defolt olaraq söndürülüb — docker driver host Docker socket-i tələb edir', () => {
+    expect(envSchema.shape.LAB_DRIVER.parse(undefined)).toBe('off');
+    expect(envSchema.shape.LAB_DRIVER.parse('mock')).toBe('mock');
   });
 });

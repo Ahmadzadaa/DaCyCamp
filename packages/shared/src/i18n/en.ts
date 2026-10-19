@@ -33,8 +33,7 @@ export const en: Dictionary = {
   },
   certReview: {
     title: 'Certificate approval',
-    lead:
-      'Python task results are reported by the student\'s browser and the server cannot verify them. Certificates for such courses are not valid until you review the student\'s code and approve them.',
+    lead: "Python task results are reported by the student's browser and the server cannot verify them. Certificates for such courses are not valid until you review the student's code and approve them.",
     empty: 'No certificates are awaiting approval',
     student: 'Student',
     certificate: 'Certificate',
@@ -47,7 +46,8 @@ export const en: Dictionary = {
     approve: 'Approve',
     reject: 'Revoke',
     rejectTitle: 'Revoke the certificate?',
-    rejectDesc: 'The student keeps their progress and XP; only the certificate becomes invalid. You can restore it later.',
+    rejectDesc:
+      'The student keeps their progress and XP; only the certificate becomes invalid. You can restore it later.',
   },
   shell: {
     brand: 'DaCy Academy',
@@ -101,7 +101,7 @@ export const en: Dictionary = {
       'Each hint deducts the amount shown from the XP the exercise awards. You are never charged twice for the same hint.',
     helpQ4: 'How do I get a certificate?',
     helpA4:
-      'A certificate is issued automatically when you complete every step of a course, and anyone can verify it with its QR code.',
+      'A certificate is issued when you complete every step of a course (for courses with Python tasks, after your code is reviewed and approved), and anyone can verify it with its QR code.',
     helpContact: 'Still have a question? Contact support and our team will get back to you.',
     helpWrite: 'Contact support',
     support: 'Support',
@@ -293,7 +293,7 @@ export const en: Dictionary = {
       q3: 'I have no experience. Can I still start?',
       a3: 'Yes. Beginner courses start from scratch, and “Find my level” shows you the courses that suit you.',
       q4: 'How do I get a certificate?',
-      a4: 'A certificate is issued automatically when you complete every step of a course. Each certificate has a public verification link.',
+      a4: 'A certificate is issued when you complete every step of a course. For courses with Python tasks, it becomes valid once your code has been reviewed and approved. Each certificate has a public verification link.',
       q5: 'Can I use it on my phone?',
       a5: 'Yes, the site works on mobile. For writing code, though, a computer is more comfortable.',
     },
@@ -992,6 +992,9 @@ export const en: Dictionary = {
     sqlPlaceholder: '-- Write your query here',
     pyPlaceholder: '# Write your code here',
     resizePanels: 'Resize panels',
+    codeTab: 'Code',
+    flagTab: 'Flags',
+    paneTabs: 'Task and workspace',
     lessonMeta: 'Lesson · {slug}',
     datasetFailed: 'Failed to load the dataset: {name}',
     pyodideFailed: 'Failed to load the Python environment: {src}',
@@ -1016,7 +1019,7 @@ export const en: Dictionary = {
     hours: '{n} {n|hour|hours}',
     xp: '{n} XP',
     myTitle: 'My certificates',
-    myEmpty: 'No certificates yet. One is issued automatically when you complete a course.',
+    myEmpty: 'No certificates yet. One is issued when you complete a course.',
     track: 'Track',
     course: 'Course',
     student: 'Student',
@@ -1724,6 +1727,8 @@ export const en: Dictionary = {
     ACADEMY_GRADE_NOT_DRAFT: 'The grade has already been released or returned',
     ACADEMY_GRADE_STALE: 'A newer attempt exists after the graded one. Please grade again.',
     ACADEMY_GROUP_ARCHIVED: 'Archived groups cannot be changed',
+    ACADEMY_GROUP_DATES_CONFLICT:
+      'Some classes or assignment deadlines fall outside the new dates — move them first',
     ACADEMY_GROUP_CLOSED: 'The group does not accept submissions',
     ACADEMY_GROUP_CODE_TAKEN: 'This group code is already in use',
     ACADEMY_GROUP_NOT_FOUND: 'Group not found',
@@ -2165,7 +2170,7 @@ export const en: Dictionary = {
       releaseAll: 'Release ready grades',
       releasedN: '{n} {n|grade|grades} released',
       needsCodeReview:
-        '{n} {n|grade is|grades are} based on Python results checked in the browser — open the student\'s code and release {n|it|them} individually',
+        "{n} {n|grade is|grades are} based on Python results checked in the browser — open the student's code and release {n|it|them} individually",
       publishNow: 'Publish now',
       publishScheduled: 'Publish at opening time',
       published: 'Assignment published',
@@ -2297,6 +2302,10 @@ export const en: Dictionary = {
       seats: '{n} / {cap} seats',
       noLead: 'No lead instructor assigned',
       history: 'History',
+      historyEmpty: 'No history entries',
+      historySystem: 'System',
+      editProgram: 'Edit',
+      dates: 'Dates',
       joinCode: 'Join code',
       joinCodeHint:
         'Send this code to students: they enter it when signing up and land straight in this group.',

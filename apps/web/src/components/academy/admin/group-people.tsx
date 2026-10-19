@@ -1,11 +1,12 @@
 'use client';
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { Trash2 } from 'lucide-react';
+import { History, Trash2 } from 'lucide-react';
 import {
   ACADEMY_ENROLLMENT_STATUSES,
   type AcademyEnrollmentDto,
+  type AcademyEnrollmentEventDto,
   type AcademyEnrollmentStatus,
   type AcademyGroupDto,
   type AdminCourseDto,
@@ -106,6 +107,19 @@ export function EnrollmentsManager({
 }) {
   const router = useRouter();
   const [busy, setBusy] = useState<string | null>(null);
+  // yazılış tarixçəsi — yalnız oxumaq üçün (audit qeydləri dəyişdirilmir)
+  const [open, setOpen] = useState<string | null>(null);
+  const [history, setHistory] = useState<Record<string, AcademyEnrollmentEventDto[]>>({});
+  async function toggleHistory(e: AcademyEnrollmentDto) {
+    if (open === e.id) return setOpen(null);
+    setOpen(e.id);
+    try {
+      const rows = await api<AcademyEnrollmentEventDto[]>(`/academy/enrollments/${e.id}/history`);
+      setHistory((h) => ({ ...h, [e.id]: rows }));
+    } catch (err) {
+      toast.error(errorMessage(err));
+    }
+  }
   async function change(e: AcademyEnrollmentDto, status: AcademyEnrollmentStatus) {
     setBusy(e.id);
     await call(
@@ -140,31 +154,84 @@ export function EnrollmentsManager({
                 <th>{t('academy.f.student')}</th>
                 <th>{t('academy.f.enrolled')}</th>
                 <th>{t('academy.f.status')}</th>
+                <th>
+                  <span className="sr-only">{t('academy.admin.history')}</span>
+                </th>
               </tr>
             </thead>
             <tbody>
               {rows.map((e) => (
-                <tr key={e.id}>
-                  <td>
-                    <span className="ttl">{e.student.name}</span>
-                    {e.student.email ? <div className="slug">{e.student.email}</div> : null}
-                  </td>
-                  <td>{fmtZoned(e.enrolledAt, { time: false })}</td>
-                  <td>
-                    <Select
-                      value={e.status}
-                      disabled={busy === e.id}
-                      onChange={(ev) => change(e, ev.target.value as AcademyEnrollmentStatus)}
-                      aria-label={`${t('academy.admin.changeStatus')} · ${e.student.name}`}
-                    >
-                      {ACADEMY_ENROLLMENT_STATUSES.map((s) => (
-                        <option key={s} value={s}>
-                          {t(`academy.enrollmentStatus.${s}`)}
-                        </option>
-                      ))}
-                    </Select>
-                  </td>
-                </tr>
+                <Fragment key={e.id}>
+                  <tr>
+                    <td>
+                      <span className="ttl">{e.student.name}</span>
+                      {e.student.email ? (
+                        <div className="slug [overflow-wrap:anywhere]">{e.student.email}</div>
+                      ) : null}
+                    </td>
+                    <td>{fmtZoned(e.enrolledAt, { time: false })}</td>
+                    <td>
+                      <Select
+                        value={e.status}
+                        disabled={busy === e.id}
+                        onChange={(ev) => change(e, ev.target.value as AcademyEnrollmentStatus)}
+                        aria-label={`${t('academy.admin.changeStatus')} · ${e.student.name}`}
+                      >
+                        {ACADEMY_ENROLLMENT_STATUSES.map((s) => (
+                          <option key={s} value={s}>
+                            {t(`academy.enrollmentStatus.${s}`)}
+                          </option>
+                        ))}
+                      </Select>
+                    </td>
+                    <td>
+                      {/* yalnız nişan — dar yan sütunda cədvəl üfüqi sürüşməsin */}
+                      <button
+                        type="button"
+                        className="grid size-8 place-items-center rounded-md text-muted hover:bg-soft hover:text-ink"
+                        aria-expanded={open === e.id}
+                        aria-label={`${t('academy.admin.history')}: ${e.student.name}`}
+                        title={t('academy.admin.history')}
+                        onClick={() => void toggleHistory(e)}
+                        data-testid="enrollment-history-toggle"
+                      >
+                        <History aria-hidden className="size-4" />
+                      </button>
+                    </td>
+                  </tr>
+                  {open === e.id ? (
+                    <tr>
+                      <td colSpan={4}>
+                        {!history[e.id] ? (
+                          <div className="sk h-10 !rounded-lg" aria-busy="true" />
+                        ) : history[e.id]!.length ? (
+                          <ol
+                            className="flex flex-col gap-1 text-sm"
+                            data-testid="enrollment-history"
+                          >
+                            {history[e.id]!.map((h, i) => (
+                              <li key={i} className="flex flex-wrap gap-x-2">
+                                <span className="text-muted">{fmtZoned(h.createdAt)}</span>
+                                <span>
+                                  {h.fromStatus
+                                    ? `${t(`academy.enrollmentStatus.${h.fromStatus}`)} → `
+                                    : ''}
+                                  <b>{t(`academy.enrollmentStatus.${h.toStatus}`)}</b>
+                                </span>
+                                <span className="text-muted">
+                                  · {h.actor?.name ?? t('academy.admin.historySystem')}
+                                </span>
+                                {h.reason ? <span className="text-muted">· {h.reason}</span> : null}
+                              </li>
+                            ))}
+                          </ol>
+                        ) : (
+                          <p className="text-sm text-muted">{t('academy.admin.historyEmpty')}</p>
+                        )}
+                      </td>
+                    </tr>
+                  ) : null}
+                </Fragment>
               ))}
             </tbody>
           </table>

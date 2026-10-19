@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { Plus, X } from 'lucide-react';
+import { Pencil, Plus, X } from 'lucide-react';
 import {
   ACADEMY_DEFAULTS,
   ACADEMY_GROUP_STATUSES,
@@ -19,6 +19,111 @@ import { Button } from '@/components/ui/button';
 import { Field } from '@/components/ui/field';
 import { Input, Select, Textarea } from '@/components/ui/input';
 import { UserSearch } from './user-search';
+
+/** Proqramlar: siyahı və yerində redaktə (ad, təsvir, vəziyyət; slug linklərdə istifadə olunduğu üçün dəyişmir) */
+export function ProgramList({ programs }: { programs: AcademyProgramDto[] }) {
+  const [editing, setEditing] = useState<string | null>(null);
+  return (
+    <ul className="mb-4 flex flex-col gap-2 text-sm" data-testid="program-list">
+      {programs.map((p) =>
+        editing === p.id ? (
+          <li key={p.id}>
+            <ProgramEditForm p={p} onDone={() => setEditing(null)} />
+          </li>
+        ) : (
+          <li key={p.id} className="flex items-center justify-between gap-3">
+            <span className="min-w-0">
+              <b>{p.title}</b> <span className="text-muted">· {p.slug}</span>
+            </span>
+            <span className="flex shrink-0 items-center gap-2 text-muted">
+              {t(`academy.programStatus.${p.status}`)} · {p.groupCount}
+              <button
+                type="button"
+                className="rounded-md p-1 hover:bg-soft hover:text-ink"
+                onClick={() => setEditing(p.id)}
+                aria-label={`${t('academy.admin.editProgram')} · ${p.title}`}
+                data-testid={`program-edit-${p.slug}`}
+              >
+                <Pencil aria-hidden className="size-4" />
+              </button>
+            </span>
+          </li>
+        ),
+      )}
+    </ul>
+  );
+}
+
+function ProgramEditForm({ p, onDone }: { p: AcademyProgramDto; onDone: () => void }) {
+  const router = useRouter();
+  const [title, setTitle] = useState(p.title);
+  const [description, setDescription] = useState(p.description);
+  const [status, setStatus] = useState(p.status);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  async function save(e: React.FormEvent) {
+    e.preventDefault();
+    const body: Record<string, unknown> = {};
+    if (title.trim() !== p.title) body.title = title.trim();
+    if (description !== p.description) body.description = description;
+    if (status !== p.status) body.status = status;
+    if (!Object.keys(body).length) return onDone();
+    setBusy(true);
+    setError(null);
+    try {
+      await api(`/academy/programs/${p.id}`, { method: 'PATCH', body });
+      toast.success(t('academy.admin.saved'));
+      onDone();
+      router.refresh();
+    } catch (err) {
+      setError(errorMessage(err));
+    } finally {
+      setBusy(false);
+    }
+  }
+  return (
+    <form
+      onSubmit={save}
+      className="flex flex-col gap-3 rounded-xl border border-line p-3"
+      noValidate
+      data-testid="program-edit-form"
+    >
+      <Field label={t('academy.f.title')}>
+        <Input value={title} onChange={(e) => setTitle(e.target.value)} maxLength={200} />
+      </Field>
+      <Field label={t('academy.f.description')}>
+        <Textarea
+          rows={2}
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          maxLength={4000}
+        />
+      </Field>
+      <Field label={t('academy.f.status')}>
+        <Select value={status} onChange={(e) => setStatus(e.target.value as typeof status)}>
+          {ACADEMY_PROGRAM_STATUSES.map((s) => (
+            <option key={s} value={s}>
+              {t(`academy.programStatus.${s}`)}
+            </option>
+          ))}
+        </Select>
+      </Field>
+      {error ? (
+        <p className="text-sm text-error-ink" role="alert">
+          {error}
+        </p>
+      ) : null}
+      <div className="flex gap-2">
+        <Button type="submit" size="sm" loading={busy} disabled={!title.trim()}>
+          {t('common.save')}
+        </Button>
+        <Button type="button" size="sm" variant="ghost" onClick={onDone}>
+          {t('common.cancel')}
+        </Button>
+      </div>
+    </form>
+  );
+}
 
 /** Yeni proqram (Data Engineering, Cyber Security …) */
 export function ProgramForm() {
@@ -277,6 +382,10 @@ export function GroupEditor({ g }: { g: AcademyGroupDto }) {
   const [description, setDescription] = useState(g.description);
   const [status, setStatus] = useState(g.status);
   const [capacity, setCapacity] = useState(g.capacity ? String(g.capacity) : '');
+  // tarixlər gün kimi saxlanılır (yaradılma formasındakı kimi UTC gecəyarısı)
+  const day = (iso: string | null) => (iso ? iso.slice(0, 10) : '');
+  const [startAt, setStartAt] = useState(day(g.startAt));
+  const [endAt, setEndAt] = useState(day(g.endAt));
   const [busy, setBusy] = useState(false);
   async function save() {
     setBusy(true);
@@ -287,6 +396,9 @@ export function GroupEditor({ g }: { g: AcademyGroupDto }) {
       if (status !== g.status) body.status = status;
       const cap = capacity ? Number(capacity) : null;
       if (cap !== g.capacity) body.capacity = cap;
+      const iso = (d: string) => (d ? new Date(`${d}T00:00:00Z`).toISOString() : null);
+      if (startAt !== day(g.startAt)) body.startAt = iso(startAt);
+      if (endAt !== day(g.endAt)) body.endAt = iso(endAt);
       if (!Object.keys(body).length) return;
       await api(`/academy/groups/${g.id}`, { method: 'PATCH', body });
       toast.success(t('academy.admin.saved'));
@@ -326,6 +438,23 @@ export function GroupEditor({ g }: { g: AcademyGroupDto }) {
             min={1}
             value={capacity}
             onChange={(e) => setCapacity(e.target.value)}
+          />
+        </Field>
+        <Field label={t('academy.f.startDate')}>
+          <Input
+            type="date"
+            value={startAt}
+            onChange={(e) => setStartAt(e.target.value)}
+            data-testid="group-start"
+          />
+        </Field>
+        <Field label={t('academy.f.endDate')}>
+          <Input
+            type="date"
+            value={endAt}
+            min={startAt || undefined}
+            onChange={(e) => setEndAt(e.target.value)}
+            data-testid="group-end"
           />
         </Field>
       </div>
