@@ -4,7 +4,7 @@
  *  1. .env yoxdursa .env.example-dan yaradır
  *  2. DATABASE_URL-ə qoşulmağa çalışır; alınmasa və Docker daemon varsa `docker compose up -d db`
  *  3. prisma migrate deploy + seed (idempotent)
- *  4. turbo run dev → shared (watch) + api (:4000) + web (:3000)
+ *  4. turbo run dev → shared (watch) + api (:4000) + web (:3000); port məşğuldursa növbəti boş port
  */
 import { spawn, spawnSync } from 'node:child_process';
 import { copyFileSync, existsSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
@@ -266,14 +266,59 @@ if (run('pnpm', ['--filter', '@dacy/api', 'prisma:deploy']).status !== 0)
 log('Seed (idempotent)…');
 if (run('pnpm', ['--filter', '@dacy/api', 'prisma:seed']).status !== 0) fail('seed alınmadı.');
 
-const webPort = process.env.WEB_PORT || '3000';
-const apiPort = process.env.API_PORT || '4000';
+/** Port başqa proqramdadırsa növbəti boş port (3100 / 5433 başqa layihəyə aiddir — keçilir) */
+async function freeAppPort(start) {
+  for (let p = start; p < start + 100; p++) {
+    if (p === 3100 || p === 5433) continue;
+    if (!(await probe('127.0.0.1', p, 500))) return p;
+  }
+  fail(
+    `${start}–${start + 99} aralığında boş port tapılmadı — .env-də WEB_PORT / API_PORT təyin edin.`,
+  );
+}
+const wantWeb = Number(process.env.WEB_PORT || 3000);
+const wantApi = Number(process.env.API_PORT || 4000);
+const webPort = String(await freeAppPort(wantWeb));
+const apiPort = String(await freeAppPort(wantApi));
+if (webPort !== String(wantWeb)) log(`${wantWeb} portu məşğuldur → web ${webPort} portunda`);
+if (apiPort !== String(wantApi)) log(`${wantApi} portu məşğuldur → api ${apiPort} portunda`);
+// localhost ünvanları seçilən porta uyğunlaşdırılır (CORS / cookie mənşəyi, web → API proksi); .env dəyişmir
+const localUrl = (value, fallback, from, to) => {
+  const v = value || fallback;
+  try {
+    const u = new URL(v);
+    if (/^(localhost|127\.0\.0\.1)$/.test(u.hostname) && Number(u.port || 80) === from) {
+      u.port = to;
+      return u.origin;
+    }
+  } catch {
+    /* olduğu kimi */
+  }
+  return v;
+};
+const webEnv = {
+  WEB_ORIGIN: localUrl(process.env.WEB_ORIGIN, `http://localhost:${wantWeb}`, wantWeb, webPort),
+  NEXT_PUBLIC_APP_URL: localUrl(
+    process.env.NEXT_PUBLIC_APP_URL,
+    `http://localhost:${wantWeb}`,
+    wantWeb,
+    webPort,
+  ),
+  API_INTERNAL_URL: localUrl(
+    process.env.API_INTERNAL_URL,
+    `http://localhost:${wantApi}`,
+    wantApi,
+    apiPort,
+  ),
+  // brauzer terminalı WebSocket-i API portuna açır (lib/labs.ts)
+  NEXT_PUBLIC_API_PORT: process.env.NEXT_PUBLIC_API_PORT || apiPort,
+};
 log(`Başladılır → web http://localhost:${webPort}  ·  api http://localhost:${apiPort}`);
 const child = spawn('pnpm', ['turbo', 'run', 'dev'], {
   stdio: 'inherit',
   cwd: root,
   shell: process.platform === 'win32',
-  env: { ...process.env, PORT: webPort, WEB_PORT: webPort, API_PORT: apiPort },
+  env: { ...process.env, ...webEnv, PORT: webPort, WEB_PORT: webPort, API_PORT: apiPort },
 });
 // content/courses/* — bazada olmayan kurs paketlərini API özü açılanda idxal edir (ContentSyncService)
 const stop = () => child.kill('SIGINT');
