@@ -1,5 +1,17 @@
 import { Audit } from '../audit/audit.interceptor';
-import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  Param,
+  Patch,
+  Post,
+  Query,
+  Res,
+} from '@nestjs/common';
+import type { Response } from 'express';
 import { verify } from '@node-rs/argon2';
 import {
   ROLES,
@@ -56,15 +68,14 @@ export class UsersController {
   async changePassword(
     @CurrentUser() u: AuthUser,
     @Body(new ZodPipe(changePasswordSchema)) dto: { current: string; next: string },
+    @Res({ passthrough: true }) res: Response,
   ) {
     const user = await this.prisma.user.findUnique({ where: { id: u.id } });
     if (!user) throw notFound();
     if (!user.passwordHash || !(await verify(user.passwordHash, dto.current)))
       throw badRequest('AUTH_WRONG_PASSWORD', 'Cari şifrə yanlışdır');
-    await this.prisma.user.update({
-      where: { id: u.id },
-      data: { passwordHash: await this.auth.hashPassword(dto.next) },
-    });
+    await this.auth.invalidateSessions(u.id, dto.next);
+    this.auth.setCookies(res, await this.auth.newSession(u.id));
     return { ok: true };
   }
 
@@ -103,6 +114,7 @@ export class UsersController {
         name: u.name,
         email: u.email,
         role: u.role,
+        isBlocked: u.isBlocked,
         xpTotal: u.xpTotal,
         createdAt: u.createdAt.toISOString(),
         lastActiveAt: u.lastActiveAt?.toISOString() ?? null,
@@ -187,6 +199,7 @@ export class UsersController {
       name: u.name,
       email: u.email,
       role: u.role,
+      isBlocked: u.isBlocked,
       xpTotal: u.xpTotal,
       createdAt: u.createdAt.toISOString(),
       lastActiveAt: u.lastActiveAt?.toISOString() ?? null,
@@ -262,16 +275,47 @@ export class UsersController {
   ) {
     const user = await this.prisma.user.findUnique({ where: { id }, select: { id: true } });
     if (!user) throw notFound();
-    await this.prisma.$transaction([
-      this.prisma.user.update({
+    await this.auth.invalidateSessions(id, dto.password);
+    return { ok: true };
+  }
+
+  @AdminOnly()
+  @Audit({ action: 'user.sessions.revoke', entity: 'USER' })
+  @HttpCode(200)
+  @Post('admin/users/:id/sessions/revoke')
+  async revokeSessions(@Param('id') id: string) {
+    if (!(await this.prisma.user.findUnique({ where: { id }, select: { id: true } })))
+      throw notFound();
+    await this.auth.invalidateSessions(id);
+    return { ok: true };
+  }
+
+  @AdminOnly()
+  @Audit({ action: 'user.block', entity: 'USER', body: ['blocked'] })
+  @Post('admin/users/:id/block')
+  async block(
+    @Param('id') id: string,
+    @CurrentUser() me: AuthUser,
+    @Body(new ZodPipe(z.object({ blocked: z.boolean() }))) dto: { blocked: boolean },
+  ) {
+    const user = await this.prisma.user.findUnique({ where: { id } });
+    if (!user) throw notFound();
+    if (id === me.id) throw badRequest('SELF_ACTION', 'Öz hesabınızı bloklaya bilməzsiniz.');
+    if (user.role === 'ADMIN' && dto.blocked) await this.guardLastAdmin();
+    await this.prisma.$transaction(async (tx) => {
+      await tx.user.update({
         where: { id },
-        data: { passwordHash: await this.auth.hashPassword(dto.password) },
-      }),
-      this.prisma.refreshToken.updateMany({
+        data: { isBlocked: dto.blocked, authVersion: { increment: 1 } },
+      });
+      await tx.refreshToken.updateMany({
         where: { userId: id, revokedAt: null },
         data: { revokedAt: new Date() },
-      }),
-    ]);
+      });
+      await tx.passwordResetToken.updateMany({
+        where: { userId: id, usedAt: null },
+        data: { usedAt: new Date() },
+      });
+    });
     return { ok: true };
   }
 
@@ -287,7 +331,23 @@ export class UsersController {
     const user = await this.prisma.user.findUnique({ where: { id } });
     if (!user) throw notFound();
     if (user.role === 'ADMIN') await this.guardLastAdmin();
-    await this.prisma.user.delete({ where: { id } });
+    await this.prisma.$transaction(async (tx) => {
+      await tx.$queryRaw`SELECT id FROM "User" WHERE id = ${id} FOR UPDATE`;
+      const enrollment = await tx.academyEnrollment.findFirst({
+        where: { studentId: id },
+        select: { id: true },
+      });
+      const question = await tx.classroomQuestion.findFirst({
+        where: { authorId: id },
+        select: { id: true },
+      });
+      if (enrollment || question)
+        throw conflict(
+          'ACADEMY_RECORDS_PROTECTED',
+          'Bu hesabın akademiya qeydləri var. Qiymət və tarixçəni qorumaq üçün hesab həmişəlik silinə bilməz. Qrup yazılışını dayandıra bilərsiniz.',
+        );
+      await tx.user.delete({ where: { id } });
+    });
     return { ok: true, email: user.email };
   }
 

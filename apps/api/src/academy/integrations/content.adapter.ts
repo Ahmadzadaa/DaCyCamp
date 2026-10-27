@@ -1,3 +1,5 @@
+import { enabledStep } from '../../content/enabled-step';
+import { STEP_TYPES } from '@dacy/shared';
 import { Injectable } from '@nestjs/common';
 import type { Prisma } from '@prisma/client';
 import type {
@@ -34,9 +36,8 @@ export function trustOf(type: StepType): AcademyEvaluationTrust {
     case 'TERMINAL':
       return 'SERVER_VERIFIED';
     case 'SQL':
-      return 'SERVER_CHECKED';
     case 'PYTHON':
-      return 'CLIENT_ATTESTED';
+      return 'SERVER_VERIFIED';
     default:
       return 'COMPLETION';
   }
@@ -71,6 +72,7 @@ const stepSelect = {
 type StepRow = Prisma.StepGetPayload<{ select: typeof stepSelect }>;
 
 const available = (s: StepRow) =>
+  enabledStep(s.type) &&
   s.isPublished &&
   s.module.isPublished &&
   s.module.course.isPublished &&
@@ -90,10 +92,11 @@ export class AcademyContentAdapter {
 
   /** Müəllim üçün mövcud tapşırıqların axtarışı: yalnız dərc olunmuş kursların dərc olunmuş addımları */
   async search(q: AcademyStepSearchQuery): Promise<AcademyStepRefDto[]> {
+    if (q.type && !enabledStep(q.type)) return [];
     const rows = await this.prisma.step.findMany({
       where: {
         isPublished: true,
-        ...(q.type ? { type: q.type } : {}),
+        ...(q.type ? { type: q.type } : { type: { in: STEP_TYPES.filter(enabledStep) } }),
         ...(q.q ? { title: { contains: q.q, mode: 'insensitive' } } : {}),
         module: {
           isPublished: true,

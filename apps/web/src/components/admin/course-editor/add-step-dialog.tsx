@@ -1,4 +1,5 @@
 'use client';
+import { FEATURES } from '@/lib/features';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { Plus } from 'lucide-react';
@@ -71,7 +72,9 @@ export function AddStepDialog({
           <div className="fld">
             <span className="lbl">{t('admin.stepType')}</span>
             <div className="stp-types" role="radiogroup" aria-label={t('admin.stepType')}>
-              {STEP_TYPES.map((x) => {
+              {STEP_TYPES.filter(
+                (x) => FEATURES.legacyLabs || (x !== 'CTF' && x !== 'TERMINAL'),
+              ).map((x) => {
                 const Icon = stepLucide(x);
                 const on = x === type;
                 return (

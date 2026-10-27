@@ -163,40 +163,34 @@ describe('Mərhələ 2: sql / python / ctf / ipucu / idxal-ixrac', () => {
       ],
     };
     const row_hash = await sha256Hex(canonicalizeResult(good, 'result_match'));
-    const bad = await st
-      .post(`/learn/steps/${ids.sql}/submit`)
-      .send({
-        kind: 'sql',
-        query: 'SELECT 1',
-        row_hash: row_hash.replace(/^./, 'f'),
-        row_count: 2,
-        columns: ['ad', 'deyer'],
-      });
+    const bad = await st.post(`/learn/steps/${ids.sql}/submit`).send({
+      kind: 'sql',
+      query: 'SELECT ad, deyer FROM numune LIMIT 2',
+      row_hash: row_hash.replace(/^./, 'f'),
+      row_count: 2,
+      columns: ['ad', 'deyer'],
+    });
     expect(bad.body.passed).toBe(false);
     expect(bad.body.reason).toBe('row_count');
-    const badVals = await st
-      .post(`/learn/steps/${ids.sql}/submit`)
-      .send({
-        kind: 'sql',
-        query: 'SELECT 1',
-        row_hash: 'a'.repeat(64),
-        row_count: 3,
-        columns: ['ad', 'deyer'],
-      });
+    const badVals = await st.post(`/learn/steps/${ids.sql}/submit`).send({
+      kind: 'sql',
+      query: 'SELECT ad, deyer + 1 AS deyer FROM numune ORDER BY deyer DESC',
+      row_hash: 'a'.repeat(64),
+      row_count: 3,
+      columns: ['ad', 'deyer'],
+    });
     expect(badVals.body.reason).toBe('values');
     const badCols = await st
       .post(`/learn/steps/${ids.sql}/submit`)
       .send({ kind: 'sql', query: 'SELECT 1', row_hash, row_count: 3, columns: ['ad'] });
     expect(badCols.body.reason).toBe('columns');
-    const ok = await st
-      .post(`/learn/steps/${ids.sql}/submit`)
-      .send({
-        kind: 'sql',
-        query: 'SELECT ad, deyer FROM numune ORDER BY deyer DESC',
-        row_hash,
-        row_count: 3,
-        columns: ['AD', 'deyer'],
-      });
+    const ok = await st.post(`/learn/steps/${ids.sql}/submit`).send({
+      kind: 'sql',
+      query: 'SELECT ad, deyer FROM numune ORDER BY deyer DESC',
+      row_hash,
+      row_count: 3,
+      columns: ['AD', 'deyer'],
+    });
     expect(ok.status).toBe(200);
     expect(ok.body.passed).toBe(true);
     expect(ok.body.xpAwarded).toBe(50);
@@ -377,7 +371,7 @@ describe('Mərhələ 2: sql / python / ctf / ipucu / idxal-ixrac', () => {
     const r2 = await ins
       .post('/admin/import/validate')
       .attach('file', buildZip({ title: 'Yeni başlıq', withSql: false }), 'paket.zip');
-    expect(r2.body.summary.willUnpublish).toEqual(['giris/sorgu', 'giris/elave']);
+    expect(r2.body.summary.willUnpublish.sort()).toEqual(['giris/elave', 'giris/sorgu']);
     const r3 = await ins
       .post('/admin/import/apply')
       .attach('file', buildZip({ title: 'Yeni başlıq', withSql: false }), 'paket.zip');

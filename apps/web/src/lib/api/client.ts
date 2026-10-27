@@ -4,8 +4,16 @@ import { ApiError } from './errors';
 let refreshing: Promise<boolean> | null = null;
 export async function tryRefresh(): Promise<boolean> {
   if (!refreshing) {
-    refreshing = fetch('/api/auth/refresh', { method: 'POST', credentials: 'include' })
-      .then((r) => r.ok)
+    const refresh = async () => {
+      // Another tab may have refreshed while this tab waited for the browser-wide lock.
+      const me = await fetch('/api/auth/me', { credentials: 'include', cache: 'no-store' });
+      if (me.ok) return true;
+      return (await fetch('/api/auth/refresh', { method: 'POST', credentials: 'include' })).ok;
+    };
+    refreshing = (async () =>
+      typeof navigator !== 'undefined' && navigator.locks
+        ? await navigator.locks.request('dacy:session-refresh', refresh)
+        : await refresh())()
       .catch(() => false)
       .finally(() => setTimeout(() => (refreshing = null), 0));
   }

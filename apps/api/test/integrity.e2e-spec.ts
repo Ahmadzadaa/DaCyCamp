@@ -128,19 +128,24 @@ describe('Assessment integrity (SEC-04)', () => {
   });
   afterAll(() => app.close());
 
-  it('Python: saxta «passed» sorğusu addımı tamamlayır, amma sertifikat təsdiq gözləyir; XP bir dəfə', async () => {
+  it('Python: saxta «passed» XP vermir; həll serverdə keçəndən sonra sertifikat müəllim təsdiqi gözləyir', async () => {
     // brauzerdə heç nə işləmədən göndərilmiş «keçdi» — server bunu ayırd edə bilmir (sənədləşdirilmiş hədd)
     const forged = await st
       .post(`/learn/steps/${ids['py-kurs:py']}/submit`)
       .send({ kind: 'python', code: 'print("heç nə")', passed: true });
     expect(forged.status).toBe(200);
     expect(forged.body).toMatchObject({
-      passed: true,
-      xpAwarded: 40,
-      courseCompleted: true,
-      certificatePending: true,
+      passed: false,
+      xpAwarded: 0,
     });
-    ids.pyCert = forged.body.certificateId;
+    expect(
+      await prisma.certificate.count({ where: { userId: (await st.get('/auth/me')).body.id } }),
+    ).toBe(0);
+    const verified = await st
+      .post(`/learn/steps/${ids['py-kurs:py']}/submit`)
+      .send({ kind: 'python', code: 'x = 1', passed: false });
+    expect(verified.body).toMatchObject({ passed: true, xpAwarded: 40, certificatePending: true });
+    ids.pyCert = verified.body.certificateId;
     // təkrar saxta sorğular XP-ni artırmır (dedupe: addım üzrə bir dəfə)
     for (let i = 0; i < 3; i++) {
       const again = await st
@@ -231,26 +236,25 @@ describe('Assessment integrity (SEC-04)', () => {
       canonicalizeResult({ columns: ['ad'], rows: [['A'], ['B']] }, 'result_match'),
     );
     expect(row_hash).toBe(expected.row_hash);
-    const solved = await st
-      .post(`/learn/steps/${ids['sql-kurs:sql']}/submit`)
-      .send({
-        kind: 'sql',
-        query: 'SELECT ad FROM n ORDER BY ad',
-        row_hash,
-        row_count: 2,
-        columns: ['ad'],
-      });
+    const solved = await st.post(`/learn/steps/${ids['sql-kurs:sql']}/submit`).send({
+      kind: 'sql',
+      query: 'SELECT ad FROM n ORDER BY ad',
+      row_hash,
+      row_count: 2,
+      columns: ['ad'],
+    });
     expect(solved.body.passed).toBe(true);
     // ikinci tələbə eyni nəticəni sorğusuz göndərir — keçir: server sorğunun müəllifliyini yoxlamır
     const replay = await st2
       .post(`/learn/steps/${ids['sql-kurs:sql']}/submit`)
       .send({ kind: 'sql', query: '-- kopyalanıb', row_hash, row_count: 2, columns: ['ad'] });
-    expect(replay.body.passed).toBe(true);
+    expect(replay.body.passed).toBe(false);
     // amma düzgün nəticəni bilmədən təxmin işləmir
     const guess = await st2
       .post(`/learn/steps/${ids['sql-kurs:sql']}/submit`)
       .send({ kind: 'sql', query: 'x', row_hash: 'f'.repeat(64), row_count: 2, columns: ['ad'] });
-    expect(guess.body).toMatchObject({ passed: false, reason: 'values' });
+    expect(guess.status).toBe(422);
+    expect(guess.body.code).toBe('SQL_EXECUTION_FAILED');
   });
 
   describe('akademiya: Python ballı avtomatik qaralama toplu açıqlanmır', () => {

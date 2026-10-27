@@ -82,15 +82,13 @@ describe('Academy assignments (e2e)', () => {
       status: 'ACTIVE',
       leadInstructorId: ids.lead,
     });
-    const g3 = await admin
-      .post('/academy/groups')
-      .send({
-        programId: cs.body.id,
-        code: 'CS-001',
-        name: 'CS-001',
-        status: 'ACTIVE',
-        leadInstructorId: ids.csLead,
-      });
+    const g3 = await admin.post('/academy/groups').send({
+      programId: cs.body.id,
+      code: 'CS-001',
+      name: 'CS-001',
+      status: 'ACTIVE',
+      leadInstructorId: ids.csLead,
+    });
     ids.de1 = g1.body.id;
     ids.de2 = g2.body.id;
     ids.cs1 = g3.body.id;
@@ -133,7 +131,7 @@ describe('Academy assignments (e2e)', () => {
     expect(r.body.find((s: { stepId: string }) => s.stepId === ids.stepSql)).toMatchObject({
       type: 'SQL',
       courseSlug: 'sql-esaslari',
-      trust: 'SERVER_CHECKED',
+      trust: 'SERVER_VERIFIED',
       available: true,
     });
     expect((await ali.get('/academy/steps/search?q=SQL')).status).toBe(403);
@@ -347,15 +345,13 @@ describe('Academy assignments (e2e)', () => {
   });
 
   it('paylaşılan tapşırıq: eyni platforma addımı iki qrupda — bir kanonik addım, müstəqil son tarixlər', async () => {
-    const r = await lead
-      .post(`/academy/groups/${ids.de2}/assignments`)
-      .send(
-        homework({
-          title: 'DE-002 SQL',
-          dueAt: iso(200),
-          items: [{ kind: 'LEARNING_STEP', stepId: ids.stepSql, maxScore: 100 }],
-        }),
-      );
+    const r = await lead.post(`/academy/groups/${ids.de2}/assignments`).send(
+      homework({
+        title: 'DE-002 SQL',
+        dueAt: iso(200),
+        items: [{ kind: 'LEARNING_STEP', stepId: ids.stepSql, maxScore: 100 }],
+      }),
+    );
     expect(r.status).toBe(201);
     await lead.post(`/academy/assignments/${r.body.id}/publish`).send({});
     ids.hw2 = r.body.id;
@@ -432,14 +428,12 @@ describe('Academy assignments (e2e)', () => {
   });
 
   it('mənbə addım gizlədiləndə element «əlçatan deyil» göstərilir, belə qaralama dərc olunmur', async () => {
-    const d = await lead
-      .post(`/academy/groups/${ids.de1}/assignments`)
-      .send(
-        homework({
-          title: 'Nəzəri',
-          items: [{ kind: 'LEARNING_STEP', stepId: ids.stepTheory, maxScore: 10 }],
-        }),
-      );
+    const d = await lead.post(`/academy/groups/${ids.de1}/assignments`).send(
+      homework({
+        title: 'Nəzəri',
+        items: [{ kind: 'LEARNING_STEP', stepId: ids.stepTheory, maxScore: 10 }],
+      }),
+    );
     await prisma.step.update({ where: { id: ids.stepTheory }, data: { isPublished: false } });
     const g = await lead.get(`/academy/assignments/${d.body.id}`);
     expect(g.body.items[0].step).toMatchObject({ available: false, title: 'Addım giris' });

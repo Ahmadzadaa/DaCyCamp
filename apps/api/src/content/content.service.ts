@@ -1,3 +1,4 @@
+import { enabledStep } from './enabled-step';
 import { Injectable, Logger, type OnModuleDestroy, type OnModuleInit } from '@nestjs/common';
 import { Prisma, type Step } from '@prisma/client';
 import {
@@ -655,6 +656,11 @@ export class ContentService implements OnModuleInit, OnModuleDestroy {
   /* ───────── addımlar ───────── */
 
   async createStep(moduleId: string, dto: CreateStepInput) {
+    if (!enabledStep(dto.type))
+      throw unprocessable(
+        'LEGACY_CONTENT_DISABLED',
+        'Yeni dərslər üçün SQL, Python, nəzəriyyə və ya test seçin',
+      );
     const m = await this.prisma.module.findUnique({ where: { id: moduleId } });
     if (!m) throw notFound();
     if (
@@ -775,21 +781,39 @@ export class ContentService implements OnModuleInit, OnModuleDestroy {
       if (issues.length)
         throw unprocessable('PUBLISH_ISSUES', 'Dərc olunmuş addımda səhvlər var', issues);
     }
-    // SQL: həll dəyişibsə köhnə "expected" keşini sil (Mərhələ 2-də yenidən hesablanır)
-    const secret = split.secret as Record<string, unknown> | null;
-    await this.prisma.$transaction(async (tx) => {
-      await tx.step.update({
-        where: { id },
-        data: {
-          type: newType,
-          title: split.title,
-          xp: split.xp,
-          estimatedMinutes: split.estimatedMinutes,
-          config: split.config as unknown as Prisma.InputJsonValue,
-          secret: secret ? (secret as unknown as Prisma.InputJsonValue) : Prisma.JsonNull,
-          ...(meta?.key ? { key: meta.key } : {}),
-        },
+    // Validate and compute before any write; a failed edit keeps the old content/cache.
+    let secret = split.secret as Record<string, unknown> | null;
+    if (s.isPublished && newType === 'SQL') {
+      const expected = await this.sqlCheck.computeExpected({
+        id,
+        config: split.config,
+        secret,
+        courseId: s.module.courseId,
       });
+      secret = { ...secret, expected };
+    }
+    await this.prisma.$transaction(async (tx) => {
+      await tx.step
+        .update({
+          where: { id, updatedAt: s.updatedAt },
+          data: {
+            type: newType,
+            title: split.title,
+            xp: split.xp,
+            estimatedMinutes: split.estimatedMinutes,
+            config: split.config as unknown as Prisma.InputJsonValue,
+            secret: secret ? (secret as unknown as Prisma.InputJsonValue) : Prisma.JsonNull,
+            ...(meta?.key ? { key: meta.key } : {}),
+          },
+        })
+        .catch((error: unknown) => {
+          if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025')
+            throw conflict(
+              'CONTENT_VERSION_CONFLICT',
+              'Dərs başqa pəncərədə dəyişdirilib. Səhifəni yeniləyin.',
+            );
+          throw error;
+        });
       const keep = new Set(tasks.map((t) => t.key));
       await tx.ctfTask.deleteMany({ where: { stepId: id, key: { notIn: [...keep] } } });
       // iki fazalı sıra: əvvəl mənfi
@@ -806,7 +830,6 @@ export class ContentService implements OnModuleInit, OnModuleDestroy {
           data: { order: t.order },
         });
     });
-    if (s.isPublished && newType === 'SQL') await this.sqlCheck.computeAndStore(id);
     return this.getStep(id);
   }
 
@@ -814,9 +837,33 @@ export class ContentService implements OnModuleInit, OnModuleDestroy {
     const cur = await this.getStep(id);
     if (isPublished && cur.issues.length)
       throw unprocessable('PUBLISH_ISSUES', 'Dərc etmək üçün səhvləri düzəldin', cur.issues);
-    // SQL: həllin gözlənilən nəticəsi dərc zamanı serverdə hesablanır (tələbəyə yalnız hash müqayisəsi)
-    if (isPublished && cur.type === 'SQL') await this.sqlCheck.computeAndStore(id);
-    await this.prisma.step.update({ where: { id }, data: { isPublished } });
+    let secret: Prisma.InputJsonValue | undefined;
+    if (isPublished && cur.type === 'SQL') {
+      const step = await this.prisma.step.findUniqueOrThrow({
+        where: { id },
+        include: { module: { select: { courseId: true } } },
+      });
+      if (step.updatedAt.toISOString() !== cur.updatedAt)
+        throw conflict('CONTENT_VERSION_CONFLICT');
+      const expected = await this.sqlCheck.computeExpected({
+        ...step,
+        courseId: step.module.courseId,
+      });
+      secret = {
+        ...((step.secret ?? {}) as Record<string, unknown>),
+        expected,
+      } as unknown as Prisma.InputJsonValue;
+    }
+    await this.prisma.step
+      .update({
+        where: { id, updatedAt: new Date(cur.updatedAt) },
+        data: { isPublished, ...(secret ? { secret } : {}) },
+      })
+      .catch((error: unknown) => {
+        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025')
+          throw conflict('CONTENT_VERSION_CONFLICT');
+        throw error;
+      });
     return this.getStep(id);
   }
 

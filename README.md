@@ -1,15 +1,21 @@
 # DaCy Academy
 
+**SQL/Python və Academy sinif otağı versiyası.** Docker tələb etməyən işə salma: Linux, Node.js 22.13+, PostgreSQL, Python mühiti, `bubblewrap` və `.env` ilə `corepack pnpm db:deploy`, `corepack pnpm build`, `corepack pnpm pilot:start`. Tam quraşdırma: [DOCKERLESS_OPERATIONS.md](docs/DOCKERLESS_OPERATIONS.md). Bu əmrlər mövcud məlumatları sıfırlamır və seed işlətmir.
+
+**Mac + Docker Desktop:** `bash scripts/docker-local.sh`. Lokal baza, API və web ayrıca volume-larla başlayır. [Mac təlimatı](docs/MAC_DOCKER_LOCAL.md).
+
+Sinif otağı, qrup kodları və müəllim–tələbə istifadəsi: [CLASSROOM_GUIDE.md](docs/CLASSROOM_GUIDE.md). Hazırlıq vəziyyəti və məhdudiyyətlər: [LAUNCH_REVIEW.md](docs/LAUNCH_REVIEW.md). Faktiki yoxlamalar: [CLASSROOM_QA.md](docs/CLASSROOM_QA.md).
+
 DataCamp / TryHackMe modelində onlayn təlim platforması: tələbə qeydiyyatdan keçir, istiqamət (Data Analytics, Data Engineering, Cyber Security) və kurs seçir, dərsləri müəllimin qoyduğu ardıcıllıqla keçir.
 
-> **Kontent platformaya daxil deyil.** Kurslar, dərslər, tapşırıqlar və Learning Path-lər admin paneldən (`/admin`) və ya ZIP paketlə (Mərhələ 2) yüklənir. Bazada yalnız bir nümunə kurs var: **«NÜMUNƏ — silinə bilər»**.
+> Repo-da `content/courses/` kurs paketləri var; API bazada olmayanları idxal edir (`CONTENT_SYNC`). Admin paneldən (`/admin`) və ZIP paketlə əlavə məzmun yaratmaq mümkündür. İlkin seed-dəki **«NÜMUNƏ — silinə bilər»** texniki sınaq kursudur. Kursun tədris keyfiyyətini müəllim yoxlamalıdır.
 
 ## Texnologiyalar
 
 | Hissə   | Texnologiya                                                                   |
 | ------- | ----------------------------------------------------------------------------- |
 | Web     | Next.js 15 (App Router), React 19, Tailwind CSS 4, shadcn-tipli komponentlər  |
-| API     | NestJS 10, Prisma 6, PostgreSQL 16                                            |
+| API     | NestJS 11, Prisma 6, PostgreSQL 16+                                           |
 | Ortaq   | `packages/shared` — zod sxemləri, tiplər, lüğət (az), irəliləyiş hesablanması |
 | Alətlər | pnpm 10 workspaces, Turborepo, Vitest, Jest + supertest, Playwright           |
 
@@ -17,7 +23,7 @@ Portlar: **web 3000 · api 4000 · db 5432** (3100 və 5433 istifadə olunmur).
 
 ## Quraşdırma (bir əmrlə)
 
-Tələblər: Node.js 22+, pnpm 10 (`corepack enable`), və ya Docker, ya da lokal PostgreSQL 16.
+Tələblər: Node.js 22.13+, pnpm 10 (`corepack enable`), və ya Docker, ya da lokal PostgreSQL 16.
 
 ```bash
 pnpm install
@@ -33,7 +39,7 @@ pnpm dev
 
 ### Verilənlər bazası — iki yol
 
-**A) Docker (tövsiyə olunur).** Heç nə etmək lazım deyil: `pnpm dev` `db` servisini özü qaldırır. Yalnız bazanı qaldırmaq üçün: `docker compose up -d`.
+**A) Docker (alternativ).** `pnpm dev` lokal PostgreSQL-ə qoşula bilməsə `db` servisini özü qaldırmağa çalışır. Yalnız bazanı qaldırmaq üçün: `docker compose up -d`.
 Kompüterinizdə 5432 portunda artıq başqa PostgreSQL varsa (və orada `dacy` rolu yoxdursa), skript bunu özü tanıyır: Docker bazasını boş portda (5434-dən başlayaraq) qaldırır və `.env`-dəki `DATABASE_URL` / `DB_PORT` dəyərlərini yeniləyir.
 
 **B) Mövcud PostgreSQL.** Rol və bazaları yaradın, `.env`-də `DATABASE_URL`/`DATABASE_URL_TEST` dəyişənlərini uyğunlaşdırın:
@@ -70,9 +76,11 @@ docker compose --profile full up --build
 - **Miqrasiyalar:** `pnpm db:deploy` (yalnız `migrate deploy`; `migrate dev` / `db:reset` production-da yox).
 - **Terminal lab-ları:** defolt olaraq söndürülüb (`LAB_DRIVER=off`, API konteynerinə Docker socket verilmir).
   Lab-lar lazım olsa: `docker compose -f docker-compose.yml -f docker-compose.labs.yml --profile full up` —
-  bu, API-yə host üzərində tam səlahiyyət verir; yalnız ayrıca, izolə edilmiş serverdə. Lab-lar söndürülü olanda
-  terminal addımı olan kurslar (hazırda yalnız `numune`) tamamlana bilməz — həmin addımları dərcdən çıxarın.
-- **Monitorinq:** `GET /api/health` baza əlçatmaz olanda 503 qaytarır.
+  bu, API-yə host üzərində tam səlahiyyət verir; yalnız ayrıca, izolə edilmiş serverdə.
+  Hazırkı SQL/Python rejimində `LEGACY_LABS_ENABLED=false` terminal/CTF addımlarını dərs xəritəsi və
+  irəliləyiş hesabından çıxarır; mövcud qeydləri saxlayır. Köhnə rejimi açmaq üçün hər iki `LEGACY_LABS_ENABLED`
+  və `NEXT_PUBLIC_LEGACY_LABS` bayrağı tələb olunur.
+- **Monitorinq:** `GET /api/health` baza əlçatmaz olanda 503 qaytarır. `/admin/sistem` servis, backup, bildiriş və icra növbəsini göstərir. `pilot:start` servisləri izləyib xəta ilə dayandıqda yenidən başladır; server açılışı üçün `ops/systemd/dacy.service` nümunəsi var.
 - **Bir nüsxə:** akademiya bildiriş işçisi hər API nüsxəsində işləyir; bir neçə nüsxədə birindən başqa hamısında
   `ACADEMY_WORKER_INTERVAL_SEC=0`.
 - **Seed admin:** ilk girişdən sonra parolu dəyişin; `SEED_*` dəyərlərini `.env`-dən silə bilərsiniz.
@@ -94,7 +102,7 @@ pnpm db:restore -- backups/dacy-… --target-url postgresql://…/dacy_restore -
 - Bərpa: hədəf baza həmişə `--target-url` ilə açıq göstərilir; hədəf `.env`-dəki işlək baza ilə eynidirsə, bazada
   artıq cədvəl varsa və ya fayl qovluğu boş deyilsə — yalnız `--force` ilə; `NODE_ENV=production`-da yalnız
   `--allow-production` ilə. Əvvəl sha256 yoxlanılır, sonda cədvəl sayları və miqrasiya manifestlə müqayisə olunur.
-- Tövsiyə: gündəlik `pnpm db:backup` (cron) və ayda bir dəfə ayrıca bazaya yoxlama bərpası.
+- `pnpm pilot:start` monitoru və gündəlik yerli backup-ı da işlədir. `BACKUP_REMOTE` və rclone qurulanda nüsxə xarici hədəfə checksum ilə köçürülür; mənbə silinmir. Əl ilə: `pnpm ops:backup`. Bərpanı ayrıca bazada müntəzəm yoxlayın; detalları [əməliyyat təlimatındadır](docs/DOCKERLESS_OPERATIONS.md).
 
 ## Test hesabları (seed)
 
@@ -136,7 +144,7 @@ Playwright üçün brauzer bir dəfə yüklənir: `pnpm --filter @dacy/web exec 
 
 ## Brauzer tapşırıqları (Mərhələ 2)
 
-Tələbə kodu **heç vaxt serverdə işləmir** — hər şey brauzerdədir:
+Redaktorda sınaq brauzerdə işləyir. Göndərilən SQL/Python kodu serverdə ayrıca, məhdudlaşdırılmış prosesdə yenidən yoxlanır; XP və irəliləyiş yalnız server nəticəsinə əsaslanır:
 
 | Addım    | Mühit                                                           | Haradan yüklənir                                                  |
 | -------- | --------------------------------------------------------------- | ----------------------------------------------------------------- |
@@ -146,8 +154,8 @@ Tələbə kodu **heç vaxt serverdə işləmir** — hər şey brauzerdədir:
 
 - `apps/web/scripts/copy-runtimes.mjs` bu faylları `node_modules`-dan `public/`-ə kopyalayır (`pnpm dev` / `pnpm build` avtomatik; qovluqlar git-ə düşmür).
 - **Pyodide paketləri** (pandas və s.) defolt olaraq `https://cdn.jsdelivr.net/pyodide/v0.29.5/full/`-dan gəlir. İnternetsiz və ya korporativ şəbəkədə tam güzgünü öz serverinizə qoyub `.env`-də `NEXT_PUBLIC_PYODIDE_URL=/pyodide/` (və ya tam URL) verin. CDN əlçatmaz olanda tətbiq avtomatik lokal nüvəyə keçir — bu halda yalnız standart kitabxana işləyir.
-- **SQL yoxlaması**: müəllimin həlli dərc zamanı serverdə (DuckDB, yalnız müəllim kodu) icra olunub nəticənin heşi saxlanılır; tələbənin nəticəsi brauzerdə heşlənib müqayisə edilir (`check: result_match` — sütun adları + sətirlər; `row_count` — yalnız sətir sayı).
-- **Python yoxlaması**: `tests` (assert-lər) tələbə kodundan sonra brauzerdə işləyir; keçdi/keçmədi serverə göndərilir, cəhd sayılır.
+- **SQL yoxlaması**: müəllimin həlli dərc/redaktə zamanı uğurla yoxlanandan sonra gözlənilən nəticə saxlanılır. Tələbənin sorğusu serverdə DuckDB altprosesində yenidən icra olunur; brauzerdən gələn hash qiymət üçün əsas deyil. Xarici fayl/şəbəkə girişi bağlıdır; növbə, nəticə və vaxt limitləri var.
+- **Python yoxlaması**: brauzer ilkin rəy verir. Server Linux `bubblewrap` + seccomp ilə şəbəkəsiz və tətbiq fayllarına çıxışı olmayan birdəfəlik mühit yaradır. Etibarlı qiymətləndirici tələbə interpreterindən ayrıdır; JSON nəticələrini yoxlayır, tələbənin `passed` bayrağını qəbul etmir. Python, elmi paketlər və `PYTHON_BIN` əvvəlcədən hazırlanmalıdır; hazır olmadıqda göndəriş keçmiş sayılmır. Köhnə, brauzerdən təsdiqlənmiş nəticələr geriyə dönük etibarlı kimi işarələnmir; müəllim təsdiqi saxlanılır.
 - **CTF**: cavablar bazada yalnız HMAC-SHA256 (`CTF_PEPPER`) heşi kimi saxlanılır, frontend-ə heç vaxt getmir; yoxlama `POST /learn/ctf-tasks/:id/answer` — istifadəçi başına **10 cəhd / dəq**.
 - **İpucu**: hər açılan ipucu `hint_penalty_xp` qədər XP cəriməsi (addımın XP-si bundan azalır; tapşırıq səviyyəsində `0` = pulsuz).
 
@@ -160,7 +168,7 @@ Tələbə kodu **heç vaxt serverdə işləmir** — hər şey brauzerdədir:
 - Lab imicləri və yoxlama skriptləri: `infra/lab-images/README.md`. Nümunə imic: `pnpm lab:images`.
 - Vaxtı bitən sessiyalar və yetim konteynerlər hər 30 saniyədə təmizlənir; `/admin/lablar` aktiv sessiyaları göstərir və dayandırır.
 
-**Sertifikat**: kursun bütün dərc olunmuş addımları tamamlananda avtomatik verilir (tələbə + kurs üçün bir dəfə, seriya `DACY-C-<il>-<nömrə>`). Ad, kurs və istiqamət sertifikatda dondurulur (kurs sonradan dəyişsə də). `/sertifikat/[id]` ictimai yoxlama səhifəsi (QR kod ona işarə edir), `/api/certificates/[id].pdf` A4 PDF (DejaVu Sans — ə, ğ, ş düzgün). Admin `POST /admin/certificates/:id/revoke` ilə ləğv edə bilər; səhifə və PDF «Ləğv edilib» göstərir. `NEXT_PUBLIC_APP_URL` yoxlama linkinin bazasıdır.
+**Sertifikat**: bütün tələb olunan dərc olunmuş addımlar tamamlananda verilir; Python olan kurslarda mövcud müəllim/admin təsdiqi mərhələsi saxlanılır (tələbə + kurs üçün bir dəfə, seriya `DACY-C-<il>-<nömrə>`). Ad, kurs və istiqamət sertifikatda dondurulur (kurs sonradan dəyişsə də). `/sertifikat/[id]` ictimai yoxlama səhifəsi (QR kod ona işarə edir), `/api/certificates/[id].pdf` A4 PDF (DejaVu Sans — ə, ğ, ş düzgün). Admin `POST /admin/certificates/:id/revoke` ilə ləğv edə bilər; səhifə və PDF «Ləğv edilib» göstərir. `NEXT_PUBLIC_APP_URL` yoxlama linkinin bazasıdır.
 
 ## Karyera yolları — Learning Path (Mərhələ 4)
 

@@ -10,6 +10,7 @@ import { AnswerPanel } from '@/components/academy/answer-panel';
 import { AttemptAnswers } from '@/components/academy/attempt-answers';
 import { GradeStatusBadge, StudentStatusBadge } from '@/components/academy/badges';
 import { fmtScore, fmtZoned } from '@/components/academy/format';
+import { QuestionsList } from '@/components/classroom/discussions';
 import { OpenStepButton } from '@/components/academy/open-step-button';
 
 export function generateMetadata(): Metadata {
@@ -254,6 +255,7 @@ export default async function MyAssignmentPage({ params }: { params: Promise<{ i
           ))}
         </section>
       ) : null}
+      <QuestionsList groupId={a.groupId} assignmentId={a.id} readOnly={a.status === 'NOT_OPEN'} />
     </div>
   );
 }

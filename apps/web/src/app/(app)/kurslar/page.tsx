@@ -5,6 +5,7 @@ import { BookOpen, Pencil, Route } from 'lucide-react';
 import { LEVELS, type CourseCardDto, type Level, type TopicDto, type TrackDto } from '@dacy/shared';
 import { apiFetch, getCurrentUser } from '@/lib/api/server';
 import { t, type TKey } from '@/lib/i18n';
+import { FEATURES } from '@/lib/features';
 import { cn } from '@/lib/utils';
 import { CourseCard, courseKind, type CourseKind } from '@/components/app/course-card';
 import { EmptyState } from '@/components/app/empty-state';
@@ -165,7 +166,7 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
             <h1>{t('catalog.heroTitle')}</h1>
             <span className="badge badge-mint">{t('catalog.heroBadge')}</span>
           </div>
-          <p>{t('catalog.heroText')}</p>
+          <p>{t(FEATURES.legacyLabs ? 'catalog.heroText' : 'reliability.catalogText')}</p>
           <div className="hero-act">
             <Link href={user ? '/baslangic' : '/yollar'} className="b b-brand">
               <Route aria-hidden />

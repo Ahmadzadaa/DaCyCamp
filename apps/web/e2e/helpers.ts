@@ -3,7 +3,7 @@ import { resolve } from 'node:path';
 import type { Page } from '@playwright/test';
 
 export const ROOT = resolve(__dirname, '../../..');
-export const SHOTS = resolve(ROOT, 'docs/screenshots');
+export const SHOTS = resolve(ROOT, process.env.E2E_SCREENSHOT_DIR ?? 'docs/screenshots');
 export const REF = resolve(ROOT, 'docs/DACY_DESIGN_REFERENCE.html');
 
 /** Seed hesabları yalnız .env-dən (process.env üstündür) — kodda e-poçt/şifrə saxlanılmır */

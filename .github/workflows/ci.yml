@@ -6,6 +6,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     services:
       postgres:
         image: postgres:16-alpine
@@ -19,24 +20,64 @@ jobs:
     env:
       DATABASE_URL: postgresql://dacy:dacy@localhost:5432/dacy
       DATABASE_URL_TEST: postgresql://dacy:dacy@localhost:5432/dacy_test
-      JWT_ACCESS_SECRET: ci-access-secret
-      JWT_REFRESH_SECRET: ci-refresh-secret
-      CTF_PEPPER: ci-ctf-pepper
+      # Public, isolated CI fixtures. Never reuse these values for a deployment.
+      JWT_ACCESS_SECRET: ci-only-access-secret-for-isolated-tests-2026
+      JWT_REFRESH_SECRET: ci-only-refresh-secret-for-isolated-tests-2026
+      CTF_PEPPER: ci-only-ctf-pepper-for-isolated-tests-2026
+      SEED_ADMIN_EMAIL: ci-admin@dacy.local
+      SEED_ADMIN_PASSWORD: CIAdmin-Only-For-Local-Tests-2026!
+      SEED_STUDENT_EMAIL: ci-student@dacy.local
+      SEED_STUDENT_PASSWORD: CIStudent-Only-For-Local-Tests-2026!
+      MAIL_TRANSPORT: file
+      LEGACY_LABS_ENABLED: 'false'
+      NEXT_PUBLIC_LEGACY_LABS: 'false'
+      COOKIE_SECURE: 'false'
+      E2E_SCREENSHOT_DIR: .local/qa/screenshots
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
         with: { version: 10 }
       - uses: actions/setup-node@v4
-        with: { node-version: 22, cache: pnpm }
+        with: { node-version: 24, cache: pnpm }
+      - name: Install the isolated Python runtime
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y bubblewrap python3-venv
+          if sysctl kernel.apparmor_restrict_unprivileged_userns >/dev/null 2>&1; then sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0; fi
+          python3 -m venv .local/python
+          .local/python/bin/pip install -r ops/python-requirements.txt
+          echo "PYTHON_BIN=$PWD/.local/python/bin/python3" >> "$GITHUB_ENV"
       - run: pnpm install --frozen-lockfile
       - run: psql postgresql://dacy:dacy@localhost:5432/dacy -c 'CREATE DATABASE dacy_test OWNER dacy'
       - run: pnpm --filter @dacy/shared build
       - run: pnpm lint
       - run: node scripts/check-compose.mjs
       - run: pnpm typecheck
-      - run: pnpm --filter @dacy/shared test
-      - run: pnpm --filter @dacy/api prisma:generate
+      - run: pnpm test
       - run: pnpm --filter @dacy/api test:e2e
-      # content/courses/* — Python addımları: həll testdən keçir, starter keçmir (Pyodide, şəbəkəsiz)
       - run: pnpm --filter @dacy/web check:python
-      - run: pnpm --filter @dacy/web build
+      - run: pnpm db:deploy
+      - run: pnpm db:seed
+      - run: pnpm build
+      - run: pnpm run doctor
+      - run: pnpm audit --prod --audit-level=high
+      - run: pnpm --filter @dacy/web exec playwright install --with-deps chromium
+      - name: Exercise the production web and API
+        run: |
+          pnpm pilot:start
+          for attempt in $(seq 1 30); do if curl -fsS http://localhost:4000/health && curl -fsS http://localhost:3000/giris >/dev/null; then break; fi; sleep 1; done
+          pnpm --filter @dacy/web exec playwright test classroom.spec.ts runtime-reliability.spec.ts reliability.spec.ts academy-join.spec.ts academy-admin.spec.ts role-access.spec.ts cert-review.spec.ts academy.spec.ts
+          pnpm --filter @dacy/api check:python:native
+          pnpm test:load
+          pnpm test:operations
+      - name: Stop application
+        if: always()
+        run: pnpm pilot:stop
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: qa-diagnostics
+          path: |
+            apps/web/test-results
+            .local/logs
+            .local/qa

@@ -319,6 +319,13 @@ export const ADMIN_NAV: NavSection[] = [
     title: 'shell.secSystem',
     items: [
       {
+        href: '/admin/sistem',
+        label: 'reliability.operations',
+        icon: Activity,
+        adminOnly: true,
+        tint: '#12B886',
+      },
+      {
         href: '/admin/tarixce',
         label: 'shell.auditLog',
         icon: History,
@@ -354,6 +361,7 @@ export function visibleSections(
       ...sec,
       items: sec.items.filter(
         (it) =>
+          (FEATURES.legacyLabs || it.href !== '/admin/lablar') &&
           (opts.isAdmin !== false || !it.adminOnly) &&
           (!it.staffOnly || opts.staff) &&
           academyOk(it),

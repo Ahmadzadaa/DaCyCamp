@@ -13,6 +13,8 @@ import {
   Compass,
   Zap,
   Code2,
+  GraduationCap,
+  ShieldCheck,
 } from 'lucide-react';
 import type { CourseCardDto, LevelLabels, PathCardDto, TrackDto } from '@dacy/shared';
 import { t, type TKey } from '@/lib/i18n';
@@ -26,13 +28,27 @@ import { LanguageSwitcher } from '@/components/app/language-switcher';
 const FEATURES: Array<{ icon: typeof Database; title: TKey; text: TKey; c: string }> = [
   { icon: Database, title: 'landing.feat.sqlTitle', text: 'landing.feat.sqlText', c: '#6C7CF0' },
   { icon: Code2, title: 'landing.feat.pyTitle', text: 'landing.feat.pyText', c: '#E8A33D' },
-  {
-    icon: SquareTerminal,
-    title: 'landing.feat.termTitle',
-    text: 'landing.feat.termText',
-    c: '#2BD4A4',
-  },
-  { icon: Flag, title: 'landing.feat.ctfTitle', text: 'landing.feat.ctfText', c: '#EF6F8E' },
+  FLAGS.legacyLabs
+    ? {
+        icon: SquareTerminal,
+        title: 'landing.feat.termTitle',
+        text: 'landing.feat.termText',
+        c: '#2BD4A4',
+      }
+    : {
+        icon: GraduationCap,
+        title: 'classroom.title',
+        text: 'reliability.classroomText',
+        c: '#2BD4A4',
+      },
+  FLAGS.legacyLabs
+    ? { icon: Flag, title: 'landing.feat.ctfTitle', text: 'landing.feat.ctfText', c: '#EF6F8E' }
+    : {
+        icon: ShieldCheck,
+        title: 'reliability.verifiedTitle',
+        text: 'reliability.verifiedText',
+        c: '#EF6F8E',
+      },
   { icon: Route, title: 'landing.feat.pathTitle', text: 'landing.feat.pathText', c: '#4F5BD5' },
   { icon: Award, title: 'landing.feat.certTitle', text: 'landing.feat.certText', c: '#169C77' },
 ];
@@ -108,7 +124,7 @@ export function Landing({
             <div className="ld-hero-copy">
               <span className="badge badge-mint">{t('landing.heroBadge')}</span>
               <h1>{t('landing.heroTitle')}</h1>
-              <p>{t('landing.heroText')}</p>
+              <p>{t(FLAGS.legacyLabs ? 'landing.heroText' : 'reliability.heroText')}</p>
               <div className="ld-hero-act">
                 <Link href="/qeydiyyat" className="b b-brand">
                   {t('landing.heroCta')}
@@ -293,7 +309,11 @@ export function Landing({
                   {t(`landing.faq.q${n}`)}
                   <ChevronDown aria-hidden />
                 </summary>
-                <p>{t(`landing.faq.a${n}`)}</p>
+                <p>
+                  {t(
+                    !FLAGS.legacyLabs && n === 2 ? 'reliability.browserOnly' : `landing.faq.a${n}`,
+                  )}
+                </p>
               </details>
             ))}
           </div>

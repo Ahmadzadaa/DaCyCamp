@@ -5,8 +5,9 @@ import { ProgressModule } from '../progress/progress.module';
 import { SqlCheckModule } from '../sql-check/sql-check.module';
 import { LearnController } from './learn.controller';
 import { LearnService } from './learn.service';
+import { PythonCheckModule } from '../python-check/python-check.module';
 @Module({
-  imports: [ProgressModule, CatalogModule, AssetsModule, SqlCheckModule],
+  imports: [ProgressModule, CatalogModule, AssetsModule, SqlCheckModule, PythonCheckModule],
   controllers: [LearnController],
   providers: [LearnService],
   // akademiya adapteri mövcud kursa yazılış qaydalarını təkrar yazmadan istifadə edir

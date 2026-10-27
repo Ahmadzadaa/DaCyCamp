@@ -45,6 +45,12 @@ export const envSchema = z.object({
   SEED_STUDENT_EMAIL: optionalStr,
   SEED_STUDENT_PASSWORD: optionalStr,
   APP_TIMEZONE: z.string().default('Asia/Baku'),
+  // Only explicitly trusted proxy addresses may supply client IPs. Never use blanket trust=true.
+  TRUST_PROXY: z.string().default('loopback'),
+  LEGACY_LABS_ENABLED: z
+    .string()
+    .default('false')
+    .transform((v) => v === 'true'),
   // Mərhələ 3 — terminal lab-ları
   // lab-lar defolt söndürülüb: docker driver host Docker socket-i tələb edir (SEC-06)
   LAB_DRIVER: z.enum(['docker', 'mock', 'off']).default('off'),
@@ -73,6 +79,19 @@ export const envSchema = z.object({
   ACADEMY_WORKER_INTERVAL_SEC: z.coerce.number().int().min(0).default(30),
   /** akademiya faylının (göndəriş / resurs) ən böyük ölçüsü, MB */
   ACADEMY_MAX_FILE_MB: z.coerce.number().int().min(1).max(200).default(20),
+  PYTHON_BIN: z.string().default('/usr/bin/python3'),
+  PYTHON_SANDBOX_BIN: z.string().default('/usr/bin/bwrap'),
+  MAIL_TRANSPORT: z.enum(['disabled', 'file', 'smtp']).default('disabled'),
+  MAIL_OUTBOX_DIR: z.string().default('.local/mail'),
+  SMTP_HOST: optionalStr,
+  SMTP_PORT: z.coerce.number().int().default(587),
+  SMTP_SECURE: z
+    .string()
+    .default('false')
+    .transform((v) => v === 'true'),
+  SMTP_USER: optionalStr,
+  SMTP_PASSWORD: optionalStr,
+  MAIL_FROM: z.string().default('DaCy Academy <noreply@localhost>'),
 });
 
 /** `.env.example`-dakı açıq (repo-da hamıya görünən) dəyərlər */

@@ -161,6 +161,8 @@ export interface CourseMapDto {
 }
 
 export interface StepViewDto {
+  /** Owner of local drafts; prevents code being shared between accounts on the same browser. */
+  learnerId: string;
   id: string;
   key: string;
   type: StepType;
@@ -436,6 +438,7 @@ export interface AssetDto {
   createdAt: string;
 }
 export interface AdminUserDto {
+  isBlocked: boolean;
   id: string;
   name: string;
   email: string;

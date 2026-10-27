@@ -59,6 +59,7 @@ export class AcademyEvaluationAdapter {
               score: true,
               createdAt: true,
               type: true,
+              result: true,
             },
             orderBy: { createdAt: 'desc' },
           })
@@ -108,13 +109,27 @@ export class AcademyEvaluationAdapter {
           });
         } else {
           const pass = mine.find((x) => x.passed); // ən son keçən nəticə (desc sıralama)
+          const evidence = pass ?? mine[0];
+          const serverVerified =
+            evidence?.result &&
+            typeof evidence.result === 'object' &&
+            !Array.isArray(evidence.result) &&
+            evidence.result.serverVerified === true;
+          const evidenceTrust =
+            s.type === 'PYTHON' || s.type === 'SQL'
+              ? serverVerified
+                ? 'SERVER_VERIFIED'
+                : s.type === 'PYTHON'
+                  ? 'CLIENT_ATTESTED'
+                  : 'SERVER_CHECKED'
+              : trust;
           out.set(s.stepId, {
             stepId: s.stepId,
             passed: !!pass,
             ratio: pass ? 1 : 0,
             learningSubmissionId: pass?.id ?? mine[0]?.id ?? null,
             at: pass?.createdAt ?? mine[0]?.createdAt ?? null,
-            trust,
+            trust: evidenceTrust,
             attempted: mine.length > 0,
           });
         }

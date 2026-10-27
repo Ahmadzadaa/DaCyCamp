@@ -9,6 +9,11 @@ import { needsReview } from '../analytics/analytics.service';
 import type { AcademyNotificationType } from './academy-worker.service';
 
 const KIND: Record<AcademyNotificationType, NotificationKind> = {
+  CLASSROOM_QUESTION: 'academy_assignment',
+  CLASSROOM_REPLY: 'academy_assignment',
+  CLASSROOM_COMMENT: 'academy_assignment',
+  CLASSROOM_ANNOUNCEMENT: 'academy_assignment',
+  CLASSROOM_LESSON: 'academy_assignment',
   ENROLLED: 'academy_enrolled',
   ASSIGNMENT_PUBLISHED: 'academy_assignment',
   ASSIGNMENT_UPDATED: 'academy_assignment',
@@ -21,6 +26,11 @@ const KIND: Record<AcademyNotificationType, NotificationKind> = {
   CLASS_CANCELLED: 'academy_class',
 };
 const KEY = {
+  CLASSROOM_QUESTION: 'reliability.questionNew',
+  CLASSROOM_REPLY: 'reliability.questionReply',
+  CLASSROOM_COMMENT: 'reliability.postReply',
+  CLASSROOM_ANNOUNCEMENT: 'classroom.notificationAnnouncement',
+  CLASSROOM_LESSON: 'classroom.notificationLesson',
   ENROLLED: 'notif.academy.enrolled',
   ASSIGNMENT_PUBLISHED: 'notif.academy.assignmentPublished',
   ASSIGNMENT_UPDATED: 'notif.academy.assignmentUpdated',

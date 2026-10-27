@@ -107,6 +107,11 @@ export function AuthForm({
           invalid={!!formState.errors.password}
         />
       </Field>
+      {isLogin ? (
+        <Link href="/sifre-berpa" className="text-right text-sm underline">
+          {t('reliability.forgot')}
+        </Link>
+      ) : null}
       {error ? (
         <div role="alert" className="dlg-alert">
           {error}

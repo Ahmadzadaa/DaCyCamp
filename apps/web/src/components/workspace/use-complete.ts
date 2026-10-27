@@ -21,6 +21,5 @@ export function useAfterComplete(courseSlug: string) {
     const q = preview ? '?onizle=1' : '';
     if (r.next) router.push(`/kurs/${courseSlug}/${r.next.moduleKey}/${r.next.stepKey}${q}`);
     else router.push(`/kurs/${courseSlug}`);
-    router.refresh();
   };
 }

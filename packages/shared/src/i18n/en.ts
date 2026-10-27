@@ -1,3 +1,5 @@
+import { classroomEn } from './classroom';
+import { reliabilityEn } from './reliability';
 import type { Dictionary } from './az';
 
 /**
@@ -6,6 +8,8 @@ import type { Dictionary } from './az';
  * Azerbaijani nouns do not inflect after numerals, so az.ts never needs this syntax.
  */
 export const en: Dictionary = {
+  classroom: classroomEn,
+  reliability: reliabilityEn,
   app: {
     name: 'DaCy Academy',
     short: 'DaCy',
@@ -866,6 +870,12 @@ export const en: Dictionary = {
     unpublished: 'This course has not been published yet',
   },
   ws: {
+    executionStopped: 'Execution stopped. You can run your code again.',
+    executionBusy: 'The previous execution is still running.',
+    runtimeLoadTimeout: 'Python took too long to load. Please try again.',
+    stopExecution: 'Stop',
+    retryRuntime: 'Reload environment',
+
     labStart: 'Start lab',
     labStarting: 'Preparing the container…',
     labRunning: 'Lab is running',
@@ -1688,6 +1698,11 @@ export const en: Dictionary = {
     viewAll: 'View all',
   },
   errors: {
+    PASSWORD_RESET_INVALID: 'This reset link is invalid or expired. Request a new link.',
+    MAIL_NOT_CONFIGURED: 'Contact your administrator to reset your password.',
+    MAIL_DELIVERY_FAILED: 'The email could not be sent. Please try again later.',
+    CONTENT_VERSION_CONFLICT: 'This lesson changed in another window. Refresh the page.',
+    PYTHON_CHECK_UNAVAILABLE: 'Secure Python verification is unavailable. Contact your instructor.',
     ACADEMY_ADMIN_ONLY: 'Only an admin can do this',
     ACADEMY_ALREADY_ENROLLED: 'The student is already in this group',
     ACADEMY_ALREADY_GRADED: 'The grade has been released, so no new attempts are allowed',

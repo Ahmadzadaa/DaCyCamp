@@ -2,11 +2,12 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ClipboardCheck, ClipboardList, Presentation, Users } from 'lucide-react';
-import type { AcademyInstructorOverviewDto } from '@dacy/shared';
+import type { AcademyInstructorOverviewDto, ClassroomTeacherDeskDto } from '@dacy/shared';
 import { apiTry } from '@/lib/api/server';
 import { t } from '@/lib/i18n';
 import { EmptyState } from '@/components/app/empty-state';
 import { HeroArt } from '@/components/app/hero-art';
+import { TeacherDesk } from '@/components/classroom/teacher-desk';
 import { GroupStatusBadge } from '@/components/academy/badges';
 
 export function generateMetadata(): Metadata {
@@ -16,6 +17,7 @@ export function generateMetadata(): Metadata {
 export default async function TeacherHomePage() {
   const o = await apiTry<AcademyInstructorOverviewDto>('/academy/instructor/overview');
   if (!o) notFound();
+  const desk = await apiTry<ClassroomTeacherDeskDto>('/academy/instructor/desk');
   return (
     <>
       <section className="hero sm">
@@ -27,6 +29,7 @@ export default async function TeacherHomePage() {
         </div>
         <HeroArt kind="dashboard" />
       </section>
+      {desk ? <TeacherDesk desk={desk} /> : null}
       {o.groups.length === 0 ? (
         <EmptyState
           icon={Presentation}

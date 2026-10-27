@@ -10,6 +10,7 @@ import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { logger: ['error', 'warn', 'log'] });
+  app.getHttpAdapter().getInstance().set('trust proxy', env.TRUST_PROXY);
   app.useWebSocketAdapter(new WsAdapter(app)); // terminal lab-ları (/labs/ws)
   app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
   app.use(cookieParser());

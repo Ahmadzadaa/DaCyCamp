@@ -8,6 +8,7 @@ import '@fontsource/jetbrains-mono/500.css';
 import '@fontsource-variable/inter';
 import './globals.css';
 import './ios.css';
+import './classroom.css';
 import { Providers } from './providers';
 import { LevelLabelsProvider } from '@/components/level-labels';
 import { getLevelLabels } from '@/lib/level-labels';

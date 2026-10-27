@@ -1,3 +1,4 @@
+import { Prisma } from '@prisma/client';
 import { Injectable, Logger, type OnModuleDestroy, type OnModuleInit } from '@nestjs/common';
 import { ACADEMY_DEFAULTS, effectiveDueAt } from '@dacy/shared';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -5,9 +6,15 @@ import { env } from '../../config/env';
 import { AcademyAssignmentsService } from '../assignments/assignments.service';
 import { AcademyFilesService } from '../files/files.service';
 import type { AcademyEvent } from './academy-events';
+import { ClassroomService } from '../classroom/classroom.service';
 
 /** Bildiriş növləri (web lüğəti `notif.academy.*` ilə eyni adlar) */
 export const ACADEMY_NOTIFICATION_TYPES = [
+  'CLASSROOM_QUESTION',
+  'CLASSROOM_REPLY',
+  'CLASSROOM_COMMENT',
+  'CLASSROOM_ANNOUNCEMENT',
+  'CLASSROOM_LESSON',
   'ENROLLED',
   'ASSIGNMENT_PUBLISHED',
   'ASSIGNMENT_UPDATED',
@@ -53,6 +60,7 @@ export class AcademyWorkerService implements OnModuleInit, OnModuleDestroy {
     private readonly prisma: PrismaService,
     private readonly assignments: AcademyAssignmentsService,
     private readonly files: AcademyFilesService,
+    private readonly classroom: ClassroomService,
   ) {}
 
   onModuleInit() {
@@ -70,14 +78,16 @@ export class AcademyWorkerService implements OnModuleInit, OnModuleDestroy {
   }
 
   /** Bir dövr (testlər birbaşa çağırır). Paralel dövr başlamır. */
-  async runOnce(now = new Date()) {
+  async runOnce(at?: Date) {
+    const now = at ?? new Date();
     const out = { skipped: false, published: 0, processed: 0, failed: 0, reminders: 0, cleaned: 0 };
     if (this.running) return { ...out, skipped: true };
     this.running = true;
     try {
+      await this.step('classroom', () => this.classroom.publishDue(now));
       out.published =
         (await this.step('publish', () => this.assignments.publishScheduled(now))) ?? 0;
-      const r = await this.step('outbox', () => this.processOutbox(now));
+      const r = await this.step('outbox', () => this.processOutbox(at));
       out.processed = r?.processed ?? 0;
       out.failed = r?.failed ?? 0;
       out.reminders = (await this.step('reminders', () => this.deadlineReminders(now))) ?? 0;
@@ -100,12 +110,13 @@ export class AcademyWorkerService implements OnModuleInit, OnModuleDestroy {
 
   // ───────────────────────── outbox
 
-  async processOutbox(now = new Date()): Promise<{ processed: number; failed: number }> {
+  async processOutbox(at?: Date): Promise<{ processed: number; failed: number }> {
+    const now = at ?? new Date();
     // SKIP LOCKED — bir neçə API nüsxəsi eyni hadisəni eyni anda götürmür
     const batch = await this.prisma.$transaction(async (tx) => {
       const rows = await tx.$queryRaw<Array<{ id: string }>>`
         SELECT id FROM "AcademyOutboxEvent"
-        WHERE status = 'PENDING' AND "availableAt" <= ${now}
+        WHERE status = 'PENDING' AND "availableAt" <= ${at ? Prisma.sql`${at}` : Prisma.sql`clock_timestamp()`}
         ORDER BY "createdAt" ASC
         LIMIT ${BATCH}
         FOR UPDATE SKIP LOCKED`;
@@ -159,6 +170,123 @@ export class AcademyWorkerService implements OnModuleInit, OnModuleDestroy {
   /** Hadisə → alıcılar. Silinmiş / dəyişmiş qeyd üçün bildiriş yaranmır (hadisə «DONE» olur) */
   async recipients(e: AcademyEvent): Promise<Draft[]> {
     switch (e.type) {
+      case 'CLASSROOM_QUESTION':
+      case 'CLASSROOM_REPLY': {
+        const reply =
+          e.type === 'CLASSROOM_REPLY'
+            ? await this.prisma.classroomReply.findUnique({ where: { id: e.id } })
+            : null;
+        if (e.type === 'CLASSROOM_REPLY' && (!reply || reply.hiddenAt)) return [];
+        const questionId = e.type === 'CLASSROOM_QUESTION' ? e.id : reply?.questionId;
+        const question = questionId
+          ? await this.prisma.classroomQuestion.findUnique({ where: { id: questionId } })
+          : null;
+        const post = reply?.announcementId
+          ? await this.prisma.classroomAnnouncement.findUnique({
+              where: { id: reply.announcementId },
+            })
+          : null;
+        const parent = question ?? post;
+        if (!parent || parent.archivedAt) return [];
+        const group = await this.prisma.academyGroup.findUnique({ where: { id: parent.groupId } });
+        if (!group || !['PLANNED', 'ACTIVE', 'COMPLETED'].includes(group.status)) return [];
+        const instructors = await this.prisma.academyGroupInstructor.findMany({
+          where: { groupId: group.id, removedAt: null },
+          select: { userId: true },
+        });
+        const admins = await this.prisma.user.findMany({
+          where: { role: 'ADMIN', isBlocked: false },
+          select: { id: true },
+        });
+        const staffIds = [...instructors.map((x) => x.userId), ...admins.map((x) => x.id)];
+        const actor = reply?.authorId ?? question?.authorId;
+        const recipientIds = new Set<string>(
+          reply?.isStaff && question ? (question.authorId ? [question.authorId] : []) : staffIds,
+        );
+        if (post) {
+          if (post.authorId) recipientIds.add(post.authorId);
+          const participants = await this.prisma.classroomReply.findMany({
+            where: { announcementId: post.id, hiddenAt: null, authorId: { not: null } },
+            distinct: ['authorId'],
+            select: { authorId: true },
+          });
+          for (const p of participants) if (p.authorId) recipientIds.add(p.authorId);
+        }
+        if (actor) recipientIds.delete(actor);
+        const studentsCanView = !!question || !!(post?.isPublished && post.publishAt <= new Date());
+        const allowed = await this.prisma.user.findMany({
+          where: {
+            id: { in: [...recipientIds] },
+            isBlocked: false,
+            OR: [
+              { id: { in: staffIds } },
+              ...(studentsCanView
+                ? [
+                    {
+                      academyEnrollments: {
+                        some: {
+                          groupId: group.id,
+                          status: { in: ['ACTIVE', 'COMPLETED'] as Array<'ACTIVE' | 'COMPLETED'> },
+                        },
+                      },
+                    },
+                  ]
+                : []),
+            ],
+          },
+          select: { id: true },
+        });
+        return allowed.map((user) => ({
+          userId: user.id,
+          type:
+            e.type === 'CLASSROOM_QUESTION'
+              ? 'CLASSROOM_QUESTION'
+              : question
+                ? 'CLASSROOM_REPLY'
+                : 'CLASSROOM_COMMENT',
+          title: parent.title,
+          body: group.code,
+          url: question
+            ? `/akademiya/sinif/${group.id}/sual/${question.id}`
+            : `/akademiya/sinif/${group.id}`,
+          referenceType: 'CLASSROOM',
+          referenceId: e.id,
+          dedupeKey: `classroom-discussion:${e.type}:${e.id}`,
+        }));
+      }
+      case 'CLASSROOM_PUBLISHED': {
+        const item =
+          e.kind === 'lesson'
+            ? await this.prisma.classroomLesson.findUnique({
+                where: { id: e.id },
+                include: { topic: { select: { archivedAt: true } } },
+              })
+            : await this.prisma.classroomAnnouncement.findUnique({ where: { id: e.id } });
+        if (!item || !item.isPublished || item.archivedAt || item.publishAt > new Date()) return [];
+        if ('topic' in item && item.topic.archivedAt) return [];
+        const group = await this.prisma.academyGroup.findUnique({ where: { id: item.groupId } });
+        if (!group || !['PLANNED', 'ACTIVE'].includes(group.status)) return [];
+        const students = await this.prisma.academyEnrollment.findMany({
+          where: { groupId: item.groupId, status: 'ACTIVE' },
+          select: { studentId: true },
+        });
+        return students.map((s) => ({
+          userId: s.studentId,
+          type:
+            e.kind === 'lesson'
+              ? ('CLASSROOM_LESSON' as const)
+              : ('CLASSROOM_ANNOUNCEMENT' as const),
+          title: item.title,
+          body: group.code,
+          url:
+            e.kind === 'lesson'
+              ? `/akademiya/sinif/${item.groupId}/ders/${item.id}`
+              : `/akademiya/sinif/${item.groupId}`,
+          referenceType: 'CLASSROOM',
+          referenceId: item.id,
+          dedupeKey: `classroom:${e.kind}:${item.id}:${e.version}`,
+        }));
+      }
       case 'ENROLLMENT_CREATED': {
         const enr = await this.prisma.academyEnrollment.findUnique({
           where: { id: e.enrollmentId },

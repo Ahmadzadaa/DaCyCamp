@@ -52,15 +52,13 @@ describe('Academy classes & attendance (e2e)', () => {
       leadInstructorId: ids.lead,
       assistantInstructorIds: [ids.assistant],
     });
-    const g2 = await admin
-      .post('/academy/groups')
-      .send({
-        programId: de.body.id,
-        code: 'DE-002',
-        name: 'DE-002',
-        status: 'ACTIVE',
-        leadInstructorId: ids.otherLead,
-      });
+    const g2 = await admin.post('/academy/groups').send({
+      programId: de.body.id,
+      code: 'DE-002',
+      name: 'DE-002',
+      status: 'ACTIVE',
+      leadInstructorId: ids.otherLead,
+    });
     ids.de1 = g1.body.id;
     ids.de2 = g2.body.id;
     for (const s of ['ali', 'aysel', 'paused', 'alumni'])
@@ -236,7 +234,10 @@ describe('Academy classes & attendance (e2e)', () => {
       '/academy/me/schedule?from=2026-11-01T00:00:00Z&to=2026-11-30T00:00:00Z',
     );
     expect(mine.status).toBe(200);
-    expect(mine.body).toHaveLength(4);
+    // The four scheduled series sessions are present; other valid sessions may also fall in this month.
+    expect(mine.body.filter((s: { seriesId: string | null }) => s.seriesId !== null)).toHaveLength(
+      4,
+    );
     expect(mine.body.find((s: { id: string }) => s.id === ids.s2).meetingUrl).toBe(URL_);
     expect(mine.body.find((s: { id: string }) => s.id === ids.s3).meetingUrl).toBeNull();
     const alumMine = await alumni.get(

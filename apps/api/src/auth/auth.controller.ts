@@ -5,6 +5,8 @@ import {
   COOKIE_REFRESH,
   loginSchema,
   registerSchema,
+  passwordResetRequestSchema,
+  passwordResetSchema,
   type LoginInput,
   type RegisterInput,
 } from '@dacy/shared';
@@ -56,14 +58,9 @@ export class AuthController {
   @HttpCode(200)
   @Post('refresh')
   async refresh(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
-    try {
-      const { user, tokens } = await this.auth.refresh(refreshCookie(req), meta(req));
-      this.auth.setCookies(res, tokens);
-      return toPublicUser(user);
-    } catch (e) {
-      this.auth.clearCookies(res);
-      throw e;
-    }
+    const { user, tokens } = await this.auth.refresh(refreshCookie(req), meta(req));
+    this.auth.setCookies(res, tokens);
+    return toPublicUser(user);
   }
 
   @Public()
@@ -80,5 +77,26 @@ export class AuthController {
     const user = await this.prisma.user.findUnique({ where: { id: u.id } });
     if (!user) throw notFound();
     return toPublicUser(user);
+  }
+
+  @Public()
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
+  @HttpCode(200)
+  @Post('password-reset/request')
+  requestReset(@Body(new ZodPipe(passwordResetRequestSchema)) dto: { email: string }) {
+    return this.auth.requestPasswordReset(dto.email);
+  }
+
+  @Public()
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
+  @HttpCode(200)
+  @Post('password-reset/confirm')
+  async reset(
+    @Body(new ZodPipe(passwordResetSchema)) dto: { token: string; password: string },
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const result = await this.auth.resetPassword(dto.token, dto.password);
+    this.auth.clearCookies(res);
+    return result;
   }
 }

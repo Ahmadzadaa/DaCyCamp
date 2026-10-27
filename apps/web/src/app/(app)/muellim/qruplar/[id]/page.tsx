@@ -73,6 +73,9 @@ export default async function TeacherGroupPage({
           </div>
         ) : null}
       </div>
+      <Link href={`/akademiya/sinif/${g.id}`} className="cr-entry-link">
+        {t('classroom.open')} →
+      </Link>
       <SubNav
         label={g.code}
         items={[

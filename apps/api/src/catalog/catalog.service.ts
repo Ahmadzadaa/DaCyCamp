@@ -1,3 +1,4 @@
+import { enabledStep } from '../content/enabled-step';
 import { Injectable } from '@nestjs/common';
 import type { Course, Track } from '@prisma/client';
 import {
@@ -69,7 +70,9 @@ export class CatalogService {
 
   toCard(c: CourseWithRel, datasetCount = 0, includeUnpublished = false): CourseCardDto {
     const mods = c.modules.filter((m) => includeUnpublished || m.isPublished);
-    const steps = mods.flatMap((m) => m.steps.filter((s) => includeUnpublished || s.isPublished));
+    const steps = mods.flatMap((m) =>
+      m.steps.filter((s) => enabledStep(s.type) && (includeUnpublished || s.isPublished)),
+    );
     const counts: Partial<Record<StepType, number>> = {};
     for (const s of steps) counts[s.type] = (counts[s.type] ?? 0) + 1;
     return {
@@ -181,7 +184,7 @@ export class CatalogService {
           title: m.title,
           order: m.order,
           steps: m.steps
-            .filter((s) => s.isPublished)
+            .filter((s) => s.isPublished && enabledStep(s.type))
             .map((s) => ({
               id: s.id,
               key: s.key,
@@ -205,7 +208,9 @@ export class CatalogService {
           sequential: c.sequential,
           modules: c.modules.map((m) => ({
             ...m,
-            steps: m.steps.map((s) => ({ ...s, type: s.type as StepType })),
+            steps: m.steps
+              .filter((s) => enabledStep(s.type))
+              .map((s) => ({ ...s, type: s.type as StepType })),
           })),
           progress,
         });

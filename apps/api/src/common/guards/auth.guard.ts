@@ -13,6 +13,7 @@ export interface AccessPayload {
   email: string;
   role: AuthUser['role'];
   name: string;
+  ver?: number;
 }
 
 @Injectable()
@@ -44,9 +45,16 @@ export class AuthGuard implements CanActivate {
         // silinmiş hesabın token-i də dərhal etibarsız olur
         const u = await this.prisma.user.findUnique({
           where: { id: p.sub },
-          select: { id: true, email: true, role: true, name: true },
+          select: {
+            id: true,
+            email: true,
+            role: true,
+            name: true,
+            authVersion: true,
+            isBlocked: true,
+          },
         });
-        if (u) req.user = u;
+        if (u && !u.isBlocked && (p.ver ?? 0) === u.authVersion) req.user = u;
       } catch {
         if (!isPublic && !optional)
           throw unauthorized('AUTH_TOKEN_EXPIRED', 'Sessiyanın vaxtı bitib');

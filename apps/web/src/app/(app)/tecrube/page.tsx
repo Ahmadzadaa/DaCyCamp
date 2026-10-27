@@ -5,6 +5,7 @@ import { BookOpen, FlaskConical } from 'lucide-react';
 import type { PracticeDto } from '@dacy/shared';
 import { apiTry } from '@/lib/api/server';
 import { t } from '@/lib/i18n';
+import { FEATURES } from '@/lib/features';
 import { EmptyState } from '@/components/app/empty-state';
 import { HeroArt } from '@/components/app/hero-art';
 import { PracticeList } from '@/components/hub/practice-list';
@@ -29,7 +30,7 @@ export default async function PracticePage() {
               </span>
             ) : null}
           </div>
-          <p>{t('hub.practiceText')}</p>
+          <p>{t(FEATURES.legacyLabs ? 'hub.practiceText' : 'reliability.practiceText')}</p>
           {d.counts.total ? (
             <div className="hero-bar" aria-hidden>
               <i style={{ width: `${pct}%` }} />

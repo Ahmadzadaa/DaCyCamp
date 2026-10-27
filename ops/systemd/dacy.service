@@ -1,0 +1,27 @@
+[Unit]
+Description=DaCy Academy web, API and operations supervisor
+After=network-online.target postgresql.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=dacy
+Group=dacy
+WorkingDirectory=/opt/dacy
+EnvironmentFile=/opt/dacy/.env
+ExecStart=/usr/bin/node /opt/dacy/scripts/start.mjs
+Restart=always
+RestartSec=3
+TimeoutStopSec=15
+KillMode=control-group
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths=/opt/dacy/.local /opt/dacy/apps/api/storage /opt/dacy/backups
+UMask=0077
+MemoryMax=2G
+TasksMax=256
+
+[Install]
+WantedBy=multi-user.target

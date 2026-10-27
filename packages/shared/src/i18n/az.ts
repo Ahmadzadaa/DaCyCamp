@@ -1,5 +1,9 @@
+import { classroomAz } from './classroom';
+import { reliabilityAz } from './reliability';
 /** Azərbaycan dili — əsas lüğət. İngilis dili üçün en.ts eyni quruluşda Partial olacaq. */
 export const az = {
+  classroom: classroomAz,
+  reliability: reliabilityAz,
   app: {
     name: 'DaCy Academy',
     short: 'DaCy',
@@ -857,6 +861,12 @@ export const az = {
     unpublished: 'Bu kurs hələ dərc olunmayıb',
   },
   ws: {
+    executionStopped: 'Kodun icrası dayandırıldı. Yenidən işlədə bilərsiniz.',
+    executionBusy: 'Əvvəlki icra hələ davam edir.',
+    runtimeLoadTimeout: 'Python mühiti vaxtında yüklənmədi. Yenidən cəhd edin.',
+    stopExecution: 'Dayandır',
+    retryRuntime: 'Yenidən yüklə',
+
     labStart: 'Lab-ı başlat',
     labStarting: 'Konteyner hazırlanır…',
     labRunning: 'Lab işləyir',
@@ -1666,6 +1676,11 @@ export const az = {
     viewAll: 'Hamısına bax',
   },
   errors: {
+    PASSWORD_RESET_INVALID: 'Bərpa linki etibarsızdır və ya vaxtı bitib. Yeni link istəyin.',
+    MAIL_NOT_CONFIGURED: 'Şifrə bərpası üçün adminlə əlaqə saxlayın.',
+    MAIL_DELIVERY_FAILED: 'Məktub göndərilmədi. Bir az sonra yenidən cəhd edin.',
+    CONTENT_VERSION_CONFLICT: 'Dərs başqa pəncərədə dəyişdirilib. Səhifəni yeniləyin.',
+    PYTHON_CHECK_UNAVAILABLE: 'Təhlükəsiz Python yoxlaması əlçatmazdır. Müəllimə bildirin.',
     ACADEMY_ADMIN_ONLY: 'Bu əməliyyat yalnız admin üçündür',
     ACADEMY_ALREADY_ENROLLED: 'Tələbə artıq bu qrupdadır',
     ACADEMY_ALREADY_GRADED: 'Qiymət artıq açıqlanıb — yeni cəhd edilə bilməz',

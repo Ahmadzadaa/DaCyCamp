@@ -58,7 +58,7 @@ describe('auth', () => {
     expect(Array.isArray(r.body.details)).toBe(true);
   });
 
-  it('refresh rotasiya edir, köhnə token rədd olunur, logout sonrası me 401', async () => {
+  it('refresh rotasiya edir, qısa paralel təkrara eyni token verir; köhnə token və logout rədd olunur', async () => {
     const a = await login(app, 'telebe@test.local', 'Telebe123!');
     const first = await a
       .post('/auth/login')
@@ -70,7 +70,21 @@ describe('auth', () => {
     const r1 = await a.post('/auth/refresh');
     expect(r1.status).toBe(200);
     const r2 = await agent(app).post('/auth/refresh').set('Cookie', `${COOKIE_REFRESH}=${oldRt}`);
-    expect(r2.status).toBe(401);
+    expect(r2.status).toBe(200);
+    const refreshValue = (r: typeof r1) =>
+      (r.headers['set-cookie'] as unknown as string[])
+        .find((c) => c.startsWith(`${COOKIE_REFRESH}=`))!
+        .split(';')[0];
+    expect(refreshValue(r2)).toBe(refreshValue(r1));
+    await prisma.refreshToken.updateMany({
+      where: { rotatedAt: { not: null } },
+      data: { rotatedAt: new Date(Date.now() - 6000) },
+    });
+    const expired = await agent(app)
+      .post('/auth/refresh')
+      .set('Cookie', `${COOKIE_REFRESH}=${oldRt}`);
+    expect(expired.status).toBe(401);
+    expect(expired.headers['set-cookie']).toBeUndefined();
     const out = await a.post('/auth/logout');
     expect(out.status).toBe(200);
     const me = await a.get('/auth/me');

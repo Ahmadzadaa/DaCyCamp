@@ -1,26 +1,23 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { dirname, resolve } from 'node:path';
-import type { Prisma } from '@prisma/client';
+import { Injectable, Logger, type OnModuleDestroy } from '@nestjs/common';
+import { resolve, join } from 'node:path';
+import { existsSync } from 'node:fs';
+import { mkdtemp, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { Prisma } from '@prisma/client';
 import {
-  arrowToResult,
+  splitSqlStatements,
   canonicalizeResult,
-  duckdbLoadSql,
   sha256Hex,
-  tableNameFromPath,
-  type ArrowLikeTable,
   type CheckMode,
   type ResultTable,
   type SqlConfig,
   type SqlExpected,
 } from '@dacy/shared';
-import type * as DuckBlocking from '@duckdb/duckdb-wasm/dist/duckdb-node-blocking';
+import { executeJson, terminateExecutions } from '../common/execution-pool';
 import { PrismaService } from '../prisma/prisma.service';
 import { readFromStorage } from '../assets/storage';
-import { unprocessable } from '../common/errors';
+import { conflict, unprocessable } from '../common/errors';
 import { withRawContent } from '../common/i18n/request-locale';
-
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const duckdb: typeof DuckBlocking = require('@duckdb/duckdb-wasm/dist/duckdb-node-blocking.cjs');
 
 export interface DatasetFile {
   name: string; // DuckDB-də qeydiyyat adı (fayl adı)
@@ -29,57 +26,60 @@ export interface DatasetFile {
 }
 
 /**
- * Müəllimin HƏLLİNİ serverdə DuckDB-WASM (Node) ilə işlədib gözlənilən nəticənin hash-ini hesablayır.
- * Tələbə kodu serverdə heç vaxt işləmir — o, brauzerdə DuckDB-WASM ilə işləyir və yalnız hash göndərir.
+ * Executes author solutions and learner submissions in bounded, isolated child processes.
+ * The API event loop stays responsive; grading uses the server's actual result.
  */
 @Injectable()
-export class SqlCheckService {
+export class SqlCheckService implements OnModuleDestroy {
   private readonly log = new Logger('SqlCheck');
   constructor(private readonly prisma: PrismaService) {}
 
-  private bundles() {
-    const dist = dirname(require.resolve('@duckdb/duckdb-wasm/dist/duckdb-node-blocking.cjs'));
-    return {
-      mvp: {
-        mainModule: resolve(dist, 'duckdb-mvp.wasm'),
-        mainWorker: resolve(dist, 'duckdb-node-mvp.worker.cjs'),
-      },
-      eh: {
-        mainModule: resolve(dist, 'duckdb-eh.wasm'),
-        mainWorker: resolve(dist, 'duckdb-node-eh.worker.cjs'),
-      },
-    };
+  onModuleDestroy() {
+    terminateExecutions();
   }
 
   /** Təmiz DuckDB nüsxəsində datasetləri yükləyib SQL-i işlədir; son ifadənin nəticəsini qaytarır */
   async run(datasets: DatasetFile[], sql: string, limit = 10_000): Promise<ResultTable> {
-    const db = await duckdb.createDuckDB(
-      this.bundles(),
-      new duckdb.VoidLogger(),
-      duckdb.NODE_RUNTIME,
-    );
-    await db.instantiate(() => {});
-    const conn = db.connect();
+    if (datasets.reduce((bytes, d) => bytes + d.buffer.byteLength, 0) > 20 * 1024 * 1024)
+      throw new Error('Datasetlərin ümumi ölçüsü 20 MB limitini keçir.');
+    const root = [
+      resolve(__dirname, '../../../..'),
+      process.cwd(),
+      resolve(process.cwd(), '../..'),
+    ].find((dir) => existsSync(resolve(dir, 'pnpm-workspace.yaml')))!;
+    const cwd = await mkdtemp(join(tmpdir(), 'dacy-sql-'));
     try {
-      for (const d of datasets) {
-        db.registerFileBuffer(d.name, d.buffer);
-        const load = duckdbLoadSql(d.name, tableNameFromPath(d.path));
-        if (load) conn.query(load);
-        else if (d.name.toLowerCase().endsWith('.sql')) {
-          for (const st of splitStatements(Buffer.from(d.buffer).toString('utf8'))) conn.query(st);
-        }
-      }
-      let table: ArrowLikeTable | null = null;
-      for (const st of splitStatements(sql)) table = conn.query(st) as unknown as ArrowLikeTable;
-      if (!table) return { columns: [], rows: [] };
-      return arrowToResult(table, limit);
+      return await executeJson<ResultTable>({
+        command: '/usr/bin/prlimit',
+        args: [
+          '--cpu=8:9',
+          '--nofile=128',
+          '--',
+          process.execPath,
+          '--permission',
+          '--no-addons',
+          '--max-old-space-size=256',
+          `--allow-fs-read=${resolve(root, 'node_modules')}`,
+          `--allow-fs-read=${resolve(root, 'apps/api/node_modules')}`,
+          `--allow-fs-read=${resolve(root, 'packages/shared')}`,
+          `--allow-fs-read=${cwd}`,
+          `--allow-fs-read=${__dirname}`,
+          resolve(__dirname, 'sql-runner.cjs'),
+        ],
+        input: {
+          datasets: datasets.map((d) => ({
+            name: d.name,
+            path: d.path,
+            base64: Buffer.from(d.buffer).toString('base64'),
+          })),
+          sql,
+          limit,
+        },
+        timeoutMs: 10_000,
+        cwd,
+      });
     } finally {
-      conn.close();
-      try {
-        db.reset?.();
-      } catch {
-        /* ignore */
-      }
+      await rm(cwd, { recursive: true, force: true });
     }
   }
 
@@ -158,15 +158,16 @@ export class SqlCheckService {
       ...((step.secret ?? {}) as Record<string, unknown>),
       expected,
     } as unknown as Prisma.InputJsonValue;
-    await this.prisma.step.update({ where: { id: stepId }, data: { secret } });
+    await this.prisma.step
+      .update({ where: { id: stepId, updatedAt: step.updatedAt }, data: { secret } })
+      .catch((error: unknown) => {
+        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025')
+          throw conflict('CONTENT_VERSION_CONFLICT');
+        throw error;
+      });
     return expected;
   }
 }
 
-/** Sadə ifadə ayırıcı: `;` + sətir sonu / mətn sonu (sətir içi string-lərdə `;` nəzərə alınmır) */
-export function splitStatements(sql: string): string[] {
-  return sql
-    .split(/;\s*(?:\r?\n|$)/)
-    .map((s) => s.trim())
-    .filter((s) => s.length > 0 && !/^(--.*\n?)+$/.test(s));
-}
+/** The browser and publishing checker use the same statement boundaries. */
+export const splitStatements = splitSqlStatements;

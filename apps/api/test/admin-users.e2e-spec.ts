@@ -95,7 +95,7 @@ describe('admin: users + access', () => {
           .send({ email: 'telebe2@test.local', password: 'Telebe123!' })
       ).status,
     ).toBe(401);
-    await login(app, 'telebe2@test.local', 'YeniSifre1');
+    st = await login(app, 'telebe2@test.local', 'YeniSifre1');
     // refresh token ləğv olunub
     expect((await before.post('/auth/refresh')).status).toBe(401);
     expect(

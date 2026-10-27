@@ -4,39 +4,21 @@ const API = process.env.API_INTERNAL_URL ?? 'http://localhost:4000';
 const AT = 'dacy_at';
 const RT = 'dacy_rt';
 const PROTECTED = [
-  /^\/panel/,
-  /^\/profil/,
-  /^\/admin/,
-  /^\/sertifikatlar/,
+  /^\/(panel|profil|admin|sertifikatlar|baslangic|fealiyyetim|tecrube|imtahanlar|layiheler|destek|akademiya|muellim)(\/|$)/,
   /^\/kurs\/[^/]+\/[^/]+\/[^/]+/,
-  /^\/baslangic/,
-  /^\/fealiyyetim/,
-  /^\/tecrube/,
-  /^\/imtahanlar/,
-  /^\/layiheler/,
-  /^\/destek/,
 ];
-const AUTH_PAGES = [/^\/giris/, /^\/qeydiyyat/];
+const AUTH_PAGES = [/^\/giris(?:\/|$)/, /^\/qeydiyyat(?:\/|$)/];
+const homeFor = (role?: string) =>
+  role === 'ADMIN' || role === 'INSTRUCTOR' ? '/admin' : role === 'TEACHER' ? '/muellim' : '/panel';
 
-function parseSetCookie(sc: string): { name: string; value: string } | null {
-  const first = sc.split(';')[0];
-  const eq = first?.indexOf('=') ?? -1;
-  if (!first || eq < 0) return null;
-  return { name: first.slice(0, eq).trim(), value: first.slice(eq + 1).trim() };
-}
-
-/** Giriş səhifəsindən hara yönləndirək: heyət → /admin, tələbə → /panel.
- *  Token yalnız istiqamət seçmək üçün oxunur (yoxlama deyil — admin layout rolu özü yoxlayır) */
-function homeFor(token: string | undefined): string {
-  try {
-    const part = token?.split('.')[1];
-    if (!part) return '/panel';
-    const json = JSON.parse(atob(part.replace(/-/g, '+').replace(/_/g, '/'))) as { role?: string };
-    if (json.role === 'ADMIN' || json.role === 'INSTRUCTOR') return '/admin';
-    return json.role === 'TEACHER' ? '/muellim' : '/panel';
-  } catch {
-    return '/panel';
-  }
+function replaceSessionCookies(req: NextRequest, values: Map<string, string>) {
+  const cookies = new Map(req.cookies.getAll().map(({ name, value }) => [name, value]));
+  cookies.delete(AT);
+  cookies.delete(RT);
+  for (const [name, value] of values) if (value) cookies.set(name, value);
+  const headers = new Headers(req.headers);
+  headers.set('cookie', Array.from(cookies, ([name, value]) => `${name}=${value}`).join('; '));
+  return headers;
 }
 
 export async function middleware(req: NextRequest) {
@@ -45,51 +27,73 @@ export async function middleware(req: NextRequest) {
   const rt = req.cookies.get(RT)?.value;
   const needsAuth = PROTECTED.some((r) => r.test(pathname));
   const isAuthPage = AUTH_PAGES.some((r) => r.test(pathname));
-
+  let role: string | undefined;
+  let valid = false;
+  let unavailable = false;
+  const cookie = req.headers.get('cookie') ?? '';
   if (at) {
-    if (isAuthPage) return NextResponse.redirect(new URL(homeFor(at), req.url));
-    return NextResponse.next();
+    try {
+      const r = await fetch(`${API}/auth/me`, {
+        headers: { cookie },
+        cache: 'no-store',
+        signal: AbortSignal.timeout(5000),
+      });
+      valid = r.ok;
+      if (valid) role = ((await r.json()) as { role: string }).role;
+      else unavailable = r.status >= 500;
+    } catch {
+      unavailable = true;
+    }
   }
+  if (valid)
+    return isAuthPage
+      ? NextResponse.redirect(new URL(homeFor(role), req.url))
+      : NextResponse.next();
 
-  // Access bitib, refresh var → səssiz yeniləmə
-  if (rt) {
+  if (rt && !unavailable) {
     try {
       const r = await fetch(`${API}/auth/refresh`, {
         method: 'POST',
-        headers: { cookie: `${RT}=${rt}` },
+        headers: { cookie },
+        cache: 'no-store',
+        signal: AbortSignal.timeout(5000),
       });
       if (r.ok) {
+        role = ((await r.json()) as { role: string }).role;
         const setCookies = r.headers.getSetCookie();
-        const parsed = setCookies
-          .map(parseSetCookie)
-          .filter((x): x is { name: string; value: string } => !!x);
-        const newAt = parsed.find((c) => c.name === AT)?.value;
-        const newRt = parsed.find((c) => c.name === RT)?.value;
-        const headers = new Headers(req.headers);
-        headers.set('cookie', `${AT}=${newAt ?? ''}; ${RT}=${newRt ?? rt}`);
-        const res = isAuthPage
-          ? NextResponse.redirect(new URL(homeFor(newAt), req.url))
-          : NextResponse.next({ request: { headers } });
-        for (const sc of setCookies) res.headers.append('set-cookie', sc);
-        return res;
+        const values = new Map(
+          setCookies.map((value) => {
+            const pair = value.split(';')[0]!;
+            const i = pair.indexOf('=');
+            return [pair.slice(0, i), pair.slice(i + 1)];
+          }),
+        );
+        const response = isAuthPage
+          ? NextResponse.redirect(new URL(homeFor(role), req.url))
+          : NextResponse.next({ request: { headers: replaceSessionCookies(req, values) } });
+        for (const value of setCookies) response.headers.append('set-cookie', value);
+        return response;
       }
+      unavailable = r.status >= 500 || r.status === 429;
     } catch {
-      /* API əlçatmazdırsa aşağıdakı qaydalar işləyir */
-    }
-    if (needsAuth) {
-      const res = NextResponse.redirect(
-        new URL(`/giris?next=${encodeURIComponent(pathname + search)}`, req.url),
-      );
-      res.cookies.delete(RT);
-      return res;
+      unavailable = true;
     }
   }
-
-  if (needsAuth)
-    return NextResponse.redirect(
-      new URL(`/giris?next=${encodeURIComponent(pathname + search)}`, req.url),
-    );
-  return NextResponse.next();
+  // A temporary service failure must never destroy a valid refresh session.
+  if (unavailable && (needsAuth || isAuthPage))
+    return new NextResponse('Xidmət müvəqqəti əlçatmazdır. Bir az sonra yenidən cəhd edin.', {
+      status: 503,
+    });
+  const response = needsAuth
+    ? NextResponse.redirect(
+        new URL(`/giris?next=${encodeURIComponent(pathname + search)}`, req.url),
+      )
+    : NextResponse.next({ request: { headers: replaceSessionCookies(req, new Map()) } });
+  if (!unavailable) {
+    if (at) response.cookies.delete(AT);
+    if (rt) response.cookies.delete(RT);
+  }
+  return response;
 }
 
 export const config = {

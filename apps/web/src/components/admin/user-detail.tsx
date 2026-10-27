@@ -25,6 +25,7 @@ import { Field } from '@/components/ui/field';
 import { Input, Select } from '@/components/ui/input';
 import { useAdmin } from './admin-context';
 import { ConfirmDialog } from './confirm-dialog';
+import { AccountControls } from './account-controls';
 import { fmtAgo, fmtDate } from './format';
 
 type Enrollment = AdminUserDetailDto['enrollments'][number];
@@ -151,6 +152,9 @@ export function UserDetail({
         </div>
       </header>
 
+      {isAdmin && !isMe ? (
+        <AccountControls userId={u.id} blocked={u.isBlocked} onChanged={reload} />
+      ) : null}
       <div className="ud-grid">
         <div className="flex min-w-0 flex-col gap-6">
           <EnrollmentsCard

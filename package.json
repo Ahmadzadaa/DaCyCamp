@@ -5,12 +5,12 @@
   "description": "DaCy Academy — onlayn təlim platforması (monorepo)",
   "packageManager": "pnpm@10.28.0",
   "engines": {
-    "node": ">=22"
+    "node": ">=22.13"
   },
   "scripts": {
     "dev": "node scripts/dev.mjs",
     "dev:raw": "turbo run dev",
-    "build": "turbo run build",
+    "build": "node apps/api/scripts/with-env.mjs turbo run build",
     "test": "turbo run test",
     "e2e": "pnpm --filter @dacy/web e2e",
     "lint": "turbo run lint",
@@ -25,7 +25,16 @@
     "screenshots": "pnpm --filter @dacy/web screenshots",
     "db:backup": "node scripts/backup.mjs",
     "db:restore": "node scripts/restore.mjs",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "start": "node scripts/start.mjs",
+    "pilot:start": "node scripts/pilot.mjs start",
+    "pilot:stop": "node scripts/pilot.mjs stop",
+    "pilot:restart": "node scripts/pilot.mjs restart",
+    "pilot:status": "node scripts/pilot.mjs status",
+    "ops:backup": "node scripts/operations.mjs --backup-now",
+    "test:load": "node scripts/load-test.mjs",
+    "doctor": "node scripts/doctor.mjs",
+    "test:operations": "node scripts/check-operations.mjs"
   },
   "devDependencies": {
     "prettier": "^3.6.2",

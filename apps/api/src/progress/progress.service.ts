@@ -1,3 +1,4 @@
+import { enabledStep } from '../content/enabled-step';
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import {
@@ -82,7 +83,9 @@ export class ProgressService {
       archivedAt: c.archivedAt,
       modules: c.modules.map((m) => ({
         ...m,
-        steps: m.steps.map((s) => ({ ...s, type: s.type as StepType })),
+        steps: m.steps
+          .filter((s) => enabledStep(s.type))
+          .map((s) => ({ ...s, type: s.type as StepType })),
       })),
     };
   }

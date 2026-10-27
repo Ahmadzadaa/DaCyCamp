@@ -13,6 +13,7 @@ import { AuthModule } from './auth/auth.module';
 import { AuthGuard } from './common/guards/auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
 import { HealthController } from './health/health.controller';
+import { OperationsController } from './health/operations.controller';
 import { UsersModule } from './users/users.module';
 import { TracksModule } from './tracks/tracks.module';
 import { CatalogModule } from './catalog/catalog.module';
@@ -59,7 +60,7 @@ import { AcademyModule } from './academy/academy.module';
     SettingsModule,
     AcademyModule,
   ],
-  controllers: [HealthController],
+  controllers: [HealthController, OperationsController],
   providers: [
     // sıra vacibdir: əvvəl auth (req.user), sonra istifadəçiyə görə limit, sonra rollar
     { provide: APP_GUARD, useClass: AuthGuard },
@@ -70,6 +71,6 @@ import { AcademyModule } from './academy/academy.module';
 export class AppModule implements NestModule {
   /** hər sorğu öz dilində (dacy_locale cookie-si) — bildirişlər, SQL yoxlaması, PDF sertifikat */
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(localeMiddleware).forRoutes('*');
+    consumer.apply(localeMiddleware).forRoutes('{*path}');
   }
 }

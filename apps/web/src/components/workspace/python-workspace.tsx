@@ -1,7 +1,7 @@
 'use client';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
-import { Play, RotateCcw } from 'lucide-react';
+import { Play, RotateCcw, Square } from 'lucide-react';
 import type { CodeSubmitResultDto, PythonStudentView, StepViewDto } from '@dacy/shared';
 import { api } from '@/lib/api/client';
 import { errorMessage } from '@/lib/errors-i18n';
@@ -17,7 +17,7 @@ type Tab = 'stdout' | 'stderr' | 'plots' | 'stdin';
 
 export function PythonWorkspace({ view, py }: { view: StepViewDto; py: PythonStudentView }) {
   const after = useAfterComplete(view.course.slug);
-  const { code, setCode, reset, dirty } = useCodeDraft(view.id, py.starter_code);
+  const { code, setCode, reset, dirty } = useCodeDraft(view.id, py.starter_code, view.learnerId);
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [statusMsg, setStatusMsg] = useState<string>(t('ws.loadingRuntime'));
   const [running, setRunning] = useState(false);
@@ -29,13 +29,27 @@ export function PythonWorkspace({ view, py }: { view: StepViewDto; py: PythonStu
   const [marker, setMarker] = useState<{ line: number; message: string } | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [verdict, setVerdict] = useState<{ ok: boolean; text: string } | null>(null);
+  const generation = useRef(0);
+  const busy = useRef(false);
+  const [attempt, setAttempt] = useState(0);
   const runtime = useRef<typeof import('@/lib/runtimes/pyodide') | null>(null);
 
   useEffect(() => {
     let alive = true;
+    const version = ++generation.current;
+    setResult(null);
+    setMarker(null);
+    setTab('stdout');
+    setStatus('loading');
+    setStatusMsg(t('ws.loadingRuntime'));
+    setVerdict(null);
+    busy.current = false;
+    setRunning(false);
+    setSubmitting(false);
     (async () => {
       try {
         const mod = await import('@/lib/runtimes/pyodide');
+        if (!alive) return;
         runtime.current = mod;
         await mod.getPyodide();
         if (!alive) return;
@@ -49,12 +63,16 @@ export function PythonWorkspace({ view, py }: { view: StepViewDto; py: PythonStu
     })();
     return () => {
       alive = false;
+      generation.current = version + 1;
+      runtime.current?.stopPython();
     };
-  }, []);
+  }, [attempt, view.id]);
 
   const execute = useCallback(
     async (withTests: boolean): Promise<PyRunResult | null> => {
-      if (!runtime.current || status !== 'ready') return null;
+      if (!runtime.current || status !== 'ready' || busy.current) return null;
+      const version = generation.current;
+      busy.current = true;
       setRunning(true);
       setVerdict(null);
       try {
@@ -63,6 +81,7 @@ export function PythonWorkspace({ view, py }: { view: StepViewDto; py: PythonStu
           datasets: py.dataset,
           stdin,
         });
+        if (version !== generation.current) return null;
         setResult(r);
         setMarker(
           r.errorLine && r.error
@@ -75,6 +94,7 @@ export function PythonWorkspace({ view, py }: { view: StepViewDto; py: PythonStu
         setTab(r.error ? 'stderr' : r.images.length ? 'plots' : 'stdout');
         return r;
       } catch (e) {
+        if (version !== generation.current) return null;
         const msg = e instanceof Error ? e.message : String(e);
         setResult({
           stdout: '',
@@ -88,13 +108,18 @@ export function PythonWorkspace({ view, py }: { view: StepViewDto; py: PythonStu
         setTab('stderr');
         return null;
       } finally {
-        setRunning(false);
+        if (version === generation.current) {
+          busy.current = false;
+          setRunning(false);
+        }
       }
     },
     [code, py.tests, py.dataset, status, stdin],
   );
 
   async function submit() {
+    if (busy.current || submitting) return;
+    const version = generation.current;
     setSubmitting(true);
     try {
       const r = await execute(true);
@@ -107,22 +132,28 @@ export function PythonWorkspace({ view, py }: { view: StepViewDto; py: PythonStu
           body: {
             kind: 'python',
             code,
+            stdin,
             passed,
             stdout: r.stdout.slice(0, 10_000),
             error: r.error ?? undefined,
           },
         },
       );
+      if (version !== generation.current) return;
       if (res.passed) {
         setVerdict({ ok: true, text: `✓ ${t('ws.testsPassed')}` });
         after(res, view.preview);
       } else {
-        setVerdict({ ok: false, text: `✗ ${t('ws.testsFailed')}` });
+        setVerdict({ ok: false, text: `✗ ${res.message ?? t('ws.testsFailed')}` });
+        if (res.message) {
+          setResult({ ...r, error: res.message, passed: false });
+          setTab('stderr');
+        }
       }
     } catch (e) {
-      toast.error(errorMessage(e));
+      if (version === generation.current) toast.error(errorMessage(e));
     } finally {
-      setSubmitting(false);
+      if (version === generation.current) setSubmitting(false);
     }
   }
 
@@ -155,13 +186,20 @@ export function PythonWorkspace({ view, py }: { view: StepViewDto; py: PythonStu
             type="button"
             className="ftab-reset"
             onClick={reset}
+            disabled={running || submitting}
             title={t('ws.resetCode')}
             aria-label={t('ws.resetCode')}
           >
             <RotateCcw className="size-3.5" />
           </button>
         ) : null}
+        {status === 'error' ? (
+          <button type="button" onClick={() => setAttempt((n) => n + 1)}>
+            {t('ws.retryRuntime')}
+          </button>
+        ) : null}
         <span
+          role="status"
           className={cn(
             'ml-auto self-center px-3 text-xs',
             status === 'error' ? 'text-error-ink' : 'text-on-dark-muted',
@@ -177,6 +215,7 @@ export function PythonWorkspace({ view, py }: { view: StepViewDto; py: PythonStu
           setMarker(null);
         }}
         marker={marker}
+        readOnly={running || submitting}
         language="python"
         onRun={() => void execute(false)}
       />
@@ -248,19 +287,25 @@ export function PythonWorkspace({ view, py }: { view: StepViewDto; py: PythonStu
           variant="run"
           onClick={() => void execute(false)}
           loading={running && !submitting}
-          disabled={status !== 'ready'}
+          disabled={status !== 'ready' || running || submitting}
           title={t('ws.runShortcut')}
         >
           <Play className="size-4" />
           {t('ws.run')}
         </Button>
+        {running ? (
+          <Button type="button" variant="ghost" onClick={() => runtime.current?.stopPython()}>
+            <Square className="size-4" />
+            {t('ws.stopExecution')}
+          </Button>
+        ) : null}
         {verdict ? <span className={cn('res', !verdict.ok && 'bad')}>{verdict.text}</span> : null}
         <span className="flex-1" />
         <Button
           type="button"
           onClick={submit}
           loading={submitting}
-          disabled={status !== 'ready'}
+          disabled={status !== 'ready' || running || submitting}
           data-testid="submit-python"
         >
           {t('ws.submitAndContinue')}

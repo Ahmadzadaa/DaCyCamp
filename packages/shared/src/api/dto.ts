@@ -30,6 +30,11 @@ export const registerSchema = z.object({
   password: passwordSchema,
 });
 export const loginSchema = z.object({ email: emailSchema, password: z.string().min(1).max(200) });
+export const passwordResetRequestSchema = z.object({ email: emailSchema });
+export const passwordResetSchema = z.object({
+  token: z.string().regex(/^[a-f0-9]{64}$/),
+  password: passwordSchema,
+});
 export const updateMeSchema = z.object({
   name: z.string().trim().min(2).max(120).optional(),
   locale: z.enum(['az', 'en']).optional(),
@@ -153,6 +158,7 @@ export const pythonSubmissionSchema = z.object({
   passed: z.boolean(),
   stdout: z.string().max(50_000).optional(),
   error: z.string().max(5_000).optional(),
+  stdin: z.string().max(50_000).optional(),
 });
 export const submissionSchema = z.discriminatedUnion('kind', [
   quizSubmissionSchema.extend({ kind: z.literal('quiz') }),

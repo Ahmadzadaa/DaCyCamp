@@ -1,0 +1,85 @@
+# Local Mac/Linux Docker Desktop. Separate volumes preserve existing installations.
+name: dacy-local
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: dacy
+      POSTGRES_PASSWORD: ${DACY_DB_PASSWORD:?Run bash scripts/docker-local.sh first}
+      POSTGRES_DB: dacy
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U dacy -d dacy']
+      interval: 3s
+      timeout: 3s
+      retries: 30
+  api:
+    image: dacy-local-app
+    build:
+      context: .
+      dockerfile: infra/docker/local.Dockerfile
+      args:
+        NEXT_PUBLIC_APP_URL: http://localhost:${WEB_PORT:-3000}
+    restart: unless-stopped
+    init: true
+    # Nested bubblewrap user namespaces need these outer policy exceptions.
+    # The API stays non-root, without capabilities or a Docker socket; learner
+    # processes still use isolated namespaces and their own seccomp filter.
+    security_opt:
+      - seccomp=unconfined
+      - apparmor=unconfined
+      - no-new-privileges:true
+    cap_drop: [ALL]
+    env_file: .env.docker.local
+    environment:
+      DATABASE_URL: postgresql://dacy:${DACY_DB_PASSWORD}@db:5432/dacy
+      WEB_ORIGIN: http://localhost:${WEB_PORT:-3000}
+      NEXT_PUBLIC_APP_URL: http://localhost:${WEB_PORT:-3000}
+      API_PORT: 4000
+      COOKIE_SECURE: 'false'
+      TRUST_PROXY: uniquelocal
+      LAB_DRIVER: 'off'
+      LEGACY_LABS_ENABLED: 'false'
+      MAIL_TRANSPORT: file
+      MAIL_OUTBOX_DIR: /data/mail
+    command: ['sh', '-c', 'corepack pnpm db:deploy && node scripts/docker-bootstrap.mjs && node scripts/doctor.mjs && cd apps/api && exec node dist/main.js']
+    volumes:
+      - storage:/data/storage
+      - mail:/data/mail
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD', 'node', '-e', 'fetch("http://127.0.0.1:4000/health").then(async r=>{if(!r.ok || !(await r.json()).db)process.exit(1)}).catch(()=>process.exit(1))']
+      interval: 5s
+      timeout: 3s
+      retries: 60
+      start_period: 30s
+  web:
+    image: dacy-local-app
+    restart: unless-stopped
+    init: true
+    cap_drop: [ALL]
+    security_opt: ['no-new-privileges:true']
+    environment:
+      API_INTERNAL_URL: http://api:4000
+      NEXT_PUBLIC_APP_URL: http://localhost:${WEB_PORT:-3000}
+      PORT: 3000
+      HOSTNAME: 0.0.0.0
+    command: ['node', 'apps/web/.next/standalone/apps/web/server.js']
+    ports:
+      - '127.0.0.1:${WEB_PORT:-3000}:3000'
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD', 'node', '-e', 'fetch("http://127.0.0.1:3000/giris").then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))']
+      interval: 5s
+      timeout: 5s
+      retries: 30
+volumes:
+  pgdata:
+  storage:
+  mail:

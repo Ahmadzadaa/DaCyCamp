@@ -16,3 +16,8 @@ process.env.DATABASE_URL =
 process.env.STORAGE_DIR = process.env.STORAGE_DIR_TEST ?? '/tmp/dacy-test-storage';
 // testlər Docker-dən asılı olmasın
 process.env.LAB_DRIVER = 'mock';
+process.env.MAIL_TRANSPORT = 'file';
+process.env.MAIL_OUTBOX_DIR = '/tmp/dacy-test-mail';
+
+// Historical lab tests explicitly exercise the retained compatibility mode.
+process.env.LEGACY_LABS_ENABLED = 'true';

@@ -1,15 +1,26 @@
 import Link from 'next/link';
-import { ArrowLeft, Award, Check, CodeXml, Route, SquareTerminal } from 'lucide-react';
+import {
+  ArrowLeft,
+  Award,
+  Check,
+  CodeXml,
+  Route,
+  SquareTerminal,
+  GraduationCap,
+} from 'lucide-react';
+import { FEATURES } from '@/lib/features';
 import { Logo } from '@/components/app/logo';
 import { LanguageSwitcher } from '@/components/app/language-switcher';
-import { t } from '@/lib/i18n';
+import { t, type TKey } from '@/lib/i18n';
 
-const FEATS = [
+const FEATS: Array<{ icon: typeof CodeXml; text: TKey; tint: string }> = [
   { icon: CodeXml, text: 'auth.feat1', tint: '#12B886' },
-  { icon: SquareTerminal, text: 'auth.feat2', tint: '#5E5CE6' },
+  FEATURES.legacyLabs
+    ? { icon: SquareTerminal, text: 'auth.feat2', tint: '#5E5CE6' }
+    : { icon: GraduationCap, text: 'reliability.classroomBenefit', tint: '#5E5CE6' },
   { icon: Route, text: 'auth.feat3', tint: '#FF9F0A' },
   { icon: Award, text: 'auth.feat4', tint: '#FF375F' },
-] as const;
+];
 
 /**
  * Giriş / qeydiyyat: yumşaq rəngli fon (açıq və tünd rejimdə), solda təqdimat + kod kartı,

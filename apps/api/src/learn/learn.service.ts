@@ -7,6 +7,10 @@ import {
   type CtfAnswerResultDto,
   type HintResultDto,
   type PythonSubmissionInput,
+  type PythonConfig,
+  type SqlConfig,
+  canonicalizeResult,
+  sha256Hex,
   isQuizAnswerCorrect,
   type QuizConfig,
   type QuizResultDto,
@@ -22,6 +26,7 @@ import { ProgressService } from '../progress/progress.service';
 import { CatalogService } from '../catalog/catalog.service';
 import { AssetsService } from '../assets/assets.service';
 import { SqlCheckService } from '../sql-check/sql-check.service';
+import { PythonCheckService } from '../python-check/python-check.service';
 import { hashAnswer } from '../content/ctf-hash';
 import { badRequest, conflict, forbidden, notFound, unprocessable } from '../common/errors';
 import { tr } from '../common/i18n/request-locale';
@@ -47,6 +52,7 @@ export class LearnService {
     private readonly catalog: CatalogService,
     private readonly assets: AssetsService,
     private readonly sqlCheck: SqlCheckService,
+    private readonly pythonCheck: PythonCheckService,
   ) {}
 
   async enroll(userId: string, slug: string) {
@@ -223,6 +229,7 @@ export class LearnService {
         ? { moduleKey: next.moduleKey, stepKey: next.key, locked: next.state === 'locked' }
         : null,
       coursePercent: map.percent,
+      learnerId: userId,
       userXp: user?.xpTotal ?? 0,
       preview,
       assets: resolveAsset.assetMap,
@@ -387,9 +394,23 @@ export class LearnService {
         );
       }
     }
-    const colsOk = sameCols(expected.columns, input.columns);
-    const countOk = expected.row_count === input.row_count;
-    const hashOk = expected.row_hash === input.row_hash;
+    const config = step.config as unknown as SqlConfig;
+    let actual;
+    try {
+      actual = await this.sqlCheck.run(
+        await this.sqlCheck.datasetsOf(step.module.courseId, config.dataset ?? []),
+        input.query,
+      );
+    } catch (error) {
+      throw unprocessable(
+        'SQL_EXECUTION_FAILED',
+        error instanceof Error ? error.message : 'SQL işləmədi.',
+      );
+    }
+    const colsOk = sameCols(expected.columns, actual.columns);
+    const countOk = expected.row_count === actual.rows.length;
+    const hashOk =
+      expected.row_hash === (await sha256Hex(canonicalizeResult(actual, expected.mode)));
     const passed = colsOk && countOk && hashOk;
     const reason = passed ? undefined : !colsOk ? 'columns' : !countOk ? 'row_count' : 'values';
     const message = passed
@@ -397,10 +418,10 @@ export class LearnService {
       : reason === 'columns'
         ? tr('sqlCheck.columns', {
             expected: expected.columns.join(', '),
-            actual: input.columns.join(', ') || '—',
+            actual: actual.columns.join(', ') || '—',
           })
         : reason === 'row_count'
-          ? tr('sqlCheck.rowCount', { expected: expected.row_count, actual: input.row_count })
+          ? tr('sqlCheck.rowCount', { expected: expected.row_count, actual: actual.rows.length })
           : tr('sqlCheck.values');
     if (preview)
       return {
@@ -424,7 +445,11 @@ export class LearnService {
           row_count: input.row_count,
           columns: input.columns,
         } as unknown as Prisma.InputJsonValue,
-        result: { passed, reason: reason ?? null } as unknown as Prisma.InputJsonValue,
+        result: {
+          passed,
+          reason: reason ?? null,
+          serverVerified: true,
+        } as unknown as Prisma.InputJsonValue,
         passed,
       },
     });
@@ -449,7 +474,7 @@ export class LearnService {
     };
   }
 
-  /** Python: testlər brauzerdə (Pyodide) işləyir; nəticə client tərəfindən bildirilir (spesifikasiya: server xərci yoxdur) */
+  /** Browser execution is practice feedback; only independent sandbox grading awards completion. */
   async submitPython(
     userId: string,
     stepId: string,
@@ -459,17 +484,21 @@ export class LearnService {
     const step = await this.loadStep(stepId);
     if (step.type !== 'PYTHON') throw badRequest('WRONG_STEP_TYPE');
     await this.assertUnlocked(userId, step.id, preview);
-    // Nəticəni brauzer (Pyodide) bildirir — server yoxlaya bilmir. Ən azı boş kodla «keçdi» (saxta sorğu)
-    // qəbul olunmur; tam həll serverdə izolə edilmiş icradır (docs: SECURITY).
-    if (input.passed && !input.code.trim())
+    if (!input.code.trim())
       throw unprocessable('PYTHON_EMPTY_CODE', 'Kod boşdur — həlli yazıb yenidən yoxlayın');
-    const passed = input.passed;
+    const checked = await this.pythonCheck.run(
+      step.module.courseId,
+      step.config as unknown as PythonConfig,
+      input.code,
+      input.stdin,
+    );
+    const passed = checked.passed;
     const reason = passed ? undefined : 'error';
     if (preview)
       return {
         passed,
         reason,
-        message: input.error,
+        message: checked.error ?? undefined,
         attempts: 0,
         xpAwarded: passed ? step.xp : 0,
         coursePercent: 0,
@@ -483,10 +512,10 @@ export class LearnService {
         type: 'PYTHON',
         payload: {
           code: input.code.slice(0, 50_000),
-          stdout: input.stdout?.slice(0, 10_000),
-          error: input.error?.slice(0, 2_000),
+          stdout: checked.stdout,
+          error: checked.error,
         } as unknown as Prisma.InputJsonValue,
-        result: { passed } as unknown as Prisma.InputJsonValue,
+        result: { passed, serverVerified: true } as unknown as Prisma.InputJsonValue,
         passed,
       },
     });
@@ -502,7 +531,7 @@ export class LearnService {
     return {
       passed: false,
       reason,
-      message: input.error,
+      message: checked.error ?? undefined,
       attempts: st.attempts,
       xpAwarded: 0,
       coursePercent: st.coursePercent,

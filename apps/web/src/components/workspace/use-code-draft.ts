@@ -1,40 +1,31 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
-const key = (stepId: string) => `dacy:draft:${stepId}`;
-
-function read(stepId: string): string | null {
-  try {
-    return window.localStorage.getItem(key(stepId));
-  } catch {
-    return null;
-  }
-}
-
-/**
- * Tələbənin yazdığı kod brauzerdə yadda qalır — səhifə yenilənəndə və ya addımdan çıxıb qayıdanda itmir.
- * Başlanğıc kodla eyni olan qaralama saxlanılmır (müəllim başlanğıc kodu dəyişəndə tələbə yenisini görsün).
- */
-export function useCodeDraft(stepId: string, starter: string) {
-  const [code, setCode] = useState(starter);
-
-  // SSR ilə uyğunsuzluq olmasın deyə qaralama mount-dan sonra oxunur
+/** Drafts belong to a learner and a step. Older unscoped keys are left intact, never shown to another account. */
+export function useCodeDraft(stepId: string, starter: string, learnerId: string) {
+  const key = `dacy:draft:${learnerId}:${stepId}`;
+  const [draft, setDraft] = useState({ key, code: starter });
+  const code = draft.key === key ? draft.code : starter;
   useEffect(() => {
-    const saved = read(stepId);
-    if (saved !== null && saved !== starter) setCode(saved);
-  }, [stepId, starter]);
-
-  useEffect(() => {
-    const id = window.setTimeout(() => {
+    let saved: string | null = null;
+    try {
+      saved = window.localStorage.getItem(key);
+    } catch {
+      /* storage may be unavailable */
+    }
+    setDraft({ key, code: saved ?? starter });
+  }, [key, starter]);
+  const setCode = useCallback(
+    (value: string) => {
+      setDraft({ key, code: value });
       try {
-        if (code === starter) window.localStorage.removeItem(key(stepId));
-        else window.localStorage.setItem(key(stepId), code);
+        if (value === starter) window.localStorage.removeItem(key);
+        else window.localStorage.setItem(key, value);
       } catch {
-        // gizli rejim / dolu yaddaş — qaralama sadəcə saxlanılmır
+        /* Editing still works when browser storage is unavailable. */
       }
-    }, 400);
-    return () => window.clearTimeout(id);
-  }, [stepId, starter, code]);
-
+    },
+    [key, starter],
+  );
   return { code, setCode, reset: () => setCode(starter), dirty: code !== starter };
 }

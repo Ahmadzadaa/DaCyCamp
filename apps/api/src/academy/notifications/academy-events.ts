@@ -5,6 +5,9 @@ import type { Prisma } from '@prisma/client';
  * tranzaksiya geri qayıtsa hadisə də yoxdur; bildiriş çatdırılmasa akademik qeyd yenə qalır.
  */
 export type AcademyEvent =
+  | { type: 'CLASSROOM_QUESTION'; id: string }
+  | { type: 'CLASSROOM_REPLY'; id: string }
+  | { type: 'CLASSROOM_PUBLISHED'; kind: 'lesson' | 'announcement'; id: string; version: number }
   | { type: 'ENROLLMENT_CREATED'; enrollmentId: string }
   | { type: 'ASSIGNMENT_PUBLISHED'; assignmentId: string }
   | { type: 'ASSIGNMENT_UPDATED'; assignmentId: string; version: number; changes: string[] }

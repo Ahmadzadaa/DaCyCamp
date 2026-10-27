@@ -27,7 +27,7 @@ const ok = async (r: Awaited<ReturnType<APIRequestContext['post']>>) => {
   return r.json();
 };
 
-test('admin bir Python addımlı kurs dərc edir; tələbə saxta «keçdi» göndərir → sertifikat təsdiq gözləyir', async ({
+test('admin bir Python addımlı kurs dərc edir; server saxta nəticəni rədd edir, düzgün həll → sertifikat təsdiq gözləyir', async ({
   page,
   browser,
 }) => {
@@ -81,6 +81,12 @@ test('admin bir Python addımlı kurs dərc edir; tələbə saxta «keçdi» gö
   const sp = await ctx.newPage();
   await ok(await sp.request.post('/api/auth/register', { data: student }));
   await ok(await sp.request.post(`/api/courses/${slug}/enroll`));
+  const forged = await ok(
+    await sp.request.post(`/api/learn/steps/${stepId}/submit`, {
+      data: { kind: 'python', code: 'x = 9', passed: true },
+    }),
+  );
+  expect(forged).toMatchObject({ passed: false, xpAwarded: 0 });
   const res = await ok(
     await sp.request.post(`/api/learn/steps/${stepId}/submit`, {
       data: { kind: 'python', code: 'x = 1', passed: true },

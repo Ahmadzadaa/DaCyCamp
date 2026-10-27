@@ -24,6 +24,8 @@ import { AcademyNotificationsService } from './notifications/academy-notificatio
 import { AcademyWorkerService } from './notifications/academy-worker.service';
 import { AcademyJoinController } from './join/join.controller';
 import { AcademyJoinService } from './join/join.service';
+import { ClassroomController } from './classroom/classroom.controller';
+import { ClassroomService } from './classroom/classroom.service';
 
 /**
  * Akademiya modulu (modul monolit). Öyrənmə nüvəsi ilə yalnız `integrations/` adapterləri vasitəsilə danışır:
@@ -32,6 +34,7 @@ import { AcademyJoinService } from './join/join.service';
 @Module({
   imports: [AuditModule, LearnModule, ProgressModule],
   controllers: [
+    ClassroomController,
     AcademyOrganizationController,
     AcademyAssignmentsController,
     AcademyMeController,
@@ -42,6 +45,7 @@ import { AcademyJoinService } from './join/join.service';
     AcademyJoinController,
   ],
   providers: [
+    ClassroomService,
     AcademyAccessService,
     AcademyEnabledGuard,
     AcademyContentAdapter,

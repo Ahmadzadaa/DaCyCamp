@@ -4,7 +4,7 @@
  * (redaktorda qırmızı xətlə göstərmək üçün).
  */
 
-import { t } from '@/lib/i18n';
+import { runtimeT as t } from './runtime-locale';
 
 const USER_FILE = '<exec>';
 

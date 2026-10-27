@@ -17,3 +17,4 @@ export * from './progress/path-map';
 export * from './api/dto';
 export * from './api/types';
 export * from './academy';
+export * from './sql/statements';

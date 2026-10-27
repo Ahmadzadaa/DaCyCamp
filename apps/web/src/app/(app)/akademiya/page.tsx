@@ -139,6 +139,9 @@ export default async function AcademyOverviewPage() {
                     </span>
                   ) : null}
                 </span>
+                <Link href={`/akademiya/sinif/${g.id}`} className="cr-entry-link">
+                  {t('classroom.open')} →
+                </Link>
               </li>
             ))}
           </ul>

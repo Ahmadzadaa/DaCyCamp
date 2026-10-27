@@ -1,3 +1,4 @@
+import { enabledStep } from '../content/enabled-step';
 /**
  * Öyrənmə mərkəzi — sidebar bölmələri üçün məlumat: Fəaliyyətim, Liderlər cədvəli, Təcrübə, İmtahanlar,
  * Layihələr, Yarışlar. Yeni cədvəl yoxdur: hamısı mövcud qeydlərdən (ActivityDay, XpEvent, StepProgress,
@@ -423,6 +424,7 @@ export class HubService {
 
   // ───────── Yarışlar (CTF otaqları) ─────────
   private async ctfSteps(stepId?: string) {
+    if (!enabledStep('CTF')) return [];
     return this.prisma.step.findMany({
       where: {
         ...(stepId ? { id: stepId } : {}),

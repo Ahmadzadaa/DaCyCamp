@@ -1,0 +1,11 @@
+numpy>=2.2,<3
+pandas>=2.2,<3
+# Existing course examples use boxplot(labels=...), removed in Matplotlib 3.11.
+matplotlib>=3.9,<3.11
+seaborn>=0.13,<1
+scipy>=1.13,<2
+scikit-learn>=1.5,<2
+openpyxl>=3.1.5,<4
+plotly>=6,<7
+statsmodels>=0.14,<1
+wordcloud>=1.9,<2

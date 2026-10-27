@@ -4,6 +4,7 @@
  * Səhifələr və API olduğu kimi qalır; söndürüləndə URL kataloqa yönləndirilir.
  */
 export const FEATURES = {
+  legacyLabs: process.env.NEXT_PUBLIC_LEGACY_LABS === 'true',
   /** «Layihələr» — /layiheler */
   projects: false,
   /** «Yarışlar» — /yarislar */
