@@ -1,0 +1,13 @@
+# DaCy Academy — HTTPS (Let's Encrypt sertifikatı avtomatik alınır və yenilənir)
+{
+	email {$ACME_EMAIL}
+}
+
+{$DOMAIN} {
+	encode zstd gzip
+	# Böyük video/ZIP yükləmələri üçün (MAX_VIDEO_MB defolt 2048)
+	request_body {
+		max_size 2GB
+	}
+	reverse_proxy web:3000
+}

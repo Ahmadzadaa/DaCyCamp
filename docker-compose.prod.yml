@@ -1,0 +1,110 @@
+# DaCy Academy — VPS production (bir server: Caddy HTTPS + web + api + PostgreSQL)
+#   bash scripts/deploy-vps.sh start dacy.az admin@dacy.az
+# Əsası docker-compose.local.yml ilə eynidir (Python + bubblewrap sandbox daxil),
+# fərqlər: HTTPS domen, təhlükəsiz cookie, yalnız 80/443 açıq, baza və API internetə açılmır.
+name: dacy-prod
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: dacy
+      POSTGRES_PASSWORD: ${DACY_DB_PASSWORD:?Əvvəl bash scripts/deploy-vps.sh start işlədin}
+      POSTGRES_DB: dacy
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U dacy -d dacy']
+      interval: 3s
+      timeout: 3s
+      retries: 30
+
+  api:
+    image: dacy-prod-app
+    build:
+      context: .
+      dockerfile: infra/docker/local.Dockerfile
+      args:
+        NEXT_PUBLIC_APP_URL: https://${DOMAIN:?DOMAIN təyin olunmayıb}
+    restart: unless-stopped
+    init: true
+    # bubblewrap (tələbə Python kodu üçün sandbox) iç-içə user namespace tələb edir — local.yml ilə eyni siyasət
+    security_opt:
+      - seccomp=unconfined
+      - apparmor=unconfined
+      - no-new-privileges:true
+    cap_drop: [ALL]
+    env_file: .env.production
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://dacy:${DACY_DB_PASSWORD}@db:5432/dacy
+      WEB_ORIGIN: https://${DOMAIN}
+      NEXT_PUBLIC_APP_URL: https://${DOMAIN}
+      API_PORT: 4000
+      COOKIE_SECURE: 'true'
+      # Caddy və web konteynerləri Docker şəbəkəsinin şəxsi ünvanlarındadır
+      TRUST_PROXY: uniquelocal
+      LAB_DRIVER: 'off'
+      LEGACY_LABS_ENABLED: 'false'
+      MAIL_TRANSPORT: ${MAIL_TRANSPORT:-file}
+      MAIL_OUTBOX_DIR: /data/mail
+    command: ['sh', '-c', 'corepack pnpm db:deploy && node scripts/docker-bootstrap.mjs && node scripts/doctor.mjs && cd apps/api && exec node dist/main.js']
+    volumes:
+      - storage:/data/storage
+      - mail:/data/mail
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD', 'node', '-e', 'fetch("http://127.0.0.1:4000/health").then(async r=>{if(!r.ok || !(await r.json()).db)process.exit(1)}).catch(()=>process.exit(1))']
+      interval: 5s
+      timeout: 3s
+      retries: 60
+      start_period: 30s
+
+  web:
+    image: dacy-prod-app
+    restart: unless-stopped
+    init: true
+    cap_drop: [ALL]
+    security_opt: ['no-new-privileges:true']
+    environment:
+      NODE_ENV: production
+      API_INTERNAL_URL: http://api:4000
+      NEXT_PUBLIC_APP_URL: https://${DOMAIN}
+      PORT: 3000
+      HOSTNAME: 0.0.0.0
+    command: ['node', 'apps/web/.next/standalone/apps/web/server.js']
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD', 'node', '-e', 'fetch("http://127.0.0.1:3000/giris").then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))']
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    environment:
+      DOMAIN: ${DOMAIN}
+      ACME_EMAIL: ${ACME_EMAIL:-}
+    ports:
+      - '80:80'
+      - '443:443'
+      - '443:443/udp'
+    volumes:
+      - ./infra/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      web:
+        condition: service_healthy
+
+volumes:
+  pgdata:
+  storage:
+  mail:
+  caddy_data:
+  caddy_config:

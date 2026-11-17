@@ -2,6 +2,8 @@
 
 **SQL/Python və Academy sinif otağı versiyası.** Docker tələb etməyən işə salma: Linux, Node.js 22.13+, PostgreSQL, Python mühiti, `bubblewrap` və `.env` ilə `corepack pnpm db:deploy`, `corepack pnpm build`, `corepack pnpm pilot:start`. Tam quraşdırma: [DOCKERLESS_OPERATIONS.md](docs/DOCKERLESS_OPERATIONS.md). Bu əmrlər mövcud məlumatları sıfırlamır və seed işlətmir.
 
+**Serverə deploy (VPS, HTTPS):** `bash scripts/deploy-vps.sh start <domen> <admin-email>` — [VPS təlimatı](docs/DEPLOY_VPS.md).
+
 **Mac + Docker Desktop:** `bash scripts/docker-local.sh`. Lokal baza, API və web ayrıca volume-larla başlayır. [Mac təlimatı](docs/MAC_DOCKER_LOCAL.md).
 
 Sinif otağı, qrup kodları və müəllim–tələbə istifadəsi: [CLASSROOM_GUIDE.md](docs/CLASSROOM_GUIDE.md). Hazırlıq vəziyyəti və məhdudiyyətlər: [LAUNCH_REVIEW.md](docs/LAUNCH_REVIEW.md). Faktiki yoxlamalar: [CLASSROOM_QA.md](docs/CLASSROOM_QA.md).

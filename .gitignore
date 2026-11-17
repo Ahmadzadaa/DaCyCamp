@@ -9,6 +9,7 @@ test-results/
 .env
 .env.local
 .env.*.local
+.env.production
 apps/api/storage/
 # ehtiyat nüsxələr (şəxsi məlumat) — repoya düşməsin
 backups/
