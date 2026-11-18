@@ -90,11 +90,15 @@ export function AssessmentForm({
             <div className="mt-2 flex flex-col gap-1.5">
               {qq.options.map((opt, oi) => {
                 const sel = answers[qi]!.includes(oi);
+                // correctIndices yalnız keçəndə gəlir; yoxdursa seçilmiş variant sualın nəticəsini göstərir
+                const isCorrect = r?.correctIndices
+                  ? r.correctIndices.includes(oi)
+                  : sel && r?.correct;
                 const cls = cn(
                   'opt-row',
                   sel && 'sel',
-                  r && r.correctIndices.includes(oi) && 'correct',
-                  r && sel && !r.correctIndices.includes(oi) && 'wrong',
+                  r && isCorrect && 'correct',
+                  r && sel && !isCorrect && 'wrong',
                 );
                 return (
                   <label key={oi} className={cls}>

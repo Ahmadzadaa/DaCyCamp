@@ -7,6 +7,7 @@ import type { Prisma } from '@prisma/client';
 import {
   computePathMap,
   scoreAssessment,
+  quizFeedback,
   type ActivePathDto,
   type AssessmentPublic,
   type AssessmentResultDto,
@@ -567,7 +568,8 @@ export class PathsLearnService {
       return {
         score,
         passed,
-        perQuestion: per,
+        // düzgün cavablar yalnız keçəndə; uğursuz cəhddə yalnız hansı sualın səhv olduğu
+        perQuestion: quizFeedback(per, passed),
         pathPercent: r.percent,
         pathCompleted: r.isComplete,
         certificateId: r.certificateId,

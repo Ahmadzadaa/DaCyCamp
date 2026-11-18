@@ -601,8 +601,12 @@ export class PackageService {
     }
     const c = plan.course;
     const trackId = plan.trackId!;
-    // 1) fayllar əvvəlcə yaddaşa (idempotent: eyni path → əvəz)
-    const courseId = await this.prisma.$transaction(
+    // 1) fayllar əvvəlcə yaddaşa (idempotent: eyni path → əvəz).
+    // Köhnə fayllar YALNIZ transaksiya uğurla bitəndən sonra silinir: transaksiya geri qaytarılsa
+    // (məs. STEP_TYPE_LOCKED) Asset sətirləri köhnə storageKey-ə qayıdır və o fayl yerində qalmalıdır.
+    const writtenKeys: string[] = [];
+    const replacedKeys: string[] = [];
+    const applyTx = this.prisma.$transaction(
       async (tx) => {
         const course = plan.existingCourseId
           ? await tx.course.update({
@@ -659,6 +663,7 @@ export class PackageService {
           const unchanged = existing && existing.sha256 === sha256(a.buffer);
           if (unchanged) continue;
           const storageKey = await saveToStorage(course.id, a.filename, a.buffer);
+          writtenKeys.push(storageKey);
           const data = {
             courseId: course.id,
             path: a.path,
@@ -672,7 +677,7 @@ export class PackageService {
           };
           if (existing) {
             await tx.asset.update({ where: { id: existing.id }, data });
-            await removeFromStorage(existing.storageKey);
+            replacedKeys.push(existing.storageKey);
           } else await tx.asset.create({ data });
         }
         if (c.cover) {
@@ -819,6 +824,12 @@ export class PackageService {
       },
       { timeout: 120_000 },
     );
+    const courseId = await applyTx.catch(async (e: unknown) => {
+      // geri qaytarıldı: yalnız yeni yazılmış faylları təmizlə, köhnələrə toxunma
+      await Promise.all(writtenKeys.map((k) => removeFromStorage(k).catch(() => undefined)));
+      throw e;
+    });
+    await Promise.all(replacedKeys.map((k) => removeFromStorage(k).catch(() => undefined)));
     // 2) SQL addımları üçün gözlənilən nəticə (uğursuz olsa addım qaralamaya düşür)
     const sqlSteps = await this.prisma.step.findMany({
       where: { type: 'SQL', isPublished: true, module: { courseId } },

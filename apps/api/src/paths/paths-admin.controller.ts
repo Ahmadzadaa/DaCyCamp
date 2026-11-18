@@ -23,7 +23,7 @@ import {
 } from '@dacy/shared';
 import { CurrentUser, Staff, type AuthUser } from '../common/decorators';
 import { ZodPipe } from '../common/pipes/zod.pipe';
-import { badRequest } from '../common/errors';
+import { badRequest, forbidden } from '../common/errors';
 import { PathsAdminService } from './paths-admin.service';
 
 const publishBody = z.object({ published: z.boolean() });
@@ -62,7 +62,14 @@ export class PathsAdminController {
 
   @Audit({ action: 'path.delete', entity: 'PATH' })
   @Delete('admin/paths/:id')
-  remove(@Param('id') id: string, @Query(new ZodPipe(forceQuery)) q: { force?: string }) {
+  remove(
+    @Param('id') id: string,
+    @Query(new ZodPipe(forceQuery)) q: { force?: string },
+    @CurrentUser() u: AuthUser,
+  ) {
+    // məcburi silmə tələbələrin yol irəliləyişini və layihələrini geri qaytarılmadan silir —
+    // kurs/modul/addım silmələri kimi yalnız ADMIN (INSTRUCTOR yox)
+    if (q.force && u.role !== 'ADMIN') throw forbidden();
     return this.admin.remove(id, !!q.force);
   }
 

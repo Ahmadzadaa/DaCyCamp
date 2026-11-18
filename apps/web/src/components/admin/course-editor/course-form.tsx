@@ -79,7 +79,6 @@ export function CourseForm({
     try {
       const asset = await uploadAsset(course.id, file, 'IMAGE', {
         path: `images/${field === 'instructorAvatarId' ? 'muellim-' : ''}${file.name}`,
-        replace: true,
       });
       onAssetUploaded(asset);
       const updated = await api<AdminCourseDto>(`/admin/courses/${course.id}`, {

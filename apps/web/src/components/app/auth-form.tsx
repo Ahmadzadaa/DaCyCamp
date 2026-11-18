@@ -16,6 +16,7 @@ import {
 import { api } from '@/lib/api/client';
 import { errorMessage } from '@/lib/errors-i18n';
 import { t } from '@/lib/i18n';
+import { safeNextPath } from '@/lib/utils';
 import { syncLocaleAfterLogin } from '@/components/app/language-switcher';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -52,15 +53,8 @@ export function AuthForm({
       // admin və məzmun heyəti birbaşa admin panelə, akademiya müəllimi öz panelinə düşür
       const staff = me.role === 'ADMIN' || me.role === 'INSTRUCTOR';
       const target =
-        next && next.startsWith('/') && !next.startsWith('//')
-          ? next
-          : staff
-            ? '/admin'
-            : me.role === 'TEACHER'
-              ? '/muellim'
-              : isLogin
-                ? '/panel'
-                : '/baslangic';
+        safeNextPath(next) ??
+        (staff ? '/admin' : me.role === 'TEACHER' ? '/muellim' : isLogin ? '/panel' : '/baslangic');
       // dil seçimi: cihazdakı seçim ↔ profil; dil dəyişibsə tam yükləmə (bütün mətnlər yeni dildə)
       if (syncLocaleAfterLogin(isLocale(me.locale) ? me.locale : undefined))
         window.location.assign(target);

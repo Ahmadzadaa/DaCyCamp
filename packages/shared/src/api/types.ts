@@ -204,7 +204,8 @@ export interface CompleteResultDto {
 export interface QuizResultDto extends CompleteResultDto {
   score: number;
   passed: boolean;
-  perQuestion: Array<{ correct: boolean; correctIndices: number[]; explanation?: string }>;
+  /** correctIndices yalnız keçid (və ya önizləmə) zamanı gəlir — bax: quizFeedback */
+  perQuestion: Array<{ correct: boolean; correctIndices?: number[]; explanation?: string }>;
   attempts: number;
 }
 
@@ -723,7 +724,8 @@ export interface PathProgressResultDto {
 export interface AssessmentResultDto extends PathProgressResultDto {
   score: number;
   passed: boolean;
-  perQuestion: Array<{ correct: boolean; correctIndices: number[]; explanation?: string }>;
+  /** correctIndices yalnız keçid (və ya önizləmə) zamanı gəlir — bax: quizFeedback */
+  perQuestion: Array<{ correct: boolean; correctIndices?: number[]; explanation?: string }>;
 }
 export interface ProjectSubmitResultDto extends PathProgressResultDto {
   status: 'SUBMITTED' | 'PASSED';

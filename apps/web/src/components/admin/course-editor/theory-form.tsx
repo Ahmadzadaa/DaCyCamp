@@ -59,7 +59,6 @@ export function TheoryForm({
     try {
       const a = await uploadAsset(courseId, file, 'IMAGE', {
         path: `images/${file.name}`,
-        replace: true,
       });
       onAssetUploaded(a);
       insertAtCursor(`![${a.filename}](${a.path})`);
@@ -80,7 +79,6 @@ export function TheoryForm({
     try {
       const a = await uploadVideo(courseId, file, {
         path: `videos/${file.name}`,
-        replace: true,
         onProgress: setPct,
       });
       onAssetUploaded(a);

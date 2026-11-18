@@ -48,7 +48,6 @@ export function AssetPicker({
     try {
       const a = await uploadAsset(courseId, file, uploadKind, {
         path: `${folder}/${file.name}`,
-        replace: true,
       });
       onAssetUploaded(a);
       onChange(multiple ? [...value.filter((p) => p !== a.path), a.path] : [a.path]);

@@ -1,4 +1,4 @@
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import type { PublicUser } from '@dacy/shared';
 import { ApiError } from './errors';
 
@@ -11,9 +11,18 @@ export async function apiFetch<T>(path: string, init: RequestInit = {}): Promise
     .getAll()
     .map((c) => `${c.name}=${c.value}`)
     .join('; ');
+  // ziyarətçinin IP-si API-yə ötürülür: əks halda bütün anonim SSR sorğuları Next serverinin
+  // tək IP-si ilə gəlir və API limitini (300/dəq) bölüşür — bir bot hamı üçün səhifələri sındırardı.
+  // API bunu yalnız etibarlı proksidən qəbul edir (TRUST_PROXY).
+  const xff = (await headers()).get('x-forwarded-for');
   const res = await fetch(`${API}${path}`, {
     ...init,
-    headers: { 'content-type': 'application/json', ...(init.headers ?? {}), cookie },
+    headers: {
+      'content-type': 'application/json',
+      ...(init.headers ?? {}),
+      cookie,
+      ...(xff ? { 'x-forwarded-for': xff } : {}),
+    },
     cache: 'no-store',
   });
   if (!res.ok) {

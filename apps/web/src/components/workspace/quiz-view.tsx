@@ -116,12 +116,15 @@ export function QuizView({ view, quiz }: { view: StepViewDto; quiz: QuizStudentV
                     setAnswers((prev) => prev.map((a, k) => (k === qi ? next : a)))
                   }
                   correct={r?.correctIndices}
-                  disabled={busy}
+                  disabled={busy || !!result}
                 />
               ) : (
                 question.options.map((opt, oi) => {
                   const sel = answers[qi]!.includes(oi);
-                  const isCorrect = r?.correctIndices.includes(oi);
+                  // correctIndices yalnız keçəndə gəlir; yoxdursa seçilmiş variant sualın nəticəsini göstərir
+                  const isCorrect = r?.correctIndices
+                    ? r.correctIndices.includes(oi)
+                    : sel && r?.correct;
                   return (
                     <label
                       key={oi}

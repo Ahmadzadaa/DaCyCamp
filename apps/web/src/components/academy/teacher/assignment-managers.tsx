@@ -260,6 +260,21 @@ export function RubricEditor({
       setBusy(false);
     }
   }
+  /** Rubrika silinmədən tapşırığın balı dəyişdirilə bilmir (ACADEMY_RUBRIC_MISMATCH) — çıxış yolu */
+  async function removeRubric() {
+    if (!window.confirm(t('academy.teacher.removeRubricConfirm'))) return;
+    setBusy(true);
+    try {
+      await api(`/academy/assignments/${assignmentId}/rubric`, { method: 'DELETE' });
+      setCriteria([]);
+      toast.success(t('academy.form.saved'));
+      router.refresh();
+    } catch (e) {
+      toast.error(errorMessage(e));
+    } finally {
+      setBusy(false);
+    }
+  }
   if (!canEdit)
     return rubric ? (
       <ul className="flex flex-col gap-1 text-sm">
@@ -328,15 +343,22 @@ export function RubricEditor({
           {fmtScore(total)} / {fmtScore(maxScore)}
         </span>
       </div>
-      <Button
-        size="sm"
-        onClick={save}
-        loading={busy}
-        disabled={!criteria.length || total !== maxScore}
-        className="self-start"
-      >
-        {t('academy.teacher.saveRubric')}
-      </Button>
+      <div className="flex flex-wrap gap-2">
+        <Button
+          size="sm"
+          onClick={save}
+          loading={busy}
+          disabled={!criteria.length || total !== maxScore}
+        >
+          {t('academy.teacher.saveRubric')}
+        </Button>
+        {rubric ? (
+          <Button size="sm" variant="ghost" onClick={removeRubric} disabled={busy}>
+            <Trash2 className="size-4" />
+            {t('academy.teacher.removeRubric')}
+          </Button>
+        ) : null}
+      </div>
     </div>
   );
 }

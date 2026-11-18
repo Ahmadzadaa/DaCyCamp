@@ -31,10 +31,13 @@ export async function middleware(req: NextRequest) {
   let valid = false;
   let unavailable = false;
   const cookie = req.headers.get('cookie') ?? '';
+  // ziyarətçinin IP-si: API limiti hər ziyarətçiyə ayrıca tətbiq olunsun (bax: lib/api/server.ts)
+  const xff = req.headers.get('x-forwarded-for');
+  const fwd: Record<string, string> = xff ? { cookie, 'x-forwarded-for': xff } : { cookie };
   if (at) {
     try {
       const r = await fetch(`${API}/auth/me`, {
-        headers: { cookie },
+        headers: fwd,
         cache: 'no-store',
         signal: AbortSignal.timeout(5000),
       });
@@ -54,7 +57,7 @@ export async function middleware(req: NextRequest) {
     try {
       const r = await fetch(`${API}/auth/refresh`, {
         method: 'POST',
-        headers: { cookie },
+        headers: fwd,
         cache: 'no-store',
         signal: AbortSignal.timeout(5000),
       });

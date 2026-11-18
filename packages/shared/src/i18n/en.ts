@@ -2210,6 +2210,9 @@ export const en: Dictionary = {
       rubricHint: 'The criteria must add up to the assignment maximum score.',
       addCriterion: 'Add criterion',
       saveRubric: 'Save rubric',
+      removeRubric: 'Remove rubric',
+      removeRubricConfirm:
+        'Remove the rubric? You can then change the assignment points and create a new rubric.',
       expected: 'Expected',
       readOnly: 'This group is read-only',
     },

@@ -72,7 +72,6 @@ export function AssetsLibrary({
       for (const f of files) {
         const a = await uploadAsset(courseId, f, folder.kind, {
           path: `${folder.dir}/${f.name}`,
-          replace: true,
         });
         setAssets((as) => upsertAsset(as, a));
         toast.success(t('admin.assetUploaded', { path: a.path }));

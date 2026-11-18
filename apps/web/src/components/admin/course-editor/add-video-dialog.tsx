@@ -58,7 +58,6 @@ export function AddVideoDialog({
     try {
       const asset = await uploadVideo(courseId, file, {
         path: `videos/${module.key}-${file.name}`,
-        replace: true,
         onProgress: setPct,
       });
       onAssetUploaded(asset);

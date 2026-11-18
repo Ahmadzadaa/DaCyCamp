@@ -2187,6 +2187,9 @@ export const az = {
       rubricHint: 'Meyarların cəmi tapşırığın maksimum balına bərabər olmalıdır.',
       addCriterion: 'Meyar əlavə et',
       saveRubric: 'Rubrikanı saxla',
+      removeRubric: 'Rubrikanı sil',
+      removeRubricConfirm:
+        'Rubrika silinsin? Bundan sonra tapşırığın ballarını dəyişib yeni rubrika yarada bilərsiniz.',
       expected: 'Gözlənilir',
       readOnly: 'Bu qrup yalnız oxunur',
     },

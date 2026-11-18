@@ -12,6 +12,7 @@ import {
   canonicalizeResult,
   sha256Hex,
   isQuizAnswerCorrect,
+  quizFeedback,
   type QuizConfig,
   type QuizResultDto,
   type QuizSecret,
@@ -363,7 +364,8 @@ export class LearnService {
     return {
       score,
       passed,
-      perQuestion,
+      // uğursuz cəhddə düzgün variantlar göndərilmir — əks halda ikinci cəhddə 100 bal
+      perQuestion: quizFeedback(perQuestion, false),
       attempts: st.attempts,
       xpAwarded: 0,
       coursePercent: st.coursePercent,

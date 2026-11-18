@@ -292,16 +292,16 @@ describe('Mərhələ 4: Learning Path', () => {
       .send({ answers: [[0], [1]] })
       .expect(200);
     expect(bad.body).toMatchObject({ score: 0, passed: false, xpAwarded: 0 });
-    expect(bad.body.perQuestion[0]).toMatchObject({
-      correct: false,
-      correctIndices: [1],
-      explanation: 'izah',
-    });
+    // uğursuz cəhddə düzgün variantlar və izah (cavabı adlandırır) qaytarılmır
+    expect(bad.body.perQuestion[0]).toEqual({ correct: false });
+    expect(JSON.stringify(bad.body)).not.toContain('correctIndices');
     const half = await st
       .post(`/learn/path-items/${items.imtahan}/assessment`)
       .send({ answers: [[1], [0]] })
       .expect(200);
     expect(half.body).toMatchObject({ score: 50, passed: true, xpAwarded: 50, pathPercent: 50 });
+    // keçəndən sonra düzgün cavablar açılır
+    expect(half.body.perQuestion[0]).toMatchObject({ correctIndices: [1], explanation: 'izah' });
     const again = await st
       .post(`/learn/path-items/${items.imtahan}/assessment`)
       .send({ answers: [[1], [2, 0]] })
@@ -537,7 +537,9 @@ describe('Mərhələ 4: Learning Path', () => {
       'layihe',
       'final',
     ]);
-    await ins.delete(`/admin/paths/${pathId}?force=1`).expect(200);
+    // məcburi silmə tələbə irəliləyişini silir — yalnız ADMIN
+    await ins.delete(`/admin/paths/${pathId}?force=1`).expect(403);
+    await adm.delete(`/admin/paths/${pathId}?force=1`).expect(200);
     expect((await st.get(`/paths/${slug}`)).status).toBe(404);
     // sertifikat snapshot qalır
     const pub = await agent(app).get(`/certificates/${certId}`).expect(200);

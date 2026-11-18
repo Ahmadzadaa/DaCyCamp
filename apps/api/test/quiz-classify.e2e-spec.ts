@@ -72,18 +72,15 @@ describe('quiz: classify sualı', () => {
     expect(JSON.stringify(v.body.view)).not.toContain('correct');
   });
 
-  it('səhv yerləşdirmə: sual səhvdir, hər elementin düzgün qrupu qaytarılır', async () => {
+  it('səhv yerləşdirmə: sual səhvdir, düzgün qruplar keçənə qədər gizli qalır', async () => {
     const r = await st
       .post(`/learn/steps/${stepId}/submit`)
       .send({ kind: 'quiz', answers: [[0, 1, 1, 1], [0]] });
     expect(r.status).toBe(200);
     expect(r.body.score).toBe(50);
     expect(r.body.passed).toBe(false);
-    expect(r.body.perQuestion[0]).toEqual({
-      correct: false,
-      correctIndices: [0, 1, 0, 1],
-      explanation: 'izah',
-    });
+    // uğursuz cəhddə düzgün qruplar qaytarılmır — əks halda ikinci cəhddə 100 bal
+    expect(r.body.perQuestion[0]).toEqual({ correct: false });
     // natamam cavab da səhvdir
     const partial = await st
       .post(`/learn/steps/${stepId}/submit`)
@@ -98,5 +95,6 @@ describe('quiz: classify sualı', () => {
     expect(r.body.score).toBe(100);
     expect(r.body.passed).toBe(true);
     expect(r.body.xpAwarded).toBe(20);
+    expect(r.body.perQuestion[0]).toMatchObject({ correctIndices: [0, 1, 0, 1] });
   });
 });

@@ -348,6 +348,25 @@ export function scoreAssessment(
   return { score, perQuestion: per };
 }
 
+/**
+ * Tələbəyə qaytarılan quiz/imtahan rəyi. Düzgün variantlar yalnız `reveal` olanda (keçdi və ya
+ * önizləmə) göndərilir; əks halda tələbə səhv cavabdan sonra düzgün indeksləri görüb təkrar
+ * göndərərək keçid balını aşa bilərdi. İzah da yalnız düz cavablanmış suallarda qalır (izah
+ * çox vaxt düzgün variantı adlandırır).
+ */
+export function quizFeedback<
+  T extends { correct: boolean; correctIndices: number[]; explanation?: string },
+>(
+  perQuestion: T[],
+  reveal: boolean,
+): Array<{ correct: boolean; correctIndices?: number[]; explanation?: string }> {
+  if (reveal) return perQuestion;
+  return perQuestion.map((q) => ({
+    correct: q.correct,
+    ...(q.correct && q.explanation ? { explanation: q.explanation } : {}),
+  }));
+}
+
 // ── dərc yoxlaması ─────────────────────────────────────────────────────────
 export interface PathPublishItem {
   key: string;

@@ -132,6 +132,15 @@ export function StepEditor({
     setBusy('publish');
     setError(null);
     try {
+      // saxlanmamış dəyişikliklər varsa əvvəl saxla: əks halda dərc cavabı formu serverdəki
+      // köhnə məzmunla əvəz edir və redaktə xəbərsiz itir
+      if (dirty && def) {
+        const saved = await api<AdminStepDto>(`/admin/steps/${stepId}`, {
+          method: 'PUT',
+          body: def,
+        });
+        applyDto(saved);
+      }
       const d = await api<AdminStepDto>(`/admin/steps/${stepId}/publish`, {
         method: 'PATCH',
         body: { isPublished: !dto.isPublished },

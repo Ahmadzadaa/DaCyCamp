@@ -225,9 +225,15 @@ export function PathEditor({
     } catch (e) {
       if (e instanceof ApiError && e.code === 'PATH_HAS_ENROLLMENTS') {
         if (window.confirm(`${errorMessage(e)}. ${t('admin.deletePathConfirm')}`)) {
-          await api(`/admin/paths/${p.id}?force=1`, { method: 'DELETE' });
-          router.push('/admin/yollar');
-          return;
+          try {
+            // məcburi silmə yalnız ADMIN-ə açıqdır; müəllim üçün API 403 qaytarır
+            await api(`/admin/paths/${p.id}?force=1`, { method: 'DELETE' });
+            toast.success(t('admin.pathDeleted'));
+            router.push('/admin/yollar');
+            return;
+          } catch (e2) {
+            toast.error(errorMessage(e2));
+          }
         }
       } else toast.error(errorMessage(e));
       setBusy(null);

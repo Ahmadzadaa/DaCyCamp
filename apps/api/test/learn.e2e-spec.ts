@@ -138,11 +138,10 @@ describe('student flow', () => {
     expect(fail.status).toBe(200);
     expect(fail.body.passed).toBe(false);
     expect(fail.body.score).toBe(50);
-    expect(fail.body.perQuestion[0]).toMatchObject({
-      correct: false,
-      correctIndices: [1],
-      explanation: 'izah',
-    });
+    // düzgün variant və izah uğursuz cəhddə göndərilmir; düz cavablanmış sual yenə görünür
+    expect(fail.body.perQuestion[0]).toEqual({ correct: false });
+    expect(fail.body.perQuestion[1].correct).toBe(true);
+    expect(JSON.stringify(fail.body)).not.toContain('correctIndices');
     const p = await prisma.stepProgress.findUnique({
       where: {
         userId_stepId: {

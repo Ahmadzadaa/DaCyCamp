@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common';
 import type { Asset } from '@prisma/client';
 import type { AssetDto, AssetKind } from '@dacy/shared';
 import { PrismaService } from '../prisma/prisma.service';
+import { SqlCheckService } from '../sql-check/sql-check.service';
+import { ProgressService } from '../progress/progress.service';
 import { conflict, notFound } from '../common/errors';
 import {
   defaultFolder,
@@ -40,7 +42,11 @@ export const toAssetDto = (a: Asset): AssetDto => ({
 
 @Injectable()
 export class AssetsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly sqlCheck: SqlCheckService,
+    private readonly progress: ProgressService,
+  ) {}
 
   async list(courseId: string, kind?: AssetKind) {
     const rows = await this.prisma.asset.findMany({
@@ -93,12 +99,38 @@ export class AssetsService {
     };
     let asset: Asset;
     if (existing) {
-      await removeFromStorage(existing.storageKey);
+      // əvvəl baza, sonra köhnə fayl: yeniləmə uğursuz olsa sətir hələ mövcud fayla işarə edir
       asset = await this.prisma.asset.update({ where: { id: existing.id }, data });
+      await removeFromStorage(existing.storageKey).catch(() => undefined);
+      if (existing.sha256 !== stored.sha256) await this.refreshSqlExpected(opts.courseId, path);
     } else {
       asset = await this.prisma.asset.create({ data });
     }
     return toAssetDto(asset);
+  }
+
+  /**
+   * Dataset dəyişəndə həmin faylı istifadə edən dərc olunmuş SQL addımlarının gözlənilən
+   * nəticəsi yenidən hesablanır — əks halda keşdə köhnə nəticə qalır və düzgün həllər səhv sayılır.
+   * Hesablanmayan addım ZIP idxalında olduğu kimi qaralamaya keçirilir.
+   */
+  private async refreshSqlExpected(courseId: string, path: string) {
+    const steps = await this.prisma.step.findMany({
+      where: { type: 'SQL', isPublished: true, module: { courseId } },
+      select: { id: true, config: true },
+    });
+    let unpublished = false;
+    for (const s of steps) {
+      const ds = (s.config as { dataset?: unknown } | null)?.dataset;
+      if (!Array.isArray(ds) || !ds.includes(path)) continue;
+      try {
+        await this.sqlCheck.computeAndStore(s.id);
+      } catch {
+        await this.prisma.step.update({ where: { id: s.id }, data: { isPublished: false } });
+        unpublished = true;
+      }
+    }
+    if (unpublished) await this.progress.recomputeCourse(courseId);
   }
 
   async remove(id: string) {
